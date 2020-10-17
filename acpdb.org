@@ -1,0 +1,17 @@
+#+STARTUP: showeverything
+
+* Command-line syntax
+
+apcfit -h [inputfile [outputfile]]
+
+If the input or the output file are not present, stdin and stdout are used.
+If the output file is not present, stdout is used.
+
+* Keywords
+
+** CREATE
+
+CREATE acpdb_file.s
+
+  Creates an empty database in file acpdb_file.s.
+

@@ -1,2 +1,6 @@
 # acpdb
-Database interface program for the development of ACPs
+
+Database interface program for the development of ACPs.
+
+Under development.
+
