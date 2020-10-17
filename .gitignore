@@ -1,3 +1,6 @@
+# private design files
+db-design.org
+
 # object, module, library files
 *.o
 *.a
