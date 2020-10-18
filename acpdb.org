@@ -4,14 +4,49 @@
 
 apcfit -h [inputfile [outputfile]]
 
-If the input or the output file are not present, stdin and stdout are used.
-If the output file is not present, stdout is used.
+The input file is a keyword-driven case-insensitive text
+file. Comments are #. If the input or the output file are not present,
+stdin and stdout are used. If the output file is not present, stdout
+is used.
+
+* Definitions
+
+- Structure: the structural information about a molecule or crystal.
+
+- Property: a quantity calculable by running a few molecular or
+  crystal calculations and that is linear in the total energies. 
+
+- Method: a method for the calculation of a property. Can be a
+  "reference method" (expensive and/or from the literature), an
+  approximate method (usually the target of ACP fitting), or an
+  additional method (additional contributions to the energy, like a
+  dispersion correction).
+
+- Set: a group of properties, usually from an article in the
+  literature and calculated with a reasonably good method.
+
+- Traning set: the set of all properties that are used for ACP
+  development. Comprises one or more sets.
+
+- Dataset: the training set plus additional information such as atoms,
+  angular momentum channels, etc. The dataset completely determines
+  the ACP fitting problem.
+
+Whenver set names are required, an asterisk stands for the current
+training set. When a method name is required, an asterisk stands for
+the method used in the original reference.
 
 * Keywords
-
-** CREATE
 
 CREATE acpdb_file.s
 
   Creates an empty database in file acpdb_file.s.
+
+CONNECT acpdb_file.s
+
+  Connects to the database file acpdb_file.s.
+
+DISCONNECT
+
+  Disconnect the current database.
 

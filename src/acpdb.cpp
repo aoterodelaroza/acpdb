@@ -96,6 +96,8 @@ int main(int argc, char *argv[]) {
     try {
       if (keyw == "CREATE") {
         db.create(tokens);
+      } else if (keyw == "CONNECT") {
+        db.connect(tokens);
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        
