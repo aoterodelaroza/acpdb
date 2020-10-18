@@ -8,3 +8,5 @@ db-design.org
 # emacs backups
 *~
 
+# cmake build
+build/
