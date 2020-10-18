@@ -98,6 +98,8 @@ int main(int argc, char *argv[]) {
         db.create(tokens);
       } else if (keyw == "CONNECT") {
         db.connect(tokens);
+      } else if (keyw == "DISCONNECT") {
+        db.close();
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        
