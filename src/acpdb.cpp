@@ -1,15 +1,26 @@
-#include <exception>
+/*
+Copyright (c) 2020 Alberto Otero de la Roza <aoterodelaroza@gmail.com>
+
+acpdb is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+acpdb is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <iostream>
 #include <fstream>
-#include <ostream>
-#include <string>
-#include <sstream>
-#include <iterator>
-#include <algorithm>
-#include <list>
 #include <cstring>
 
 #include "sqldb.h"
+#include "parseutils.h"
 
 static std::istream *is;
 static std::ostream *os;
@@ -17,34 +28,6 @@ static std::ifstream *ifile = nullptr;
 static std::ofstream *ofile = nullptr;
 
 static sqldb db;
-
-// Error and usage message
-static void print_error_usage(const char *prog = 0, const char *errmsg = 0) {
-  if (errmsg) {
-    printf("Error: %s\n",errmsg);
-  }
-  if (prog) {
-    printf("Usage: %s [inputfile [outputfile]]\n",prog);
-    printf("Options:\n");
-    printf("  -h : show this message and exit\n");
-  }
-}
-
-// List the words in an input line. Skip the rest of the line if a
-// comment character (#) is found as the first character in a token.
-static std::list<std::string> listwords(const std::string &line) {
-
-  std::istringstream iss(line);
-  std::list<std::string> result;
-  std::string token;
-
-  while (iss >> token){
-    if (token[0] == '#') break;
-    result.push_back(token);
-  }
-
-  return result;
-}  
 
 int main(int argc, char *argv[]) {
 
@@ -80,33 +63,26 @@ int main(int argc, char *argv[]) {
   std::string line;
   while(std::getline(*is, line)){
     // Tokenize the line
-    std::list<std::string> tokens(listwords(line));
+    std::list<std::string> tokens(list_all_words(line));
 
     // Skip blank lines
     if (tokens.empty()) continue;
     
-    // Convert the token to uppercase
-    std::string keyw = tokens.front();
-    transform(keyw.begin(), keyw.end(), keyw.begin(), ::toupper);
-
-    // Remove the first token from the list
-    tokens.pop_front();
+    // Get the first keyword
+    std::string keyw = popstring(tokens,true);
 
     // Interpret the keywords and call the appropriate routines
     try {
       if (keyw == "CREATE") {
-        db.connect(tokens, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+        db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();
       } else if (keyw == "CONNECT") {
-        db.connect(tokens);
-
-        int err = db.checksane();
-        if (err == sqldb::dbstatus_error)
-          throw std::runtime_error("Error reading connected database");
-        else if (err == sqldb::dbstatus_empty)
-          throw std::runtime_error("Empty database");
+        db.connect(popstring(tokens));
+        db.checksane(true,true);
       } else if (keyw == "DISCONNECT") {
         db.close();
+      } else if (keyw == "INSERT") {
+        db.insert(popstring(tokens,true),popstring(tokens),map_keyword_pairs(is,true));
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        

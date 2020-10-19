@@ -1,22 +1,26 @@
+/*
+Copyright (c) 2020 Alberto Otero de la Roza <aoterodelaroza@gmail.com>
+
+acpdb is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+acpdb is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "sqldb.h"
-#include <iostream>
-#include <string>
+#include "parseutils.h"
 #include <stdexcept>
 
-// Get the front string from the list of tokens. Remove that string from the list.
-static std::string get_front_token(std::list<std::string> &tokens){
-  // Check that we have a first token
-  if (tokens.empty())
-    throw std::runtime_error("Need a file name for the database");
-
-  // Get the file name
-  std::string result = tokens.front();
-  tokens.pop_front();
-  return result;
-}
-
 // Check if the DB is sane, empty, or not sane.
-sqldb::dbstatus sqldb::checksane(){
+sqldb::dbstatus sqldb::checksane(bool except_on_error, bool except_on_empty){
   int icol;
   const char *check_statement = "SELECT COUNT(type) FROM sqlite_master WHERE type='table' AND name='Literature_refs';";
   sqlite3_stmt *statement = nullptr;
@@ -35,18 +39,23 @@ sqldb::dbstatus sqldb::checksane(){
 
  error:
   if (statement) sqlite3_finalize(statement);
+  if (except_on_error) throw std::runtime_error("Error reading connected database");
   return dbstatus_error;
 
  empty:
   if (statement) sqlite3_finalize(statement);
+  if (except_on_empty) throw std::runtime_error("Empty database");
   return dbstatus_empty;
 }
 
 // Open a database file for use. 
 void sqldb::connect(const std::string filename, int flags){
-  
   // close the previous db if open
   close();
+
+  // check if the string is empty
+  if (filename.empty())
+    throw std::runtime_error("Need a database file name");
 
   // open the new one
   if (sqlite3_open_v2(filename.c_str(), &db, flags, NULL)) {
@@ -59,11 +68,6 @@ void sqldb::connect(const std::string filename, int flags){
   dbfilename = filename;
 }
 
-// Open a database file for use using the first token from the list.
-void sqldb::connect(std::list<std::string> &tokens, int flags){
-  connect(get_front_token(tokens),flags);
-}
-
 // Create the database skeleton.
 void sqldb::create(){
   // skip if not open
@@ -72,14 +76,15 @@ void sqldb::create(){
   // SQL statment for creating the database table
   const char *create_statement = R"SQL(
 CREATE TABLE Literature_refs (
-  ref_key     TEXT    NOT NULL UNIQUE ,
-  authors     TEXT    ,
-  title       TEXT    ,
-  journal     TEXT    ,
-  volume      TEXT    ,
-  page        TEXT    ,
-  year        TEXT    ,
-  doi         TEXT    UNIQUE ,
+  id          INTEGER PRIMARY KEY NOT NULL,
+  ref_key     TEXT NOT NULL,
+  authors     TEXT,
+  title       TEXT,
+  journal     TEXT,
+  volume      TEXT,
+  page        TEXT,
+  year        TEXT,
+  doi         TEXT UNIQUE,
   description TEXT
 );
 )SQL";
@@ -101,4 +106,9 @@ void sqldb::close(){
     throw std::runtime_error("Can't close database file " + dbfilename + " (" + sqlite3_errmsg(db) + ")");
   db = nullptr;
   dbfilename = "";
+}
+
+// Insert an item into the database
+void sqldb::insert(const std::string category, const std::string key, const std::map<std::string,std::string> &kmap){
+  printf("hello!\n");
 }
