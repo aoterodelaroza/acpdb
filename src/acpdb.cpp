@@ -95,9 +95,16 @@ int main(int argc, char *argv[]) {
     // Interpret the keywords and call the appropriate routines
     try {
       if (keyw == "CREATE") {
-        db.create(tokens);
+        db.connect(tokens, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+        db.create();
       } else if (keyw == "CONNECT") {
         db.connect(tokens);
+
+        int err = db.checksane();
+        if (err == sqldb::dbstatus_error)
+          throw std::runtime_error("Error reading connected database");
+        else if (err == sqldb::dbstatus_empty)
+          throw std::runtime_error("Empty database");
       } else if (keyw == "DISCONNECT") {
         db.close();
       } else {

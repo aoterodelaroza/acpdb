@@ -11,27 +11,37 @@ class sqldb {
 
  public:
 
+  // enum: output of checksane()
+  enum dbstatus { dbstatus_sane = 0, dbstatus_empty = 1, dbstatus_error = 2 };
+
+  // constructors
   sqldb() : db(nullptr) {}; // default constructor
-  // sqldb (const sqldb& rhs) {}; // copy constructor
-  // ~sqldb() {}; // destructor
-  // sqldb& operator= (const sqldb& rhs); // assignment operator (do not copy to self)
-  // sqldb* operator& (); // address of operator
-  // const sqldb* operator& () const {}; // address of operator (const)
+  sqldb(std::string file) : db(nullptr) { 
+    connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    if (checksane() == dbstatus_empty)
+      create();
+  }; 
+  sqldb(sqldb&& rhs) : db(rhs.db) { rhs.db = nullptr; } // move constructor
+  sqldb(const sqldb& rhs) = delete; // copy constructor (deleted)
 
-  // Check that the DB is sane (at least a little bit)
-  int checkdb();
+  // destructors
+  ~sqldb() { close(); };
 
-  // Create a database file and open it for use. The file name is the
-  // first token in the list or the string.
-  void create(std::list<std::string> &tokens);
-  void create(const std::string &filename);
+  // bool operator
+  operator bool() const { return db; }
+
+  // Check if the DB is sane, empty, or not sane.
+  dbstatus checksane();
 
   // Open a database file for use. The file name is the first token in
   // the list or the string.
-  void connect(const std::string &filename, int flags = SQLITE_OPEN_READWRITE);
+  void connect(const std::string filename, int flags = SQLITE_OPEN_READWRITE);
   void connect(std::list<std::string> &tokens, int flags = SQLITE_OPEN_READWRITE);
 
-  // Close a database connection and reset the pointer to NULL
+  // Create the database skeleton.
+  void create();
+
+  // Close a database connection if open and reset the pointer to NULL
   void close();
 
  private:
