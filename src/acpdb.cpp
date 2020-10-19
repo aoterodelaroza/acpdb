@@ -82,7 +82,9 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "DISCONNECT") {
         db.close();
       } else if (keyw == "INSERT") {
-        db.insert(popstring(tokens,true),popstring(tokens),map_keyword_pairs(is,true));
+        std::string category = popstring(tokens,true);
+        std::string key = popstring(tokens);
+        db.insert(category,key,map_keyword_pairs(is,true));
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        

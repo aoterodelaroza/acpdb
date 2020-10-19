@@ -52,9 +52,9 @@ std::list<std::string> list_all_words(const std::string &line) {
 // Read lines from input stream is. Split each line into a key (first
 // word) and content (rest of the line) pair. If toupper, capitalize
 // the key. If the key END or the eof() is found, return the map.
-std::map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper){
+std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper){
 
-  std::map<std::string,std::string> result;
+  std::unordered_map<std::string,std::string> result;
   std::string ukeyw, keyw, line;
   while(*is >> keyw){
     line.clear();

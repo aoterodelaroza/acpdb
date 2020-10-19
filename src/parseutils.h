@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PARSEUTILS_H
 #define PARSEUTILS_H
 
-#include <map>
+#include <unordered_map>
 #include <list>
 #include <string>
 
@@ -35,7 +35,7 @@ std::list<std::string> list_all_words(const std::string &line);
 // Read lines from input stream is. Split each line into a key (first
 // word) and content (rest of the line) pair. If toupper, capitalize
 // the key. If the key END or the eof() is found, return the map.
-std::map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper = false);
+std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper = false);
 
 // Get and remove front from list of strings. If the list is empty,
 // return a zero-length string.

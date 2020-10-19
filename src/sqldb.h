@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SQLDB_H
 
 #include <string>
-#include <map>
+#include <unordered_map>
 #include "sqlite3.h"
 
 // A SQLite3 database class.
@@ -61,7 +61,7 @@ class sqldb {
   void close();
 
   // Insert an item into the database
-  void insert(const std::string category, const std::string key, const std::map<std::string,std::string> &kmap);
+  void insert(const std::string category, const std::string key, const std::unordered_map<std::string,std::string> &kmap);
 
  private:
 

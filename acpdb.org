@@ -50,3 +50,34 @@ DISCONNECT
 
   Disconnect the current database.
 
+INSERT LITREF ref.s
+  AUTHOR|AUTHORS ... 
+  TITLE ...
+  JOURNAL ... 
+  VOLUME ...
+  PAGE|PAGES ...
+  YEAR ...
+  DOI ... 
+  DESCRIPTION ... 
+END
+
+  Insert a new literature reference into the database (table 1), with
+  key ref.s. The key and the DOI must be unique.
+
+* Database schema
+
+** Table 1: literature references (litref)
+
+* Table 1: literature references (Literature_refs)
+
+- id          INTEGER PRIMARY KEY NOT NULL
+- ref_key     TEXT UNIQUE NOT NULL
+- authors     TEXT
+- title       TEXT
+- journal     TEXT
+- volume      TEXT
+- page        TEXT
+- year        TEXT
+- doi         TEXT UNIQUE
+- description TEXT
+
