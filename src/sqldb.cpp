@@ -145,7 +145,7 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
     if (sqlite3_clear_bindings(statement)) goto error;
 
     // bind the key
-    if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement, ":REF_KEY"),key.c_str(),-1,SQLITE_TRANSIENT)) goto error;
+    if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement, ":REF_KEY"),key.c_str(),-1,SQLITE_STATIC)) goto error;
 
     // bind author or authors
     if ((im = kmap.find("AUTHOR")) != kmap.end() || (im = kmap.find("AUTHORS")) != kmap.end()){
@@ -239,7 +239,7 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
       if (sqlite3_clear_bindings(statement)) goto error;
 
       // bind the key
-      if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":REF_KEY"),key,-1,SQLITE_TRANSIENT)) goto error;
+      if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":REF_KEY"),key,-1,SQLITE_STATIC)) goto error;
 
       // bind the rest of the fields
       char *fname = NULL;
