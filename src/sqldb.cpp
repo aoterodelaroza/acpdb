@@ -51,7 +51,7 @@ sqldb::dbstatus sqldb::checksane(bool except_on_error, bool except_on_empty){
 }
 
 // Open a database file for use. 
-void sqldb::connect(const std::string filename, int flags){
+void sqldb::connect(const std::string &filename, int flags){
   // close the previous db if open
   close();
 
@@ -111,7 +111,7 @@ void sqldb::close(){
 }
 
 // Insert an item into the database
-void sqldb::insert(const std::string category, const std::string key, const std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A db must be connected before using INSERT");
 
   // a generic sqlite3 statment, for preparing
@@ -179,13 +179,13 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
   throw std::runtime_error(errmsg);
 }
 
-void sqldb::insert_litref_bibtex(std::list<std::string> tokens){
+void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   printf("hello!\n");
   return;
 }
 
 
-void sqldb::erase(const std::string category, std::list<std::string> tokens) {
+void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A db must be connected before using DELETE");
 
   sqlite3_stmt *statement_all = nullptr;
@@ -240,7 +240,7 @@ DELETE FROM Literature_refs WHERE id = ?1;
 }  
 
 // List items from the database
-void sqldb::list(const std::string category, std::list<std::string> tokens){
+void sqldb::list(const std::string &category, std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A db must be connected before using LIST");
 
   sqlite3_stmt *statement = nullptr;

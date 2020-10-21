@@ -34,7 +34,7 @@ class sqldb {
 
   // constructors
   sqldb() : db(nullptr) {}; // default constructor
-  sqldb(std::string file) : db(nullptr) { // constructor using file name
+  sqldb(const std::string &file) : db(nullptr) { // constructor using file name
     connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     if (checksane() == dbstatus_empty)
       create();
@@ -53,7 +53,7 @@ class sqldb {
   dbstatus checksane(bool except_on_error = false, bool except_on_empty = false);
 
   // Open a database file for use.
-  void connect(const std::string filename, int flags = SQLITE_OPEN_READWRITE);
+  void connect(const std::string &filename, int flags = SQLITE_OPEN_READWRITE);
 
   // Create the database skeleton.
   void create();
@@ -62,16 +62,16 @@ class sqldb {
   void close();
 
   // Insert an item into the database
-  void insert(const std::string category, const std::string key, const std::unordered_map<std::string,std::string> &kmap);
+  void insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature refernces into the database from a bibtex file
-  void insert_litref_bibtex(std::list<std::string> tokens);
+  void insert_litref_bibtex(std::list<std::string> &tokens);
 
   // Delete items from the database
-  void erase(const std::string category, std::list<std::string> tokens);
+  void erase(const std::string &category, std::list<std::string> &tokens);
 
   // List items from the database
-  void list(const std::string category, std::list<std::string> tokens);
+  void list(const std::string &category, std::list<std::string> &tokens);
 
  private:
 
