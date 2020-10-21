@@ -224,9 +224,13 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
     goto error;
   }
 
+  // commence the transaction
+  if (sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, NULL)) goto error;
+
   // prepare the insert statement
   if (sqlite3_prepare(db, insert_statement, -1, &statement, NULL)) goto error;
 
+  // loop over the contents of the bib file and add to the database
   while (entry = bt_next_entry (bibast, entry)){
     if (bt_entry_metatype(entry) != BTE_REGULAR) continue;
     char *key = bt_entry_key(entry);
@@ -268,7 +272,13 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
     if (sqlite3_step(statement) != SQLITE_DONE) goto error;
   }
 
+  // finalize the statement
   if (sqlite3_finalize(statement)) goto error;
+
+  // commit the transaction
+  if (sqlite3_exec(db, "COMMIT TRANSACTION", NULL, NULL, NULL)) goto error;
+
+  // clean up
   if (entry) bt_free_ast(entry);
   if (bibast) bt_free_ast(bibast);
   if (filename) free(filename);
