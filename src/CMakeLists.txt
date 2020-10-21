@@ -13,5 +13,8 @@ target_include_directories(acpdb PRIVATE ${SQLite3_INCLUDE_DIRS})
 target_link_directories(acpdb PRIVATE ${SQLite3_LIBRARY_DIR})
 target_link_libraries(acpdb ${SQLite3_LIBRARIES})
 
+## configuration file
+configure_file(config.h.in config.h)
+
 ## install the binary
 install(TARGETS acpdb RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

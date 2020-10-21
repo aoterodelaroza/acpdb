@@ -20,8 +20,16 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 include(GNUInstallDirs)
 include(utils)
 
+## interface options
+option(USE_BTPARSE "Use the btparse bibtex file parser for bibtex support." ON)
+
 ## sqlite3
 find_package(SQLite3 REQUIRED)
+
+## btparse
+if (USE_BTPARSE)
+  find_package(BTPARSE)
+endif()
 
 ## process subdirectories
 add_subdirectory(src)

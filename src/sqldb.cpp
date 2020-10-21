@@ -179,6 +179,12 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
   throw std::runtime_error(errmsg);
 }
 
+void sqldb::insert_litref_bibtex(std::list<std::string> tokens){
+  printf("hello!\n");
+  return;
+}
+
+
 void sqldb::erase(const std::string category, std::list<std::string> tokens) {
   if (!db) throw std::runtime_error("A db must be connected before using DELETE");
 

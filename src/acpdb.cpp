@@ -84,7 +84,11 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
-        db.insert(category,key,map_keyword_pairs(is,true));
+        if (equali_strings(category,"LITREF") && equali_strings(key,"BIBTEX"))
+          db.insert_litref_bibtex(tokens);
+        else
+          db.insert(category,key,map_keyword_pairs(is,true));
+
       } else if (keyw == "DELETE") {
         std::string category = popstring(tokens,true);
         db.erase(category,tokens);

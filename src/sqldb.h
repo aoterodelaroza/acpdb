@@ -64,6 +64,9 @@ class sqldb {
   // Insert an item into the database
   void insert(const std::string category, const std::string key, const std::unordered_map<std::string,std::string> &kmap);
 
+  // Insert literature refernces into the database from a bibtex file
+  void insert_litref_bibtex(std::list<std::string> tokens);
+
   // Delete items from the database
   void erase(const std::string category, std::list<std::string> tokens);
 

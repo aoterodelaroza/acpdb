@@ -84,3 +84,11 @@ std::string popstring(std::list<std::string> &list, bool toupper){
   return result;
 }
 
+// Compare two strings for equality regardless of case. Adapted from:
+// https://stackoverflow.com/questions/12568338/c-check-case-insensitive-equality-of-two-strings
+bool equali_strings(const std::string& a, const std::string& b)
+{
+  return a.size() == b.size() &&
+    std::equal(a.begin(), a.end(), b.begin(), 
+               [](char cA, char cB) { return ::toupper(cA) == ::toupper(cB); });
+}

@@ -41,5 +41,8 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, 
 // return a zero-length string.
 std::string popstring(std::list<std::string> &list, bool toupper = false);
 
+// Compare two strings for equality regardless of case.
+bool equali_strings(const std::string& a, const std::string& b);
+
 #endif
 
