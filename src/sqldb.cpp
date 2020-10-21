@@ -349,6 +349,9 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
   
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
+    // print table header
+    printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
+
     // prepare the statement
     const char *list_statement = R"SQL(
 SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Literature_refs
