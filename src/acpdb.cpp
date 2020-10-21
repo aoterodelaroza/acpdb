@@ -88,6 +88,9 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "DELETE") {
         std::string category = popstring(tokens,true);
         db.erase(category,tokens);
+      } else if (keyw == "LIST") {
+        std::string category = popstring(tokens,true);
+        db.list(category,tokens);
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        

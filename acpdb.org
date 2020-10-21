@@ -69,6 +69,11 @@ DELETE LITREF {key.s|key.i|*}
   Delete a literature reference using the reference key or id
   number. If *, delete all literature references.
 
+LIST LITREF
+
+  List the literature references in the database.
+
+
 * Database schema
 
 ** Table 1: literature references (litref)

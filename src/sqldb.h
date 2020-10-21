@@ -67,6 +67,9 @@ class sqldb {
   // Delete items from the database
   void erase(const std::string category, std::list<std::string> tokens);
 
+  // List items from the database
+  void list(const std::string category, std::list<std::string> tokens);
+
  private:
 
   std::string dbfilename;

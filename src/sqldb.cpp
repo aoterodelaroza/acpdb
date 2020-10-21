@@ -232,3 +232,64 @@ DELETE FROM Literature_refs WHERE id = ?1;
   std::string errmsg = "Error deleting data: " + std::string(sqlite3_errmsg(db));
   throw std::runtime_error(errmsg);
 }  
+
+// List items from the database
+void sqldb::list(const std::string category, std::list<std::string> tokens){
+  if (!db) throw std::runtime_error("A db must be connected before using LIST");
+
+  sqlite3_stmt *statement = nullptr;
+  
+  //// Literature references (LITREF) ////
+  if (category == "LITREF") {
+    // prepare the statement
+    const char *list_statement = R"SQL(
+SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Literature_refs
+)SQL";
+    if (sqlite3_prepare(db, list_statement, -1, &statement, NULL)) goto error;
+
+    // run the statement and print the results
+    int rc; 
+    while ((rc = sqlite3_step(statement)) != SQLITE_DONE){
+      if (rc != SQLITE_ROW) goto error;
+
+      int id = sqlite3_column_int(statement, 0);
+      const unsigned char *ref_key = sqlite3_column_text(statement, 1);
+      const unsigned char *authors = sqlite3_column_text(statement, 2);
+      const unsigned char *title = sqlite3_column_text(statement, 3);
+      const unsigned char *journal = sqlite3_column_text(statement, 4);
+      const unsigned char *volume = sqlite3_column_text(statement, 5);
+      const unsigned char *page = sqlite3_column_text(statement, 6);
+      const unsigned char *year = sqlite3_column_text(statement, 7);
+      const unsigned char *doi = sqlite3_column_text(statement, 8);
+      const unsigned char *description = sqlite3_column_text(statement, 9);
+
+      printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
+             ref_key,authors,title,journal,volume,page,year,doi,description);
+    }
+
+    // finalize the statement
+    if (sqlite3_finalize(statement)) goto error;
+  } else { 
+    throw std::runtime_error("Unknown LIST category: " + category);
+  }
+
+  return;
+
+  error:
+  if (statement) sqlite3_finalize(statement);
+  std::string errmsg = "Error listing data: " + std::string(sqlite3_errmsg(db));
+  throw std::runtime_error(errmsg);
+}
+
+// CREATE TABLE Literature_refs (
+//   id          INTEGER PRIMARY KEY NOT NULL,
+//   ref_key     TEXT UNIQUE NOT NULL,
+//   authors     TEXT,
+//   title       TEXT,
+//   journal     TEXT,
+//   volume      TEXT,
+//   page        TEXT,
+//   year        TEXT,
+//   doi         TEXT UNIQUE,
+//   description TEXT
+// );
