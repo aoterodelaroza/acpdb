@@ -11,7 +11,14 @@ add_executable(acpdb ${SOURCES})
 ## sqlite3
 target_include_directories(acpdb PRIVATE ${SQLite3_INCLUDE_DIRS})
 target_link_directories(acpdb PRIVATE ${SQLite3_LIBRARY_DIR})
-target_link_libraries(acpdb ${SQLite3_LIBRARIES})
+target_link_libraries(acpdb PRIVATE ${SQLite3_LIBRARIES})
+
+## btparse
+if (BTPARSE_FOUND)
+  target_include_directories(acpdb PRIVATE ${BTPARSE_INCLUDE_DIR})
+  target_link_libraries(acpdb PRIVATE ${BTPARSE_LIBRARIES})
+  target_compile_definitions(acpdb PRIVATE ${BTPARSE_DEFINITIONS})
+endif()
 
 ## configuration file
 configure_file(config.h.in config.h)

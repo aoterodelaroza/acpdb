@@ -22,6 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqldb.h"
 #include "parseutils.h"
 
+#ifdef BTPARSE_FOUND  
+#include "btparse.h"
+#endif
+
 static std::istream *is;
 static std::ostream *os;
 static std::ifstream *ifile = nullptr;
@@ -58,6 +62,12 @@ int main(int argc, char *argv[]) {
   } else {
     is = &std::cin;
   }    
+
+  // Initialize the btparse library, if present
+#ifdef BTPARSE_FOUND  
+  bt_initialize();
+  bt_set_stringopts(BTE_REGULAR, BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE);
+#endif  
 
   // Parse the input file
   std::string line;
@@ -103,6 +113,11 @@ int main(int argc, char *argv[]) {
       return 1;
     }
   }
+
+  // Close the btparse library, if present
+#ifdef BTPARSE_FOUND  
+  bt_cleanup();
+#endif  
 
   // Clean up
   db.close();

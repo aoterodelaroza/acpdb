@@ -10,10 +10,17 @@ set(acpdb_LICENSE "GNU/GPL version 3")
 set(acpdb_DESCRIPTION "Database interface for the generation of ACPs")
 string(TIMESTAMP DATE "%a %d %b %Y %H:%M:%S")
 
+## default build type, and type options
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
+endif()
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release)
+
 ## project definition
 project(acpdb VERSION "${acpdb_MAJOR_VERSION}.${acpdb_MINOR_VERSION}" LANGUAGES CXX)
 
 ## global flags for cmake
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
