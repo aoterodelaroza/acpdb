@@ -140,6 +140,10 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
 )SQL";
     if (sqlite3_prepare(db, insert_statement, -1, &statement, NULL)) goto error;
 
+    // reset the statement and the bindings
+    if (sqlite3_reset(statement)) goto error;
+    if (sqlite3_clear_bindings(statement)) goto error;
+
     // bind the key
     if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement, ":REF_KEY"),key.c_str(),-1,SQLITE_TRANSIENT)) goto error;
 
@@ -309,15 +313,16 @@ DELETE FROM Literature_refs WHERE id = ?1;
 
       if (*it == "*"){
         // delete all
-        key = "1";
-        param = "1";
+        if (sqlite3_reset(statement_all)) goto error;
         if (sqlite3_step(statement_all) != SQLITE_DONE) goto error;
       } else if (it->find_first_not_of("0123456789") == std::string::npos){
         // an integer
+        if (sqlite3_reset(statement_with_id)) goto error;
         if (sqlite3_bind_text(statement_with_id,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
         if (sqlite3_step(statement_with_id) != SQLITE_DONE) goto error;
       } else {
         // a key
+        if (sqlite3_reset(statement_with_key)) goto error;
         if (sqlite3_bind_text(statement_with_key,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
         if (sqlite3_step(statement_with_key) != SQLITE_DONE) goto error;
       }
