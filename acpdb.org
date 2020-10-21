@@ -64,6 +64,11 @@ END
   Insert a new literature reference into the database (table 1), with
   key ref.s. The key and the DOI must be unique.
 
+DELETE LITREF {key.s|key.i|*}
+
+  Delete a literature reference using the reference key or id
+  number. If *, delete all literature references.
+
 * Database schema
 
 ** Table 1: literature references (litref)

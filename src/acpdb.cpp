@@ -85,6 +85,9 @@ int main(int argc, char *argv[]) {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
         db.insert(category,key,map_keyword_pairs(is,true));
+      } else if (keyw == "DELETE") {
+        std::string category = popstring(tokens,true);
+        db.erase(category,tokens);
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        

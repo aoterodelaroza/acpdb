@@ -178,3 +178,57 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
   std::string errmsg = "Error inserting data: " + std::string(sqlite3_errmsg(db));
   throw std::runtime_error(errmsg);
 }
+
+void sqldb::erase(const std::string category, std::list<std::string> tokens) {
+  if (!db) throw std::runtime_error("A db must be connected before using DELETE");
+
+  sqlite3_stmt *statement_all = nullptr;
+  sqlite3_stmt *statement_with_key = nullptr;
+  sqlite3_stmt *statement_with_id = nullptr;
+
+  //// Literature references (LITREF) ////
+  if (category == "LITREF") {
+    const char *delete_statement_all = R"SQL(
+DELETE FROM Literature_refs;
+)SQL";
+    const char *delete_statement_with_key = R"SQL(
+DELETE FROM Literature_refs WHERE ref_key = ?1;
+)SQL";
+    const char *delete_statement_with_id = R"SQL(
+DELETE FROM Literature_refs WHERE id = ?1;
+)SQL";
+    if (sqlite3_prepare(db, delete_statement_all, -1, &statement_all, NULL)) goto error;
+    if (sqlite3_prepare(db, delete_statement_with_key, -1, &statement_with_key, NULL)) goto error;
+    if (sqlite3_prepare(db, delete_statement_with_id, -1, &statement_with_id, NULL)) goto error;
+
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // delete all
+        key = "1";
+        param = "1";
+        if (sqlite3_step(statement_all) != SQLITE_DONE) goto error;
+      } else if (it->find_first_not_of("0123456789") == std::string::npos){
+        // an integer
+        if (sqlite3_bind_text(statement_with_id,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
+        if (sqlite3_step(statement_with_id) != SQLITE_DONE) goto error;
+      } else {
+        // a key
+        if (sqlite3_bind_text(statement_with_key,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
+        if (sqlite3_step(statement_with_key) != SQLITE_DONE) goto error;
+      }
+    }
+  }
+  if (sqlite3_finalize(statement_all)) goto error;
+  if (sqlite3_finalize(statement_with_key)) goto error;
+  if (sqlite3_finalize(statement_with_id)) goto error;
+  return;
+
+  error:
+  if (statement_all) sqlite3_finalize(statement_all);
+  if (statement_with_key) sqlite3_finalize(statement_with_key);
+  if (statement_with_id) sqlite3_finalize(statement_with_id);
+  std::string errmsg = "Error deleting data: " + std::string(sqlite3_errmsg(db));
+  throw std::runtime_error(errmsg);
+}  
