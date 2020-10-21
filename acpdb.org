@@ -64,15 +64,21 @@ END
   Insert a new literature reference into the database (table 1), with
   key ref.s. The key and the DOI must be unique.
 
+INSERT LITREF BIBTEX bibfile.s
+
+  Insert the literature references contained in bibtex file
+  bibfile.s. Only entries of type article are inserted.
+
 DELETE LITREF {key.s|key.i|*}
 
   Delete a literature reference using the reference key or id
   number. If *, delete all literature references.
 
-LIST LITREF
+LIST LITREF [BIBTEX]
 
-  List the literature references in the database.
-
+  List the literature references in the database. If the BIBTEX
+  keyword is used, write the list of literature referneces in bibtex
+  format.
 
 * Database schema
 

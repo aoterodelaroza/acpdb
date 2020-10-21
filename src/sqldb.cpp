@@ -364,8 +364,11 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
   
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
+    bool dobib = (!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
+
     // print table header
-    printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
+    if (!dobib)
+      printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
 
     // prepare the statement
     const char *list_statement = R"SQL(
@@ -389,8 +392,21 @@ SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Li
       const unsigned char *doi = sqlite3_column_text(statement, 8);
       const unsigned char *description = sqlite3_column_text(statement, 9);
 
-      printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
-             ref_key,authors,title,journal,volume,page,year,doi,description);
+      if (dobib){
+        printf("@article{%s\n",ref_key);
+        if (sqlite3_column_type(statement,2) != SQLITE_NULL) printf(" authors={%s},\n",authors);
+        if (sqlite3_column_type(statement,3) != SQLITE_NULL) printf(" title={%s},\n",title);
+        if (sqlite3_column_type(statement,4) != SQLITE_NULL) printf(" journal={%s},\n",journal);
+        if (sqlite3_column_type(statement,5) != SQLITE_NULL) printf(" volume={%s},\n",volume);
+        if (sqlite3_column_type(statement,6) != SQLITE_NULL) printf(" page={%s},\n",page);
+        if (sqlite3_column_type(statement,7) != SQLITE_NULL) printf(" year={%s},\n",year);
+        if (sqlite3_column_type(statement,8) != SQLITE_NULL) printf(" doi={%s},\n",doi);
+        if (sqlite3_column_type(statement,9) != SQLITE_NULL) printf(" description={%s},\n",description);
+        printf("}\n");
+      } else {
+        printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
+               ref_key,authors,title,journal,volume,page,year,doi,description);
+      }
     }
 
     // finalize the statement
