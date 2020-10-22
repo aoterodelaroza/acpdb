@@ -56,10 +56,12 @@ class statement {
   // error. Otherwise, return sqlite3 exit code.
   int execute(bool except = true);
 
-  // Step an statement. Also, prepare the statement if it was not
-  // already prepared. If except, throw exception on error. Otherwise,
-  // return sqlite3 exit code.
-  int step(bool except = true);
+  // Step an statement. Prepare the statement if it was not already
+  // prepared. Reset the statement at the end if it is done. If
+  // except, throw exception on error. Otherwise, return sqlite3 exit
+  // code. If reset_, reset the statement and clear the bindings (if it
+  // has any) before stepping.
+  int step(bool except = true, bool reset_ = false);
 
   // Get the pointer to the statement
   sqlite3_stmt *ptr() { return stmt; }
@@ -67,13 +69,13 @@ class statement {
   // Finalize the statement
   void finalize();
 
+  // Reset the statement and clear all bindings
+  void reset();
+
  private:
 
   // Prepare the statement.
   void prepare();
-
-  // Reset the statement and clear all bindings
-  void reset();
 
   bool prepared; // whether the statement has been prepared
   sqlite3 *db; // the database pointer

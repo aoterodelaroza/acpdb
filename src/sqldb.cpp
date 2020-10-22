@@ -51,9 +51,8 @@ int sqldb::checksane(bool except_on_empty){
     throw std::runtime_error("Error reading connected database");
 
   // query the database
-  int rc = stmt[statement::STMT_CHECK_DATABASE]->step();
+  int rc = stmt[statement::STMT_CHECK_DATABASE]->step(true,true);
   int icol = sqlite3_column_int(stmt[statement::STMT_CHECK_DATABASE]->ptr(), 0);
-  stmt[statement::STMT_CHECK_DATABASE]->finalize();
 
   // if we did not get a row, error
   if (rc != SQLITE_ROW)
@@ -118,12 +117,12 @@ void sqldb::close(){
 void sqldb::insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A db must be connected before using INSERT");
 
-  // a generic sqlite3 statment, for preparing
-  sqlite3_stmt *statement = nullptr;
-
   // check that the key is not empty
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT " + category);
+
+  // a generic sqlite3 statment, for preparing
+  sqlite3_stmt *statement = nullptr;
 
   //// Literature references (LITREF) ////
   if (category == "LITREF") {

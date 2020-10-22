@@ -46,6 +46,13 @@ WHERE type='table' AND name='Literature_refs';
 )SQL",
 };
 
+static const bool has_bindings[statement::number_stmt_types] = {
+  [statement::STMT_CREATE_DATABASE] = false,
+  [statement::STMT_BEGIN_TRANSACTION] = false,
+  [statement::STMT_COMMIT_TRANSACTION] = false,
+  [statement::STMT_CHECK_DATABASE] = false,
+};
+
 static void throw_exception(sqlite3 *db_){
   std::string errmsg = "Error bleh: " + std::string(sqlite3_errmsg(db_));
   throw std::runtime_error(errmsg);
@@ -69,7 +76,7 @@ int statement::execute(bool except){
   return rc;
 }
 
-int statement::step(bool except){
+int statement::step(bool except, bool reset_){
   if (!db)
     throw std::runtime_error("Invalid database stepping statement");
   if (type == STMT_NONE)
@@ -77,6 +84,8 @@ int statement::step(bool except){
   
   if (!prepared)
     prepare();
+  else if (reset_)
+    reset();
 
   int rc = sqlite3_step(stmt);
 
@@ -94,7 +103,9 @@ void statement::reset(){
   if (type == STMT_NONE)
     throw std::runtime_error("Cannot reset a NONE statement");
 
-  if (sqlite3_reset(stmt) || sqlite3_clear_bindings(stmt))
+  if (sqlite3_reset(stmt))
+    throw_exception(db);
+  if (has_bindings[type] && sqlite3_clear_bindings(stmt))
     throw_exception(db);
 }
 
