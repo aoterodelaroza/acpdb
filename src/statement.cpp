@@ -20,7 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <stdexcept>
 
-static const char *create_statement = R"SQL(
+static const char *statement_text[statement::number_stmt_types] = {
+[statement::STMT_CREATE_DATABASE] = 
+R"SQL(
 CREATE TABLE Literature_refs (
   id          INTEGER PRIMARY KEY NOT NULL,
   ref_key     TEXT UNIQUE NOT NULL,
@@ -33,11 +35,26 @@ CREATE TABLE Literature_refs (
   doi         TEXT UNIQUE,
   description TEXT
 );
-)SQL";
+)SQL"
+};
 
 static void throw_exception(sqlite3 *db_){
   std::string errmsg = "Error bleh: " + std::string(sqlite3_errmsg(db_));
   throw std::runtime_error(errmsg);
+}
+
+int statement::execute(bool except){
+  if (!db)
+    throw std::runtime_error("Invalid database executing statement");
+
+  char *errmsg;
+  int rc = sqlite3_exec(db, statement_text[type], NULL, NULL, &errmsg);
+  if (except && rc){
+    std::string errmsg_s = "Error (" + std::string(errmsg) + ")";
+    sqlite3_free(errmsg);
+    throw std::runtime_error(errmsg_s);
+  }
+  return rc;
 }
 
 void statement::prepare(sqlite3 *db_, const stmttype type_){
@@ -45,15 +62,16 @@ void statement::prepare(sqlite3 *db_, const stmttype type_){
     throw std::runtime_error("Invalid database preparing statement");
 
   int rc = 0;
-  if (type_ == STMT_CREATE_DATABASE)
-    rc = sqlite3_prepare_v2(db_, create_statement, -1, &stmt, NULL);
-  else if (type_ == STMT_NONE)
+  if (type_ == STMT_NONE)
     stmt = nullptr;
+  else
+    rc = sqlite3_prepare_v2(db_, statement_text[type_], -1, &stmt, NULL);
 
   if (rc) throw_exception(db_);
 
   type = type_;
   db = db_;
+  if (type_ != STMT_NONE) prepared = true;
 }
 
 void statement::finalize(){
@@ -61,6 +79,7 @@ void statement::finalize(){
     if (sqlite3_finalize(stmt)) 
       throw_exception(db);
   }
+  prepared = false;
   type = STMT_NONE;
   stmt = nullptr;
 }

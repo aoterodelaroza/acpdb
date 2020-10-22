@@ -37,8 +37,6 @@ void sqldb::allocate_statements(){
 }
 
 void sqldb::deallocate_statements(){
-  if (!db) return;
-
   for (int i = 0; i < statement::number_stmt_types; i++){
     delete stmt[i];
     stmt[i] = nullptr;
@@ -102,30 +100,8 @@ void sqldb::create(){
   // skip if not open
   if (!db) throw std::runtime_error("A db must be connected before using CREATE");
 
-  // SQL statment for creating the database table
-  const char *create_statement = R"SQL(
-CREATE TABLE Literature_refs (
-  id          INTEGER PRIMARY KEY NOT NULL,
-  ref_key     TEXT UNIQUE NOT NULL,
-  authors     TEXT,
-  title       TEXT,
-  journal     TEXT,
-  volume      TEXT,
-  page        TEXT,
-  year        TEXT,
-  doi         TEXT UNIQUE,
-  description TEXT
-);
-)SQL";
-
   // Create the table 
-  char *errmsg;
-  if (sqlite3_exec(db, create_statement, NULL, NULL, &errmsg)){
-    std::string errmsg_s = "Could not create table (" + std::string(errmsg) + ")";
-    sqlite3_free(errmsg);
-    close();
-    throw std::runtime_error(errmsg_s);
-  }
+  stmt[statement::STMT_CREATE_DATABASE]->execute();
 }
 
 // Close a database connection if open and reset the pointer to NULL

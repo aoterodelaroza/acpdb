@@ -36,8 +36,7 @@ class statement {
 
   // constructors
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
-    db(db_),
-    type(type_),
+    prepared(false), db(db_), type(type_),
     stmt(nullptr) {}; // default and parametrized constructor
   statement(statement&& rhs) = delete; // move constructor (deleted)
   statement(const statement& rhs) = delete; // copy constructor (deleted)
@@ -50,15 +49,22 @@ class statement {
   // bool operator
   operator bool() const { return stmt; }
 
-  void prepare(sqlite3 *db_, const stmttype type_);
-
-  void finalize();
+  // Execute a statment directly. If except, throw exception on
+  // error. Otherwise, return sqlite3 exit code.
+  int execute(bool except = true);
 
  private:
 
-  sqlite3 *db;
-  stmttype type;
-  sqlite3_stmt *stmt;
+  // Prepare a statement of type type_ in database db_
+  void prepare(sqlite3 *db_, const stmttype type_);
+
+  // Finalize the statement
+  void finalize();
+
+  bool prepared; // whether the statement has been prepared
+  sqlite3 *db; // the database pointer
+  stmttype type; // statement type
+  sqlite3_stmt *stmt; // statement pointer
 
 };
 
