@@ -26,12 +26,14 @@ class statement {
 
  public:
 
-  static const int number_stmt_types = 1; // number of statement types
+  static const int number_stmt_types = 3; // number of statement types
 
   // enum: type of statement()
   enum stmttype { 
 	     STMT_NONE = -1, // no statement
 	     STMT_CREATE_DATABASE = 0, // create the database
+	     STMT_BEGIN_TRANSACTION = 1, // begin a transaction
+	     STMT_COMMIT_TRANSACTION = 2, // commit a transaction
   };
 
   // constructors

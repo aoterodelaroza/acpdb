@@ -220,10 +220,8 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
     goto error;
   }
 
-  // commence the transaction
-  if (sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, NULL)){
-    goto error;
-  }
+  // begin the transaction
+  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
 
   // prepare the insert statement
   if (sqlite3_prepare_v2(db, insert_statement, -1, &statement, NULL)) goto error;
@@ -285,7 +283,7 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
   statement = NULL;
 
   // commit the transaction
-  if (sqlite3_exec(db, "COMMIT TRANSACTION", NULL, NULL, NULL)) goto error;
+  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
 
   return;
 

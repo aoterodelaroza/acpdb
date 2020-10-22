@@ -35,7 +35,9 @@ CREATE TABLE Literature_refs (
   doi         TEXT UNIQUE,
   description TEXT
 );
-)SQL"
+)SQL",
+[statement::STMT_BEGIN_TRANSACTION] = "BEGIN TRANSACTION",
+[statement::STMT_COMMIT_TRANSACTION] = "COMMIT TRANSACTION",
 };
 
 static void throw_exception(sqlite3 *db_){
@@ -47,10 +49,14 @@ int statement::execute(bool except){
   if (!db)
     throw std::runtime_error("Invalid database executing statement");
 
-  char *errmsg;
+  char *errmsg = nullptr;
   int rc = sqlite3_exec(db, statement_text[type], NULL, NULL, &errmsg);
   if (except && rc){
-    std::string errmsg_s = "Error (" + std::string(errmsg) + ")";
+    std::string errmsg_s;
+    if (errmsg)
+      errmsg_s = "Error (" + std::string(errmsg) + ")";
+    else
+      errmsg_s = "Error";
     sqlite3_free(errmsg);
     throw std::runtime_error(errmsg_s);
   }
