@@ -35,6 +35,14 @@ CREATE TABLE Literature_refs (
   doi         TEXT UNIQUE,
   description TEXT
 );
+CREATE TABLE Property_types (
+  id          INTEGER PRIMARY KEY NOT NULL,
+  name        TEXT UNIQUE NOT NULL,
+  description TEXT
+);
+INSERT INTO Property_types (name,description)
+       VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
+              ('energy','The total energy of a molecule or crystal');
 )SQL",
 
 [statement::STMT_BEGIN_TRANSACTION] =

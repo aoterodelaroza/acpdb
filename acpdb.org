@@ -97,3 +97,9 @@ LIST LITREF [BIBTEX]
 - doi         TEXT UNIQUE
 - description TEXT
 
+* Table 2: property types (Property_types)
+
+- id          INTEGER PRIMARY KEY NOT NULL
+- name        TEXT UNIQUE NOT NULL
+- description TEXT
+
