@@ -87,13 +87,13 @@ static const bool has_bindings[statement::number_stmt_types] = {
 };
 
 static void throw_exception(sqlite3 *db_){
-  std::string errmsg = "Error bleh: " + std::string(sqlite3_errmsg(db_));
+  std::string errmsg = "database error - " + std::string(sqlite3_errmsg(db_));
   throw std::runtime_error(errmsg);
 }
 
 int statement::execute(){
   if (!db)
-    throw std::runtime_error("Invalid database executing statement");
+    throw std::runtime_error("A database file must be connected before executing a statement");
 
   char *errmsg = nullptr;
   int rc = sqlite3_exec(db, statement_text[type], NULL, NULL, &errmsg);
@@ -111,7 +111,7 @@ int statement::execute(){
 
 int statement::step(){
   if (!db)
-    throw std::runtime_error("Invalid database stepping statement");
+    throw std::runtime_error("A database file must be connected before stepping a statement");
   if (type == STMT_NONE)
     throw std::runtime_error("Cannot step a NONE statement");
   
@@ -141,7 +141,7 @@ void statement::finalize(){
 // Reset the statement and clear all bindings
 void statement::reset(){
   if (!db)
-    throw std::runtime_error("Invalid database reset statement");
+    throw std::runtime_error("A database file must be connected before resetting a statement");
   if (type == STMT_NONE)
     throw std::runtime_error("Cannot reset a NONE statement");
 
@@ -154,7 +154,7 @@ void statement::reset(){
 // Prepare the statement.
 void statement::prepare(){
   if (!db)
-    throw std::runtime_error("Invalid database preparing statement");
+    throw std::runtime_error("A database file must be connected before preparing a statement");
 
   int rc = 0;
   if (type == STMT_NONE)

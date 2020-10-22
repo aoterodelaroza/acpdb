@@ -65,15 +65,12 @@ class statement {
 
   //// Public methods ////
 
-  // Execute a statment directly.
+  // Execute a statment directly
   int execute();
 
   // Step an statement. Prepare the statement if it was not already
   // prepared. Reset the statement at the end if it is done.
   int step();
-
-  // int bind(const int icol, const std::string &arg, const bool transient = true);
-  // int bind(const std::string &name, const std::string &arg, const bool transient = true);
 
   // Get the pointer to the statement
   sqlite3_stmt *ptr() const { return stmt; }
@@ -93,7 +90,7 @@ class statement {
   template<typename Tcol, typename Targ>
   int bind(const Tcol &col, const Targ &arg, const bool transient = true){
     if (!db)
-      throw std::runtime_error("Invalid database stepping statement");
+      throw std::runtime_error("A database file must be connected before binding");
     if (type == STMT_NONE)
       throw std::runtime_error("Cannot bind a NONE statement");
 
@@ -103,7 +100,7 @@ class statement {
     rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient);
 
     if (rc)
-      throw std::runtime_error("Error bleh: in bind");
+      throw std::runtime_error("Error during bind");
 
     return rc;
   }

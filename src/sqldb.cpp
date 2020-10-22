@@ -63,7 +63,7 @@ void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRI
 
   // check if the string is empty
   if (filename.empty())
-    throw std::runtime_error("Need a database file name");
+    throw std::runtime_error("Need a database file name in connect");
 
   // open the new one
   if (sqlite3_open_v2(filename.c_str(), &db, flags, NULL)) {
@@ -83,7 +83,7 @@ void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRI
 // Create the database skeleton.
 void sqldb::create(){
   // skip if not open
-  if (!db) throw std::runtime_error("A db must be connected before using CREATE");
+  if (!db) throw std::runtime_error("A database file must be connected before using CREATE");
 
   // Create the table 
   stmt[statement::STMT_CREATE_DATABASE]->execute();
@@ -108,7 +108,7 @@ void sqldb::close(){
 
 // Insert an item into the database
 void sqldb::insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
-  if (!db) throw std::runtime_error("A db must be connected before using INSERT");
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // check that the key is not empty
   if (key.empty())
@@ -145,18 +145,18 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
 // Insert literature refernces into the database from a bibtex file
 void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
-  if (!db) throw std::runtime_error("A db must be connected before using INSERT");
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
 #ifdef BTPARSE_FOUND  
   // check if the file name is empty
   if (tokens.empty())
-    throw std::runtime_error("Need a bibtex file name");
+    throw std::runtime_error("Need a bibtex file name in INSERT");
 
   // open the file name (need a char* and FILE* for btparse)
   char *filename = &(tokens.front()[0]);
   FILE *fp = fopen(filename,"r");
   if (!fp)
-    throw std::runtime_error(std::string("Could not open bibtex file: ") + filename);
+    throw std::runtime_error(std::string("Could not open bibtex file in INSERT: ") + filename);
 
   // begin the transaction
   stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
@@ -222,7 +222,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 
 // Delete items from the database
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
-  if (!db) throw std::runtime_error("A db must be connected before using DELETE");
+  if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
@@ -247,7 +247,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 
 // List items from the database
 void sqldb::list(const std::string &category, std::list<std::string> &tokens){
-  if (!db) throw std::runtime_error("A db must be connected before using LIST");
+  if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
