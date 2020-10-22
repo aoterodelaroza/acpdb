@@ -43,33 +43,29 @@ void sqldb::deallocate_statements(){
   }
 }
 
-// Check if the DB is sane, empty, or not sane.
-sqldb::dbstatus sqldb::checksane(bool except_on_error, bool except_on_empty){
-  int icol;
-  const char *check_statement = "SELECT COUNT(type) FROM sqlite_master WHERE type='table' AND name='Literature_refs';";
-  sqlite3_stmt *statement = nullptr;
+// Check if the DB is sane, empty, or not sane. If except_on_empty,
+// raise exception on empty. Always raise excepton on error. Return
+// 1 if sane, 0 if empty.
+int sqldb::checksane(bool except_on_empty){
+  if (!db) 
+    throw std::runtime_error("Error reading connected database");
 
-  if (!db) goto error;
+  // query the database
+  int rc = stmt[statement::STMT_CHECK_DATABASE]->step();
+  int icol = sqlite3_column_int(stmt[statement::STMT_CHECK_DATABASE]->ptr(), 0);
+  stmt[statement::STMT_CHECK_DATABASE]->finalize();
 
-  if (sqlite3_prepare_v2(db, check_statement, -1, &statement, NULL)) goto error;
-  if (sqlite3_step(statement) != SQLITE_ROW) goto error;
+  // if we did not get a row, error
+  if (rc != SQLITE_ROW)
+    throw std::runtime_error("Error accessing connected database");
 
-  icol = sqlite3_column_int(statement, 0);
-  if (icol == 0) goto empty;
-
-  if (sqlite3_finalize(statement)) goto error;
-
-  return dbstatus_sane;
-
- error:
-  if (statement) sqlite3_finalize(statement);
-  if (except_on_error) throw std::runtime_error("Error reading connected database");
-  return dbstatus_error;
-
- empty:
-  if (statement) sqlite3_finalize(statement);
-  if (except_on_empty) throw std::runtime_error("Empty database");
-  return dbstatus_empty;
+  if (icol == 0){
+    if (except_on_empty)
+      throw std::runtime_error("Empty database");
+    else
+      return 0;
+  }
+  return 1;
 }
 
 // Open a database file for use. 

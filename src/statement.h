@@ -26,15 +26,15 @@ class statement {
 
  public:
 
-  static const int number_stmt_types = 3; // number of statement types
-
   // enum: type of statement()
   enum stmttype { 
 	     STMT_NONE = -1, // no statement
 	     STMT_CREATE_DATABASE = 0, // create the database
 	     STMT_BEGIN_TRANSACTION = 1, // begin a transaction
 	     STMT_COMMIT_TRANSACTION = 2, // commit a transaction
+	     STMT_CHECK_DATABASE = 3, // create the database
   };
+  static const int number_stmt_types = 4; // number of statement types
 
   // constructors
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
@@ -46,6 +46,7 @@ class statement {
   // destructors
   ~statement() {
     finalize();
+    type = STMT_NONE;
   };
 
   // bool operator
@@ -55,13 +56,24 @@ class statement {
   // error. Otherwise, return sqlite3 exit code.
   int execute(bool except = true);
 
- private:
+  // Step an statement. Also, prepare the statement if it was not
+  // already prepared. If except, throw exception on error. Otherwise,
+  // return sqlite3 exit code.
+  int step(bool except = true);
 
-  // Prepare a statement of type type_ in database db_
-  void prepare(sqlite3 *db_, const stmttype type_);
+  // Get the pointer to the statement
+  sqlite3_stmt *ptr() { return stmt; }
 
   // Finalize the statement
   void finalize();
+
+ private:
+
+  // Prepare the statement.
+  void prepare();
+
+  // Reset the statement and clear all bindings
+  void reset();
 
   bool prepared; // whether the statement has been prepared
   sqlite3 *db; // the database pointer

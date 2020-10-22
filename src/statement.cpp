@@ -38,6 +38,12 @@ CREATE TABLE Literature_refs (
 )SQL",
 [statement::STMT_BEGIN_TRANSACTION] = "BEGIN TRANSACTION",
 [statement::STMT_COMMIT_TRANSACTION] = "COMMIT TRANSACTION",
+[statement::STMT_CHECK_DATABASE] = 
+R"SQL(
+SELECT COUNT(type)
+FROM sqlite_master
+WHERE type='table' AND name='Literature_refs';
+)SQL",
 };
 
 static void throw_exception(sqlite3 *db_){
@@ -63,21 +69,48 @@ int statement::execute(bool except){
   return rc;
 }
 
-void statement::prepare(sqlite3 *db_, const stmttype type_){
-  if (!db_)
+int statement::step(bool except){
+  if (!db)
+    throw std::runtime_error("Invalid database stepping statement");
+  if (type == STMT_NONE)
+    throw std::runtime_error("Cannot step a NONE statement");
+  
+  if (!prepared)
+    prepare();
+
+  int rc = sqlite3_step(stmt);
+
+  if (rc == SQLITE_DONE) 
+    reset();
+  else if (except && rc != SQLITE_ROW)
+    throw_exception(db);
+
+  return rc;
+}
+
+void statement::reset(){
+  if (!db)
+    throw std::runtime_error("Invalid database reset statement");
+  if (type == STMT_NONE)
+    throw std::runtime_error("Cannot reset a NONE statement");
+
+  if (sqlite3_reset(stmt) || sqlite3_clear_bindings(stmt))
+    throw_exception(db);
+}
+
+void statement::prepare(){
+  if (!db)
     throw std::runtime_error("Invalid database preparing statement");
 
   int rc = 0;
-  if (type_ == STMT_NONE)
+  if (type == STMT_NONE)
     stmt = nullptr;
   else
-    rc = sqlite3_prepare_v2(db_, statement_text[type_], -1, &stmt, NULL);
+    rc = sqlite3_prepare_v2(db, statement_text[type], -1, &stmt, NULL);
 
-  if (rc) throw_exception(db_);
+  if (rc) throw_exception(db);
 
-  type = type_;
-  db = db_;
-  if (type_ != STMT_NONE) prepared = true;
+  if (type != STMT_NONE) prepared = true;
 }
 
 void statement::finalize(){
@@ -86,6 +119,5 @@ void statement::finalize(){
       throw_exception(db);
   }
   prepared = false;
-  type = STMT_NONE;
   stmt = nullptr;
 }

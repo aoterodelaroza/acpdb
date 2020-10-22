@@ -31,14 +31,11 @@ class sqldb {
 
  public:
 
-  // enum: output of checksane()
-  enum dbstatus { dbstatus_sane = 0, dbstatus_empty = 1, dbstatus_error = 2 };
-
   // constructors
   sqldb() : db(nullptr) {}; // default constructor
   sqldb(const std::string &file) : db(nullptr), stmt() { // constructor using file name
     connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-    if (checksane() == dbstatus_empty)
+    if (!checksane())
       create();
   }; 
   sqldb(sqldb&& rhs) = delete; // move constructor (deleted)
@@ -52,9 +49,10 @@ class sqldb {
   // bool operator
   operator bool() const { return db; }
 
-  // Check if the DB is sane, empty, or not sane. If
-  // except_on_error/empty, raise exception on error/empty.
-  dbstatus checksane(bool except_on_error = false, bool except_on_empty = false);
+  // Check if the DB is sane, empty, or not sane. If except_on_empty,
+  // raise exception on empty. Always raise excepton on error. Return
+  // 1 if sane, 0 if empty.
+  int checksane(bool except_on_empty = false);
 
   // Open a database file for use.
   void connect(const std::string &filename, int flags = SQLITE_OPEN_READWRITE);

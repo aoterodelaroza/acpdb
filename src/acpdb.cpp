@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
         db.create();
       } else if (keyw == "CONNECT") {
         db.connect(popstring(tokens));
-        db.checksane(true,true);
+        db.checksane(true);
       } else if (keyw == "DISCONNECT") {
         db.close();
       } else if (keyw == "INSERT") {
