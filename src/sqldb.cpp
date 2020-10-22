@@ -21,11 +21,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include "sqldb.h"
 #include "parseutils.h"
+#include "statement.h"
 
 #include "config.h"
 #ifdef BTPARSE_FOUND  
 #include "btparse.h"
 #endif
+
+void sqldb::allocate_statements(){
+  if (!db)
+    throw std::runtime_error("Tried to allocate statments but db not connected");
+
+  for (int i = 0; i < statement::number_stmt_types; i++)
+    stmt[i] = new statement(db,(statement::stmttype) i);
+}
+
+void sqldb::deallocate_statements(){
+  if (!db) return;
+
+  for (int i = 0; i < statement::number_stmt_types; i++){
+    delete stmt[i];
+    stmt[i] = nullptr;
+  }
+}
 
 // Check if the DB is sane, empty, or not sane.
 sqldb::dbstatus sqldb::checksane(bool except_on_error, bool except_on_empty){
@@ -35,7 +53,7 @@ sqldb::dbstatus sqldb::checksane(bool except_on_error, bool except_on_empty){
 
   if (!db) goto error;
 
-  if (sqlite3_prepare(db, check_statement, -1, &statement, NULL)) goto error;
+  if (sqlite3_prepare_v2(db, check_statement, -1, &statement, NULL)) goto error;
   if (sqlite3_step(statement) != SQLITE_ROW) goto error;
 
   icol = sqlite3_column_int(statement, 0);
@@ -74,6 +92,9 @@ void sqldb::connect(const std::string &filename, int flags){
 
   // write down the file name
   dbfilename = filename;
+
+  // prepare all statements
+  allocate_statements();
 }
 
 // Create the database skeleton.
@@ -110,6 +131,11 @@ CREATE TABLE Literature_refs (
 // Close a database connection if open and reset the pointer to NULL
 void sqldb::close(){
   if (!db) return;
+
+  // finalize and deallocate all statements
+  deallocate_statements();
+
+  // close the database
   if (sqlite3_close_v2(db)) 
     throw std::runtime_error("Can't close database file " + dbfilename + " (" + sqlite3_errmsg(db) + ")");
   db = nullptr;
@@ -138,7 +164,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,description)
        VALUES(:REF_KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION)
 )SQL";
-    if (sqlite3_prepare(db, insert_statement, -1, &statement, NULL)) goto error;
+    if (sqlite3_prepare_v2(db, insert_statement, -1, &statement, NULL)) goto error;
 
     // reset the statement and the bindings
     if (sqlite3_reset(statement)) goto error;
@@ -224,7 +250,7 @@ INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,
   }
 
   // prepare the insert statement
-  if (sqlite3_prepare(db, insert_statement, -1, &statement, NULL)) goto error;
+  if (sqlite3_prepare_v2(db, insert_statement, -1, &statement, NULL)) goto error;
 
   // loop over the contents of the bib file and add to the database
   while (entry = bt_parse_entry(fp,filename,0,&rc)){
@@ -319,9 +345,9 @@ DELETE FROM Literature_refs WHERE ref_key = ?1;
     const char *delete_statement_with_id = R"SQL(
 DELETE FROM Literature_refs WHERE id = ?1;
 )SQL";
-    if (sqlite3_prepare(db, delete_statement_all, -1, &statement_all, NULL)) goto error;
-    if (sqlite3_prepare(db, delete_statement_with_key, -1, &statement_with_key, NULL)) goto error;
-    if (sqlite3_prepare(db, delete_statement_with_id, -1, &statement_with_id, NULL)) goto error;
+    if (sqlite3_prepare_v2(db, delete_statement_all, -1, &statement_all, NULL)) goto error;
+    if (sqlite3_prepare_v2(db, delete_statement_with_key, -1, &statement_with_key, NULL)) goto error;
+    if (sqlite3_prepare_v2(db, delete_statement_with_id, -1, &statement_with_id, NULL)) goto error;
 
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       std::string key, param;
@@ -374,7 +400,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
     const char *list_statement = R"SQL(
 SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Literature_refs
 )SQL";
-    if (sqlite3_prepare(db, list_statement, -1, &statement, NULL)) goto error;
+    if (sqlite3_prepare_v2(db, list_statement, -1, &statement, NULL)) goto error;
 
     // run the statement and print the results
     int rc; 

@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <list>
 #include "sqlite3.h"
+#include "statement.h"
 
 // A SQLite3 database class.
 class sqldb {
@@ -34,16 +36,18 @@ class sqldb {
 
   // constructors
   sqldb() : db(nullptr) {}; // default constructor
-  sqldb(const std::string &file) : db(nullptr) { // constructor using file name
+  sqldb(const std::string &file) : db(nullptr), stmt() { // constructor using file name
     connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     if (checksane() == dbstatus_empty)
       create();
   }; 
-  sqldb(sqldb&& rhs) : db(rhs.db) { rhs.db = nullptr; } // move constructor
+  sqldb(sqldb&& rhs) = delete; // move constructor (deleted)
   sqldb(const sqldb& rhs) = delete; // copy constructor (deleted)
 
   // destructors
-  ~sqldb() { close(); };
+  ~sqldb() { 
+    close(); 
+  };
 
   // bool operator
   operator bool() const { return db; }
@@ -75,9 +79,18 @@ class sqldb {
 
  private:
 
+  // allocate and prepare statements
+  void allocate_statements();
+
+  // deallocate and finalize statements
+  void deallocate_statements();
+
+  // prepared SQLite statments
+  statement *stmt[statement::number_stmt_types];
+
+  // database info
   std::string dbfilename;
   sqlite3 *db;
-
 };
 
 #endif
