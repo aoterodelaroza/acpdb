@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define STATEMENT_H
 
 #include "sqlite3.h"
+#include <string>
 
 // A SQLite3 statement class.
 class statement {
@@ -34,8 +35,11 @@ class statement {
 	     STMT_COMMIT_TRANSACTION = 2, // commit a transaction
 	     STMT_CHECK_DATABASE = 3, // create the database
 	     STMT_LIST_LITREF = 4, // list literature references
+	     STMT_DELETE_LITREF_ALL = 5, // delete literature references, all
+	     STMT_DELETE_LITREF_WITH_KEY = 6, // delete literature references, with key
+	     STMT_DELETE_LITREF_WITH_ID = 7, // delete literature references, with id
   };
-  static const int number_stmt_types = 5; // number of statement types
+  static const int number_stmt_types = 8; // number of statement types
 
   // constructors
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
@@ -53,16 +57,15 @@ class statement {
   // bool operator
   operator bool() const { return stmt; }
 
-  // Execute a statment directly. If except, throw exception on
-  // error. Otherwise, return sqlite3 exit code.
-  int execute(bool except = true);
+  // Execute a statment directly.
+  int execute();
 
   // Step an statement. Prepare the statement if it was not already
-  // prepared. Reset the statement at the end if it is done. If
-  // except, throw exception on error. Otherwise, return sqlite3 exit
-  // code. If reset_, reset the statement and clear the bindings (if it
-  // has any) before stepping.
-  int step(bool except = true, bool reset_ = false);
+  // prepared. Reset the statement at the end if it is done.
+  int step();
+
+  // Bind arguments to the parameters of the statement
+  int bind(const int icol, const std::string &arg, const bool transient = true);
 
   // Get the pointer to the statement
   sqlite3_stmt *ptr() { return stmt; }
@@ -73,10 +76,10 @@ class statement {
   // Reset the statement and clear all bindings
   void reset();
 
- private:
-
   // Prepare the statement.
   void prepare();
+
+ private:
 
   bool prepared; // whether the statement has been prepared
   sqlite3 *db; // the database pointer

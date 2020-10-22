@@ -51,14 +51,24 @@ R"SQL(
 SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description
 FROM Literature_refs
 )SQL",
+[statement::STMT_DELETE_LITREF_ALL] = 
+"DELETE FROM Literature_refs;",
+[statement::STMT_DELETE_LITREF_WITH_KEY] = 
+"DELETE FROM Literature_refs WHERE ref_key = ?1;",
+[statement::STMT_DELETE_LITREF_WITH_ID] =
+"DELETE FROM Literature_refs WHERE id = ?1;",
 };
 
+// whether the statement has bindings
 static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_CREATE_DATABASE] = false,
   [statement::STMT_BEGIN_TRANSACTION] = false,
   [statement::STMT_COMMIT_TRANSACTION] = false,
   [statement::STMT_CHECK_DATABASE] = false,
   [statement::STMT_LIST_LITREF] = false,
+  [statement::STMT_DELETE_LITREF_ALL] = false,
+  [statement::STMT_DELETE_LITREF_WITH_KEY] = true,
+  [statement::STMT_DELETE_LITREF_WITH_ID] = true,
 };
 
 static void throw_exception(sqlite3 *db_){
@@ -66,13 +76,13 @@ static void throw_exception(sqlite3 *db_){
   throw std::runtime_error(errmsg);
 }
 
-int statement::execute(bool except){
+int statement::execute(){
   if (!db)
     throw std::runtime_error("Invalid database executing statement");
 
   char *errmsg = nullptr;
   int rc = sqlite3_exec(db, statement_text[type], NULL, NULL, &errmsg);
-  if (except && rc){
+  if (rc){
     std::string errmsg_s;
     if (errmsg)
       errmsg_s = "Error (" + std::string(errmsg) + ")";
@@ -84,7 +94,7 @@ int statement::execute(bool except){
   return rc;
 }
 
-int statement::step(bool except, bool reset_){
+int statement::step(){
   if (!db)
     throw std::runtime_error("Invalid database stepping statement");
   if (type == STMT_NONE)
@@ -92,19 +102,50 @@ int statement::step(bool except, bool reset_){
   
   if (!prepared)
     prepare();
-  else if (reset_)
-    reset();
 
   int rc = sqlite3_step(stmt);
 
   if (rc == SQLITE_DONE) 
     reset();
-  else if (except && rc != SQLITE_ROW)
+  else if (rc != SQLITE_ROW)
     throw_exception(db);
 
   return rc;
 }
 
+// Bind arguments to the parameters of the statement
+int statement::bind(const int icol, const std::string &arg, const bool transient /*=true*/){
+  if (!db)
+    throw std::runtime_error("Invalid database stepping statement");
+  if (type == STMT_NONE)
+    throw std::runtime_error("Cannot bind a NONE statement");
+
+  if (!prepared)
+    prepare();
+
+  int rc;
+  if (transient)
+    rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
+  else
+    rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
+
+  if (rc)
+    throw_exception(db);
+
+  return rc;
+}
+
+// Finalize the statement
+void statement::finalize(){
+  if (db && type != STMT_NONE && stmt){
+    if (sqlite3_finalize(stmt)) 
+      throw_exception(db);
+  }
+  prepared = false;
+  stmt = nullptr;
+}
+
+// Reset the statement and clear all bindings
 void statement::reset(){
   if (!db)
     throw std::runtime_error("Invalid database reset statement");
@@ -117,6 +158,7 @@ void statement::reset(){
     throw_exception(db);
 }
 
+// Prepare the statement.
 void statement::prepare(){
   if (!db)
     throw std::runtime_error("Invalid database preparing statement");
@@ -132,11 +174,3 @@ void statement::prepare(){
   if (type != STMT_NONE) prepared = true;
 }
 
-void statement::finalize(){
-  if (db && type != STMT_NONE && stmt){
-    if (sqlite3_finalize(stmt)) 
-      throw_exception(db);
-  }
-  prepared = false;
-  stmt = nullptr;
-}

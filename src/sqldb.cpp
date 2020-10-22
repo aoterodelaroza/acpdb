@@ -28,30 +28,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "btparse.h"
 #endif
 
-void sqldb::allocate_statements(){
-  if (!db)
-    throw std::runtime_error("Tried to allocate statments but db not connected");
-
-  for (int i = 0; i < statement::number_stmt_types; i++)
-    stmt[i] = new statement(db,(statement::stmttype) i);
-}
-
 void sqldb::deallocate_statements(){
-  for (int i = 0; i < statement::number_stmt_types; i++){
-    delete stmt[i];
-    stmt[i] = nullptr;
-  }
 }
 
 // Check if the DB is sane, empty, or not sane. If except_on_empty,
 // raise exception on empty. Always raise excepton on error. Return
 // 1 if sane, 0 if empty.
-int sqldb::checksane(bool except_on_empty){
+int sqldb::checksane(bool except_on_empty /*=false*/){
   if (!db) 
     throw std::runtime_error("Error reading connected database");
 
   // query the database
-  int rc = stmt[statement::STMT_CHECK_DATABASE]->step(true,true);
+  stmt[statement::STMT_CHECK_DATABASE]->reset();
+  int rc = stmt[statement::STMT_CHECK_DATABASE]->step();
   int icol = sqlite3_column_int(stmt[statement::STMT_CHECK_DATABASE]->ptr(), 0);
 
   // if we did not get a row, error
@@ -68,7 +57,7 @@ int sqldb::checksane(bool except_on_empty){
 }
 
 // Open a database file for use. 
-void sqldb::connect(const std::string &filename, int flags){
+void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRITE*/){
   // close the previous db if open
   close();
 
@@ -86,8 +75,9 @@ void sqldb::connect(const std::string &filename, int flags){
   // write down the file name
   dbfilename = filename;
 
-  // prepare all statements
-  allocate_statements();
+  // construct all statements
+  for (int i = 0; i < statement::number_stmt_types; i++)
+    stmt[i] = new statement(db,(statement::stmttype) i);
 }
 
 // Create the database skeleton.
@@ -104,7 +94,10 @@ void sqldb::close(){
   if (!db) return;
 
   // finalize and deallocate all statements
-  deallocate_statements();
+  for (int i = 0; i < statement::number_stmt_types; i++){
+    delete stmt[i];
+    stmt[i] = nullptr;
+  }
 
   // close the database
   if (sqlite3_close_v2(db)) 
@@ -299,56 +292,26 @@ error:
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A db must be connected before using DELETE");
 
-  sqlite3_stmt *statement_all = nullptr;
-  sqlite3_stmt *statement_with_key = nullptr;
-  sqlite3_stmt *statement_with_id = nullptr;
-
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
-    const char *delete_statement_all = R"SQL(
-DELETE FROM Literature_refs;
-)SQL";
-    const char *delete_statement_with_key = R"SQL(
-DELETE FROM Literature_refs WHERE ref_key = ?1;
-)SQL";
-    const char *delete_statement_with_id = R"SQL(
-DELETE FROM Literature_refs WHERE id = ?1;
-)SQL";
-    if (sqlite3_prepare_v2(db, delete_statement_all, -1, &statement_all, NULL)) goto error;
-    if (sqlite3_prepare_v2(db, delete_statement_with_key, -1, &statement_with_key, NULL)) goto error;
-    if (sqlite3_prepare_v2(db, delete_statement_with_id, -1, &statement_with_id, NULL)) goto error;
-
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       std::string key, param;
 
       if (*it == "*"){
-        // delete all
-        if (sqlite3_reset(statement_all)) goto error;
-        if (sqlite3_step(statement_all) != SQLITE_DONE) goto error;
+        // all
+        stmt[statement::STMT_DELETE_LITREF_ALL]->execute();
       } else if (it->find_first_not_of("0123456789") == std::string::npos){
         // an integer
-        if (sqlite3_reset(statement_with_id)) goto error;
-        if (sqlite3_bind_text(statement_with_id,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
-        if (sqlite3_step(statement_with_id) != SQLITE_DONE) goto error;
+        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->step();
       } else {
         // a key
-        if (sqlite3_reset(statement_with_key)) goto error;
-        if (sqlite3_bind_text(statement_with_key,1,it->c_str(),-1,SQLITE_TRANSIENT)) goto error;
-        if (sqlite3_step(statement_with_key) != SQLITE_DONE) goto error;
+        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->step();
       }
     }
   }
-  if (sqlite3_finalize(statement_all)) goto error;
-  if (sqlite3_finalize(statement_with_key)) goto error;
-  if (sqlite3_finalize(statement_with_id)) goto error;
-  return;
 
-  error:
-  if (statement_all) sqlite3_finalize(statement_all);
-  if (statement_with_key) sqlite3_finalize(statement_with_key);
-  if (statement_with_id) sqlite3_finalize(statement_with_id);
-  std::string errmsg = "Error deleting data: " + std::string(sqlite3_errmsg(db));
-  throw std::runtime_error(errmsg);
 }  
 
 // List items from the database
@@ -363,7 +326,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
     if (!dobib)
       printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
 
-    // prepare the statement
+    // run the statement
     while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
       sqlite3_stmt *statement = stmt[statement::STMT_LIST_LITREF]->ptr();
 
@@ -397,5 +360,5 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
   }
-  return;
+
 }

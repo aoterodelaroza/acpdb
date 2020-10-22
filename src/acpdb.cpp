@@ -105,6 +105,8 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
         db.list(category,tokens);
+      } else if (keyw == "END") {
+        break;
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        
