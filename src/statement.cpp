@@ -83,6 +83,7 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_DELETE_LITREF_ALL] = false,
   [statement::STMT_DELETE_LITREF_WITH_KEY] = true,
   [statement::STMT_DELETE_LITREF_WITH_ID] = true,
+  [statement::STMT_INSERT_LITREF] = true,
 };
 
 static void throw_exception(sqlite3 *db_){
@@ -126,73 +127,6 @@ int statement::step(){
 
   return rc;
 }
-
-// // Bind arguments to the parameters of the statement (integer parameter)
-// template<typename Tcol, typename Targ>
-// int bind(const Tcol &, const Targ &, const bool transient/*=true*/){
-//   // if (!db)
-//   //   throw std::runtime_error("Invalid database stepping statement");
-//   // if (type == STMT_NONE)
-//   //   throw std::runtime_error("Cannot bind a NONE statement");
-// 
-//   // if (!prepared)
-//   //   prepare();
-// 
-//   int rc = 0;
-//   // if (transient)
-//   //   rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
-//   // else
-//   //   rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
-// 
-//   // if (rc)
-//   //   throw_exception(db);
-// 
-//   return rc;
-// }
-
-// // Bind arguments to the parameters of the statement (integer parameter)
-// int statement::bind(const int icol, const std::string &arg, const bool transient /*=true*/){
-//   if (!db)
-//     throw std::runtime_error("Invalid database stepping statement");
-//   if (type == STMT_NONE)
-//     throw std::runtime_error("Cannot bind a NONE statement");
-// 
-//   if (!prepared)
-//     prepare();
-// 
-//   int rc;
-//   if (transient)
-//     rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
-//   else
-//     rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
-// 
-//   if (rc)
-//     throw_exception(db);
-// 
-//   return rc;
-// }
-
-// // Bind arguments to the parameters of the statement (named parameter)
-// int statement::bind(const std::string &name, const std::string &arg, const bool transient/*= true*/){
-//   if (!db)
-//     throw std::runtime_error("Invalid database stepping statement");
-//   if (type == STMT_NONE)
-//     throw std::runtime_error("Cannot bind a NONE statement");
-// 
-//   if (!prepared)
-//     prepare();
-// 
-//   int rc;
-//   if (transient)
-//     rc = sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,name.c_str()),arg.c_str(),-1,SQLITE_TRANSIENT);
-//   else
-//     rc = sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,name.c_str()),arg.c_str(),-1,SQLITE_STATIC);
-// 
-//   if (rc)
-//     throw_exception(db);
-// 
-//   return rc;
-// }
 
 // Finalize the statement
 void statement::finalize(){

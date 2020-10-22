@@ -143,6 +143,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   }
 }
 
+// Insert literature refernces into the database from a bibtex file
 void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A db must be connected before using INSERT");
 
@@ -151,108 +152,70 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (tokens.empty())
     throw std::runtime_error("Need a bibtex file name");
 
-  // error message and statement; ASTs and boolean flags for the parsing
-  std::string errmsg = "";
-  sqlite3_stmt *statement = nullptr;
-  AST *entry = NULL, *field = NULL;
-  char *fvalue = NULL;
-  boolean rc;
-
-  // define the insert statement
-  const char *insert_statement = R"SQL(
-INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,description)
-       VALUES(:REF_KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION)
-)SQL";
-
   // open the file name
   char *filename = &(tokens.front()[0]);
   FILE *fp = fopen(filename,"r");
-  if (!fp){
-    errmsg = "Could not open file " + tokens.front();
-    goto error;
-  }
+  if (!fp)
+    throw std::runtime_error(std::string("Could not open bibtex file: ") + filename);
 
   // begin the transaction
   stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
 
-  // prepare the insert statement
-  if (sqlite3_prepare_v2(db, insert_statement, -1, &statement, NULL)) goto error;
-
   // loop over the contents of the bib file and add to the database
-  while (entry = bt_parse_entry(fp,filename,0,&rc)){
-    if (!rc) continue;
-    if (bt_entry_metatype(entry) != BTE_REGULAR) continue;
-    char *key = bt_entry_key(entry);
-    char *type = bt_entry_type(entry);
+  boolean rc;
+  while (AST *entry = bt_parse_entry(fp,filename,0,&rc)){
+    if (rc && bt_entry_metatype(entry) == BTE_REGULAR) {
+      std::string key = bt_entry_key(entry);
+      std::string type = bt_entry_type(entry);
 
-    if (!strncmp(type,"article",7)){
-      // reset the statement and the bindings
-      if (sqlite3_reset(statement)) goto error;
-      if (sqlite3_clear_bindings(statement)) goto error;
+      if (equali_strings(type,"article")){
+        // bind the key
+        stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":REF_KEY",key,false);
+        
+        // bind the rest of the fields
+        char *fname = NULL;
+        AST *field = NULL;
+        while (field = bt_next_field(entry,field,&fname)){
+          char *fvalue = bt_get_text(field);
 
-      // bind the key
-      if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":REF_KEY"),key,-1,SQLITE_STATIC)) goto error;
-
-      // bind the rest of the fields
-      char *fname = NULL;
-      while (field = bt_next_field(entry,field,&fname)){
-        fvalue = bt_get_text(field);
-        if (!strcmp(fname,"title")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":TITLE"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"author") || !strcmp(fname,"authors")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":AUTHORS"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"journal")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":JOURNAL"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"volume")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":VOLUME"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"page") || !strcmp(fname,"pages")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":PAGE"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"year")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":YEAR"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"doi")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":DOI"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
-        } else if (!strcmp(fname,"description")){
-          if (sqlite3_bind_text(statement,sqlite3_bind_parameter_index(statement,":DESCRIPTION"),fvalue,-1,SQLITE_TRANSIENT)) goto error;
+          if (!strcmp(fname,"title")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":TITLE",fvalue);
+          } else if (!strcmp(fname,"author") || !strcmp(fname,"authors")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":AUTHORS",fvalue);
+          } else if (!strcmp(fname,"journal")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":JOURNAL",fvalue);
+          } else if (!strcmp(fname,"volume")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":VOLUME",fvalue);
+          } else if (!strcmp(fname,"page") || !strcmp(fname,"pages")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":PAGE",fvalue);
+          } else if (!strcmp(fname,"year")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":YEAR",fvalue);
+          } else if (!strcmp(fname,"doi")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":DOI",fvalue);
+          } else if (!strcmp(fname,"description")){
+            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":DESCRIPTION",fvalue);
+          }
+          if (fvalue) free(fvalue);
         }
-        if (fvalue) free(fvalue);
-        fvalue = NULL;
+        stmt[statement::STMT_INSERT_LITREF]->step();
+        if (field) bt_free_ast(field);
       }
-      // free the field
-      if (field) bt_free_ast(field);
-      field = NULL;
-
-      // submit the statement
-      if (sqlite3_step(statement) != SQLITE_DONE) goto error;
     }
-
+    
     // free the entry
     if (entry) bt_free_ast(entry);
-    entry = NULL;
-  }
-
-  // finalize the statement
-  if (sqlite3_finalize(statement)) goto error;
-  statement = NULL;
+   }
 
   // commit the transaction
   stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
 
-  return;
-
-error:
-  if (statement) sqlite3_finalize(statement);
-  if (fvalue) free(fvalue);
-  if (field) bt_free_ast(field);
-  if (entry) bt_free_ast(entry);
-  if (errmsg.empty())
-    errmsg = std::string(sqlite3_errmsg(db));
-  throw std::runtime_error("Error inserting data: " + errmsg);
 #else
   throw std::runtime_error("Cannot use INSERT LITREF BIBTEX: not compiled with bibtex support");
 #endif
 
 }
 
+// Delete items from the database
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A db must be connected before using DELETE");
 

@@ -132,5 +132,9 @@ template<> struct statement::bind_dispatcher< char *, std::string > {
   static int impl(sqlite3_stmt *stmt, const char *col, const std::string &arg, bool transient){ 
     return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
+template<> struct statement::bind_dispatcher< char *, char * > {
+  static int impl(sqlite3_stmt *stmt, const char *col, const char *arg, bool transient){ 
+    return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg,-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
+
 #endif
 
