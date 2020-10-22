@@ -355,8 +355,6 @@ DELETE FROM Literature_refs WHERE id = ?1;
 void sqldb::list(const std::string &category, std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A db must be connected before using LIST");
 
-  sqlite3_stmt *statement = nullptr;
-  
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
     bool dobib = (!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
@@ -366,15 +364,8 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
 
     // prepare the statement
-    const char *list_statement = R"SQL(
-SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Literature_refs
-)SQL";
-    if (sqlite3_prepare_v2(db, list_statement, -1, &statement, NULL)) goto error;
-
-    // run the statement and print the results
-    int rc; 
-    while ((rc = sqlite3_step(statement)) != SQLITE_DONE){
-      if (rc != SQLITE_ROW) goto error;
+    while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_LITREF]->ptr();
 
       int id = sqlite3_column_int(statement, 0);
       const unsigned char *ref_key = sqlite3_column_text(statement, 1);
@@ -403,17 +394,8 @@ SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description FROM Li
                ref_key,authors,title,journal,volume,page,year,doi,description);
       }
     }
-
-    // finalize the statement
-    if (sqlite3_finalize(statement)) goto error;
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
   }
-
   return;
-
-  error:
-  if (statement) sqlite3_finalize(statement);
-  std::string errmsg = "Error listing data: " + std::string(sqlite3_errmsg(db));
-  throw std::runtime_error(errmsg);
 }

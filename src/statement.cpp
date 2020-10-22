@@ -36,13 +36,20 @@ CREATE TABLE Literature_refs (
   description TEXT
 );
 )SQL",
-[statement::STMT_BEGIN_TRANSACTION] = "BEGIN TRANSACTION",
-[statement::STMT_COMMIT_TRANSACTION] = "COMMIT TRANSACTION",
+[statement::STMT_BEGIN_TRANSACTION] =
+"BEGIN TRANSACTION",
+[statement::STMT_COMMIT_TRANSACTION] =
+"COMMIT TRANSACTION",
 [statement::STMT_CHECK_DATABASE] = 
 R"SQL(
 SELECT COUNT(type)
 FROM sqlite_master
 WHERE type='table' AND name='Literature_refs';
+)SQL",
+[statement::STMT_LIST_LITREF] = 
+R"SQL(
+SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description
+FROM Literature_refs
 )SQL",
 };
 
@@ -51,6 +58,7 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_BEGIN_TRANSACTION] = false,
   [statement::STMT_COMMIT_TRANSACTION] = false,
   [statement::STMT_CHECK_DATABASE] = false,
+  [statement::STMT_LIST_LITREF] = false,
 };
 
 static void throw_exception(sqlite3 *db_){

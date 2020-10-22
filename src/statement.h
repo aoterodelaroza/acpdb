@@ -33,8 +33,9 @@ class statement {
 	     STMT_BEGIN_TRANSACTION = 1, // begin a transaction
 	     STMT_COMMIT_TRANSACTION = 2, // commit a transaction
 	     STMT_CHECK_DATABASE = 3, // create the database
+	     STMT_LIST_LITREF = 4, // list literature references
   };
-  static const int number_stmt_types = 4; // number of statement types
+  static const int number_stmt_types = 5; // number of statement types
 
   // constructors
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
