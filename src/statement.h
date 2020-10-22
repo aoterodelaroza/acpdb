@@ -76,7 +76,7 @@ class statement {
   // int bind(const std::string &name, const std::string &arg, const bool transient = true);
 
   // Get the pointer to the statement
-  sqlite3_stmt *ptr() { return stmt; }
+  sqlite3_stmt *ptr() const { return stmt; }
 
   // Finalize the statement
   void finalize();
