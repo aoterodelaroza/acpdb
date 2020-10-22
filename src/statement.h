@@ -21,11 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "sqlite3.h"
 #include <string>
+#include <stdexcept>
 
 // A SQLite3 statement class.
 class statement {
 
  public:
+
+  //// Named constants ////
 
   // enum: type of statement()
   enum stmttype { 
@@ -38,8 +41,11 @@ class statement {
 	     STMT_DELETE_LITREF_ALL = 5, // delete literature references, all
 	     STMT_DELETE_LITREF_WITH_KEY = 6, // delete literature references, with key
 	     STMT_DELETE_LITREF_WITH_ID = 7, // delete literature references, with id
+	     STMT_INSERT_LITREF = 8, // insert literature references
   };
-  static const int number_stmt_types = 8; // number of statement types
+  static const int number_stmt_types = 9; // number of statement types
+
+  //// Operators ////
 
   // constructors
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
@@ -57,6 +63,8 @@ class statement {
   // bool operator
   operator bool() const { return stmt; }
 
+  //// Public methods ////
+
   // Execute a statment directly.
   int execute();
 
@@ -64,8 +72,8 @@ class statement {
   // prepared. Reset the statement at the end if it is done.
   int step();
 
-  // Bind arguments to the parameters of the statement
-  int bind(const int icol, const std::string &arg, const bool transient = true);
+  // int bind(const int icol, const std::string &arg, const bool transient = true);
+  // int bind(const std::string &name, const std::string &arg, const bool transient = true);
 
   // Get the pointer to the statement
   sqlite3_stmt *ptr() { return stmt; }
@@ -79,14 +87,50 @@ class statement {
   // Prepare the statement.
   void prepare();
 
+  //// Public template functions ////
+
+  // Bind arguments to the parameters of the statement
+  template<typename Tcol, typename Targ>
+  int bind(const Tcol &col, const Targ &arg, const bool transient = true){
+    if (!db)
+      throw std::runtime_error("Invalid database stepping statement");
+    if (type == STMT_NONE)
+      throw std::runtime_error("Cannot bind a NONE statement");
+
+    if (!prepared) prepare();
+
+    int rc = 0;
+    rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient);
+
+    if (rc)
+      throw std::runtime_error("Error bleh: in bind");
+
+    return rc;
+  }
+
  private:
+
+  //// Private variables ////
 
   bool prepared; // whether the statement has been prepared
   sqlite3 *db; // the database pointer
   stmttype type; // statement type
   sqlite3_stmt *stmt; // statement pointer
-
+  template<typename Tcol, typename Targ> struct bind_dispatcher; // bind dispatcher, for generic bind selection
 };
+
+// bind dispatcher template specializations
+template<> struct statement::bind_dispatcher< int, std::string > {
+  static int impl(sqlite3_stmt *stmt, const int col, const std::string &arg, bool transient){ 
+    return sqlite3_bind_text(stmt,col,arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
+
+template<> struct statement::bind_dispatcher< std::string, std::string > {
+  static int impl(sqlite3_stmt *stmt, const std::string &col, const std::string &arg, bool transient){ 
+    return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col.c_str()),arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
+
+template<> struct statement::bind_dispatcher< char *, std::string > {
+  static int impl(sqlite3_stmt *stmt, const char *col, const std::string &arg, bool transient){ 
+    return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 #endif
 

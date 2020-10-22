@@ -17,10 +17,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "statement.h"
 #include <cstddef>
-#include <string>
-#include <stdexcept>
 
+//// List of SQL statements ////
 static const char *statement_text[statement::number_stmt_types] = {
+
 [statement::STMT_CREATE_DATABASE] = 
 R"SQL(
 CREATE TABLE Literature_refs (
@@ -36,28 +36,42 @@ CREATE TABLE Literature_refs (
   description TEXT
 );
 )SQL",
+
 [statement::STMT_BEGIN_TRANSACTION] =
 "BEGIN TRANSACTION",
+
 [statement::STMT_COMMIT_TRANSACTION] =
 "COMMIT TRANSACTION",
+
 [statement::STMT_CHECK_DATABASE] = 
 R"SQL(
 SELECT COUNT(type)
 FROM sqlite_master
 WHERE type='table' AND name='Literature_refs';
 )SQL",
+
 [statement::STMT_LIST_LITREF] = 
 R"SQL(
 SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description
 FROM Literature_refs
 )SQL",
+
 [statement::STMT_DELETE_LITREF_ALL] = 
 "DELETE FROM Literature_refs;",
+
 [statement::STMT_DELETE_LITREF_WITH_KEY] = 
 "DELETE FROM Literature_refs WHERE ref_key = ?1;",
+
 [statement::STMT_DELETE_LITREF_WITH_ID] =
 "DELETE FROM Literature_refs WHERE id = ?1;",
+
+[statement::STMT_INSERT_LITREF] =
+R"SQL(
+INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,description)
+       VALUES(:REF_KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION)
+)SQL",
 };
+//// END of list of SQL statements ////
 
 // whether the statement has bindings
 static const bool has_bindings[statement::number_stmt_types] = {
@@ -113,27 +127,72 @@ int statement::step(){
   return rc;
 }
 
-// Bind arguments to the parameters of the statement
-int statement::bind(const int icol, const std::string &arg, const bool transient /*=true*/){
-  if (!db)
-    throw std::runtime_error("Invalid database stepping statement");
-  if (type == STMT_NONE)
-    throw std::runtime_error("Cannot bind a NONE statement");
+// // Bind arguments to the parameters of the statement (integer parameter)
+// template<typename Tcol, typename Targ>
+// int bind(const Tcol &, const Targ &, const bool transient/*=true*/){
+//   // if (!db)
+//   //   throw std::runtime_error("Invalid database stepping statement");
+//   // if (type == STMT_NONE)
+//   //   throw std::runtime_error("Cannot bind a NONE statement");
+// 
+//   // if (!prepared)
+//   //   prepare();
+// 
+//   int rc = 0;
+//   // if (transient)
+//   //   rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
+//   // else
+//   //   rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
+// 
+//   // if (rc)
+//   //   throw_exception(db);
+// 
+//   return rc;
+// }
 
-  if (!prepared)
-    prepare();
+// // Bind arguments to the parameters of the statement (integer parameter)
+// int statement::bind(const int icol, const std::string &arg, const bool transient /*=true*/){
+//   if (!db)
+//     throw std::runtime_error("Invalid database stepping statement");
+//   if (type == STMT_NONE)
+//     throw std::runtime_error("Cannot bind a NONE statement");
+// 
+//   if (!prepared)
+//     prepare();
+// 
+//   int rc;
+//   if (transient)
+//     rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
+//   else
+//     rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
+// 
+//   if (rc)
+//     throw_exception(db);
+// 
+//   return rc;
+// }
 
-  int rc;
-  if (transient)
-    rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_TRANSIENT);
-  else
-    rc = sqlite3_bind_text(stmt,icol,arg.c_str(),-1,SQLITE_STATIC);
-
-  if (rc)
-    throw_exception(db);
-
-  return rc;
-}
+// // Bind arguments to the parameters of the statement (named parameter)
+// int statement::bind(const std::string &name, const std::string &arg, const bool transient/*= true*/){
+//   if (!db)
+//     throw std::runtime_error("Invalid database stepping statement");
+//   if (type == STMT_NONE)
+//     throw std::runtime_error("Cannot bind a NONE statement");
+// 
+//   if (!prepared)
+//     prepare();
+// 
+//   int rc;
+//   if (transient)
+//     rc = sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,name.c_str()),arg.c_str(),-1,SQLITE_TRANSIENT);
+//   else
+//     rc = sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,name.c_str()),arg.c_str(),-1,SQLITE_STATIC);
+// 
+//   if (rc)
+//     throw_exception(db);
+// 
+//   return rc;
+// }
 
 // Finalize the statement
 void statement::finalize(){
