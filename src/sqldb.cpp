@@ -152,7 +152,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (tokens.empty())
     throw std::runtime_error("Need a bibtex file name");
 
-  // open the file name
+  // open the file name (need a char* and FILE* for btparse)
   char *filename = &(tokens.front()[0]);
   FILE *fp = fopen(filename,"r");
   if (!fp)
@@ -176,7 +176,10 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
         char *fname = NULL;
         AST *field = NULL;
         while (field = bt_next_field(entry,field,&fname)){
-          char *fvalue = bt_get_text(field);
+          // this prevents a memory leak if we throw an exception
+          char *fvalue_ = bt_get_text(field);
+          std::string fvalue(fvalue_);
+          free(fvalue_);
 
           if (!strcmp(fname,"title")){
             stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":TITLE",fvalue);
@@ -195,7 +198,6 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
           } else if (!strcmp(fname,"description")){
             stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":DESCRIPTION",fvalue);
           }
-          if (fvalue) free(fvalue);
         }
         stmt[statement::STMT_INSERT_LITREF]->step();
         if (field) bt_free_ast(field);
@@ -204,10 +206,13 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
     
     // free the entry
     if (entry) bt_free_ast(entry);
-   }
+  }
 
   // commit the transaction
   stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+
+  // close the file
+  fclose(fp);
 
 #else
   throw std::runtime_error("Cannot use INSERT LITREF BIBTEX: not compiled with bibtex support");
