@@ -263,8 +263,8 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
-  //// Literature references (LITREF) ////
   if (category == "LITREF") {
+    //// Literature references (LITREF) ////
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       std::string key, param;
 
@@ -279,6 +279,24 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         // a key
         stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->bind(1,*it);
         stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->step();
+      }
+    }
+  } else if (category == "SET") {
+    //// Sets (SET) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_SET_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_SET_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_SET_WITH_ID]->step();
+      } else {
+        // a key
+        stmt[statement::STMT_DELETE_SET_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_SET_WITH_KEY]->step();
       }
     }
   }

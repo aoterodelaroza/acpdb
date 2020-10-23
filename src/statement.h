@@ -46,9 +46,12 @@ class statement {
 	     STMT_INSERT_LITREF = 10, // insert literature references
 	     STMT_QUERY_LITREF = 11, // query propety types
 	     STMT_LIST_SET = 12, // list sets
-	     STMT_INSERT_SET = 13, // insert sets
+	     STMT_DELETE_SET_ALL = 13, // delete sets, all
+	     STMT_DELETE_SET_WITH_KEY = 14, // delete sets, with key
+	     STMT_DELETE_SET_WITH_ID = 15, // delete sets, with id
+	     STMT_INSERT_SET = 16, // insert sets
   };
-  static const int number_stmt_types = 14; // number of statement types
+  static const int number_stmt_types = 17; // number of statement types
 
   //// Operators ////
 

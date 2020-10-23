@@ -117,6 +117,21 @@ SELECT id,key,property_type,nstructures,nproperties,litrefs,description
 FROM Sets;
 )SQL",
 
+[statement::STMT_DELETE_SET_ALL] = 
+"DELETE FROM Sets;",
+
+[statement::STMT_DELETE_SET_WITH_KEY] = 
+R"SQL(
+DELETE FROM Sets
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_DELETE_SET_WITH_ID] =
+R"SQL(
+DELETE FROM Sets
+WHERE id = ?1;
+)SQL",
+
 [statement::STMT_INSERT_SET] =
 R"SQL(
 INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
@@ -141,6 +156,9 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_INSERT_LITREF] = true,
   [statement::STMT_QUERY_LITREF] = true,
   [statement::STMT_LIST_SET] = false,
+  [statement::STMT_DELETE_SET_ALL] = false,
+  [statement::STMT_DELETE_SET_WITH_KEY] = true,
+  [statement::STMT_DELETE_SET_WITH_ID] = true,
   [statement::STMT_INSERT_SET] = true,
 };
 
