@@ -45,8 +45,8 @@ CREATE TABLE Sets (
   property_type INTEGER NOT NULL,
   nstructures   INTEGER NOT NULL,
   nproperties   INTEGER NOT NULL,
-  description   TEXT,
   litrefs       TEXT,
+  description   TEXT,
   FOREIGN KEY(property_type) REFERENCES Property_types(id)
 );
 INSERT INTO Property_types (key,description)
@@ -111,6 +111,12 @@ FROM Literature_refs
 WHERE key = ?1;
 )SQL",
 
+[statement::STMT_LIST_SET] = 
+R"SQL(
+SELECT id,key,property_type,nstructures,nproperties,litrefs,description
+FROM Sets;
+)SQL",
+
 [statement::STMT_INSERT_SET] =
 R"SQL(
 INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
@@ -134,6 +140,7 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_DELETE_LITREF_WITH_ID] = true,
   [statement::STMT_INSERT_LITREF] = true,
   [statement::STMT_QUERY_LITREF] = true,
+  [statement::STMT_LIST_SET] = false,
   [statement::STMT_INSERT_SET] = true,
 };
 

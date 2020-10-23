@@ -294,7 +294,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
 
     // print table header
     if (!dobib)
-      printf("| id | key | authors | title | journal | volume | page | %year | doi | description |\n");
+      printf("| id | key | authors | title | journal | volume | page | year | doi | description |\n");
 
     // run the statement
     while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
@@ -326,6 +326,25 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
         printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
                key,authors,title,journal,volume,page,year,doi,description);
       }
+    }
+  } else if (category == "SET") {
+    // print table header
+    printf("| id | key | property_type | nstructures | nproperties | litrefs | description |\n");
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_SET]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_SET]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      const unsigned char *key = sqlite3_column_text(statement, 1);
+      const unsigned char *property_type = sqlite3_column_text(statement, 2);
+      int nstructures = sqlite3_column_int(statement, 3);
+      int nproperties = sqlite3_column_int(statement, 4);
+      const unsigned char *litrefs = sqlite3_column_text(statement, 5);
+      const unsigned char *description = sqlite3_column_text(statement, 6);
+
+      printf("| %d | %s | %s | %d | %d | %s | %s |\n",id,
+             key,property_type,nstructures,nproperties,litrefs,description);
     }
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
