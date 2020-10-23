@@ -101,6 +101,16 @@ LIST SET
 
   List the known sets.
 
+INSERT METHOD name.s
+  COMP_DETAILS ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+  DESCRIPTION ...
+END    
+
+  Insert a computational method with name name.s in the database. The
+  method has computational details COMP_DETAILS. LITREFS: literature
+  references. DESCRIPTION: a description of the method.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

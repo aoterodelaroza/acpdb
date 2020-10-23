@@ -145,6 +145,33 @@ INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
        VALUES(:KEY,:PROPERTY_TYPE,:NSTRUCTURES,:NPROPERTIES,:LITREFS,:DESCRIPTION);
 )SQL",
 
+[statement::STMT_LIST_METHOD] = 
+R"SQL(
+SELECT id,key,comp_details,litrefs,description
+FROM Methods;
+)SQL",
+
+[statement::STMT_DELETE_METHOD_ALL] = 
+"DELETE FROM Methods;",
+
+[statement::STMT_DELETE_METHOD_WITH_KEY] = 
+R"SQL(
+DELETE FROM Methods
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_DELETE_METHOD_WITH_ID] =
+R"SQL(
+DELETE FROM Methods
+WHERE id = ?1;
+)SQL",
+
+[statement::STMT_INSERT_METHOD] =
+R"SQL(
+INSERT INTO Methods (key,comp_details,litrefs,description)
+       VALUES(:KEY,:COMP_DETAILS,:LITREFS,:DESCRIPTION);
+)SQL",
+
 };
 //// END of list of SQL statements ////
 
@@ -167,6 +194,11 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_DELETE_SET_WITH_KEY] = true,
   [statement::STMT_DELETE_SET_WITH_ID] = true,
   [statement::STMT_INSERT_SET] = true,
+  [statement::STMT_LIST_METHOD] = false,
+  [statement::STMT_DELETE_METHOD_ALL] = false,
+  [statement::STMT_DELETE_METHOD_WITH_KEY] = true,
+  [statement::STMT_DELETE_METHOD_WITH_ID] = true,
+  [statement::STMT_INSERT_METHOD] = true,
 };
 
 static void throw_exception(sqlite3 *db_){

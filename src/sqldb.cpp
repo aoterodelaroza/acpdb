@@ -125,8 +125,9 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  //// Literature references (LITREF) ////
   if (category == "LITREF") {
+    //// Literature references (LITREF) ////
+
     // bind the key
     stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
 
@@ -179,6 +180,22 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_SET]->step();
+  } else if (category == "METHOD") {
+    //// Methods (METHOD) ////
+
+    // bind the key
+    stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
+
+    // bind the rest of the values
+    std::forward_list<std::string> vlist = {"COMP_DETAILS","LITREFS","DESCRIPTION"};
+    for (auto it = vlist.begin(); it != vlist.end(); ++it){
+      im = kmap.find(*it);
+      if (im != kmap.end())
+        stmt[statement::STMT_INSERT_METHOD]->bind(":" + *it,im->second);
+    }
+
+    // submit
+    stmt[statement::STMT_INSERT_METHOD]->step();
   }
 }
 
@@ -299,6 +316,24 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         stmt[statement::STMT_DELETE_SET_WITH_KEY]->step();
       }
     }
+  } else if (category == "METHOD") {
+    //// Methods (METHOD) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_METHOD_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_METHOD_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_METHOD_WITH_ID]->step();
+      } else {
+        // a key
+        stmt[statement::STMT_DELETE_METHOD_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_METHOD_WITH_KEY]->step();
+      }
+    }
   }
 }  
 
@@ -363,6 +398,23 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
 
       printf("| %d | %s | %s | %d | %d | %s | %s |\n",id,
              key,property_type,nstructures,nproperties,litrefs,description);
+    }
+  } else if (category == "METHOD") {
+    // print table header
+    printf("| id | key | comp_details | litrefs | description |\n");
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_METHOD]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_METHOD]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      const unsigned char *key = sqlite3_column_text(statement, 1);
+      const unsigned char *comp_details = sqlite3_column_text(statement, 2);
+      const unsigned char *litrefs = sqlite3_column_text(statement, 3);
+      const unsigned char *description = sqlite3_column_text(statement, 4);
+
+      printf("| %d | %s | %s | %s | %s |\n",id,
+             key,comp_details,litrefs,description);
     }
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);

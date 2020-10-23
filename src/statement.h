@@ -50,8 +50,13 @@ class statement {
 	     STMT_DELETE_SET_WITH_KEY = 14, // delete sets, with key
 	     STMT_DELETE_SET_WITH_ID = 15, // delete sets, with id
 	     STMT_INSERT_SET = 16, // insert sets
+	     STMT_LIST_METHOD = 17, // list sets
+	     STMT_DELETE_METHOD_ALL = 18, // delete sets, all
+	     STMT_DELETE_METHOD_WITH_KEY = 19, // delete sets, with key
+	     STMT_DELETE_METHOD_WITH_ID = 20, // delete sets, with id
+	     STMT_INSERT_METHOD = 21, // insert sets
   };
-  static const int number_stmt_types = 17; // number of statement types
+  static const int number_stmt_types = 22; // number of statement types
 
   //// Operators ////
 
