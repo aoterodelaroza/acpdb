@@ -28,7 +28,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "btparse.h"
 #endif
 
-void sqldb::deallocate_statements(){
+int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
+  stmt[type]->bind(1,key);
+  stmt[type]->step();
+  int rc = sqlite3_column_int(stmt[type]->ptr(),0);
+  stmt[type]->reset();
+  return rc;
 }
 
 // Check if the DB is sane, empty, or not sane. If except_on_empty,
@@ -78,6 +83,9 @@ void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRI
   // construct all statements
   for (int i = 0; i < statement::number_stmt_types; i++)
     stmt[i] = new statement(db,(statement::stmttype) i);
+
+  // initialize the database
+  stmt[statement::STMT_INIT_DATABASE]->execute();
 }
 
 // Create the database skeleton.
@@ -114,24 +122,16 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT " + category);
 
+  // declare the map const_iterator for key searches
+  std::unordered_map<std::string,std::string>::const_iterator im;
+
   //// Literature references (LITREF) ////
   if (category == "LITREF") {
-    // declare the map const_iterator for key searches
-    std::unordered_map<std::string,std::string>::const_iterator im;
-
     // bind the key
-    stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":REF_KEY",key,false);
-
-    // bind author or authors
-    if ((im = kmap.find("AUTHOR")) != kmap.end() || (im = kmap.find("AUTHORS")) != kmap.end())
-      stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":AUTHORS",im->second);
-
-    // bind page or pages
-    if ((im = kmap.find("PAGE")) != kmap.end() || (im = kmap.find("PAGES")) != kmap.end())
-      stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":PAGE",im->second);
+    stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
 
     // bind the rest of the values
-    std::forward_list<std::string> vlist = {"TITLE","JOURNAL","VOLUME","YEAR","DOI","DESCRIPTION"};
+    std::forward_list<std::string> vlist = {"AUTHORS","TITLE","JOURNAL","VOLUME","PAGE","YEAR","DOI","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
       im = kmap.find(*it);
       if (im != kmap.end())
@@ -140,6 +140,45 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_LITREF]->step();
+  } else if (category == "SET") {
+    //// Sets (SET) ////  
+
+    // bind the key
+    stmt[statement::STMT_INSERT_SET]->bind((char *) ":KEY",key);
+
+    // bind the rest of the values
+    if ((im = kmap.find("DESCRIPTION")) != kmap.end())
+      stmt[statement::STMT_INSERT_SET]->bind((char *) ":DESCRIPTION",im->second);
+
+    if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+      if (isinteger(im->second)){
+        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
+      } else {
+        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",
+                                               find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
+      }
+    }
+
+    if ((im = kmap.find("NSTRUCTURES")) != kmap.end())
+      stmt[statement::STMT_INSERT_SET]->bind((char *) ":NSTRUCTURES",std::stoi(im->second));
+
+    if ((im = kmap.find("NPROPERTIES")) != kmap.end())
+      stmt[statement::STMT_INSERT_SET]->bind((char *) ":NPROPERTIES",std::stoi(im->second));
+
+    if ((im = kmap.find("LITREFS")) != kmap.end()){
+      std::list<std::string> tokens = list_all_words(im->second);
+      std::string str = "";
+      for (auto it = tokens.begin(); it != tokens.end(); it++){
+        int idx = find_id_from_key(*it,statement::STMT_QUERY_LITREF);
+        if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+          throw std::runtime_error("Litref not found: " + *it);
+        str = str + *it + " ";
+      }
+      stmt[statement::STMT_INSERT_SET]->bind((char *) ":LITREFS",str);
+    }
+
+    // submit
+    stmt[statement::STMT_INSERT_SET]->step();
   }
 }
 
@@ -170,7 +209,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 
       if (equali_strings(type,"article")){
         // bind the key
-        stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":REF_KEY",key,false);
+        stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
         
         // bind the rest of the fields
         char *fname = NULL;
@@ -232,13 +271,13 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
       if (*it == "*"){
         // all
         stmt[statement::STMT_DELETE_LITREF_ALL]->execute();
-      } else if (it->find_first_not_of("0123456789") == std::string::npos){
+      } else if (isinteger(*it)){
         // an integer
-        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->bind< int,std::string >(1,*it);
+        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->bind(1,*it);
         stmt[statement::STMT_DELETE_LITREF_WITH_ID]->step();
       } else {
         // a key
-        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->bind< int,std::string >(1,*it);
+        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->bind(1,*it);
         stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->step();
       }
     }
@@ -255,14 +294,14 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
 
     // print table header
     if (!dobib)
-      printf("| id | ref_key | authors | title | journal | volume | page | %year | doi | description |\n");
+      printf("| id | key | authors | title | journal | volume | page | %year | doi | description |\n");
 
     // run the statement
     while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
       sqlite3_stmt *statement = stmt[statement::STMT_LIST_LITREF]->ptr();
 
       int id = sqlite3_column_int(statement, 0);
-      const unsigned char *ref_key = sqlite3_column_text(statement, 1);
+      const unsigned char *key = sqlite3_column_text(statement, 1);
       const unsigned char *authors = sqlite3_column_text(statement, 2);
       const unsigned char *title = sqlite3_column_text(statement, 3);
       const unsigned char *journal = sqlite3_column_text(statement, 4);
@@ -273,7 +312,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       const unsigned char *description = sqlite3_column_text(statement, 9);
 
       if (dobib){
-        printf("@article{%s\n",ref_key);
+        printf("@article{%s\n",key);
         if (sqlite3_column_type(statement,2) != SQLITE_NULL) printf(" authors={%s},\n",authors);
         if (sqlite3_column_type(statement,3) != SQLITE_NULL) printf(" title={%s},\n",title);
         if (sqlite3_column_type(statement,4) != SQLITE_NULL) printf(" journal={%s},\n",journal);
@@ -285,7 +324,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
         printf("}\n");
       } else {
         printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
-               ref_key,authors,title,journal,volume,page,year,doi,description);
+               key,authors,title,journal,volume,page,year,doi,description);
       }
     }
   } else { 

@@ -77,11 +77,8 @@ class sqldb {
 
  private:
 
-  // allocate and prepare statements
-  void allocate_statements();
-
-  // deallocate and finalize statements
-  void deallocate_statements();
+  // Find the property type ID corresponding to the key 
+  int find_id_from_key(const std::string &key,statement::stmttype type);
 
   // prepared SQLite statments
   statement *stmt[statement::number_stmt_types];

@@ -64,6 +64,7 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, 
     ukeyw = keyw;
     transform(ukeyw.begin(), ukeyw.end(), ukeyw.begin(), ::toupper);
     if (ukeyw == "END") break;
+    line.erase(line.begin(), std::find_if(line.begin(),line.end(), std::bind1st(std::not_equal_to<char>(),' ')));
     if (toupper)
       result[ukeyw] = line;
     else

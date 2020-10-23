@@ -20,12 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //// List of SQL statements ////
 static const char *statement_text[statement::number_stmt_types] = {
-
 [statement::STMT_CREATE_DATABASE] = 
 R"SQL(
 CREATE TABLE Literature_refs (
   id          INTEGER PRIMARY KEY NOT NULL,
-  ref_key     TEXT UNIQUE NOT NULL,
+  key         TEXT UNIQUE NOT NULL,
   authors     TEXT,
   title       TEXT,
   journal     TEXT,
@@ -37,19 +36,32 @@ CREATE TABLE Literature_refs (
 );
 CREATE TABLE Property_types (
   id          INTEGER PRIMARY KEY NOT NULL,
-  name        TEXT UNIQUE NOT NULL,
+  key         TEXT UNIQUE NOT NULL,
   description TEXT
 );
-INSERT INTO Property_types (name,description)
+CREATE TABLE Sets (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  key           TEST UNIQUE NOT NULL,
+  property_type INTEGER NOT NULL,
+  nstructures   INTEGER NOT NULL,
+  nproperties   INTEGER NOT NULL,
+  description   TEXT,
+  litrefs       TEXT,
+  FOREIGN KEY(property_type) REFERENCES Property_types(id)
+);
+INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');
 )SQL",
 
+[statement::STMT_INIT_DATABASE] = 
+"PRAGMA foreign_keys = ON;", 
+
 [statement::STMT_BEGIN_TRANSACTION] =
-"BEGIN TRANSACTION",
+"BEGIN TRANSACTION;",
 
 [statement::STMT_COMMIT_TRANSACTION] =
-"COMMIT TRANSACTION",
+"COMMIT TRANSACTION;",
 
 [statement::STMT_CHECK_DATABASE] = 
 R"SQL(
@@ -58,40 +70,71 @@ FROM sqlite_master
 WHERE type='table' AND name='Literature_refs';
 )SQL",
 
+[statement::STMT_QUERY_PROPTYPE] = 
+R"SQL(
+SELECT id
+FROM Property_types
+WHERE key = ?1;
+)SQL",
+
 [statement::STMT_LIST_LITREF] = 
 R"SQL(
-SELECT id,ref_key,authors,title,journal,volume,page,year,doi,description
-FROM Literature_refs
+SELECT id,key,authors,title,journal,volume,page,year,doi,description
+FROM Literature_refs;
 )SQL",
 
 [statement::STMT_DELETE_LITREF_ALL] = 
 "DELETE FROM Literature_refs;",
 
 [statement::STMT_DELETE_LITREF_WITH_KEY] = 
-"DELETE FROM Literature_refs WHERE ref_key = ?1;",
+R"SQL(
+DELETE FROM Literature_refs
+WHERE key = ?1;
+)SQL",
 
 [statement::STMT_DELETE_LITREF_WITH_ID] =
-"DELETE FROM Literature_refs WHERE id = ?1;",
+R"SQL(
+DELETE FROM Literature_refs
+WHERE id = ?1;
+)SQL",
 
 [statement::STMT_INSERT_LITREF] =
 R"SQL(
-INSERT INTO Literature_refs (ref_key,authors,title,journal,volume,page,year,doi,description)
-       VALUES(:REF_KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION)
+INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
+       VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL",
+
+[statement::STMT_QUERY_LITREF] = 
+R"SQL(
+SELECT id
+FROM Literature_refs
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_INSERT_SET] =
+R"SQL(
+INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
+       VALUES(:KEY,:PROPERTY_TYPE,:NSTRUCTURES,:NPROPERTIES,:LITREFS,:DESCRIPTION);
+)SQL",
+
 };
 //// END of list of SQL statements ////
 
 // whether the statement has bindings
 static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_CREATE_DATABASE] = false,
+  [statement::STMT_INIT_DATABASE] = false,
   [statement::STMT_BEGIN_TRANSACTION] = false,
   [statement::STMT_COMMIT_TRANSACTION] = false,
   [statement::STMT_CHECK_DATABASE] = false,
+  [statement::STMT_QUERY_PROPTYPE] = true,
   [statement::STMT_LIST_LITREF] = false,
   [statement::STMT_DELETE_LITREF_ALL] = false,
   [statement::STMT_DELETE_LITREF_WITH_KEY] = true,
   [statement::STMT_DELETE_LITREF_WITH_ID] = true,
   [statement::STMT_INSERT_LITREF] = true,
+  [statement::STMT_QUERY_LITREF] = true,
+  [statement::STMT_INSERT_SET] = true,
 };
 
 static void throw_exception(sqlite3 *db_){

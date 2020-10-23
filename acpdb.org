@@ -51,11 +51,11 @@ DISCONNECT
   Disconnect the current database.
 
 INSERT LITREF ref.s
-  AUTHOR|AUTHORS ... 
+  AUTHORS ... 
   TITLE ...
   JOURNAL ... 
   VOLUME ...
-  PAGE|PAGES ...
+  PAGE ...
   YEAR ...
   DOI ... 
   DESCRIPTION ... 
@@ -80,14 +80,33 @@ LIST LITREF [BIBTEX]
   keyword is used, write the list of literature referneces in bibtex
   format.
 
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  NSTRUCTURES nstruct.i
+  NPROPERTIES nprop.i
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+END
+
+  Insert a set with name name.s in the database. The set calculates
+  property prop.s/prop.i from Property_types and has nstruct.i
+  structures. One or more references from Table 1 can be given by id
+  or key.
+
+DELETE SET {set.s|set.i}
+
+  Delete a set (Table 3).
+
+LIST SET
+
+  List the known sets.
+
 * Database schema
 
-** Table 1: literature references (litref)
-
-* Table 1: literature references (Literature_refs)
+** Table 1: literature references (Literature_refs)
 
 - id          INTEGER PRIMARY KEY NOT NULL
-- ref_key     TEXT UNIQUE NOT NULL
+- key         TEXT UNIQUE NOT NULL
 - authors     TEXT
 - title       TEXT
 - journal     TEXT
@@ -97,9 +116,18 @@ LIST LITREF [BIBTEX]
 - doi         TEXT UNIQUE
 - description TEXT
 
-* Table 2: property types (Property_types)
+** Table 2: property types (Property_types)
 
 - id          INTEGER PRIMARY KEY NOT NULL
-- name        TEXT UNIQUE NOT NULL
+- key         TEXT UNIQUE NOT NULL
 - description TEXT
 
+** Table 3: sets
+
+- id            INTEGER PRIMARY KEY NOT NULL,
+- key           TEST UNIQUE NOT NULL,
+- property_type INTEGER NOT NULL,   
+- nstructures   INTEGER NOT NULL,
+- nproperties   INTEGER NOT NULL,
+- description   TEXT
+- litrefs       TEXT,

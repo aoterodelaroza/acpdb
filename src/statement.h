@@ -34,16 +34,20 @@ class statement {
   enum stmttype { 
 	     STMT_NONE = -1, // no statement
 	     STMT_CREATE_DATABASE = 0, // create the database
-	     STMT_BEGIN_TRANSACTION = 1, // begin a transaction
-	     STMT_COMMIT_TRANSACTION = 2, // commit a transaction
-	     STMT_CHECK_DATABASE = 3, // create the database
-	     STMT_LIST_LITREF = 4, // list literature references
-	     STMT_DELETE_LITREF_ALL = 5, // delete literature references, all
-	     STMT_DELETE_LITREF_WITH_KEY = 6, // delete literature references, with key
-	     STMT_DELETE_LITREF_WITH_ID = 7, // delete literature references, with id
-	     STMT_INSERT_LITREF = 8, // insert literature references
+	     STMT_INIT_DATABASE = 1, // initialize the database
+	     STMT_BEGIN_TRANSACTION = 2, // begin a transaction
+	     STMT_COMMIT_TRANSACTION = 3, // commit a transaction
+	     STMT_CHECK_DATABASE = 4, // create the database
+	     STMT_QUERY_PROPTYPE = 5, // query propety types
+	     STMT_LIST_LITREF = 6, // list literature references
+	     STMT_DELETE_LITREF_ALL = 7, // delete literature references, all
+	     STMT_DELETE_LITREF_WITH_KEY = 8, // delete literature references, with key
+	     STMT_DELETE_LITREF_WITH_ID = 9, // delete literature references, with id
+	     STMT_INSERT_LITREF = 10, // insert literature references
+	     STMT_QUERY_LITREF = 11, // query propety types
+	     STMT_INSERT_SET = 12, // insert sets
   };
-  static const int number_stmt_types = 9; // number of statement types
+  static const int number_stmt_types = 13; // number of statement types
 
   //// Operators ////
 
@@ -100,7 +104,7 @@ class statement {
     rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient);
 
     if (rc)
-      throw std::runtime_error("Error during bind");
+      throw std::runtime_error("bind error - " + std::string(sqlite3_errmsg(db)));
 
     return rc;
   }
@@ -132,6 +136,14 @@ template<> struct statement::bind_dispatcher< char *, std::string > {
 template<> struct statement::bind_dispatcher< char *, char * > {
   static int impl(sqlite3_stmt *stmt, const char *col, const char *arg, bool transient){ 
     return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg,-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
+
+template<> struct statement::bind_dispatcher< std::string, int > {
+  static int impl(sqlite3_stmt *stmt, const std::string &col, const int arg, bool transient){ 
+    return sqlite3_bind_int(stmt,sqlite3_bind_parameter_index(stmt,col.c_str()),arg);}};
+
+template<> struct statement::bind_dispatcher< char *, int > {
+  static int impl(sqlite3_stmt *stmt, const char *col, const int arg, bool transient){ 
+    return sqlite3_bind_int(stmt,sqlite3_bind_parameter_index(stmt,col),arg);}};
 
 #endif
 

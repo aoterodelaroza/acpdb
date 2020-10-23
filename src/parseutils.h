@@ -44,5 +44,10 @@ std::string popstring(std::list<std::string> &list, bool toupper = false);
 // Compare two strings for equality regardless of case.
 bool equali_strings(const std::string& a, const std::string& b);
 
+// Check if a string can be converted to an integer.
+inline bool isinteger(const std::string &a){
+  return a.find_first_not_of("0123456789 ") == std::string::npos;
+}
+
 #endif
 
