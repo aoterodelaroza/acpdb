@@ -49,6 +49,13 @@ CREATE TABLE Sets (
   description   TEXT,
   FOREIGN KEY(property_type) REFERENCES Property_types(id)
 );
+CREATE TABLE Methods (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  key           TEXT UNIQUE NOT NULL,
+  comp_details  TEXT,
+  litrefs       TEXT,
+  description   TEXT
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');

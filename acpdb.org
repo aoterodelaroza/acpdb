@@ -131,3 +131,12 @@ LIST SET
 - nproperties   INTEGER NOT NULL,
 - description   TEXT
 - litrefs       TEXT,
+
+** Table 4: methods
+
+- id            INTEGER PRIMARY KEY NOT NULL,
+- key           TEXT UNIQUE NOT NULL,
+- comp_details  TEXT,
+- litrefs       TEXT,
+- description   TEXT,
+
