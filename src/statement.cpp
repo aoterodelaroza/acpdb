@@ -41,7 +41,7 @@ CREATE TABLE Property_types (
 );
 CREATE TABLE Sets (
   id            INTEGER PRIMARY KEY NOT NULL,
-  key           TEST UNIQUE NOT NULL,
+  key           TEXT UNIQUE NOT NULL,
   property_type INTEGER NOT NULL,
   nstructures   INTEGER NOT NULL,
   nproperties   INTEGER NOT NULL,
