@@ -60,10 +60,12 @@ CREATE TABLE Structures (
   id            INTEGER PRIMARY KEY NOT NULL,
   key           TEXT UNIQUE NOT NULL,
   setid         INTEGER NOT NULL,
+  ismolecule    INTEGER NOT NULL,
   charge        INTEGER,
   multiplicity  INTEGER,
   nat           INTEGER NOT NULL,
   cell          BLOB,
+  zatoms        BLOB NOT NULL,
   coordinates   BLOB NOT NULL,
   FOREIGN KEY(setid) REFERENCES Sets(id)
 );
@@ -156,6 +158,13 @@ INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
        VALUES(:KEY,:PROPERTY_TYPE,:NSTRUCTURES,:NPROPERTIES,:LITREFS,:DESCRIPTION);
 )SQL",
 
+[statement::STMT_QUERY_SET] = 
+R"SQL(
+SELECT id
+FROM Sets
+WHERE key = ?1;
+)SQL",
+
 [statement::STMT_LIST_METHOD] = 
 R"SQL(
 SELECT id,key,comp_details,litrefs,description
@@ -185,7 +194,7 @@ INSERT INTO Methods (key,comp_details,litrefs,description)
 
 [statement::STMT_LIST_STRUCTURE] = 
 R"SQL(
-SELECT id,key,setid,charge,multiplicity,nat,cell,coordinates
+SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
 FROM Structures;
 )SQL",
 
@@ -206,8 +215,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_STRUCTURE] =
 R"SQL(
-INSERT INTO Structures (key,setid,charge,multiplicity,nat,cell,coordinates)
-       VALUES(:KEY,:SETID,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:COORDINATES);
+INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL",
 
 };
@@ -232,6 +241,7 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_DELETE_SET_WITH_KEY] = true,
   [statement::STMT_DELETE_SET_WITH_ID] = true,
   [statement::STMT_INSERT_SET] = true,
+  [statement::STMT_QUERY_SET] = true,
   [statement::STMT_LIST_METHOD] = false,
   [statement::STMT_DELETE_METHOD_ALL] = false,
   [statement::STMT_DELETE_METHOD_WITH_KEY] = true,

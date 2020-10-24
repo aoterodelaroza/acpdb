@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
+#include "structure.h"
 
 #include "config.h"
 #ifdef BTPARSE_FOUND  
@@ -196,6 +197,46 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_METHOD]->step();
+  } else if (category == "STRUCTURE") {
+    //// Structures (STRUCTURE) ////
+
+    // read the molecular structure
+    structure s;
+    std::unordered_map<std::string,std::string>::const_iterator im;
+    if ((im = kmap.find("XYZ")) != kmap.end()){
+      s.readxyz(im->second);
+    } else {
+      throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
+    }
+
+    // bind the key
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":KEY",key,false);
+
+    // bind the integer values
+    int nat = s.get_nat();
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":NAT",nat,false);
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CHARGE",s.get_charge(),false);
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":MULTIPLICITY",s.get_mult(),false);
+
+    // the set ID
+    if ((im = kmap.find("SET")) != kmap.end()){
+      if (isinteger(im->second)){
+        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",std::stoi(im->second));
+      } else {
+        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",
+                                               find_id_from_key(im->second,statement::STMT_QUERY_SET));
+      }
+    }
+
+    // bind the blobs
+    if (!s.ismolecule())
+      stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+
+    // submit
+    stmt[statement::STMT_INSERT_STRUCTURE]->step();
   }
 }
 

@@ -90,16 +90,16 @@ int structure::readxyz(const std::string &filename){
   ifile >> charge >> mult;
   if (ifile.fail()) return 2;
 
-  // initialize the lattice vectors
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; i < 3; i++)
-      r[i][j] = 0;
-
   // allocate space for atomic symbols and coordinates
   if (z) delete z;
   if (x) delete x;
+  if (r) delete r;
   z = new unsigned char[nat];
   x = new double[3*nat];
+  r = new double[3*3];
+
+  // initialize the lattice vectors
+  std::fill(r, r+9, 0);
 
   // read the atomic symbols and coordinates
   for (int i = 0; i < nat; i++){
@@ -111,11 +111,14 @@ int structure::readxyz(const std::string &filename){
     if (z[i] == 0) return 3;
   }
 
+  // this is a molecule
+  ismol = true;
+
   return 0;
 }
 
 // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
-int structure::writexyz(std::ostream &os){
+int structure::writexyz(std::ostream &os) const {
   if (!x || !z) return 1;
   os << nat << std::endl 
      << charge << " " << mult << std::endl;

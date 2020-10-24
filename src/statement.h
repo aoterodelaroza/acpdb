@@ -44,24 +44,25 @@ class statement {
 	     STMT_DELETE_LITREF_WITH_KEY = 8, // delete literature references, with key
 	     STMT_DELETE_LITREF_WITH_ID = 9, // delete literature references, with id
 	     STMT_INSERT_LITREF = 10, // insert literature references
-	     STMT_QUERY_LITREF = 11, // query propety types
+	     STMT_QUERY_LITREF = 11, // query literature references
 	     STMT_LIST_SET = 12, // list sets
 	     STMT_DELETE_SET_ALL = 13, // delete sets, all
 	     STMT_DELETE_SET_WITH_KEY = 14, // delete sets, with key
 	     STMT_DELETE_SET_WITH_ID = 15, // delete sets, with id
 	     STMT_INSERT_SET = 16, // insert sets
-	     STMT_LIST_METHOD = 17, // list sets
-	     STMT_DELETE_METHOD_ALL = 18, // delete sets, all
-	     STMT_DELETE_METHOD_WITH_KEY = 19, // delete sets, with key
-	     STMT_DELETE_METHOD_WITH_ID = 20, // delete sets, with id
-	     STMT_INSERT_METHOD = 21, // insert sets
-	     STMT_LIST_STRUCTURE = 22, // list structures
-	     STMT_DELETE_STRUCTURE_ALL = 23, // delete structures, all
-	     STMT_DELETE_STRUCTURE_WITH_KEY = 24, // delete structures, with key
-	     STMT_DELETE_STRUCTURE_WITH_ID = 25, // delete structures, with id
-	     STMT_INSERT_STRUCTURE = 26, // insert structures
+	     STMT_QUERY_SET = 17, // query sets
+	     STMT_LIST_METHOD = 18, // list sets
+	     STMT_DELETE_METHOD_ALL = 19, // delete sets, all
+	     STMT_DELETE_METHOD_WITH_KEY = 20, // delete sets, with key
+	     STMT_DELETE_METHOD_WITH_ID = 21, // delete sets, with id
+	     STMT_INSERT_METHOD = 22, // insert sets
+	     STMT_LIST_STRUCTURE = 23, // list structures
+	     STMT_DELETE_STRUCTURE_ALL = 24, // delete structures, all
+	     STMT_DELETE_STRUCTURE_WITH_KEY = 25, // delete structures, with key
+	     STMT_DELETE_STRUCTURE_WITH_ID = 26, // delete structures, with id
+	     STMT_INSERT_STRUCTURE = 27, // insert structures
   };
-  static const int number_stmt_types = 27; // number of statement types
+  static const int number_stmt_types = 28; // number of statement types
 
   //// Operators ////
 
@@ -106,7 +107,7 @@ class statement {
 
   // Bind arguments to the parameters of the statement
   template<typename Tcol, typename Targ>
-  int bind(const Tcol &col, const Targ &arg, const bool transient = true){
+  int bind(const Tcol &col, const Targ &arg, const bool transient = true, int nbytes = 0){
     if (!db)
       throw std::runtime_error("A database file must be connected before binding");
     if (type == STMT_NONE)
@@ -115,7 +116,7 @@ class statement {
     if (!prepared) prepare();
 
     int rc = 0;
-    rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient);
+    rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient,nbytes);
 
     if (rc)
       throw std::runtime_error("bind error - " + std::string(sqlite3_errmsg(db)));
@@ -136,28 +137,32 @@ class statement {
 
 // bind dispatcher template specializations
 template<> struct statement::bind_dispatcher< int, std::string > {
-  static int impl(sqlite3_stmt *stmt, const int col, const std::string &arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const int col, const std::string &arg, bool transient, int nbytes){ 
     return sqlite3_bind_text(stmt,col,arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 template<> struct statement::bind_dispatcher< std::string, std::string > {
-  static int impl(sqlite3_stmt *stmt, const std::string &col, const std::string &arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const std::string &col, const std::string &arg, bool transient, int nbytes){ 
     return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col.c_str()),arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 template<> struct statement::bind_dispatcher< char *, std::string > {
-  static int impl(sqlite3_stmt *stmt, const char *col, const std::string &arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const char *col, const std::string &arg, bool transient, int nbytes){ 
     return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 template<> struct statement::bind_dispatcher< char *, char * > {
-  static int impl(sqlite3_stmt *stmt, const char *col, const char *arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const char *col, const char *arg, bool transient, int nbytes){ 
     return sqlite3_bind_text(stmt,sqlite3_bind_parameter_index(stmt,col),arg,-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 template<> struct statement::bind_dispatcher< std::string, int > {
-  static int impl(sqlite3_stmt *stmt, const std::string &col, const int arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const std::string &col, const int arg, bool transient, int nbytes){ 
     return sqlite3_bind_int(stmt,sqlite3_bind_parameter_index(stmt,col.c_str()),arg);}};
 
 template<> struct statement::bind_dispatcher< char *, int > {
-  static int impl(sqlite3_stmt *stmt, const char *col, const int arg, bool transient){ 
+  static int impl(sqlite3_stmt *stmt, const char *col, const int arg, bool transient, int nbytes){ 
     return sqlite3_bind_int(stmt,sqlite3_bind_parameter_index(stmt,col),arg);}};
+
+template<> struct statement::bind_dispatcher< char *, void * > {
+  static int impl(sqlite3_stmt *stmt, const char *col, const void *arg, bool transient, int nbytes){ 
+    return sqlite3_bind_blob(stmt,sqlite3_bind_parameter_index(stmt,col),arg,nbytes,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
 
 #endif
 

@@ -111,6 +111,22 @@ END
   method has computational details COMP_DETAILS. LITREFS: literature
   references. DESCRIPTION: a description of the method.
 
+DELETE METHOD {methdo.s|method.i}
+
+  Delete a method (Table 4).
+
+LIST METHOD
+
+  List the known methods.
+
+INSERT STRUCTURE name.s
+  XYZ file.s
+  SET {set.s|set.i}
+END
+
+  Insert structure with key name.s from xyz file file.s. This
+  structure belongs in set set.s/set.i.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)
@@ -136,17 +152,30 @@ END
 
 - id            INTEGER PRIMARY KEY NOT NULL,
 - key           TEST UNIQUE NOT NULL,
-- property_type INTEGER NOT NULL,   
+- property_type INTEGER NOT NULL,   ## foreign key: table 2 (Property_types)
 - nstructures   INTEGER NOT NULL,
 - nproperties   INTEGER NOT NULL,
 - description   TEXT
-- litrefs       TEXT,
+- litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
 
 ** Table 4: methods
 
 - id            INTEGER PRIMARY KEY NOT NULL,
 - key           TEXT UNIQUE NOT NULL,
 - comp_details  TEXT,
-- litrefs       TEXT,
-- description   TEXT,
+- litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
+- description   TEXT, 
+
+** Table 5: structures
+
+- id            INTEGER PRIMARY KEY NOT NULL,
+- key           TEXT UNIQUE NOT NULL,
+- setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
+- ismolecule    INTEGER NOT NULL,
+- charge        INTEGER,
+- multiplicity  INTEGER,
+- nat           INTEGER NOT NULL,
+- cell          BLOB,
+- zatoms        BLOB NOT NULL,
+- coordinates   BLOB NOT NULL,
 
