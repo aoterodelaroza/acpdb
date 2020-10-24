@@ -67,8 +67,13 @@ class statement {
 	     STMT_DELETE_PROPERTY_WITH_KEY = 31, // delete structures, with key
 	     STMT_DELETE_PROPERTY_WITH_ID = 32, // delete structures, with id
 	     STMT_INSERT_PROPERTY = 33, // insert structures
+	     STMT_LIST_EVALUATION = 34, // list structures
+	     STMT_DELETE_EVALUATION_ALL = 35, // delete structures, all
+	     STMT_DELETE_EVALUATION_WITH_KEY = 36, // delete structures, with key
+	     STMT_DELETE_EVALUATION_WITH_ID = 37, // delete structures, with id
+	     STMT_INSERT_EVALUATION = 38, // insert structures
   };
-  static const int number_stmt_types = 34; // number of statement types
+  static const int number_stmt_types = 39; // number of statement types
 
   //// Operators ////
 

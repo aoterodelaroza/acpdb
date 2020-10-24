@@ -78,6 +78,15 @@ CREATE TABLE Properties (
   FOREIGN KEY(property_type) REFERENCES Property_types(id),
   FOREIGN KEY(setid) REFERENCES Sets(id)
 );
+CREATE TABLE Evaluations (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  methodid      INTEGER NOT NULL,
+  propid        INTEGER NOT NULL,
+  value         REAL NOT NULL,
+  unit          TEXT,
+  FOREIGN KEY(methodid) REFERENCES Methods(id),
+  FOREIGN KEY(propid) REFERENCES Properties(id)
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');
@@ -260,6 +269,33 @@ WHERE id = ?1;
 R"SQL(
 INSERT INTO Properties (id,key,property_type,setid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+)SQL",
+
+[statement::STMT_LIST_EVALUATION] = 
+R"SQL(
+SELECT id,methodid,propid,value,unit
+FROM Evaluations;
+)SQL",
+
+[statement::STMT_DELETE_EVALUATION_ALL] = 
+"DELETE FROM Evaluations;",
+
+[statement::STMT_DELETE_EVALUATION_WITH_KEY] = 
+R"SQL(
+DELETE FROM Evaluations
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_DELETE_EVALUATION_WITH_ID] =
+R"SQL(
+DELETE FROM Evaluations
+WHERE id = ?1;
+)SQL",
+
+[statement::STMT_INSERT_EVALUATION] =
+R"SQL(
+INSERT INTO Evaluations (id,methodid,propid,value,unit)
+       VALUES(:ID,:METHODID,:PROPID,:VALUE,:UNIT)
 )SQL",
 
 };

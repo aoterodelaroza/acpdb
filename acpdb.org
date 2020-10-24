@@ -214,3 +214,11 @@ LIST PROPERTY
 - structures    BLOB NOT NULL, ## references table 5 (Structures)
 - coefficients  BLOB NOT NULL,
 
+** Table 7: evaluations
+
+- id            INTEGER PRIMARY KEY NOT NULL,
+- methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
+- propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
+- value         REAL NOT NULL,
+- unit          TEXT,
+
