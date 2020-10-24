@@ -20,6 +20,7 @@
 #define STRUCTURE_H
 
 #include <string>
+#include "sqlite3.h"
 
 class structure {
   
@@ -35,11 +36,8 @@ class structure {
   structure(structure&& rhs) = delete; // move constructor (deleted)
   structure(const structure& rhs) = delete; // copy constructor (deleted)
   // destructors
-  ~structure(){
-    if (x) delete x;
-    if (z) delete z;
-    if (r) delete r;
-  }
+  ~structure(){ deallocate(); };
+
   // bool operator
   operator bool() const { return x; }
 
@@ -51,6 +49,9 @@ class structure {
   // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
   int writexyz (std::ostream &os) const;
 
+  // Read the structure from a database row obtained via SELECT. Non-zero if error, 0 if correct.
+  int readdbrow (sqlite3_stmt *stmt);
+
   // c++ accessor functions
   bool ismolecule() const { return ismol; } 
   int get_nat() const { return nat; }
@@ -61,6 +62,16 @@ class structure {
   const double *get_x() const { return x; }
 
  private:
+  //// Private methods ////
+
+  // Delete the storage space
+  void deallocate();
+
+  // Allocate the storage space
+  void allocate();
+
+  //// Private data ////
+
   bool ismol; // whether this is a molecule
   int nat; // the number of atoms
   int charge; // molecular charge

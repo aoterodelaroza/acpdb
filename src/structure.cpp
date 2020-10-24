@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
+#include <cstring>
 
 static unsigned char zatguess(std::string atsym){
   const std::unordered_map<std::string, unsigned char> an = {
@@ -78,6 +79,20 @@ static std::string nameguess(unsigned char z){
   return an[z-1];
 }
 
+// Delete the storage space
+void structure::deallocate(){
+  if (x) delete x;
+  if (z) delete z;
+  if (r) delete r;
+}
+
+// Allocate the storage space
+void structure::allocate(){
+  z = new unsigned char[nat];
+  x = new double[3*nat];
+  r = new double[3*3];
+}
+
 // Read an xyz file. Return non-zero if error; 0 if correct.
 int structure::readxyz(const std::string &filename){
 
@@ -91,12 +106,8 @@ int structure::readxyz(const std::string &filename){
   if (ifile.fail()) return 2;
 
   // allocate space for atomic symbols and coordinates
-  if (z) delete z;
-  if (x) delete x;
-  if (r) delete r;
-  z = new unsigned char[nat];
-  x = new double[3*nat];
-  r = new double[3*3];
+  deallocate();
+  allocate();
 
   // initialize the lattice vectors
   std::fill(r, r+9, 0);
@@ -138,3 +149,25 @@ int structure::writexyz(std::ostream &os) const {
   return 0;
 }
 
+// Read the structure from a database row obtained via SELECT. Non-zero if error, 0 if correct.
+int structure::readdbrow(sqlite3_stmt *stmt){
+  if (!stmt) return 1;
+  
+  ismol = sqlite3_column_int(stmt, 3);
+  charge = sqlite3_column_int(stmt, 4);
+  mult = sqlite3_column_int(stmt, 5);
+  nat = sqlite3_column_int(stmt, 6);
+
+  deallocate();
+  allocate();
+
+  const double *rptr = (double *) sqlite3_column_blob(stmt, 7);
+  if (rptr)
+    memcpy(r, rptr, 0 * sizeof(double));
+  else
+    std::fill(r, r+9, 0);
+  memcpy(z, sqlite3_column_blob(stmt, 8), nat * sizeof(unsigned char));
+  memcpy(x, sqlite3_column_blob(stmt, 9), 3*nat * sizeof(double));
+
+  return 0;
+}

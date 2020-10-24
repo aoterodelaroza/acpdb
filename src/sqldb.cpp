@@ -375,6 +375,24 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         stmt[statement::STMT_DELETE_METHOD_WITH_KEY]->step();
       }
     }
+  } else if (category == "STRUCTURE") {
+    //// Methods (STRUCTURE) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_STRUCTURE_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_STRUCTURE_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_STRUCTURE_WITH_ID]->step();
+      } else {
+        // a key
+        stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->step();
+      }
+    }
   }
 }  
 
@@ -456,6 +474,24 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
 
       printf("| %d | %s | %s | %s | %s |\n",id,
              key,comp_details,litrefs,description);
+    }
+  } else if (category == "STRUCTURE") {
+    // print table header
+    printf("| id | key | set | ismolecule | nat |\n");
+
+    structure s;
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_STRUCTURE]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_STRUCTURE]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      const unsigned char *key = sqlite3_column_text(statement, 1);
+      int setid = sqlite3_column_int(statement, 2);
+      int ismol = sqlite3_column_int(statement, 3);
+      int nat = sqlite3_column_int(statement, 6);
+
+      printf("| %d | %s | %d | %d | %d |\n",id,key,setid,ismol,nat);
     }
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
