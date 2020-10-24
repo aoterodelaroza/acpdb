@@ -56,6 +56,17 @@ CREATE TABLE Methods (
   litrefs       TEXT,
   description   TEXT
 );
+CREATE TABLE Structures (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  key           TEXT UNIQUE NOT NULL,
+  setid         INTEGER NOT NULL,
+  charge        INTEGER,
+  multiplicity  INTEGER,
+  nat           INTEGER NOT NULL,
+  cell          BLOB,
+  coordinates   BLOB NOT NULL,
+  FOREIGN KEY(setid) REFERENCES Sets(id)
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');
@@ -172,6 +183,33 @@ INSERT INTO Methods (key,comp_details,litrefs,description)
        VALUES(:KEY,:COMP_DETAILS,:LITREFS,:DESCRIPTION);
 )SQL",
 
+[statement::STMT_LIST_STRUCTURE] = 
+R"SQL(
+SELECT id,key,setid,charge,multiplicity,nat,cell,coordinates
+FROM Structures;
+)SQL",
+
+[statement::STMT_DELETE_STRUCTURE_ALL] = 
+"DELETE FROM Structures;",
+
+[statement::STMT_DELETE_STRUCTURE_WITH_KEY] = 
+R"SQL(
+DELETE FROM Structures
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_DELETE_STRUCTURE_WITH_ID] =
+R"SQL(
+DELETE FROM Structures
+WHERE id = ?1;
+)SQL",
+
+[statement::STMT_INSERT_STRUCTURE] =
+R"SQL(
+INSERT INTO Structures (key,setid,charge,multiplicity,nat,cell,coordinates)
+       VALUES(:KEY,:SETID,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:COORDINATES);
+)SQL",
+
 };
 //// END of list of SQL statements ////
 
@@ -199,6 +237,11 @@ static const bool has_bindings[statement::number_stmt_types] = {
   [statement::STMT_DELETE_METHOD_WITH_KEY] = true,
   [statement::STMT_DELETE_METHOD_WITH_ID] = true,
   [statement::STMT_INSERT_METHOD] = true,
+  [statement::STMT_LIST_STRUCTURE] = false,
+  [statement::STMT_DELETE_STRUCTURE_ALL] = false,
+  [statement::STMT_DELETE_STRUCTURE_WITH_KEY] = true,
+  [statement::STMT_DELETE_STRUCTURE_WITH_ID] = true,
+  [statement::STMT_INSERT_STRUCTURE] = true,
 };
 
 static void throw_exception(sqlite3 *db_){
