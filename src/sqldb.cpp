@@ -521,6 +521,24 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         stmt[statement::STMT_DELETE_PROPERTY_WITH_KEY]->step();
       }
     }
+  } else if (category == "EVALUATION") {
+    //// Evaluations (EVALUATION) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_EVALUATION_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->step();
+      } else {
+        // a key
+        stmt[statement::STMT_DELETE_EVALUATION_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_EVALUATION_WITH_KEY]->step();
+      }
+    }
   }
 }  
 
@@ -652,6 +670,25 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       os << "| " << id << " | " << key << " | ";
       os << proptype << " | " << setid << " | " << nstructures << " | ";
       os << std::endl;
+    }
+  } else if (category == "EVALUATION") {
+    // print table header
+    os << "| id | methodid | propid | value | unit |" << std::endl;
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_EVALUATION]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_EVALUATION]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      int methodid = sqlite3_column_int(statement, 1);
+      int propid = sqlite3_column_int(statement, 2);
+      double value = sqlite3_column_double(statement, 3);
+      const unsigned char *unit = sqlite3_column_text(statement, 4);
+
+      std::streamsize prec = os.precision(10);
+      os << "| " << id << " | " << methodid << " | " << propid << " | ";
+      os << value << " | " << unit << " | " << std::endl;
+      os.precision(prec);
     }
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);

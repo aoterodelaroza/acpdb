@@ -86,6 +86,7 @@ CREATE TABLE Evaluations (
   unit          TEXT CHECK (unit IN ("KCAL/MOL")),
   FOREIGN KEY(methodid) REFERENCES Methods(id),
   FOREIGN KEY(propid) REFERENCES Properties(id)
+  UNIQUE(methodid,propid)
 );
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
