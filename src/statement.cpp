@@ -220,41 +220,17 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 };
 //// END of list of SQL statements ////
 
-// whether the statement has bindings
-static const bool has_bindings[statement::number_stmt_types] = {
-  [statement::STMT_CREATE_DATABASE] = false,
-  [statement::STMT_INIT_DATABASE] = false,
-  [statement::STMT_BEGIN_TRANSACTION] = false,
-  [statement::STMT_COMMIT_TRANSACTION] = false,
-  [statement::STMT_CHECK_DATABASE] = false,
-  [statement::STMT_QUERY_PROPTYPE] = true,
-  [statement::STMT_LIST_LITREF] = false,
-  [statement::STMT_DELETE_LITREF_ALL] = false,
-  [statement::STMT_DELETE_LITREF_WITH_KEY] = true,
-  [statement::STMT_DELETE_LITREF_WITH_ID] = true,
-  [statement::STMT_INSERT_LITREF] = true,
-  [statement::STMT_QUERY_LITREF] = true,
-  [statement::STMT_LIST_SET] = false,
-  [statement::STMT_DELETE_SET_ALL] = false,
-  [statement::STMT_DELETE_SET_WITH_KEY] = true,
-  [statement::STMT_DELETE_SET_WITH_ID] = true,
-  [statement::STMT_INSERT_SET] = true,
-  [statement::STMT_QUERY_SET] = true,
-  [statement::STMT_LIST_METHOD] = false,
-  [statement::STMT_DELETE_METHOD_ALL] = false,
-  [statement::STMT_DELETE_METHOD_WITH_KEY] = true,
-  [statement::STMT_DELETE_METHOD_WITH_ID] = true,
-  [statement::STMT_INSERT_METHOD] = true,
-  [statement::STMT_LIST_STRUCTURE] = false,
-  [statement::STMT_DELETE_STRUCTURE_ALL] = false,
-  [statement::STMT_DELETE_STRUCTURE_WITH_KEY] = true,
-  [statement::STMT_DELETE_STRUCTURE_WITH_ID] = true,
-  [statement::STMT_INSERT_STRUCTURE] = true,
-};
-
 static void throw_exception(sqlite3 *db_){
   std::string errmsg = "database error - " + std::string(sqlite3_errmsg(db_));
   throw std::runtime_error(errmsg);
+}
+
+// default and parametrized constructor
+statement::statement(sqlite3 *db_/*= nullptr*/, const stmttype type_/*= STMT_CUSTOM*/, std::string text_/*= ""*/):
+  prepared(false), db(db_), type(type_), stmt(nullptr), text(text_), has_bind(false) {
+
+  if (type_ != STMT_CUSTOM) 
+    text = statement_text[type_];
 }
 
 int statement::execute(){
@@ -262,7 +238,7 @@ int statement::execute(){
     throw std::runtime_error("A database file must be connected before executing a statement");
 
   char *errmsg = nullptr;
-  int rc = sqlite3_exec(db, statement_text[type], NULL, NULL, &errmsg);
+  int rc = sqlite3_exec(db, text.c_str(), NULL, NULL, &errmsg);
   if (rc){
     std::string errmsg_s;
     if (errmsg)
@@ -278,8 +254,6 @@ int statement::execute(){
 int statement::step(){
   if (!db)
     throw std::runtime_error("A database file must be connected before stepping a statement");
-  if (type == STMT_NONE)
-    throw std::runtime_error("Cannot step a NONE statement");
   
   if (!prepared)
     prepare();
@@ -296,40 +270,40 @@ int statement::step(){
 
 // Finalize the statement
 void statement::finalize(){
-  if (db && type != STMT_NONE && stmt){
+  if (db && stmt){
     if (sqlite3_finalize(stmt)) 
       throw_exception(db);
   }
   prepared = false;
   stmt = nullptr;
+  has_bind = false;
 }
 
 // Reset the statement and clear all bindings
 void statement::reset(){
   if (!db)
     throw std::runtime_error("A database file must be connected before resetting a statement");
-  if (type == STMT_NONE)
-    throw std::runtime_error("Cannot reset a NONE statement");
 
-  if (sqlite3_reset(stmt))
-    throw_exception(db);
-  if (has_bindings[type] && sqlite3_clear_bindings(stmt))
-    throw_exception(db);
+  if (prepared){
+    if (sqlite3_reset(stmt))
+      throw_exception(db);
+    if (has_bind && sqlite3_clear_bindings(stmt))
+      throw_exception(db);
+  }
 }
 
-// Prepare the statement.
+// Prepare the statement and record whether the statement has bindings.
 void statement::prepare(){
   if (!db)
     throw std::runtime_error("A database file must be connected before preparing a statement");
 
   int rc = 0;
-  if (type == STMT_NONE)
-    stmt = nullptr;
-  else
-    rc = sqlite3_prepare_v2(db, statement_text[type], -1, &stmt, NULL);
-
+  rc = sqlite3_prepare_v2(db, text.c_str(), -1, &stmt, NULL);
   if (rc) throw_exception(db);
 
-  if (type != STMT_NONE) prepared = true;
+  rc = sqlite3_bind_parameter_count(stmt);
+  has_bind = (rc>0);
+
+  prepared = true;
 }
 

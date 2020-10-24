@@ -32,7 +32,7 @@ class statement {
 
   // enum: type of statement()
   enum stmttype { 
-	     STMT_NONE = -1, // no statement
+	     STMT_CUSTOM = -1, // no statement
 	     STMT_CREATE_DATABASE = 0, // create the database
 	     STMT_INIT_DATABASE = 1, // initialize the database
 	     STMT_BEGIN_TRANSACTION = 2, // begin a transaction
@@ -67,16 +67,16 @@ class statement {
   //// Operators ////
 
   // constructors
-  statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_NONE) : 
-    prepared(false), db(db_), type(type_),
-    stmt(nullptr) {}; // default and parametrized constructor
+  // default and parametrized constructor
+  statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_CUSTOM, std::string text_ = "");
   statement(statement&& rhs) = delete; // move constructor (deleted)
   statement(const statement& rhs) = delete; // copy constructor (deleted)
 
   // destructors
   ~statement() {
     finalize();
-    type = STMT_NONE;
+    type = STMT_CUSTOM;
+    text = "";
   };
 
   // bool operator
@@ -100,7 +100,7 @@ class statement {
   // Reset the statement and clear all bindings
   void reset();
 
-  // Prepare the statement.
+  // Prepare the statement and record whether the statement has bindings.
   void prepare();
 
   //// Public template functions ////
@@ -110,10 +110,10 @@ class statement {
   int bind(const Tcol &col, const Targ &arg, const bool transient = true, int nbytes = 0){
     if (!db)
       throw std::runtime_error("A database file must be connected before binding");
-    if (type == STMT_NONE)
-      throw std::runtime_error("Cannot bind a NONE statement");
 
     if (!prepared) prepare();
+    if (!has_bind)
+      throw std::runtime_error("bind error - no bindings in this statement");
 
     int rc = 0;
     rc = bind_dispatcher<Tcol,Targ>::impl(stmt,col,arg,transient,nbytes);
@@ -129,9 +129,13 @@ class statement {
   //// Private variables ////
 
   bool prepared; // whether the statement has been prepared
+  bool has_bind; // whether the statement has bindings
   sqlite3 *db; // the database pointer
   stmttype type; // statement type
   sqlite3_stmt *stmt; // statement pointer
+  std::string text; // text of a custom statement
+
+  //// Template function code ////
   template<typename Tcol, typename Targ> struct bind_dispatcher; // bind dispatcher, for generic bind selection
 };
 
