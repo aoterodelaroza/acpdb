@@ -83,8 +83,6 @@ LIST LITREF [BIBTEX]
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
-  NSTRUCTURES nstruct.i
-  NPROPERTIES nprop.i
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
 END
 
@@ -153,8 +151,6 @@ END
 - id            INTEGER PRIMARY KEY NOT NULL,
 - key           TEST UNIQUE NOT NULL,
 - property_type INTEGER NOT NULL,   ## foreign key: table 2 (Property_types)
-- nstructures   INTEGER NOT NULL,
-- nproperties   INTEGER NOT NULL,
 - description   TEXT
 - litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
 

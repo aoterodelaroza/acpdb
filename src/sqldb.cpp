@@ -161,12 +161,6 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
       }
     }
 
-    if ((im = kmap.find("NSTRUCTURES")) != kmap.end())
-      stmt[statement::STMT_INSERT_SET]->bind((char *) ":NSTRUCTURES",std::stoi(im->second));
-
-    if ((im = kmap.find("NPROPERTIES")) != kmap.end())
-      stmt[statement::STMT_INSERT_SET]->bind((char *) ":NPROPERTIES",std::stoi(im->second));
-
     if ((im = kmap.find("LITREFS")) != kmap.end()){
       std::list<std::string> tokens = list_all_words(im->second);
       std::string str = "";
@@ -441,7 +435,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
     }
   } else if (category == "SET") {
     // print table header
-    printf("| id | key | property_type | nstructures | nproperties | litrefs | description |\n");
+    printf("| id | key | property_type | litrefs | description |\n");
 
     // run the statement
     while (stmt[statement::STMT_LIST_SET]->step() != SQLITE_DONE){
@@ -450,13 +444,10 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       int id = sqlite3_column_int(statement, 0);
       const unsigned char *key = sqlite3_column_text(statement, 1);
       const unsigned char *property_type = sqlite3_column_text(statement, 2);
-      int nstructures = sqlite3_column_int(statement, 3);
-      int nproperties = sqlite3_column_int(statement, 4);
-      const unsigned char *litrefs = sqlite3_column_text(statement, 5);
-      const unsigned char *description = sqlite3_column_text(statement, 6);
+      const unsigned char *litrefs = sqlite3_column_text(statement, 3);
+      const unsigned char *description = sqlite3_column_text(statement, 4);
 
-      printf("| %d | %s | %s | %d | %d | %s | %s |\n",id,
-             key,property_type,nstructures,nproperties,litrefs,description);
+      printf("| %d | %s | %s | %s | %s |\n",id,key,property_type,litrefs,description);
     }
   } else if (category == "METHOD") {
     // print table header

@@ -43,8 +43,6 @@ CREATE TABLE Sets (
   id            INTEGER PRIMARY KEY NOT NULL,
   key           TEXT UNIQUE NOT NULL,
   property_type INTEGER NOT NULL,
-  nstructures   INTEGER NOT NULL,
-  nproperties   INTEGER NOT NULL,
   litrefs       TEXT,
   description   TEXT,
   FOREIGN KEY(property_type) REFERENCES Property_types(id)
@@ -133,7 +131,7 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_SET] = 
 R"SQL(
-SELECT id,key,property_type,nstructures,nproperties,litrefs,description
+SELECT id,key,property_type,litrefs,description
 FROM Sets;
 )SQL",
 
@@ -154,8 +152,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_SET] =
 R"SQL(
-INSERT INTO Sets (key,property_type,nstructures,nproperties,litrefs,description)
-       VALUES(:KEY,:PROPERTY_TYPE,:NSTRUCTURES,:NPROPERTIES,:LITREFS,:DESCRIPTION);
+INSERT INTO Sets (key,property_type,litrefs,description)
+       VALUES(:KEY,:PROPERTY_TYPE,:LITREFS,:DESCRIPTION);
 )SQL",
 
 [statement::STMT_QUERY_SET] = 
