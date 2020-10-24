@@ -21,18 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 
-// Print error and usage messages
-void print_error_usage(const char *prog, const char *errmsg) {
-  if (errmsg) {
-    printf("Error: %s\n",errmsg);
-  }
-  if (prog) {
-    printf("Usage: %s [inputfile [outputfile]]\n",prog);
-    printf("Options:\n");
-    printf("  -h : show this message and exit\n");
-  }
-}
-
 // List the words in an input line. Skip the rest of the line if a
 // comment character (#) is found as the first character in a token.
 std::list<std::string> list_all_words(const std::string &line) {

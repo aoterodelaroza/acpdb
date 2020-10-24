@@ -73,7 +73,7 @@ class sqldb {
   void erase(const std::string &category, std::list<std::string> &tokens);
 
   // List items from the database
-  void list(const std::string &category, std::list<std::string> &tokens);
+  void list(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
  private:
 

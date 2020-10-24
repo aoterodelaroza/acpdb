@@ -37,7 +37,9 @@ int main(int argc, char *argv[]) {
 
   // Check command parameters
   if (argc > 3 || (argc >= 2 && strcmp(argv[1],"-h") == 0) || (argc >= 3 && strcmp(argv[2],"-h") == 0)){
-    print_error_usage(argv[0]);
+    std::cout << "Usage: " + std::string(argv[0]) + " [inputfile [outputfile]]" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "  -h : show this message and exit" << std::endl;
     return 1;
   }
 
@@ -104,7 +106,7 @@ int main(int argc, char *argv[]) {
         db.erase(category,tokens);
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
-        db.list(category,tokens);
+        db.list(*os,category,tokens);
       } else if (keyw == "END") {
         break;
       } else {

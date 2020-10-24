@@ -391,7 +391,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 }  
 
 // List items from the database
-void sqldb::list(const std::string &category, std::list<std::string> &tokens){
+void sqldb::list(std::ostream &os, const std::string &category, std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
   //// Literature references (LITREF) ////
@@ -400,7 +400,7 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
 
     // print table header
     if (!dobib)
-      printf("| id | key | authors | title | journal | volume | page | year | doi | description |\n");
+      std::cout << "| id | key | authors | title | journal | volume | page | year | doi | description |" << std::endl;
 
     // run the statement
     while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
@@ -418,24 +418,32 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       const unsigned char *description = sqlite3_column_text(statement, 9);
 
       if (dobib){
-        printf("@article{%s\n",key);
-        if (sqlite3_column_type(statement,2) != SQLITE_NULL) printf(" authors={%s},\n",authors);
-        if (sqlite3_column_type(statement,3) != SQLITE_NULL) printf(" title={%s},\n",title);
-        if (sqlite3_column_type(statement,4) != SQLITE_NULL) printf(" journal={%s},\n",journal);
-        if (sqlite3_column_type(statement,5) != SQLITE_NULL) printf(" volume={%s},\n",volume);
-        if (sqlite3_column_type(statement,6) != SQLITE_NULL) printf(" page={%s},\n",page);
-        if (sqlite3_column_type(statement,7) != SQLITE_NULL) printf(" year={%s},\n",year);
-        if (sqlite3_column_type(statement,8) != SQLITE_NULL) printf(" doi={%s},\n",doi);
-        if (sqlite3_column_type(statement,9) != SQLITE_NULL) printf(" description={%s},\n",description);
-        printf("}\n");
+        os << "@article{" << key << std::endl;
+        if (authors) os << " authors={" << authors << "}," << std::endl;
+        if (title) os << " title={" << title << "}," << std::endl;
+        if (journal) os << " journal={" << journal << "}," << std::endl;
+        if (volume) os << " volume={" << volume << "}," << std::endl;
+        if (page) os << " page={" << page << "}," << std::endl;
+        if (year) os << " year={" << year << "}," << std::endl;
+        if (doi) os << " doi={" << doi << "}," << std::endl;
+        if (description) os << " description={" << description << "}," << std::endl;
+        os << "}" << std::endl;
       } else {
-        printf("| %d | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",id,
-               key,authors,title,journal,volume,page,year,doi,description);
+        os << "| " << id << " | " << key << " | ";
+        os << (authors?authors:(const unsigned char*) "")  << " | ";
+        os << (title?title:(const unsigned char*) "")  << " | ";
+        os << (journal?journal:(const unsigned char*) "")  << " | ";
+        os << (volume?volume:(const unsigned char*) "")  << " | ";
+        os << (page?page:(const unsigned char*) "")  << " | ";
+        os << (year?year:(const unsigned char*) "")  << " | ";
+        os << (doi?doi:(const unsigned char*) "")  << " | ";
+        os << (description?description:(const unsigned char*) "")  << " | ";
+        os << std::endl;
       }
     }
   } else if (category == "SET") {
     // print table header
-    printf("| id | key | property_type | litrefs | description |\n");
+    os << "| id | key | property_type | litrefs | description |" << std::endl;
 
     // run the statement
     while (stmt[statement::STMT_LIST_SET]->step() != SQLITE_DONE){
@@ -447,11 +455,15 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       const unsigned char *litrefs = sqlite3_column_text(statement, 3);
       const unsigned char *description = sqlite3_column_text(statement, 4);
 
-      printf("| %d | %s | %s | %s | %s |\n",id,key,property_type,litrefs,description);
+      os << "| " << id << " | " << key << " | ";
+      os << (property_type?property_type:(const unsigned char*) "")  << " | ";
+      os << (litrefs?litrefs:(const unsigned char*) "")  << " | ";
+      os << (description?description:(const unsigned char*) "")  << " | ";
+      os << std::endl;
     }
   } else if (category == "METHOD") {
     // print table header
-    printf("| id | key | comp_details | litrefs | description |\n");
+    os << "| id | key | comp_details | litrefs | description |" << std::endl;
 
     // run the statement
     while (stmt[statement::STMT_LIST_METHOD]->step() != SQLITE_DONE){
@@ -463,12 +475,15 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       const unsigned char *litrefs = sqlite3_column_text(statement, 3);
       const unsigned char *description = sqlite3_column_text(statement, 4);
 
-      printf("| %d | %s | %s | %s | %s |\n",id,
-             key,comp_details,litrefs,description);
+      os << "| " << id << " | " << key << " | ";
+      os << (comp_details?comp_details:(const unsigned char*) "")  << " | ";
+      os << (litrefs?litrefs:(const unsigned char*) "")  << " | ";
+      os << (description?description:(const unsigned char*) "")  << " | ";
+      os << std::endl;
     }
   } else if (category == "STRUCTURE") {
     // print table header
-    printf("| id | key | set | ismolecule | nat |\n");
+    os << "| id | key | set | ismolecule | nat |" << std::endl;
 
     structure s;
 
@@ -482,7 +497,9 @@ void sqldb::list(const std::string &category, std::list<std::string> &tokens){
       int ismol = sqlite3_column_int(statement, 3);
       int nat = sqlite3_column_int(statement, 6);
 
-      printf("| %d | %s | %d | %d | %d |\n",id,key,setid,ismol,nat);
+      os << "| " << id << " | " << key << " | ";
+      os << setid << " | " << ismol << " | " << nat << " | ";
+      os << std::endl;
     }
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
