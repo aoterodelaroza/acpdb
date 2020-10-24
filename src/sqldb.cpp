@@ -438,7 +438,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
       }
     }
   } else if (category == "STRUCTURE") {
-    //// Methods (STRUCTURE) ////
+    //// Structures (STRUCTURE) ////
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       std::string key, param;
 
@@ -453,6 +453,24 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         // a key
         stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->bind(1,*it);
         stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->step();
+      }
+    }
+  } else if (category == "PROPERTY") {
+    //// Properties (PROPERTY) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_PROPERTY_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_PROPERTY_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_PROPERTY_WITH_ID]->step();
+      } else {
+        // a key
+        stmt[statement::STMT_DELETE_PROPERTY_WITH_KEY]->bind(1,*it);
+        stmt[statement::STMT_DELETE_PROPERTY_WITH_KEY]->step();
       }
     }
   }
@@ -567,6 +585,24 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
 
       os << "| " << id << " | " << key << " | ";
       os << setid << " | " << ismol << " | " << nat << " | ";
+      os << std::endl;
+    }
+  } else if (category == "PROPERTY") {
+    // print table header
+    os << "| id | key | property_type | setid | nstructures |" << std::endl;
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_PROPERTY]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_PROPERTY]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      const unsigned char *key = sqlite3_column_text(statement, 1);
+      int proptype = sqlite3_column_int(statement, 2);
+      int setid = sqlite3_column_int(statement, 3);
+      int nstructures = sqlite3_column_int(statement, 4);
+
+      os << "| " << id << " | " << key << " | ";
+      os << proptype << " | " << setid << " | " << nstructures << " | ";
       os << std::endl;
     }
   } else { 
