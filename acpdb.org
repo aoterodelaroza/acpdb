@@ -109,7 +109,7 @@ END
   method has computational details COMP_DETAILS. LITREFS: literature
   references. DESCRIPTION: a description of the method.
 
-DELETE METHOD {methdo.s|method.i}
+DELETE METHOD {method.s|method.i}
 
   Delete a method (Table 4).
 
@@ -124,6 +124,35 @@ END
 
   Insert structure with key name.s from xyz file file.s. This
   structure belongs in set set.s/set.i.
+
+DELETE STRUCTURE {struct.s|struct.i}
+
+  Delete a structure (Table 5).
+
+LIST STRUCTURE
+
+  List the known structures.
+
+INSERT PROPERTY name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  SET {set.s|set.i}
+  NSTRUCTURES nstruct.i
+  STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
+  COEFFICIENTS c1.r c2.r c3.r ...
+END
+
+  Insert property with key name.s. This property belongs in set
+  set.s/set.i and involves nstruct.i structures, given by ids
+  s1.s/s1.i, etc. The recipe for the calculation of the property uses
+  coefficients c1.r, etc.
+
+DELETE PROPERTY {name.s|name.i}
+
+  Delete a property (Table 6).
+
+LIST PROPERTY
+
+  List the known properties.
 
 * Database schema
 
@@ -174,4 +203,14 @@ END
 - cell          BLOB,
 - zatoms        BLOB NOT NULL,
 - coordinates   BLOB NOT NULL,
+
+** Table 6: properties
+
+- id            INTEGER PRIMARY KEY NOT NULL,
+- key           TEXT UNIQUE NOT NULL,
+- property_type INTEGER NOT NULL, ## foreign key: table 2 (Property_types)
+- setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
+- nstructures   INTEGER NOT NULL,
+- structures    BLOB NOT NULL, ## references table 5 (Structures)
+- coefficients  BLOB NOT NULL,
 

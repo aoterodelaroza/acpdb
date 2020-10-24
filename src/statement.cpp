@@ -67,6 +67,17 @@ CREATE TABLE Structures (
   coordinates   BLOB NOT NULL,
   FOREIGN KEY(setid) REFERENCES Sets(id)
 );
+CREATE TABLE Properties (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  key           TEXT UNIQUE NOT NULL,
+  property_type INTEGER NOT NULL,
+  setid         INTEGER NOT NULL,
+  nstructures   INTEGER NOT NULL,
+  structures    BLOB NOT NULL,
+  coefficients  BLOB NOT NULL,
+  FOREIGN KEY(property_type) REFERENCES Property_types(id),
+  FOREIGN KEY(setid) REFERENCES Sets(id)
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');
@@ -215,6 +226,40 @@ WHERE id = ?1;
 R"SQL(
 INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
        VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+)SQL",
+
+[statement::STMT_QUERY_STRUCTURE] = 
+R"SQL(
+SELECT id
+FROM Structures
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_LIST_PROPERTY] = 
+R"SQL(
+SELECT id,key,property_type,setid,nstructures,structures,coefficients
+FROM Properties;
+)SQL",
+
+[statement::STMT_DELETE_PROPERTY_ALL] = 
+"DELETE FROM Properties;",
+
+[statement::STMT_DELETE_PROPERTY_WITH_KEY] = 
+R"SQL(
+DELETE FROM Properties
+WHERE key = ?1;
+)SQL",
+
+[statement::STMT_DELETE_PROPERTY_WITH_ID] =
+R"SQL(
+DELETE FROM Properties
+WHERE id = ?1;
+)SQL",
+
+[statement::STMT_INSERT_PROPERTY] =
+R"SQL(
+INSERT INTO Properties (id,key,property_type,setid,nstructures,structures,coefficients)
+       VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL",
 
 };

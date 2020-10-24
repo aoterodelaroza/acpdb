@@ -166,7 +166,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
       std::string str = "";
       for (auto it = tokens.begin(); it != tokens.end(); it++){
         int idx = find_id_from_key(*it,statement::STMT_QUERY_LITREF);
-        if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+        if (!idx)
           throw std::runtime_error("Litref not found: " + *it);
         str = str + *it + " ";
       }
@@ -213,7 +213,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CHARGE",s.get_charge(),false);
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":MULTIPLICITY",s.get_mult(),false);
 
-    // the set ID
+    // set ID
     if ((im = kmap.find("SET")) != kmap.end()){
       if (isinteger(im->second)){
         stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",std::stoi(im->second));
@@ -231,6 +231,74 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_STRUCTURE]->step();
+  } else if (category == "PROPERTY") {
+    //// Properties (PROPERTY) ////
+
+    // bind the key
+    stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
+
+    // property type
+    if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+      if (isinteger(im->second)){
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
+      } else {
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",
+                                               find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
+      }
+    }
+
+    // set ID
+    if ((im = kmap.find("SET")) != kmap.end()){
+      if (isinteger(im->second)){
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
+      } else {
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",
+                                               find_id_from_key(im->second,statement::STMT_QUERY_SET));
+      }
+    }
+
+    // number of structures
+    int nstructures = 0;
+    if ((im = kmap.find("NSTRUCTURES")) != kmap.end()){
+      nstructures = std::stoi(im->second);
+      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
+    }
+
+    // structure ids
+    if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
+      std::list<std::string> tokens = list_all_words(im->second);
+
+      int n = 0;
+      int *str = new int[nstructures];
+      for (auto it = tokens.begin(); it != tokens.end(); it++){
+        int idx = 0;
+        if (isinteger(*it))
+          idx = std::stoi(*it);
+        else
+          idx = find_id_from_key(*it,statement::STMT_QUERY_STRUCTURE);
+
+        if (!idx)
+          throw std::runtime_error("Structure not found: " + *it);
+        str[n++] = idx;
+      }
+      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
+      delete str;
+    }
+
+    // coefficients
+    if (nstructures > 0 && (im = kmap.find("COEFFICIENTS")) != kmap.end()){
+      std::list<std::string> tokens = list_all_words(im->second);
+
+      int n = 0;
+      double *str = new double[nstructures];
+      for (auto it = tokens.begin(); it != tokens.end(); it++)
+        str[n++] = std::stod(*it);
+      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
+      delete str;
+    }
+
+    // submit
+    stmt[statement::STMT_INSERT_PROPERTY]->step();
   }
 }
 
