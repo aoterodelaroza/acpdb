@@ -154,6 +154,26 @@ LIST PROPERTY
 
   List the known properties.
 
+INSERT EVALUATION
+  METHOD {method.s|method.i}
+  PROPERTY {prop.s|prop.i}
+  VALUE value.r
+  UNIT unit.s
+END
+
+  Insert evaluation into the database. Corresponds to the evaluation
+  of property prop.s/prop.i with method method.s/method.i. The
+  evaluation yields the value value.r with units unit.s (currently,
+  only kcal/mol allowed).
+
+DELETE EVALUATION name.i
+
+  Delete an evaluation by ID (Table 7).
+
+LIST EVALUATION
+
+  List the known evaluations.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)
