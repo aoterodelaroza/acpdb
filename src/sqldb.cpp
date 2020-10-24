@@ -119,15 +119,15 @@ void sqldb::close(){
 void sqldb::insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
-  // check that the key is not empty
-  if (key.empty())
-    throw std::runtime_error("Empty key in INSERT " + category);
-
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
   if (category == "LITREF") {
     //// Literature references (LITREF) ////
+
+    // check that the key is not empty
+    if (key.empty())
+      throw std::runtime_error("Empty key in INSERT " + category);
 
     // bind the key
     stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
@@ -144,6 +144,10 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
     stmt[statement::STMT_INSERT_LITREF]->step();
   } else if (category == "SET") {
     //// Sets (SET) ////  
+
+    // check that the key is not empty
+    if (key.empty())
+      throw std::runtime_error("Empty key in INSERT " + category);
 
     // bind the key
     stmt[statement::STMT_INSERT_SET]->bind((char *) ":KEY",key);
@@ -178,6 +182,10 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
 
+    // check that the key is not empty
+    if (key.empty())
+      throw std::runtime_error("Empty key in INSERT " + category);
+
     // bind the key
     stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
 
@@ -193,6 +201,10 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
     stmt[statement::STMT_INSERT_METHOD]->step();
   } else if (category == "STRUCTURE") {
     //// Structures (STRUCTURE) ////
+
+    // check that the key is not empty
+    if (key.empty())
+      throw std::runtime_error("Empty key in INSERT " + category);
 
     // read the molecular structure
     structure s;
@@ -233,6 +245,10 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
     stmt[statement::STMT_INSERT_STRUCTURE]->step();
   } else if (category == "PROPERTY") {
     //// Properties (PROPERTY) ////
+
+    // check that the key is not empty
+    if (key.empty())
+      throw std::runtime_error("Empty key in INSERT " + category);
 
     // bind the key
     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
@@ -299,6 +315,38 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_PROPERTY]->step();
+  } else if (category == "EVALUATION") {
+    //// Evaluations (EVALUATION) ////
+
+    // method ID
+    if ((im = kmap.find("METHOD")) != kmap.end()){
+      if (isinteger(im->second))
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",std::stoi(im->second));
+      else 
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
+    }
+
+    // property ID
+    if ((im = kmap.find("PROPERTY")) != kmap.end()){
+      if (isinteger(im->second))
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",std::stoi(im->second));
+      else 
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
+    }
+
+    // value
+    if ((im = kmap.find("VALUE")) != kmap.end())
+      stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":VALUE",std::stod(im->second));
+
+    // unit
+    if ((im = kmap.find("UNIT")) != kmap.end()){
+      std::string unit = im->second;
+      uppercase(unit);
+      stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":UNIT",unit);
+    };
+
+    // submit
+    stmt[statement::STMT_INSERT_EVALUATION]->step();
   }
 }
 

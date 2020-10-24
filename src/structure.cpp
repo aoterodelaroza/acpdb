@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <vector>
 #include <cstring>
+#include "parseutils.h"
 
 static unsigned char zatguess(std::string atsym){
   const std::unordered_map<std::string, unsigned char> an = {
@@ -46,9 +47,10 @@ static unsigned char zatguess(std::string atsym){
     {"XB", 120}, {"XR", 121}, {"XC", 122}, {"XZ", 123},   
   };
 
-  transform(atsym.begin(), atsym.begin()+2, atsym.begin(), ::toupper);
+  atsym = atsym.substr(0,2);
+  uppercase(atsym);
 
-  auto it = an.find(atsym.substr(0,2));
+  auto it = an.find(atsym);
   if (it != an.end())
     return it->second;
   else{

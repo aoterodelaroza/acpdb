@@ -21,6 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 
+// Transform a string to uppercase
+void uppercase(std::string &s){
+  transform(s.begin(), s.end(), s.begin(), ::toupper);
+}
+
 // List the words in an input line. Skip the rest of the line if a
 // comment character (#) is found as the first character in a token.
 std::list<std::string> list_all_words(const std::string &line) {
@@ -50,7 +55,7 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, 
 
     if (keyw.empty() || keyw[0] == '#') continue;
     ukeyw = keyw;
-    transform(ukeyw.begin(), ukeyw.end(), ukeyw.begin(), ::toupper);
+    uppercase(ukeyw);
     if (ukeyw == "END") break;
     line.erase(line.begin(), std::find_if(line.begin(),line.end(), std::bind1st(std::not_equal_to<char>(),' ')));
     if (toupper)
@@ -69,7 +74,7 @@ std::string popstring(std::list<std::string> &list, bool toupper){
   std::string result = list.front();
   list.pop_front();
   if (toupper)
-    transform(result.begin(), result.end(), result.begin(), ::toupper);
+    uppercase(result);
   return result;
 }
 

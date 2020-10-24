@@ -51,29 +51,31 @@ class statement {
 	     STMT_DELETE_SET_WITH_ID = 15, // delete sets, with id
 	     STMT_INSERT_SET = 16, // insert sets
 	     STMT_QUERY_SET = 17, // query sets
-	     STMT_LIST_METHOD = 18, // list sets
-	     STMT_DELETE_METHOD_ALL = 19, // delete sets, all
-	     STMT_DELETE_METHOD_WITH_KEY = 20, // delete sets, with key
-	     STMT_DELETE_METHOD_WITH_ID = 21, // delete sets, with id
-	     STMT_INSERT_METHOD = 22, // insert sets
-	     STMT_LIST_STRUCTURE = 23, // list structures
-	     STMT_DELETE_STRUCTURE_ALL = 24, // delete structures, all
-	     STMT_DELETE_STRUCTURE_WITH_KEY = 25, // delete structures, with key
-	     STMT_DELETE_STRUCTURE_WITH_ID = 26, // delete structures, with id
-	     STMT_INSERT_STRUCTURE = 27, // insert structures
-	     STMT_QUERY_STRUCTURE = 28, // query propety types
-	     STMT_LIST_PROPERTY = 29, // list structures
-	     STMT_DELETE_PROPERTY_ALL = 30, // delete structures, all
-	     STMT_DELETE_PROPERTY_WITH_KEY = 31, // delete structures, with key
-	     STMT_DELETE_PROPERTY_WITH_ID = 32, // delete structures, with id
-	     STMT_INSERT_PROPERTY = 33, // insert structures
-	     STMT_LIST_EVALUATION = 34, // list structures
-	     STMT_DELETE_EVALUATION_ALL = 35, // delete structures, all
-	     STMT_DELETE_EVALUATION_WITH_KEY = 36, // delete structures, with key
-	     STMT_DELETE_EVALUATION_WITH_ID = 37, // delete structures, with id
-	     STMT_INSERT_EVALUATION = 38, // insert structures
+	     STMT_LIST_METHOD = 18, // list methods
+	     STMT_DELETE_METHOD_ALL = 19, // delete methods, all
+	     STMT_DELETE_METHOD_WITH_KEY = 20, // delete methods, with key
+	     STMT_DELETE_METHOD_WITH_ID = 21, // delete methods, with id
+	     STMT_INSERT_METHOD = 22, // insert methods
+	     STMT_QUERY_METHOD = 23, // query methods
+	     STMT_LIST_STRUCTURE = 24, // list structures
+	     STMT_DELETE_STRUCTURE_ALL = 25, // delete structures, all
+	     STMT_DELETE_STRUCTURE_WITH_KEY = 26, // delete structures, with key
+	     STMT_DELETE_STRUCTURE_WITH_ID = 27, // delete structures, with id
+	     STMT_INSERT_STRUCTURE = 28, // insert structures
+	     STMT_QUERY_STRUCTURE = 29, // query structures
+	     STMT_LIST_PROPERTY = 30, // list properties
+	     STMT_DELETE_PROPERTY_ALL = 31, // delete properties, all
+	     STMT_DELETE_PROPERTY_WITH_KEY = 32, // delete properties, with key
+	     STMT_DELETE_PROPERTY_WITH_ID = 33, // delete properties, with id
+	     STMT_INSERT_PROPERTY = 34, // insert properties
+	     STMT_QUERY_PROPERTY = 35, // query properties
+	     STMT_LIST_EVALUATION = 36, // list evaluations
+	     STMT_DELETE_EVALUATION_ALL = 37, // delete evaluations, all
+	     STMT_DELETE_EVALUATION_WITH_KEY = 38, // delete evaluations, with key
+	     STMT_DELETE_EVALUATION_WITH_ID = 39, // delete evaluations, with id
+	     STMT_INSERT_EVALUATION = 40, // insert evaluations
   };
-  static const int number_stmt_types = 39; // number of statement types
+  static const int number_stmt_types = 41; // number of statement types
 
   //// Operators ////
 
@@ -174,6 +176,10 @@ template<> struct statement::bind_dispatcher< std::string, int > {
 template<> struct statement::bind_dispatcher< char *, int > {
   static int impl(sqlite3_stmt *stmt, const char *col, const int arg, bool transient, int nbytes){ 
     return sqlite3_bind_int(stmt,sqlite3_bind_parameter_index(stmt,col),arg);}};
+
+template<> struct statement::bind_dispatcher< char *, double > {
+  static int impl(sqlite3_stmt *stmt, const char *col, const double arg, bool transient, int nbytes){ 
+    return sqlite3_bind_double(stmt,sqlite3_bind_parameter_index(stmt,col),arg);}};
 
 template<> struct statement::bind_dispatcher< char *, void * > {
   static int impl(sqlite3_stmt *stmt, const char *col, const void *arg, bool transient, int nbytes){ 

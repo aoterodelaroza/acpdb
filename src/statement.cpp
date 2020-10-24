@@ -83,7 +83,7 @@ CREATE TABLE Evaluations (
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
-  unit          TEXT,
+  unit          TEXT CHECK (unit IN ("KCAL/MOL")),
   FOREIGN KEY(methodid) REFERENCES Methods(id),
   FOREIGN KEY(propid) REFERENCES Properties(id)
 );
@@ -210,6 +210,13 @@ INSERT INTO Methods (key,comp_details,litrefs,description)
        VALUES(:KEY,:COMP_DETAILS,:LITREFS,:DESCRIPTION);
 )SQL",
 
+[statement::STMT_QUERY_METHOD] = 
+R"SQL(
+SELECT id
+FROM Methods
+WHERE key = ?1;
+)SQL",
+
 [statement::STMT_LIST_STRUCTURE] = 
 R"SQL(
 SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
@@ -269,6 +276,13 @@ WHERE id = ?1;
 R"SQL(
 INSERT INTO Properties (id,key,property_type,setid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+)SQL",
+
+[statement::STMT_QUERY_PROPERTY] = 
+R"SQL(
+SELECT id
+FROM Properties
+WHERE key = ?1;
 )SQL",
 
 [statement::STMT_LIST_EVALUATION] = 
