@@ -489,176 +489,85 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 void sqldb::list(std::ostream &os, const std::string &category, std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
-  //// Literature references (LITREF) ////
-  if (category == "LITREF") {
-    bool dobib = (!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
+  enum entrytype { t_str, t_int, t_double };
 
-    // print table header
-    if (!dobib)
-      std::cout << "| id | key | authors | title | journal | volume | page | year | doi | description |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_LITREF]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_LITREF]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      const unsigned char *key = sqlite3_column_text(statement, 1);
-      const unsigned char *authors = sqlite3_column_text(statement, 2);
-      const unsigned char *title = sqlite3_column_text(statement, 3);
-      const unsigned char *journal = sqlite3_column_text(statement, 4);
-      const unsigned char *volume = sqlite3_column_text(statement, 5);
-      const unsigned char *page = sqlite3_column_text(statement, 6);
-      const unsigned char *year = sqlite3_column_text(statement, 7);
-      const unsigned char *doi = sqlite3_column_text(statement, 8);
-      const unsigned char *description = sqlite3_column_text(statement, 9);
-
-      if (dobib){
-        os << "@article{" << key << std::endl;
-        if (authors) os << " authors={" << authors << "}," << std::endl;
-        if (title) os << " title={" << title << "}," << std::endl;
-        if (journal) os << " journal={" << journal << "}," << std::endl;
-        if (volume) os << " volume={" << volume << "}," << std::endl;
-        if (page) os << " page={" << page << "}," << std::endl;
-        if (year) os << " year={" << year << "}," << std::endl;
-        if (doi) os << " doi={" << doi << "}," << std::endl;
-        if (description) os << " description={" << description << "}," << std::endl;
-        os << "}" << std::endl;
-      } else {
-        os << "| " << id << " | " << key << " | "
-           << (authors?authors:(const unsigned char*) "")  << " | "
-           << (title?title:(const unsigned char*) "")  << " | "
-           << (journal?journal:(const unsigned char*) "")  << " | "
-           << (volume?volume:(const unsigned char*) "")  << " | "
-           << (page?page:(const unsigned char*) "")  << " | "
-           << (year?year:(const unsigned char*) "")  << " | "
-           << (doi?doi:(const unsigned char*) "")  << " | "
-           << (description?description:(const unsigned char*) "")  << " | "
-           << std::endl;
-      }
-    }
-  } else if (category == "SET") {
-    // print table header
-    os << "| id | key | property_type | litrefs | description |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_SET]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_SET]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      const unsigned char *key = sqlite3_column_text(statement, 1);
-      const unsigned char *property_type = sqlite3_column_text(statement, 2);
-      const unsigned char *litrefs = sqlite3_column_text(statement, 3);
-      const unsigned char *description = sqlite3_column_text(statement, 4);
-
-      os << "| " << id << " | " << key << " | "
-         << (property_type?property_type:(const unsigned char*) "")  << " | "
-         << (litrefs?litrefs:(const unsigned char*) "")  << " | "
-         << (description?description:(const unsigned char*) "")  << " | "
-         << std::endl;
-    }
-  } else if (category == "METHOD") {
-    // print table header
-    os << "| id | key | comp_details | litrefs | description |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_METHOD]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_METHOD]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      const unsigned char *key = sqlite3_column_text(statement, 1);
-      const unsigned char *comp_details = sqlite3_column_text(statement, 2);
-      const unsigned char *litrefs = sqlite3_column_text(statement, 3);
-      const unsigned char *description = sqlite3_column_text(statement, 4);
-
-      os << "| " << id << " | " << key << " | "
-         << (comp_details?comp_details:(const unsigned char*) "")  << " | "
-         << (litrefs?litrefs:(const unsigned char*) "")  << " | "
-         << (description?description:(const unsigned char*) "")  << " | "
-         << std::endl;
-    }
-  } else if (category == "STRUCTURE") {
-    // print table header
-    os << "| id | key | set | ismolecule | nat |" << std::endl;
-
-    structure s;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_STRUCTURE]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_STRUCTURE]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      const unsigned char *key = sqlite3_column_text(statement, 1);
-      int setid = sqlite3_column_int(statement, 2);
-      int ismol = sqlite3_column_int(statement, 3);
-      int nat = sqlite3_column_int(statement, 6);
-
-      os << "| " << id << " | " << key << " | "
-         << setid << " | " << ismol << " | " << nat << " | "
-         << std::endl;
-    }
-  } else if (category == "PROPERTY") {
-    // print table header
-    os << "| id | key | property_type | setid | nstructures |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_PROPERTY]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_PROPERTY]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      const unsigned char *key = sqlite3_column_text(statement, 1);
-      int proptype = sqlite3_column_int(statement, 2);
-      int setid = sqlite3_column_int(statement, 3);
-      int nstructures = sqlite3_column_int(statement, 4);
-
-      os << "| " << id << " | " << key << " | "
-         << proptype << " | " << setid << " | " << nstructures << " | "
-         << std::endl;
-    }
-  } else if (category == "EVALUATION") {
-    // print table header
-    os << "| id | methodid | propid | value | unit |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_EVALUATION]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_EVALUATION]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      int methodid = sqlite3_column_int(statement, 1);
-      int propid = sqlite3_column_int(statement, 2);
-      double value = sqlite3_column_double(statement, 3);
-      const unsigned char *unit = sqlite3_column_text(statement, 4);
-
-      std::streamsize prec = os.precision(10);
-      os << "| " << id << " | " << methodid << " | " << propid << " | "
-         << value << " | " << unit << " | " << std::endl;
-      os.precision(prec);
-    }
-  } else if (category == "TERM") {
-    // print table header
-    os << "| id | methodid | propid | atom | l | exponent | value | unit | maxcoef |" << std::endl;
-
-    // run the statement
-    while (stmt[statement::STMT_LIST_TERM]->step() != SQLITE_DONE){
-      sqlite3_stmt *statement = stmt[statement::STMT_LIST_TERM]->ptr();
-
-      int id = sqlite3_column_int(statement, 0);
-      int methodid = sqlite3_column_int(statement, 1);
-      int propid = sqlite3_column_int(statement, 2);
-      int atom = sqlite3_column_int(statement, 3);
-      int l = sqlite3_column_int(statement, 4);
-      double exponent = sqlite3_column_double(statement, 5);
-      double value = sqlite3_column_double(statement, 6);
-      const unsigned char *unit = sqlite3_column_text(statement, 7);
-      double maxcoef = sqlite3_column_double(statement, 8);
-
-      std::streamsize prec = os.precision(10);
-      os << "| " << id << " | " << methodid << " | " << propid << " | "
-         << atom << " | " << l << " | " << exponent << " | " 
-         << value << " | " << unit << " | " << maxcoef << " | "
-         << std::endl;
-      os.precision(prec);
-    }
+  std::vector<entrytype> types;
+  std::vector<std::string> headers;
+  std::vector<int> cols;
+  bool dobib = false;
+  statement::stmttype type;
+  if (category == "LITREF"){
+    headers = {"id", "key","authors","title","journal","volume","page","year","doi","description"};
+    types   = {t_int,t_str,    t_str,  t_str,    t_str,   t_str, t_str, t_str,t_str,        t_str};
+    cols    = {    0,    1,        2,      3,        4,       5,     6,     7,    8,            9};
+    dobib = (!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
+    type = statement::STMT_LIST_LITREF;
+  } else if (category == "SET"){
+    headers = {"id", "key","property_type","litrefs","description"};
+    types   = {t_int,t_str,          t_int,    t_str,        t_str};
+    cols    = {    0,    1,              2,        3,            4};
+    type = statement::STMT_LIST_SET;
+  } else if (category == "METHOD"){
+    headers = { "id","key","comp_details","litrefs","description"};
+    types   = {t_int,t_str,         t_str,    t_str,        t_str};
+    cols    = {    0,    1,             2,        3,            4};
+    type = statement::STMT_LIST_METHOD;
+  } else if (category == "STRUCTURE"){
+    headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
+    types   = {t_int,t_str,t_int,       t_int,   t_int,         t_int,t_int};
+    cols    = {    0,    1,     2,          3,       4,             5,    6};
+    type = statement::STMT_LIST_STRUCTURE;
+  } else if (category == "PROPERTY"){
+    headers = { "id","key","property_type","setid","nstructures"};
+    types   = {t_int,t_str,          t_int,  t_int,        t_int};
+    cols    = {    0,    1,              2,      3,            4};
+    type = statement::STMT_LIST_PROPERTY;
+  } else if (category == "EVALUATION"){
+    headers = { "id","methodid","propid", "value","unit"};
+    types   = {t_int,     t_int,   t_int,t_double, t_str};
+    cols    = {    0,         1,       2,       3,     4};
+    type = statement::STMT_LIST_EVALUATION;
+  } else if (category == "TERM"){
+    headers = { "id","methodid","propid", "atom",   "l","exponent", "value","unit","maxcoef"};
+    types   = {t_int,     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_str, t_double};
+    cols    = {    0,         1,       2,      3,     4,         5,       6,     7,        8};
+    type = statement::STMT_LIST_TERM;
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);
   }
+
+  // print table header
+  int n = headers.size();
+  if (!dobib){
+    for (int i = 0; i < n; i++)
+      os << "| " << headers[i];
+    os << "|" << std::endl;
+  }
+
+  // print table body
+  std::streamsize prec = os.precision(10);
+  while (stmt[type]->step() != SQLITE_DONE){
+    for (int i = 0; i < n; i++){
+      if (types[i] == t_str){
+        const unsigned char *field = sqlite3_column_text(stmt[type]->ptr(), cols[i]);
+        if (!dobib)
+          os << "| " << (field?field:(const unsigned char*) "");
+        else{
+          if (headers[i] == "key")
+            os << "@article{" << field << std::endl;
+          else if (field)
+            os << " " << headers[i] << "={" << field << "}," << std::endl;
+        }
+      } else if (types[i] == t_int && !dobib){
+        os << "| " << sqlite3_column_int(stmt[type]->ptr(), cols[i]);
+      } else if (types[i] == t_double && !dobib){
+        os << "| " << sqlite3_column_double(stmt[type]->ptr(), cols[i]);
+      }
+    }
+    if (!dobib)
+      os << "|" << std::endl;
+    else
+      os << "}" << std::endl;
+  }
+  os.precision(prec);
 }
