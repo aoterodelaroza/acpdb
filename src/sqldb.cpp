@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <forward_list>
 #include <string.h>
+#include <algorithm>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -125,14 +126,12 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   if (category == "LITREF") {
     //// Literature references (LITREF) ////
 
-    // check that the key is not empty
+    // check
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
-    // bind the key
+    // bind 
     stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
-
-    // bind the rest of the values
     std::forward_list<std::string> vlist = {"AUTHORS","TITLE","JOURNAL","VOLUME","PAGE","YEAR","DOI","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
       im = kmap.find(*it);
@@ -145,26 +144,20 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "SET") {
     //// Sets (SET) ////  
 
-    // check that the key is not empty
+    // check
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
-    // bind the key
+    // bind
     stmt[statement::STMT_INSERT_SET]->bind((char *) ":KEY",key);
-
-    // bind the rest of the values
     if ((im = kmap.find("DESCRIPTION")) != kmap.end())
       stmt[statement::STMT_INSERT_SET]->bind((char *) ":DESCRIPTION",im->second);
-
     if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-      if (isinteger(im->second)){
+      if (isinteger(im->second))
         stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-      } else {
-        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",
-                                               find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
-      }
+      else
+        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
     }
-
     if ((im = kmap.find("LITREFS")) != kmap.end()){
       std::list<std::string> tokens = list_all_words(im->second);
       std::string str = "";
@@ -182,14 +175,12 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
 
-    // check that the key is not empty
+    // check
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
-    // bind the key
+    // bind
     stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
-
-    // bind the rest of the values
     std::forward_list<std::string> vlist = {"COMP_DETAILS","LITREFS","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
       im = kmap.find(*it);
@@ -202,7 +193,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "STRUCTURE") {
     //// Structures (STRUCTURE) ////
 
-    // check that the key is not empty
+    // check
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
@@ -215,27 +206,19 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
       throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
     }
 
-    // bind the key
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":KEY",key,false);
-
-    // bind the integer values
+    // bind
     int nat = s.get_nat();
+    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":KEY",key,false);
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":NAT",nat,false);
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CHARGE",s.get_charge(),false);
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":MULTIPLICITY",s.get_mult(),false);
-
-    // set ID
     if ((im = kmap.find("SET")) != kmap.end()){
-      if (isinteger(im->second)){
+      if (isinteger(im->second))
         stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",std::stoi(im->second));
-      } else {
-        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",
-                                               find_id_from_key(im->second,statement::STMT_QUERY_SET));
-      }
+      else
+        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",find_id_from_key(im->second,statement::STMT_QUERY_SET));
     }
-
-    // bind the blobs
     if (!s.ismolecule())
       stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
     stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
@@ -246,41 +229,31 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "PROPERTY") {
     //// Properties (PROPERTY) ////
 
-    // check that the key is not empty
+    // check
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
-    // bind the key
+    // bind
     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
-
-    // property type
     if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-      if (isinteger(im->second)){
+      if (isinteger(im->second))
         stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-      } else {
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",
-                                               find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
-      }
+      else
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
     }
-
-    // set ID
     if ((im = kmap.find("SET")) != kmap.end()){
-      if (isinteger(im->second)){
+      if (isinteger(im->second))
         stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
-      } else {
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",
-                                               find_id_from_key(im->second,statement::STMT_QUERY_SET));
-      }
+      else
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,statement::STMT_QUERY_SET));
     }
 
-    // number of structures
+    // bind structures
     int nstructures = 0;
     if ((im = kmap.find("NSTRUCTURES")) != kmap.end()){
       nstructures = std::stoi(im->second);
       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
     }
-
-    // structure ids
     if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
       std::list<std::string> tokens = list_all_words(im->second);
 
@@ -301,7 +274,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
       delete str;
     }
 
-    // coefficients
+    // bind coefficients
     if (nstructures > 0 && (im = kmap.find("COEFFICIENTS")) != kmap.end()){
       std::list<std::string> tokens = list_all_words(im->second);
 
@@ -318,27 +291,21 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "EVALUATION") {
     //// Evaluations (EVALUATION) ////
 
-    // method ID
+    // bind
     if ((im = kmap.find("METHOD")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",std::stoi(im->second));
       else 
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
     }
-
-    // property ID
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",std::stoi(im->second));
       else 
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
     }
-
-    // value
     if ((im = kmap.find("VALUE")) != kmap.end())
       stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":VALUE",std::stod(im->second));
-
-    // unit
     if ((im = kmap.find("UNIT")) != kmap.end()){
       std::string unit = im->second;
       uppercase(unit);
@@ -350,46 +317,32 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   } else if (category == "TERM") {
     //// Terms (TERM) ////
 
-    // method ID
+    // bind
     if ((im = kmap.find("METHOD")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",std::stoi(im->second));
       else 
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
     }
-
-    // property ID
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",std::stoi(im->second));
       else 
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
     }
-
-    // ATOM
     if ((im = kmap.find("ATOM")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":ATOM",std::stoi(im->second));
-
-    // L
     if ((im = kmap.find("L")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":L",std::stoi(im->second));
-
-    // exponent
     if ((im = kmap.find("EXPONENT")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":EXPONENT",std::stod(im->second));
-
-    // value
     if ((im = kmap.find("VALUE")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":VALUE",std::stod(im->second));
-
-    // unit
     if ((im = kmap.find("UNIT")) != kmap.end()){
       std::string unit = im->second;
       uppercase(unit);
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":UNIT",unit);
     };
-
-    // maxcoef
     if ((im = kmap.find("MAXCOEF")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":MAXCOEF",std::stod(im->second));
 
@@ -398,7 +351,7 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
   }
 }
 
-// Insert literature refernces into the database from a bibtex file
+// Insert literature references into the database from a bibtex file
 void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
@@ -472,129 +425,61 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 #else
   throw std::runtime_error("Cannot use INSERT LITREF BIBTEX: not compiled with bibtex support");
 #endif
-
 }
 
 // Delete items from the database
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
+  // whether star has been passed
+  bool istar = false;
+  auto it = std::find(tokens.begin(), tokens.end(), "*");
+  if (it != tokens.end())
+    istar = true;
+
+  // pick the statment
+  statement::stmttype all, id, key;
   if (category == "LITREF") {
-    //// Literature references (LITREF) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_LITREF_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_LITREF_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_LITREF_WITH_KEY]->step();
-      }
-    }
+    all = statement::STMT_DELETE_LITREF_ALL;
+    id  = statement::STMT_DELETE_LITREF_WITH_ID;
+    key = statement::STMT_DELETE_LITREF_WITH_KEY;
   } else if (category == "SET") {
-    //// Sets (SET) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_SET_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_SET_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_SET_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_SET_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_SET_WITH_KEY]->step();
-      }
-    }
+    all = statement::STMT_DELETE_SET_ALL;
+    id  = statement::STMT_DELETE_SET_WITH_ID;
+    key = statement::STMT_DELETE_SET_WITH_KEY;
   } else if (category == "METHOD") {
-    //// Methods (METHOD) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_METHOD_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_METHOD_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_METHOD_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_METHOD_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_METHOD_WITH_KEY]->step();
-      }
-    }
+    all = statement::STMT_DELETE_METHOD_ALL;
+    id  = statement::STMT_DELETE_METHOD_WITH_ID;
+    key = statement::STMT_DELETE_METHOD_WITH_KEY;
   } else if (category == "STRUCTURE") {
-    //// Structures (STRUCTURE) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_STRUCTURE_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_STRUCTURE_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_STRUCTURE_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_STRUCTURE_WITH_KEY]->step();
-      }
-    }
+    all = statement::STMT_DELETE_STRUCTURE_ALL;
+    id  = statement::STMT_DELETE_STRUCTURE_WITH_ID;
+    key = statement::STMT_DELETE_STRUCTURE_WITH_KEY;
   } else if (category == "PROPERTY") {
-    //// Properties (PROPERTY) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_PROPERTY_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_PROPERTY_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_PROPERTY_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_PROPERTY_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_PROPERTY_WITH_KEY]->step();
-      }
-    }
+    all = statement::STMT_DELETE_PROPERTY_ALL;
+    id  = statement::STMT_DELETE_PROPERTY_WITH_ID;
+    key = statement::STMT_DELETE_PROPERTY_WITH_KEY;
   } else if (category == "EVALUATION") {
-    //// Evaluations (EVALUATION) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
-
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_EVALUATION_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->step();
-      }
-    }
+    all = statement::STMT_DELETE_EVALUATION_ALL;
+    id  = statement::STMT_DELETE_EVALUATION_WITH_ID;
+    key = statement::STMT_CUSTOM;
   } else if (category == "TERM") {
-    //// Terms (TERM) ////
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      std::string key, param;
+    all = statement::STMT_DELETE_TERM_ALL;
+    id  = statement::STMT_DELETE_TERM_WITH_ID;
+    key = statement::STMT_CUSTOM;
+  }
 
-      if (*it == "*"){
-        // all
-        stmt[statement::STMT_DELETE_TERM_ALL]->execute();
-      } else if (isinteger(*it)){
-        // an integer
-        stmt[statement::STMT_DELETE_TERM_WITH_ID]->bind(1,*it);
-        stmt[statement::STMT_DELETE_TERM_WITH_ID]->step();
+  // execute
+  if (istar)
+    stmt[all]->execute();
+  else{
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      if (isinteger(*it)){
+        stmt[id]->bind(1,*it);
+        stmt[id]->step();
+      } else if (key != statement::STMT_CUSTOM){
+        stmt[key]->bind(1,*it);
+        stmt[key]->step();
       }
     }
   }
@@ -639,16 +524,16 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
         if (description) os << " description={" << description << "}," << std::endl;
         os << "}" << std::endl;
       } else {
-        os << "| " << id << " | " << key << " | ";
-        os << (authors?authors:(const unsigned char*) "")  << " | ";
-        os << (title?title:(const unsigned char*) "")  << " | ";
-        os << (journal?journal:(const unsigned char*) "")  << " | ";
-        os << (volume?volume:(const unsigned char*) "")  << " | ";
-        os << (page?page:(const unsigned char*) "")  << " | ";
-        os << (year?year:(const unsigned char*) "")  << " | ";
-        os << (doi?doi:(const unsigned char*) "")  << " | ";
-        os << (description?description:(const unsigned char*) "")  << " | ";
-        os << std::endl;
+        os << "| " << id << " | " << key << " | "
+           << (authors?authors:(const unsigned char*) "")  << " | "
+           << (title?title:(const unsigned char*) "")  << " | "
+           << (journal?journal:(const unsigned char*) "")  << " | "
+           << (volume?volume:(const unsigned char*) "")  << " | "
+           << (page?page:(const unsigned char*) "")  << " | "
+           << (year?year:(const unsigned char*) "")  << " | "
+           << (doi?doi:(const unsigned char*) "")  << " | "
+           << (description?description:(const unsigned char*) "")  << " | "
+           << std::endl;
       }
     }
   } else if (category == "SET") {
@@ -665,11 +550,11 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       const unsigned char *litrefs = sqlite3_column_text(statement, 3);
       const unsigned char *description = sqlite3_column_text(statement, 4);
 
-      os << "| " << id << " | " << key << " | ";
-      os << (property_type?property_type:(const unsigned char*) "")  << " | ";
-      os << (litrefs?litrefs:(const unsigned char*) "")  << " | ";
-      os << (description?description:(const unsigned char*) "")  << " | ";
-      os << std::endl;
+      os << "| " << id << " | " << key << " | "
+         << (property_type?property_type:(const unsigned char*) "")  << " | "
+         << (litrefs?litrefs:(const unsigned char*) "")  << " | "
+         << (description?description:(const unsigned char*) "")  << " | "
+         << std::endl;
     }
   } else if (category == "METHOD") {
     // print table header
@@ -685,11 +570,11 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       const unsigned char *litrefs = sqlite3_column_text(statement, 3);
       const unsigned char *description = sqlite3_column_text(statement, 4);
 
-      os << "| " << id << " | " << key << " | ";
-      os << (comp_details?comp_details:(const unsigned char*) "")  << " | ";
-      os << (litrefs?litrefs:(const unsigned char*) "")  << " | ";
-      os << (description?description:(const unsigned char*) "")  << " | ";
-      os << std::endl;
+      os << "| " << id << " | " << key << " | "
+         << (comp_details?comp_details:(const unsigned char*) "")  << " | "
+         << (litrefs?litrefs:(const unsigned char*) "")  << " | "
+         << (description?description:(const unsigned char*) "")  << " | "
+         << std::endl;
     }
   } else if (category == "STRUCTURE") {
     // print table header
@@ -707,9 +592,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       int ismol = sqlite3_column_int(statement, 3);
       int nat = sqlite3_column_int(statement, 6);
 
-      os << "| " << id << " | " << key << " | ";
-      os << setid << " | " << ismol << " | " << nat << " | ";
-      os << std::endl;
+      os << "| " << id << " | " << key << " | "
+         << setid << " | " << ismol << " | " << nat << " | "
+         << std::endl;
     }
   } else if (category == "PROPERTY") {
     // print table header
@@ -725,9 +610,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       int setid = sqlite3_column_int(statement, 3);
       int nstructures = sqlite3_column_int(statement, 4);
 
-      os << "| " << id << " | " << key << " | ";
-      os << proptype << " | " << setid << " | " << nstructures << " | ";
-      os << std::endl;
+      os << "| " << id << " | " << key << " | "
+         << proptype << " | " << setid << " | " << nstructures << " | "
+         << std::endl;
     }
   } else if (category == "EVALUATION") {
     // print table header
@@ -744,8 +629,8 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       const unsigned char *unit = sqlite3_column_text(statement, 4);
 
       std::streamsize prec = os.precision(10);
-      os << "| " << id << " | " << methodid << " | " << propid << " | ";
-      os << value << " | " << unit << " | " << std::endl;
+      os << "| " << id << " | " << methodid << " | " << propid << " | "
+         << value << " | " << unit << " | " << std::endl;
       os.precision(prec);
     }
   } else if (category == "TERM") {
