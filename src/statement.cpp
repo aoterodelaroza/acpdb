@@ -45,7 +45,7 @@ CREATE TABLE Sets (
   property_type INTEGER NOT NULL,
   litrefs       TEXT,
   description   TEXT,
-  FOREIGN KEY(property_type) REFERENCES Property_types(id)
+  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
 );
 CREATE TABLE Methods (
   id            INTEGER PRIMARY KEY NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE Structures (
   cell          BLOB,
   zatoms        BLOB NOT NULL,
   coordinates   BLOB NOT NULL,
-  FOREIGN KEY(setid) REFERENCES Sets(id)
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
 CREATE TABLE Properties (
   id            INTEGER PRIMARY KEY NOT NULL,
@@ -75,8 +75,8 @@ CREATE TABLE Properties (
   nstructures   INTEGER NOT NULL,
   structures    BLOB NOT NULL,
   coefficients  BLOB NOT NULL,
-  FOREIGN KEY(property_type) REFERENCES Property_types(id),
-  FOREIGN KEY(setid) REFERENCES Sets(id)
+  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE,
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
 CREATE TABLE Evaluations (
   id            INTEGER PRIMARY KEY NOT NULL,
@@ -84,8 +84,8 @@ CREATE TABLE Evaluations (
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
   unit          TEXT CHECK (unit IN ("KCAL/MOL")),
-  FOREIGN KEY(methodid) REFERENCES Methods(id),
-  FOREIGN KEY(propid) REFERENCES Properties(id)
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
   UNIQUE(methodid,propid)
 );
 CREATE TABLE Terms (
@@ -98,8 +98,8 @@ CREATE TABLE Terms (
   value         REAL NOT NULL,
   unit          TEXT CHECK (unit IN ("KCAL/MOL")),
   maxcoef       REAL,
-  FOREIGN KEY(methodid) REFERENCES Methods(id),
-  FOREIGN KEY(propid) REFERENCES Properties(id)
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
   UNIQUE(methodid,propid,atom,l,exponent)
 );
 INSERT INTO Property_types (key,description)
