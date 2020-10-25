@@ -71,11 +71,14 @@ class statement {
 	     STMT_QUERY_PROPERTY = 35, // query properties
 	     STMT_LIST_EVALUATION = 36, // list evaluations
 	     STMT_DELETE_EVALUATION_ALL = 37, // delete evaluations, all
-	     STMT_DELETE_EVALUATION_WITH_KEY = 38, // delete evaluations, with key
-	     STMT_DELETE_EVALUATION_WITH_ID = 39, // delete evaluations, with id
-	     STMT_INSERT_EVALUATION = 40, // insert evaluations
+	     STMT_DELETE_EVALUATION_WITH_ID = 38, // delete evaluations, with id
+	     STMT_INSERT_EVALUATION = 39, // insert evaluations
+	     STMT_LIST_TERM = 40, // list terms
+	     STMT_DELETE_TERM_ALL = 41, // delete terms, all
+	     STMT_DELETE_TERM_WITH_ID = 42, // delete terms, with id
+	     STMT_INSERT_TERM = 43, // insert terms
   };
-  static const int number_stmt_types = 41; // number of statement types
+  static const int number_stmt_types = 44; // number of statement types
 
   //// Operators ////
 

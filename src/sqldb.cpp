@@ -347,6 +347,54 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_EVALUATION]->step();
+  } else if (category == "TERM") {
+    //// Terms (TERM) ////
+
+    // method ID
+    if ((im = kmap.find("METHOD")) != kmap.end()){
+      if (isinteger(im->second))
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",std::stoi(im->second));
+      else 
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
+    }
+
+    // property ID
+    if ((im = kmap.find("PROPERTY")) != kmap.end()){
+      if (isinteger(im->second))
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",std::stoi(im->second));
+      else 
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
+    }
+
+    // ATOM
+    if ((im = kmap.find("ATOM")) != kmap.end())
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":ATOM",std::stoi(im->second));
+
+    // L
+    if ((im = kmap.find("L")) != kmap.end())
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":L",std::stoi(im->second));
+
+    // exponent
+    if ((im = kmap.find("EXPONENT")) != kmap.end())
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":EXPONENT",std::stod(im->second));
+
+    // value
+    if ((im = kmap.find("VALUE")) != kmap.end())
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":VALUE",std::stod(im->second));
+
+    // unit
+    if ((im = kmap.find("UNIT")) != kmap.end()){
+      std::string unit = im->second;
+      uppercase(unit);
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":UNIT",unit);
+    };
+
+    // maxcoef
+    if ((im = kmap.find("MAXCOEF")) != kmap.end())
+      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":MAXCOEF",std::stod(im->second));
+
+    // submit
+    stmt[statement::STMT_INSERT_TERM]->step();
   }
 }
 
@@ -533,10 +581,6 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         // an integer
         stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->bind(1,*it);
         stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->step();
-      } else {
-        // a key
-        stmt[statement::STMT_DELETE_EVALUATION_WITH_KEY]->bind(1,*it);
-        stmt[statement::STMT_DELETE_EVALUATION_WITH_KEY]->step();
       }
     }
   }

@@ -88,6 +88,20 @@ CREATE TABLE Evaluations (
   FOREIGN KEY(propid) REFERENCES Properties(id)
   UNIQUE(methodid,propid)
 );
+CREATE TABLE Terms (
+  id            INTEGER PRIMARY KEY NOT NULL,
+  methodid      INTEGER NOT NULL,
+  propid        INTEGER NOT NULL,
+  atom          INTEGER NOT NULL,
+  l             INTEGER NOT NULL,
+  exponent      REAL NOT NULL,
+  value         REAL NOT NULL,
+  unit          TEXT CHECK (unit IN ("KCAL/MOL")),
+  maxcoef       REAL,
+  FOREIGN KEY(methodid) REFERENCES Methods(id),
+  FOREIGN KEY(propid) REFERENCES Properties(id)
+  UNIQUE(methodid,propid,atom,l,exponent)
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');
@@ -295,12 +309,6 @@ FROM Evaluations;
 [statement::STMT_DELETE_EVALUATION_ALL] = 
 "DELETE FROM Evaluations;",
 
-[statement::STMT_DELETE_EVALUATION_WITH_KEY] = 
-R"SQL(
-DELETE FROM Evaluations
-WHERE key = ?1;
-)SQL",
-
 [statement::STMT_DELETE_EVALUATION_WITH_ID] =
 R"SQL(
 DELETE FROM Evaluations
@@ -311,6 +319,27 @@ WHERE id = ?1;
 R"SQL(
 INSERT INTO Evaluations (id,methodid,propid,value,unit)
        VALUES(:ID,:METHODID,:PROPID,:VALUE,:UNIT)
+)SQL",
+
+[statement::STMT_LIST_TERM] = 
+R"SQL(
+SELECT id,methodid,propid,atom,l,exponent,value,unit,maxcoef
+FROM Terms;
+)SQL",
+
+[statement::STMT_DELETE_TERM_ALL] = 
+"DELETE FROM Terms;",
+
+[statement::STMT_DELETE_TERM_WITH_ID] =
+R"SQL(
+DELETE FROM Terms
+WHERE id = ?1;
+)SQL",
+
+[statement::STMT_INSERT_TERM] =
+R"SQL(
+INSERT INTO Terms (id,methodid,propid,atom,l,exponent,value,unit,maxcoef)
+       VALUES(:ID,:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:UNIT,:MAXCOEF)
 )SQL",
 
 };
