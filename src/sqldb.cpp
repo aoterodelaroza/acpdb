@@ -583,6 +583,20 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
         stmt[statement::STMT_DELETE_EVALUATION_WITH_ID]->step();
       }
     }
+  } else if (category == "TERM") {
+    //// Terms (TERM) ////
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      std::string key, param;
+
+      if (*it == "*"){
+        // all
+        stmt[statement::STMT_DELETE_TERM_ALL]->execute();
+      } else if (isinteger(*it)){
+        // an integer
+        stmt[statement::STMT_DELETE_TERM_WITH_ID]->bind(1,*it);
+        stmt[statement::STMT_DELETE_TERM_WITH_ID]->step();
+      }
+    }
   }
 }  
 
@@ -732,6 +746,31 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
       std::streamsize prec = os.precision(10);
       os << "| " << id << " | " << methodid << " | " << propid << " | ";
       os << value << " | " << unit << " | " << std::endl;
+      os.precision(prec);
+    }
+  } else if (category == "TERM") {
+    // print table header
+    os << "| id | methodid | propid | atom | l | exponent | value | unit | maxcoef |" << std::endl;
+
+    // run the statement
+    while (stmt[statement::STMT_LIST_TERM]->step() != SQLITE_DONE){
+      sqlite3_stmt *statement = stmt[statement::STMT_LIST_TERM]->ptr();
+
+      int id = sqlite3_column_int(statement, 0);
+      int methodid = sqlite3_column_int(statement, 1);
+      int propid = sqlite3_column_int(statement, 2);
+      int atom = sqlite3_column_int(statement, 3);
+      int l = sqlite3_column_int(statement, 4);
+      double exponent = sqlite3_column_double(statement, 5);
+      double value = sqlite3_column_double(statement, 6);
+      const unsigned char *unit = sqlite3_column_text(statement, 7);
+      double maxcoef = sqlite3_column_double(statement, 8);
+
+      std::streamsize prec = os.precision(10);
+      os << "| " << id << " | " << methodid << " | " << propid << " | "
+         << atom << " | " << l << " | " << exponent << " | " 
+         << value << " | " << unit << " | " << maxcoef << " | "
+         << std::endl;
       os.precision(prec);
     }
   } else { 
