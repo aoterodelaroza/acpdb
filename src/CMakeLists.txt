@@ -2,7 +2,7 @@
 set(SOURCES acpdb.cpp parseutils.cpp statement.cpp sqldb.cpp structure.cpp)
 
 ## C++ standards
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ## executable

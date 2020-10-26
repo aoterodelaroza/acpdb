@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <forward_list>
 #include <string.h>
 #include <algorithm>
+#include <filesystem>
+#include <regex>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -117,7 +119,7 @@ void sqldb::close(){
 }
 
 // Insert an item into the database
-void sqldb::insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // declare the map const_iterator for key searches
@@ -172,6 +174,10 @@ void sqldb::insert(const std::string &category, const std::string &key, const st
 
     // submit
     stmt[statement::STMT_INSERT_SET]->step();
+
+    // interpret the xyz keywords
+    if ((im = kmap.find("XYZ")) != kmap.end())
+      insert_set_xyz(key, kmap);
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
 
@@ -425,6 +431,73 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 #else
   throw std::runtime_error("Cannot use INSERT LITREF BIBTEX: not compiled with bibtex support");
 #endif
+}
+
+// Insert additional info from an INSERT SET command (xyz keyword)
+void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
+
+  // tokenize the line following the xyz keyword
+  std::list<std::string> tokens(list_all_words(kmap["XYZ"]));
+  if (tokens.empty())
+    throw std::runtime_error("Need arguments after XYZ");
+  
+  // prepare
+  namespace fs = std::filesystem;
+  std::string skey;
+  std::unordered_map<std::string,std::string> smap;
+
+  // begin the transaction
+  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+
+  if (fs::is_directory(tokens.front())){
+    // add a directory //
+
+    // interpret the input and build the regex
+    auto it = tokens.begin();
+    std::string dir = *it, rgx_s;
+    if (std::next(it) != tokens.end())
+      rgx_s = *(std::next(it));
+    else
+      rgx_s = ".*\\.xyz$";
+    std::regex rgx(rgx_s, std::regex::awk | std::regex::icase | std::regex::optimize);
+
+    // run over directory files and add the structures
+    for (const auto& file : fs::directory_iterator(dir)){
+      std::string filename = file.path().filename();
+      if (std::regex_match(filename.begin(),filename.end(),rgx)){
+        skey = key + ":" + std::string(file.path().stem());
+        
+        smap.clear();
+        smap["XYZ"] = file.path().string();
+        smap["SET"] = key;
+        insert("STRUCTURE",skey,smap);
+      }
+    }
+
+  } else if (fs::is_regular_file(tokens.front())) {
+    // add a list of files //
+
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      if (fs::is_regular_file(*it)){
+        skey = key + ":" + std::string(fs::path(*it).stem());
+        
+        smap.clear();
+        smap["XYZ"] = *it;
+        smap["SET"] = key;
+        insert("STRUCTURE",skey,smap);
+      } else {
+        throw std::runtime_error("File or directory not found: " + *it);
+      }
+    }
+  } else {
+    throw std::runtime_error("File or directory not found: " + tokens.front());
+  }
+
+  // commit the transaction
+  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+
+  return;
 }
 
 // Delete items from the database

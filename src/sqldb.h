@@ -64,10 +64,13 @@ class sqldb {
   void close();
 
   // Insert an item into the database
-  void insert(const std::string &category, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
+  void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::list<std::string> &tokens);
+
+  // Insert additional info from an INSERT SET command (xyz keyword)
+  void insert_set_xyz(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Delete items from the database
   void erase(const std::string &category, std::list<std::string> &tokens);

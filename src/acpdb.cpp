@@ -98,9 +98,10 @@ int main(int argc, char *argv[]) {
         std::string key = popstring(tokens);
         if (equali_strings(category,"LITREF") && equali_strings(key,"BIBTEX"))
           db.insert_litref_bibtex(tokens);
-        else
-          db.insert(category,key,map_keyword_pairs(is,true));
-
+        else{
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(is,true);
+          db.insert(category,key,kmap);
+        }
       } else if (keyw == "DELETE") {
         std::string category = popstring(tokens,true);
         db.erase(category,tokens);

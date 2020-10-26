@@ -91,6 +91,23 @@ END
   structures. One or more references from Table 1 can be given by id
   or key.
 
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+
+  XYZ xyz1.s xyz2.s xyz3.s ...  
+  ... or ...
+  XYZ directory.s regexp.s
+END
+
+Add the set with name name.s in the same way as above. In addition,
+belonging to this set, add structures corresponding to XYZ files
+xyz1.s, etc. Alternatively, add all files in directory directory.s
+that match the regular expression regexp.s (awk style). If regexp.s is
+not given, add all xyz files.
+
+
 DELETE SET {set.s|set.i}
 
   Delete a set (Table 3).
