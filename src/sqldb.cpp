@@ -33,8 +33,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "btparse.h"
 #endif
 
+// essential information for a property
+struct propinfo {
+  int fieldasrxn = 0;
+  std::vector<std::string> names;
+  std::vector<double> coefs;
+  double ref = 0;
+};
+
 namespace fs = std::filesystem;
 
+// Find the id from a key from an sql table
 int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
   stmt[type]->bind(1,key);
   stmt[type]->step();
@@ -178,13 +187,17 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     // submit
     stmt[statement::STMT_INSERT_SET]->step();
 
-    // interpret the xyz keywords
+    // interpret the xyz keyword
     if (kmap.find("XYZ") != kmap.end())
       insert_set_xyz(key, kmap);
 
     // interpret the din/directory/method keyword combination
     if (kmap.find("DIN") != kmap.end() && kmap.find("DIRECTORY") != kmap.end() && kmap.find("METHOD") != kmap.end())
       insert_set_din(key, kmap);
+
+    // interpret the db keyword
+    if (kmap.find("DB") != kmap.end() && kmap.find("METHOD") != kmap.end())
+      insert_set_db(key, kmap);
 
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
@@ -548,45 +561,52 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
   if (fieldasrxn == 0)
     throw std::runtime_error("Error reading din file (fieldasrxn = 0) " + din);
 
-  // begin the transaction
-  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
-
   // process the rest of the din file
-  std::vector<std::string> names;
-  std::vector<double> coefs;
-  double ref;
   double c = std::stod(str);
-  std::unordered_map<std::string,std::string> smap;
-  std::unordered_map<std::string,boolean> used;
-  std::string skey;
+  std::vector<propinfo> info;
+  propinfo aux;
   while (!ifile.eof() && !ifile.fail()){
+    aux.names.clear();
+    aux.coefs.clear();
     while (c != 0){
       ifile >> str;
-      coefs.push_back(c);
-      names.push_back(str);
+      aux.coefs.push_back(c);
+      aux.names.push_back(str);
       ifile >> c;
     }
-    ifile >> ref;
+    ifile >> aux.ref;
     if (ifile.fail())
       throw std::runtime_error("Error reading din file " + din);
 
-    // prepare
-    int n = names.size();
+    // clean up and prepare next iteration
+    ifile >> c;
+    info.push_back(aux);
+  }
+
+  // begin the transaction
+  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+
+  // process the entries
+  std::unordered_map<std::string,boolean> used;
+  for (int k = 0; k < info.size(); k++){
+    std::unordered_map<std::string,std::string> smap;
+    std::string skey;
 
     // insert structures
+    int n = info[k].names.size();
     for (int i = 0; i < n; i++){
       smap.clear();
-      if (used.find(names[i]) == used.end()){
-        skey = key + ":" + names[i];
-        smap["XYZ"] = dir + "/" + names[i] + ".xyz";
+      if (used.find(info[k].names[i]) == used.end()){
+        skey = key + ":" + info[k].names[i];
+        smap["XYZ"] = dir + "/" + info[k].names[i] + ".xyz";
         smap["SET"] = key;
         insert("STRUCTURE",skey,smap);
-        used[names[i]] = true;
+        used[info[k].names[i]] = true;
       }
     }
 
     // insert property
-    skey = key + ":" + names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+    skey = key + ":" + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
     smap.clear();
     smap["PROPERTY_TYPE"] = "energy_difference";
     smap["SET"] = key;
@@ -594,8 +614,8 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap["STRUCTURES"] = "";
     smap["COEFFICIENTS"] = "";
     for (int i = 0; i < n; i++){
-      smap["STRUCTURES"] = smap["STRUCTURES"] + key + ":" + names[i] + " ";
-      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(coefs[i]) + " ";
+      smap["STRUCTURES"] = smap["STRUCTURES"] + key + ":" + info[k].names[i] + " ";
+      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(info[k].coefs[i]) + " ";
     }
     insert("PROPERTY",skey,smap);
 
@@ -603,18 +623,19 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap.clear();
     smap["METHOD"] = kmap["METHOD"];
     smap["PROPERTY"] = skey;
-    smap["VALUE"] = to_string_precise(ref);
+    smap["VALUE"] = to_string_precise(info[k].ref);
     smap["UNIT"] = "KCAL/MOL";
     insert("EVALUATION",skey,smap);
-
-    // clean up and prepare next iteration
-    ifile >> c;
-    names.clear();
-    coefs.clear();
   }
 
   // commit the transaction
   stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+}
+
+// Insert additional info from an INSERT SET command (db keyword)
+void sqldb::insert_set_db(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  printf("hello!\n");
+  return;
 }
 
 // Delete items from the database
