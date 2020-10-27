@@ -107,6 +107,20 @@ xyz1.s, etc. Alternatively, add all files in directory directory.s
 that match the regular expression regexp.s (awk style). If regexp.s is
 not given, add all xyz files.
 
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+
+  METHOD method.s
+  DIN file.s directory.s
+END
+
+Add the set with name name.s in the same way as above. In addition,
+belonging to this set, add the structures indicated in the din
+file. The xyz files are found in directory directory.s. Also, add the
+corresponding properties and the corresponding evaluations with method
+method.s.
 
 DELETE SET {set.s|set.i}
 
