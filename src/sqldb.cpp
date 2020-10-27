@@ -595,7 +595,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap["COEFFICIENTS"] = "";
     for (int i = 0; i < n; i++){
       smap["STRUCTURES"] = smap["STRUCTURES"] + key + ":" + names[i] + " ";
-      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + std::to_string(coefs[i]) + " ";
+      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(coefs[i]) + " ";
     }
     insert("PROPERTY",skey,smap);
 
@@ -603,7 +603,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap.clear();
     smap["METHOD"] = kmap["METHOD"];
     smap["PROPERTY"] = skey;
-    smap["VALUE"] = std::to_string(ref);
+    smap["VALUE"] = to_string_precise(ref);
     smap["UNIT"] = "KCAL/MOL";
     insert("EVALUATION",skey,smap);
 

@@ -86,3 +86,11 @@ bool equali_strings(const std::string& a, const std::string& b)
     std::equal(a.begin(), a.end(), b.begin(), 
                [](char cA, char cB) { return ::toupper(cA) == ::toupper(cB); });
 }
+
+// Write a double to a string very precisely
+std::string to_string_precise(double a) {
+    std::ostringstream out;
+    out.precision(16);
+    out << std::scientific << a;
+    return out.str();
+}

@@ -52,5 +52,8 @@ inline bool isinteger(const std::string &a){
   return a.find_first_not_of("0123456789 ") == std::string::npos;
 }
 
+// Write a double to a string very precisely
+std::string to_string_precise(double a);
+
 #endif
 
