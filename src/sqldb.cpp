@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include <filesystem>
 #include <regex>
+#include <fstream>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -31,6 +32,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef BTPARSE_FOUND  
 #include "btparse.h"
 #endif
+
+namespace fs = std::filesystem;
 
 int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
   stmt[type]->bind(1,key);
@@ -176,8 +179,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     stmt[statement::STMT_INSERT_SET]->step();
 
     // interpret the xyz keywords
-    if ((im = kmap.find("XYZ")) != kmap.end())
+    if (kmap.find("XYZ") != kmap.end())
       insert_set_xyz(key, kmap);
+
+    // interpret the din/directory/method keyword combination
+    if (kmap.find("DIN") != kmap.end() && kmap.find("DIRECTORY") != kmap.end() && kmap.find("METHOD") != kmap.end())
+      insert_set_din(key, kmap);
+
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
 
@@ -260,6 +268,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       nstructures = std::stoi(im->second);
       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
     }
+
     if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
       std::list<std::string> tokens = list_all_words(im->second);
 
@@ -443,7 +452,6 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
     throw std::runtime_error("Need arguments after XYZ");
   
   // prepare
-  namespace fs = std::filesystem;
   std::string skey;
   std::unordered_map<std::string,std::string> smap;
 
@@ -496,8 +504,117 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
 
   // commit the transaction
   stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+}
 
-  return;
+// Insert additional info from an INSERT SET command (xyz keyword)
+void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
+
+  // Check sanity of the keywords
+  if (kmap.find("METHOD") == kmap.end())
+    throw std::runtime_error("Method " + kmap["METHOD"] + " not found");
+
+  std::string dir = kmap["DIRECTORY"];
+  if (!fs::is_directory(dir))
+    throw std::runtime_error("Directory " + dir + " not found");
+  
+  std::string din = kmap["DIN"];
+  if (!fs::is_regular_file(din))
+    throw std::runtime_error("din file " + din + " not found");
+
+  // open the din file
+  std::ifstream ifile(din,std::ios::in);
+  if (ifile.fail()) 
+    throw std::runtime_error("Error reading din file " + din);
+
+  // read the din file header
+  int fieldasrxn = 0;
+  std::string str, line; 
+  while (std::getline(ifile,line)){
+    if (ifile.fail()) 
+      throw std::runtime_error("Error reading din file " + din);
+    std::istringstream iss(line);
+    iss >> str;
+
+    if (str.substr(0,2) == "#@"){
+      iss >> str;
+      if (str == "fieldasrxn")
+        iss >> fieldasrxn;
+    } else if (str[0] == '#' || str.empty()) 
+      continue;
+    else
+      break;
+  }
+  if (fieldasrxn == 0)
+    throw std::runtime_error("Error reading din file (fieldasrxn = 0) " + din);
+
+  // begin the transaction
+  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+
+  // process the rest of the din file
+  std::vector<std::string> names;
+  std::vector<double> coefs;
+  double ref;
+  double c = std::stod(str);
+  std::unordered_map<std::string,std::string> smap;
+  std::unordered_map<std::string,boolean> used;
+  std::string skey;
+  while (!ifile.eof() && !ifile.fail()){
+    while (c != 0){
+      ifile >> str;
+      coefs.push_back(c);
+      names.push_back(str);
+      ifile >> c;
+    }
+    ifile >> ref;
+    if (ifile.fail())
+      throw std::runtime_error("Error reading din file " + din);
+
+    // prepare
+    int n = names.size();
+
+    // insert structures
+    for (int i = 0; i < n; i++){
+      smap.clear();
+      if (used.find(names[i]) == used.end()){
+        skey = key + ":" + names[i];
+        smap["XYZ"] = dir + "/" + names[i] + ".xyz";
+        smap["SET"] = key;
+        insert("STRUCTURE",skey,smap);
+        used[names[i]] = true;
+      }
+    }
+
+    // insert property
+    skey = key + ":" + names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+    smap.clear();
+    smap["PROPERTY_TYPE"] = "energy_difference";
+    smap["SET"] = key;
+    smap["NSTRUCTURES"] = std::to_string(n);
+    smap["STRUCTURES"] = "";
+    smap["COEFFICIENTS"] = "";
+    for (int i = 0; i < n; i++){
+      smap["STRUCTURES"] = smap["STRUCTURES"] + key + ":" + names[i] + " ";
+      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + std::to_string(coefs[i]) + " ";
+    }
+    insert("PROPERTY",skey,smap);
+
+    // insert the evaluation
+    smap.clear();
+    smap["METHOD"] = kmap["METHOD"];
+    smap["PROPERTY"] = skey;
+    smap["VALUE"] = std::to_string(ref);
+    smap["UNIT"] = "KCAL/MOL";
+    insert("EVALUATION",skey,smap);
+
+    // clean up and prepare next iteration
+    ifile >> c;
+    names.clear();
+    coefs.clear();
+  }
+
+  // commit the transaction
+  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
 }
 
 // Delete items from the database

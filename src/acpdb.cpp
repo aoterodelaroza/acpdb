@@ -74,6 +74,9 @@ int main(int argc, char *argv[]) {
   // Parse the input file
   std::string line;
   while(std::getline(*is, line)){
+    if (is->fail()) 
+      throw std::runtime_error("Error reading input file");
+
     // Tokenize the line
     std::list<std::string> tokens(list_all_words(line));
 

@@ -72,6 +72,9 @@ class sqldb {
   // Insert additional info from an INSERT SET command (xyz keyword)
   void insert_set_xyz(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
+  // Insert additional info from an INSERT SET command (din keyword)
+  void insert_set_din(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+
   // Delete items from the database
   void erase(const std::string &category, std::list<std::string> &tokens);
 
