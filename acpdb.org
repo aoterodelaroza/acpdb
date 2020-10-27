@@ -107,6 +107,10 @@ xyz1.s, etc. Alternatively, add all files in directory directory.s
 that match the regular expression regexp.s (awk style). If regexp.s is
 not given, add all xyz files.
 
+Note: there is no facility for inserting db files because din files
+are more efficient. In DB files, structures may be repeated in the
+database.
+
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...

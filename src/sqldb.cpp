@@ -195,10 +195,6 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     if (kmap.find("DIN") != kmap.end() && kmap.find("DIRECTORY") != kmap.end() && kmap.find("METHOD") != kmap.end())
       insert_set_din(key, kmap);
 
-    // interpret the db keyword
-    if (kmap.find("DB") != kmap.end() && kmap.find("METHOD") != kmap.end())
-      insert_set_db(key, kmap);
-
   } else if (category == "METHOD") {
     //// Methods (METHOD) ////
 
@@ -630,12 +626,6 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 
   // commit the transaction
   stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
-}
-
-// Insert additional info from an INSERT SET command (db keyword)
-void sqldb::insert_set_db(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
-  printf("hello!\n");
-  return;
 }
 
 // Delete items from the database
