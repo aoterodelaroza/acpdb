@@ -772,3 +772,61 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   }
   os.precision(prec);
 }
+
+// Verify the consistency of the database
+void sqldb::verify(std::ostream &os){
+  if (!db) throw std::runtime_error("A database file must be connected before using VERIFY");
+
+  // check litrefs in sets
+  statement stmt(db,statement::STMT_CUSTOM,R"SQL(
+SELECT litrefs,key FROM Sets;
+)SQL");
+  while (stmt.step() != SQLITE_DONE){
+    const char *field_s = (char *) sqlite3_column_text(stmt.ptr(), 0);
+    if (!field_s) continue;
+
+    std::string field = std::string(field_s);
+    std::list<std::string> tokens = list_all_words(field);
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+        os << "LITREF (" + *it + ") in SET (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 1)) + ") not found" << std::endl;
+    }
+  }
+
+  // check litrefs in methods
+  stmt.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT litrefs,key FROM Methods;
+)SQL");
+  while (stmt.step() != SQLITE_DONE){
+    const char *field_s = (char *) sqlite3_column_text(stmt.ptr(), 0);
+    if (!field_s) continue;
+
+    std::string field = std::string(field_s);
+    std::list<std::string> tokens = list_all_words(field);
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+        os << "LITREF (" + *it + ") in METHODS (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 1)) + ") not found" << std::endl;
+    }
+  }
+
+  // check structures in properties
+  stmt.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT key,nstructures,structures FROM Properties;
+)SQL");
+  statement stcheck(db,statement::STMT_CUSTOM,R"SQL(
+SELECT id FROM Structures WHERE id = ?1;
+)SQL");
+  while (stmt.step() != SQLITE_DONE){
+    int n = sqlite3_column_int(stmt.ptr(), 1);
+
+    const int *str = (int *)sqlite3_column_blob(stmt.ptr(), 2);
+    for (int i = 0; i < n; i++){
+      stcheck.reset();
+      stcheck.bind(1,str[i]);
+      sqlite3_step(stcheck.ptr());
+      if (sqlite3_column_int(stcheck.ptr(),0) == 0)
+        os << "STRUCTURES (" + std::to_string(str[i]) + ") in Properties (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 0)) + ") not found" << std::endl;
+    }
+  }  
+}
+

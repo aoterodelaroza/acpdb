@@ -85,7 +85,7 @@ class statement {
   // constructors
   // default and parametrized constructor
   statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_CUSTOM, std::string text_ = "");
-  statement(statement&& rhs) = delete; // move constructor (deleted)
+  statement(statement&& rhs) = delete; // move constructor
   statement(const statement& rhs) = delete; // copy constructor (deleted)
 
   // destructors
@@ -99,6 +99,9 @@ class statement {
   operator bool() const { return stmt; }
 
   //// Public methods ////
+
+  // Recycle a statement in the same database
+  void recycle(const stmttype type_ = STMT_CUSTOM, std::string text_ = "");
 
   // Execute a statment directly
   int execute();
@@ -156,6 +159,10 @@ class statement {
 };
 
 // bind dispatcher template specializations
+template<> struct statement::bind_dispatcher< int, int > {
+  static int impl(sqlite3_stmt *stmt, const int col, const int arg, bool transient, int nbytes){ 
+    return sqlite3_bind_int(stmt,col,arg);}};
+
 template<> struct statement::bind_dispatcher< int, std::string > {
   static int impl(sqlite3_stmt *stmt, const int col, const std::string &arg, bool transient, int nbytes){ 
     return sqlite3_bind_text(stmt,col,arg.c_str(),-1,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};

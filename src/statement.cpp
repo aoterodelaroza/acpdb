@@ -358,6 +358,18 @@ statement::statement(sqlite3 *db_/*= nullptr*/, const stmttype type_/*= STMT_CUS
     text = statement_text[type_];
 }
 
+// Recycle a statement in the same database
+void statement::recycle(const stmttype type_/*= STMT_CUSTOM*/, std::string text_/* = ""*/){
+  finalize();
+  type = type_;
+  if (type_ != STMT_CUSTOM) 
+    text = statement_text[type_];
+  else
+    text = text_;
+  stmt = nullptr;
+}
+
+// Execute a statment directly
 int statement::execute(){
   if (!db)
     throw std::runtime_error("A database file must be connected before executing a statement");
@@ -376,6 +388,8 @@ int statement::execute(){
   return rc;
 }
 
+// Step an statement. Prepare the statement if it was not already
+// prepared. Reset the statement at the end if it is done.
 int statement::step(){
   if (!db)
     throw std::runtime_error("A database file must be connected before stepping a statement");
@@ -396,12 +410,13 @@ int statement::step(){
 // Finalize the statement
 void statement::finalize(){
   if (db && stmt){
-    if (sqlite3_finalize(stmt)) 
+    if (prepared && sqlite3_finalize(stmt)) 
       throw_exception(db);
   }
   prepared = false;
   stmt = nullptr;
   has_bind = false;
+  text.clear();
 }
 
 // Reset the statement and clear all bindings

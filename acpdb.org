@@ -235,6 +235,11 @@ LIST TERM
 
   List the known terms.
 
+VERIFY
+
+  Check the consistency of the database. Specifically, check that the
+  unhandled BLOBs and TEXTs refer to keys that exist.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

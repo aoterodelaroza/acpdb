@@ -84,6 +84,9 @@ class sqldb {
   // List items from the database
   void list(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
+  // Verify the consistency of the database
+  void verify(std::ostream &os);
+
  private:
 
   // Find the property type ID corresponding to the key 

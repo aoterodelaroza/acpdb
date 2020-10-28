@@ -111,6 +111,8 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
         db.list(*os,category,tokens);
+      } else if (keyw == "VERIFY") {
+        db.verify(*os);
       } else if (keyw == "END") {
         break;
       } else {
