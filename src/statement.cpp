@@ -23,7 +23,7 @@ static const char *statement_text[statement::number_stmt_types] = {
 [statement::STMT_CREATE_DATABASE] = 
 R"SQL(
 CREATE TABLE Literature_refs (
-  id          INTEGER PRIMARY KEY NOT NULL,
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
   key         TEXT UNIQUE NOT NULL,
   authors     TEXT,
   title       TEXT,
@@ -35,12 +35,12 @@ CREATE TABLE Literature_refs (
   description TEXT
 );
 CREATE TABLE Property_types (
-  id          INTEGER PRIMARY KEY NOT NULL,
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
   key         TEXT UNIQUE NOT NULL,
   description TEXT
 );
 CREATE TABLE Sets (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
   property_type INTEGER NOT NULL,
   litrefs       TEXT,
@@ -48,14 +48,14 @@ CREATE TABLE Sets (
   FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
 );
 CREATE TABLE Methods (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
   comp_details  TEXT,
   litrefs       TEXT,
   description   TEXT
 );
 CREATE TABLE Structures (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
   setid         INTEGER NOT NULL,
   ismolecule    INTEGER NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE Structures (
   FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
 CREATE TABLE Properties (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
   property_type INTEGER NOT NULL,
   setid         INTEGER NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE Properties (
   FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
 CREATE TABLE Evaluations (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE Evaluations (
   UNIQUE(methodid,propid)
 );
 CREATE TABLE Terms (
-  id            INTEGER PRIMARY KEY NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   atom          INTEGER NOT NULL,
