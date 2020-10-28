@@ -1,5 +1,5 @@
 ## sources
-set(SOURCES acpdb.cpp parseutils.cpp statement.cpp sqldb.cpp structure.cpp)
+set(SOURCES acpdb.cpp parseutils.cpp statement.cpp sqldb.cpp structure.cpp trainset.cpp)
 
 ## C++ standards
 set(CMAKE_CXX_STANDARD 17)

@@ -36,7 +36,7 @@ Whenver set names are required, an asterisk stands for the current
 training set. When a method name is required, an asterisk stands for
 the method used in the original reference.
 
-* Keywords
+* Keywords (database build)
 
 CREATE acpdb_file.s
 
@@ -239,6 +239,13 @@ VERIFY
 
   Check the consistency of the database. Specifically, check that the
   unhandled BLOBs and TEXTs refer to keys that exist.
+
+* Keywords (define the training set)
+
+ATOM|ATOMS at1.s l1.i at2.s l2.i ... 
+
+  Define the atoms for which ACPs will be fitted and the maximum
+  angular momentum channel for each.
 
 * Database schema
 

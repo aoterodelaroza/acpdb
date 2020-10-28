@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 
 #include "sqldb.h"
+#include "trainset.h"
 #include "parseutils.h"
 
 #ifdef BTPARSE_FOUND  
@@ -32,6 +33,7 @@ static std::ifstream *ifile = nullptr;
 static std::ofstream *ofile = nullptr;
 
 static sqldb db;
+static trainset ts;
 
 int main(int argc, char *argv[]) {
 
@@ -88,7 +90,9 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
-      if (keyw == "CREATE") {
+      if (keyw == "ATOM" || keyw == "ATOMS") {
+        ts.addatoms(tokens);
+      } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();
       } else if (keyw == "CONNECT") {

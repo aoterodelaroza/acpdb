@@ -55,5 +55,11 @@ inline bool isinteger(const std::string &a){
 // Write a double to a string very precisely
 std::string to_string_precise(double a);
 
+// Atomic number from atomic name
+unsigned char zatguess(std::string atsym);
+
+// Atomic name from atomic number
+std::string nameguess(unsigned char z);
+
 #endif
 
