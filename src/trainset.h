@@ -31,9 +31,13 @@ class trainset {
   // Add atoms and max. angular momentum
   void addatoms(std::list<std::string> &tokens);
 
+  // Add exponents
+  void addexp(std::list<std::string> &tokens);
+
  private:
   std::vector<unsigned char> zat;
   std::vector<unsigned char> lmax;
+  std::vector<double> exp;
 };
 
 #endif

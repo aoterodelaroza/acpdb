@@ -247,6 +247,10 @@ ATOM|ATOMS at1.s l1.i at2.s l2.i ...
   Define the atoms for which ACPs will be fitted and the maximum
   angular momentum channel for each.
 
+EXP|EXPONENT|EXPONENTS exp1.r exp2.r ... 
+
+  List of exponents.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

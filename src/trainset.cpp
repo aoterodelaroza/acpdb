@@ -24,6 +24,7 @@ const std::unordered_map<std::string, int> ltoint {
    {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, 
 };
 
+// Add atoms and max. angular momentum
 void trainset::addatoms(std::list<std::string> &tokens){
 
   auto it = tokens.begin();
@@ -44,3 +45,13 @@ void trainset::addatoms(std::list<std::string> &tokens){
   }
 }
 
+// Add exponents
+void trainset::addexp(std::list<std::string> &tokens){
+  for (auto it = tokens.begin(); it != tokens.end(); it++){
+    double e_ = std::stod(*it);
+    if (e_ < 0)
+      throw std::runtime_error("Invalid exponent " + *it);
+
+    exp.push_back(e_);
+  }
+}
