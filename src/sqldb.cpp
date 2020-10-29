@@ -538,7 +538,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 
   // read the din file header
   int fieldasrxn = 0;
-  std::string str, line; 
+  std::string str, saux, line; 
   while (std::getline(ifile,line)){
     if (ifile.fail()) 
       throw std::runtime_error("Error reading din file " + din);
@@ -558,25 +558,32 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     throw std::runtime_error("Error reading din file (fieldasrxn = 0) " + din);
 
   // process the rest of the din file
-  double c = std::stod(str);
+  int n = 0;
+  double c = std::stod(str), caux;
   std::vector<propinfo> info;
   propinfo aux;
   while (!ifile.eof() && !ifile.fail()){
     aux.names.clear();
     aux.coefs.clear();
     while (c != 0){
-      ifile >> str;
+      if (line_get_double(ifile,line,str,caux))
+        throw std::runtime_error("Error reading din file " + din);
       aux.coefs.push_back(c);
       aux.names.push_back(str);
-      ifile >> c;
+      if (line_get_double(ifile,line,saux,c))
+        throw std::runtime_error("Error reading din file " + din);
     }
-    ifile >> aux.ref;
-    if (ifile.fail())
+    if (line_get_double(ifile,line,saux,aux.ref))
       throw std::runtime_error("Error reading din file " + din);
 
     // clean up and prepare next iteration
-    ifile >> c;
     info.push_back(aux);
+    if (line_get_double(ifile,line,saux,c)){
+      if (ifile.eof())
+        break;
+      else
+        throw std::runtime_error("Error reading din file " + din);
+    }
   }
 
   // begin the transaction

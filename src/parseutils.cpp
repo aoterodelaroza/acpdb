@@ -153,3 +153,26 @@ std::string nameguess(unsigned char z){
   return an[z-1];
 }
 
+// Read a line from stream and get the first keyword (str) and maybe
+// double (res) from it. Skip lines that start with #. If there was a
+// fail or eof, return 1. If no double could be read, return res = 0.
+int line_get_double(std::istream &is, std::string &line, std::string &str, double &res){
+
+  while (true){
+    std::getline(is,line);
+    if (is.fail() || is.eof()) return 1;
+
+    std::istringstream iss(line);
+    iss >> str;
+  
+    if (str[0] != '#') {
+      try {
+        res = std::stod(str);
+      } catch (const std::invalid_argument &e) {
+        res = 0;
+      }
+      break;
+    }
+  }
+  return 0;
+}

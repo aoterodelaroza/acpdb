@@ -61,5 +61,10 @@ unsigned char zatguess(std::string atsym);
 // Atomic name from atomic number
 std::string nameguess(unsigned char z);
 
+// Read a line from stream and get the first keyword (str) and maybe
+// double (res) from it. Skip lines that start with #. If there was a
+// fail or eof, return 1. If no double could be read, return res = 0.
+int line_get_double(std::istream &is, std::string &line, std::string &str, double &res);
+
 #endif
 
