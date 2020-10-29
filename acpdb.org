@@ -261,6 +261,17 @@ REFERENCE method.s [set.s]
   set.s is given, set the reference method only for members of that
   set (overrides previous REFERENCE commands).
 
+EMPTY method.s
+
+  Set the approximate method that is the target of the ACP.
+
+ADD method.s [FIT]
+
+  Define an additional constant contribution to the energy from method
+  method.s. If the FIT keyword follows the method, then the
+  contribution enters the fitting procedure and is treated as an
+  additional column in the least-squares fit.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

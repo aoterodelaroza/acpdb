@@ -79,7 +79,7 @@ void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
 // Set the reference method
 void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
   if (!db) 
-    throw std::runtime_error("A database file must be connected before using SET");
+    throw std::runtime_error("A database file must be connected before using REFERENCE");
   if (tokens.empty())
     throw std::runtime_error("Invalid REFEENCE command");
   if (setid.empty())
@@ -114,5 +114,40 @@ void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
     methodname[id] = name;
     methodid[id] = idx;
   }
+}
+
+// Set the empty method
+void trainset::setempty(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using EMPTY");
+  if (tokens.empty())
+    throw std::runtime_error("Invalid EMPTY command");
+  
+  std::string name = tokens.front();
+  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  if (idx == 0)
+    throw std::runtime_error("METHOD identifier not found in database: " + name);
+
+  emptyname = name;
+  emptyid = idx;
+}
+
+// Add an additional method
+void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using ADD");
+  if (tokens.empty())
+    throw std::runtime_error("Invalid ADD command");
+  
+  auto it = tokens.begin();
+
+  std::string name = *it;
+  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  if (idx == 0)
+    throw std::runtime_error("METHOD identifier not found in database: " + name);
+
+  addname.push_back(name);
+  addid.push_back(idx);
+  addisfit.push_back(++it != tokens.end() && equali_strings(*it,"FIT"));
 }
 

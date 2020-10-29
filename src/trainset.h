@@ -42,6 +42,12 @@ class trainset {
   // Set the reference method
   void setreference(sqldb &db, const std::list<std::string> &tokens);
 
+  // Set the empty method
+  void setempty(sqldb &db, const std::list<std::string> &tokens);
+
+  // Add an additional method
+  void addadditional(sqldb &db, const std::list<std::string> &tokens);
+
  private:
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
@@ -52,6 +58,13 @@ class trainset {
 
   std::vector<std::string> methodname; // name of the reference method for each set
   std::vector<int> methodid; // ID of the reference method for each set
+
+  std::string emptyname; // name of the empty method
+  int emptyid; // ID of the empty method
+
+  std::vector<std::string> addname; // names of the additional methods
+  std::vector<bool> addisfit; // whether the additional method has FIT or not
+  std::vector<int> addid; // IDs of the additional methods
 };
 
 #endif

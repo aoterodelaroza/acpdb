@@ -98,6 +98,10 @@ int main(int argc, char *argv[]) {
         ts.addset(db,tokens);
       } else if (keyw == "REFERENCE") {
         ts.setreference(db,tokens);
+      } else if (keyw == "EMPTY") {
+        ts.setempty(db,tokens);
+      } else if (keyw == "ADD") {
+        ts.addadditional(db,tokens);
       } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();
