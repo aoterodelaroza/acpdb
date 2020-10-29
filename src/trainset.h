@@ -39,12 +39,19 @@ class trainset {
   // Add sets
   void addset(sqldb &db, const std::list<std::string> &tokens);
 
+  // Set the reference method
+  void setreference(sqldb &db, const std::list<std::string> &tokens);
+
  private:
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
   std::vector<double> exp; // exponents
+
   std::vector<std::string> setname; // name of the sets
   std::vector<int> setid; // IDs of the sets
+
+  std::vector<std::string> methodname; // name of the reference method for each set
+  std::vector<int> methodid; // ID of the reference method for each set
 };
 
 #endif

@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "trainset.h"
 #include "parseutils.h"
 #include <iostream>
+#include <algorithm>
 #include <unordered_map>
 
 const std::unordered_map<std::string, int> ltoint { 
@@ -58,6 +59,8 @@ void trainset::addexp(const std::list<std::string> &tokens){
 
 // Add sets
 void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using SET");
   if (tokens.size() < 2)
     throw std::runtime_error("Invalid SET command");
 
@@ -72,3 +75,44 @@ void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
     setid.push_back(idx);
   }
 }
+
+// Set the reference method
+void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using SET");
+  if (tokens.empty())
+    throw std::runtime_error("Invalid REFEENCE command");
+  if (setid.empty())
+    throw std::runtime_error("REFEENCE must come after SET(s)");
+
+  auto it = tokens.begin();
+
+  // check if the method is known
+  std::string name = *it;
+  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  if (idx == 0)
+    throw std::runtime_error("METHOD identifier not found in database: " + name);
+
+  // resize it to method containers
+  methodname.resize(setid.size());
+  methodid.resize(setid.size());
+
+  // write down the method
+  if (++it == tokens.end()){
+    // apply to all known sets
+    for (int i = 0; i < setid.size(); i++){
+      methodname[i] = name;
+      methodid[i] = idx;
+    }
+  } else {
+    // apply to one set only
+    auto ires = find(setname.begin(),setname.end(),*it);
+    if (ires == setname.end())
+      throw std::runtime_error("SET in METHOD command not found: " + *it);
+
+    const int id = ires - setname.begin();
+    methodname[id] = name;
+    methodid[id] = idx;
+  }
+}
+

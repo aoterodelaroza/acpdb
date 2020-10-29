@@ -255,6 +255,12 @@ SET name1.s name2.s
 
   Add the named sets from the database to the training set.
 
+REFERENCE method.s [set.s]
+
+  Set the reference method to method.s for the whole training set. If
+  set.s is given, set the reference method only for members of that
+  set (overrides previous REFERENCE commands).
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)
