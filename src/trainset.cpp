@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "statement.h"
+#include "sqldb.h"
 #include "trainset.h"
 #include "parseutils.h"
 #include <iostream>
@@ -64,6 +66,10 @@ void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
   if (tokens.size() < 2)
     throw std::runtime_error("Invalid SET command");
 
+  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT COUNT(id) FROM Properties WHERE setid = ?1;
+)SQL");
+
   for (auto it = tokens.begin(); it != tokens.end(); it++) {
     std::string name = *it;
 
@@ -73,6 +79,21 @@ void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
     
     setname.push_back(name);
     setid.push_back(idx);
+
+    st.bind(1,idx);
+    st.step();
+    int size = sqlite3_column_int(st.ptr(),0);
+    st.reset();
+
+    if (size == 0)
+      throw std::runtime_error("SET does not have any associated properties: " + name);
+
+    int ilast = 0;
+    if (!set_final_idx.empty()) ilast = set_final_idx.back();
+
+    set_size.push_back(size);
+    set_initial_idx.push_back(ilast + 1);
+    set_final_idx.push_back(ilast + size);
   }
 }
 
@@ -149,5 +170,10 @@ void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
   addname.push_back(name);
   addid.push_back(idx);
   addisfit.push_back(++it != tokens.end() && equali_strings(*it,"FIT"));
+}
+
+// Set the weights
+void trainset::setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap){
+  printf("hello!\n");
 }
 

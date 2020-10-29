@@ -272,6 +272,48 @@ ADD method.s [FIT]
   contribution enters the fitting procedure and is treated as an
   additional column in the least-squares fit.
 
+WEIGHT [set.s]
+  GLOBAL w.r
+  PATTERN w1.r w2.r w3.r w4.r...
+  NORM_REF
+  NORM_NITEM
+  NORM_NITEMSQRT
+  ITEM i1.i w1.r i2.i w2.r ...
+END
+
+  Define the weight associated with a given set. The keywords are:
+
+  - The global weight (GLOBAL) applies equally to all elements in the
+    set. Default: 1.
+
+  - The PATTERN is applied to the elements of the set in sequence. For
+    instance, a pattern of 1 5 4 applies a weight of 1 to the first
+    element, 5 to the second, 4 to the third, 1 to the fourth, etc.
+    Default: 1 if this is a set named by the user, otherwise the
+    database provides a default if the set comes from the database.
+
+  - NORM_REF: divide all weights by the mean absolute reference
+    value.
+
+  - NORM_NITEM: divide all weights by the number of items in the
+    set. 
+
+  - NORM_NITEMSQRT: divide all weights by the square root of the
+    number of items in the set.
+
+  - ITEM i1.i w1.r ...: give specific weights to individual items in
+    the set.
+
+  The final weight of an item is either the value given by the ITEM
+  keyword or the product of the GLOBAL weight, times the PATTERN
+  weight corresponding to the item, divided by the normalization
+  factors indicated by the corresponding keywords.
+
+  If set.s is missing, then the command applies to all sets. This
+  allows setting normalization factors to all defined sets.  The
+  weights are renormalized so the sum of weights over the whole
+  training set is equal to one.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

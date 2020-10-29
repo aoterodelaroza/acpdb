@@ -828,11 +828,11 @@ SELECT id FROM Structures WHERE id = ?1;
 
     const int *str = (int *)sqlite3_column_blob(stmt.ptr(), 2);
     for (int i = 0; i < n; i++){
-      stcheck.reset();
       stcheck.bind(1,str[i]);
-      sqlite3_step(stcheck.ptr());
+      stcheck.step();
       if (sqlite3_column_int(stcheck.ptr(),0) == 0)
         os << "STRUCTURES (" + std::to_string(str[i]) + ") in Properties (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 0)) + ") not found" << std::endl;
+      stcheck.reset();
     }
   }  
 }

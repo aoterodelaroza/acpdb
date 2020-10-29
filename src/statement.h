@@ -130,7 +130,10 @@ class statement {
     if (!db)
       throw std::runtime_error("A database file must be connected before binding");
 
-    if (!prepared) prepare();
+    if (!prepared) {
+      prepare();
+      reset();
+    }
     if (!has_bind)
       throw std::runtime_error("bind error - no bindings in this statement");
 

@@ -48,6 +48,9 @@ class trainset {
   // Add an additional method
   void addadditional(sqldb &db, const std::list<std::string> &tokens);
 
+  // Set the weights
+  void setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap);
+
  private:
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
@@ -55,6 +58,10 @@ class trainset {
 
   std::vector<std::string> setname; // name of the sets
   std::vector<int> setid; // IDs of the sets
+
+  std::vector<int> set_initial_idx; // initial index of each set
+  std::vector<int> set_final_idx; // final index of each set
+  std::vector<int> set_size; // size of each set
 
   std::vector<std::string> methodname; // name of the reference method for each set
   std::vector<int> methodid; // ID of the reference method for each set
