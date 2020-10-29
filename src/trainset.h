@@ -52,6 +52,10 @@ class trainset {
   void setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap);
 
  private:
+
+  // Set the weights for one set from the indicated parameters.
+  void setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem);
+
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
   std::vector<double> exp; // exponents
@@ -62,6 +66,7 @@ class trainset {
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
   std::vector<int> set_size; // size of each set
+  std::vector<double> w; // weights for the set elements
 
   std::vector<std::string> methodname; // name of the reference method for each set
   std::vector<int> methodid; // ID of the reference method for each set

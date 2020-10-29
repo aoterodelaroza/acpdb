@@ -293,13 +293,13 @@ END
     database provides a default if the set comes from the database.
 
   - NORM_REF: divide all weights by the mean absolute reference
-    value.
+    value of each set.
 
-  - NORM_NITEM: divide all weights by the number of items in the
+  - NORM_NITEM: divide all weights by the number of items in each
     set. 
 
   - NORM_NITEMSQRT: divide all weights by the square root of the
-    number of items in the set.
+    number of items in each set.
 
   - ITEM i1.i w1.r ...: give specific weights to individual items in
     the set.
@@ -310,9 +310,7 @@ END
   factors indicated by the corresponding keywords.
 
   If set.s is missing, then the command applies to all sets. This
-  allows setting normalization factors to all defined sets.  The
-  weights are renormalized so the sum of weights over the whole
-  training set is equal to one.
+  allows setting normalization factors to all defined sets.
 
 * Database schema
 
