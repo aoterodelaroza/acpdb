@@ -22,6 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <list>
 #include <vector>
+#include "sqldb.h"
+#include "sqlite3.h"
 
 // A SQLite3 statement class.
 class trainset {
@@ -29,15 +31,20 @@ class trainset {
  public:
 
   // Add atoms and max. angular momentum
-  void addatoms(std::list<std::string> &tokens);
+  void addatoms(const std::list<std::string> &tokens);
 
   // Add exponents
-  void addexp(std::list<std::string> &tokens);
+  void addexp(const std::list<std::string> &tokens);
+
+  // Add sets
+  void addset(sqldb &db, const std::list<std::string> &tokens);
 
  private:
-  std::vector<unsigned char> zat;
-  std::vector<unsigned char> lmax;
-  std::vector<double> exp;
+  std::vector<unsigned char> zat;  // atomic numbers for the atoms
+  std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
+  std::vector<double> exp; // exponents
+  std::vector<std::string> setname; // name of the sets
+  std::vector<int> setid; // IDs of the sets
 };
 
 #endif

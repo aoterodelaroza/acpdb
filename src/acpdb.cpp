@@ -94,6 +94,8 @@ int main(int argc, char *argv[]) {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
+      } else if (keyw == "SET") {
+        ts.addset(db,tokens);
       } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();

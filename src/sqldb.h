@@ -87,10 +87,13 @@ class sqldb {
   // Verify the consistency of the database
   void verify(std::ostream &os);
 
- private:
-
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);
+
+  // Return a pointer to the database
+  sqlite3 *ptr() { return db; }
+
+ private:
 
   // prepared SQLite statments
   statement *stmt[statement::number_stmt_types];

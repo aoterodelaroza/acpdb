@@ -25,7 +25,7 @@ const std::unordered_map<std::string, int> ltoint {
 };
 
 // Add atoms and max. angular momentum
-void trainset::addatoms(std::list<std::string> &tokens){
+void trainset::addatoms(const std::list<std::string> &tokens){
 
   auto it = tokens.begin();
   while (it != tokens.end()){
@@ -46,12 +46,29 @@ void trainset::addatoms(std::list<std::string> &tokens){
 }
 
 // Add exponents
-void trainset::addexp(std::list<std::string> &tokens){
+void trainset::addexp(const std::list<std::string> &tokens){
   for (auto it = tokens.begin(); it != tokens.end(); it++){
     double e_ = std::stod(*it);
     if (e_ < 0)
       throw std::runtime_error("Invalid exponent " + *it);
 
     exp.push_back(e_);
+  }
+}
+
+// Add sets
+void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
+  if (tokens.size() < 2)
+    throw std::runtime_error("Invalid SET command");
+
+  for (auto it = tokens.begin(); it != tokens.end(); it++) {
+    std::string name = *it;
+
+    int idx = db.find_id_from_key(name,statement::STMT_QUERY_SET);
+    if (idx == 0)
+      throw std::runtime_error("SET identifier not found in database: " + name);
+    
+    setname.push_back(name);
+    setid.push_back(idx);
   }
 }

@@ -251,6 +251,10 @@ EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
 
   List of exponents.
 
+SET name1.s name2.s
+
+  Add the named sets from the database to the training set.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)
