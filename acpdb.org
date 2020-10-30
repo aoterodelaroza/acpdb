@@ -314,6 +314,16 @@ DESCRIBE
   Describe the training set. Calculate the number of calculations
   still missing from the database for ACP development.
 
+LIST XYZ [directory.s]
+
+  Write xyz files for all structures in the current training set. If
+  directory.s is given, write them in that directory.
+
+LIST DIN [directory.s]
+
+  Write din files for all subsets of the current training set. If
+  directory.s is given, write them in that directory.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

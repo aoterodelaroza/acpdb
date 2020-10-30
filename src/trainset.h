@@ -61,6 +61,9 @@ class trainset {
       !w.empty() && !methodid.empty() && !emptyname.empty();
   }
 
+  // Write the structures in the training set as xyz files
+  void write_xyz(sqldb &db, const std::list<std::string> &tokens);
+
  private:
 
   // Set the weights for one set from the indicated parameters.

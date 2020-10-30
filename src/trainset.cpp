@@ -15,14 +15,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "structure.h"
 #include "statement.h"
 #include "sqldb.h"
 #include "trainset.h"
 #include "parseutils.h"
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <unordered_map>
 #include <cmath>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 const static std::unordered_map<std::string, int> ltoint { 
    {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, 
@@ -431,5 +436,43 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 
   // clean up
   os.precision(prec);
+}
+
+void trainset::write_xyz(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using DESCRIBE");
+  if (!isdefined())
+    throw std::runtime_error("The training set must be defined completely before using WRITE_XYZ");
+  
+  std::string dir = ".";
+  if (!tokens.empty()) dir = tokens.front();
+  
+  if (!fs::is_directory(tokens.front()))
+    throw std::runtime_error("In WRITE XYZ, directory not found: " + dir);
+
+   std::string sttext = R"SQL(
+SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
+FROM Structures
+WHERE setid IN ()SQL";
+   sttext = sttext + std::to_string(setid[0]);
+  for (int i = 1; i < setid.size(); i++)
+    sttext = sttext + "," + std::to_string(setid[i]);
+  sttext = sttext + ");";
+  statement st(db.ptr(),statement::STMT_CUSTOM,sttext);
+
+  while (st.step() != SQLITE_DONE){
+    // readdbrow
+    std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
+    std::string fname = dir + "/" + key + ".xyz";
+
+    structure s;
+    s.readdbrow(st.ptr());
+
+    std::ofstream ofile(fname,std::ios::out);
+    if (ofile.fail()) 
+      throw std::runtime_error("Error writing xyz file " + fname);
+    s.writexyz(ofile);
+  }
+
 }
 

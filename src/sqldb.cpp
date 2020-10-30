@@ -473,7 +473,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
     for (const auto& file : fs::directory_iterator(dir)){
       std::string filename = file.path().filename();
       if (std::regex_match(filename.begin(),filename.end(),rgx)){
-        skey = key + ":" + std::string(file.path().stem());
+        skey = key + "." + std::string(file.path().stem());
         
         smap.clear();
         smap["XYZ"] = file.path().string();
@@ -487,7 +487,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
 
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (fs::is_regular_file(*it)){
-        skey = key + ":" + std::string(fs::path(*it).stem());
+        skey = key + "." + std::string(fs::path(*it).stem());
         
         smap.clear();
         smap["XYZ"] = *it;
@@ -590,7 +590,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     for (int i = 0; i < n; i++){
       smap.clear();
       if (used.find(info[k].names[i]) == used.end()){
-        skey = key + ":" + info[k].names[i];
+        skey = key + "." + info[k].names[i];
         smap["XYZ"] = dir + "/" + info[k].names[i] + ".xyz";
         smap["SET"] = key;
         insert("STRUCTURE",skey,smap);
@@ -599,7 +599,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     }
 
     // insert property
-    skey = key + ":" + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+    skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
     smap.clear();
     smap["PROPERTY_TYPE"] = "energy_difference";
     smap["SET"] = key;
@@ -607,7 +607,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap["STRUCTURES"] = "";
     smap["COEFFICIENTS"] = "";
     for (int i = 0; i < n; i++){
-      smap["STRUCTURES"] = smap["STRUCTURES"] + key + ":" + info[k].names[i] + " ";
+      smap["STRUCTURES"] = smap["STRUCTURES"] + key + "." + info[k].names[i] + " ";
       smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(info[k].coefs[i]) + " ";
     }
     insert("PROPERTY",skey,smap);
