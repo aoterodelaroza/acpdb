@@ -105,6 +105,8 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "WEIGHT") {
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(is,true);
         ts.setweight(db,tokens,kmap);
+      } else if (keyw == "DESCRIBE") {
+        ts.describe(*os,db);
       } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();

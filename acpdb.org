@@ -312,6 +312,11 @@ END
   If set.s is missing, then the command applies to all sets. This
   allows setting normalization factors to all defined sets.
 
+DESCRIBE
+
+  Describe the training set. Calculate the number of calculations
+  still missing from the database for ACP development.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

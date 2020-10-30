@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "parseutils.h"
+#include <stdexcept>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -56,13 +57,15 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, 
     if (keyw.empty() || keyw[0] == '#') continue;
     ukeyw = keyw;
     uppercase(ukeyw);
-    if (ukeyw == "END") break;
+    if (ukeyw == "END") return result;
     line.erase(line.begin(), std::find_if(line.begin(),line.end(), std::bind1st(std::not_equal_to<char>(),' ')));
     if (toupper)
       result[ukeyw] = line;
     else
       result[keyw] = line;
   }
+  throw std::runtime_error("Error scanning for END keyword");
+  
   return result;
 }
 

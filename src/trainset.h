@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <list>
 #include <vector>
+#include <numeric>
 #include "sqldb.h"
 #include "sqlite3.h"
 
@@ -50,6 +51,15 @@ class trainset {
 
   // Set the weights
   void setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap);
+
+  // Describe the current training set
+  void describe(std::ostream &os, sqldb &db);
+
+  // Is the training set defined?
+  inline bool isdefined(){
+    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
+      !w.empty() && !methodid.empty() && !emptyname.empty();
+  }
 
  private:
 
