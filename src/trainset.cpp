@@ -298,12 +298,19 @@ void trainset::describe(std::ostream &os, sqldb &db){
   os << std::endl;
 
   // Sets //
+  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT litrefs, description FROM Sets WHERE id = ?1;
+)SQL");
   os << "+ List of sets (" << setname.size() << ")" << std::endl;
-  os << "| name | id | initial | final | size | ref. method | ref. meth. id | " << std::endl;
+  os << "| name | id | initial | final | size | ref. method | ref. meth. id | litref | description |" << std::endl;
   for (int i = 0; i < setname.size(); i++){
+    st.reset();
+    st.bind(1,setid[i]);
+    st.step();
     os << "| " << setname[i] << " | " << setid[i] << " | " << set_initial_idx[i] 
        << " | " << set_final_idx[i] << " | " << set_size[i] 
        << " | " << methodname[i] << " | " << methodid[i]
+       << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
        << " |" << std::endl;
   }
   os << std::endl;
@@ -321,7 +328,7 @@ void trainset::describe(std::ostream &os, sqldb &db){
   int nall = std::accumulate(set_size.begin(),set_size.end(),0);
   os << "+ List of properties (" << nall << ")" << std::endl;
   os << "| id | property | propid | set | proptype | nstruct | weight | refvalue |" << std::endl;
-  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = 1)
