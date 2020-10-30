@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqldb.h"
 #include "sqlite3.h"
 
-// A SQLite3 statement class.
+// A class for training sets.
 class trainset {
 
  public:

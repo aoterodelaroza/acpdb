@@ -27,6 +27,11 @@ void uppercase(std::string &s){
   transform(s.begin(), s.end(), s.begin(), ::toupper);
 }
 
+// Transform a string to lowercase
+void lowercase(std::string &s){
+  transform(s.begin(), s.end(), s.begin(), ::tolower);
+}
+
 // List the words in an input line. Skip the rest of the line if a
 // comment character (#) is found as the first character in a token.
 std::list<std::string> list_all_words(const std::string &line) {

@@ -324,6 +324,17 @@ LIST DIN [directory.s]
   Write din files for all subsets of the current training set. If
   directory.s is given, write them in that directory.
 
+* ACP operations
+
+ACP name.s file.acp
+ACP name.s
+ atom.s l.s exp.r coef.r
+ ...
+END
+  
+  Define a named ACP from file file.acp (in Gaussian-style
+  format). Alternatively, give all ACP terms one by one.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

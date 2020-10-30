@@ -22,6 +22,7 @@
 #include <string>
 #include "sqlite3.h"
 
+// A class for molecular or crystal structures
 class structure {
   
  public:

@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <cstring>
 
+#include "acp.h"
 #include "sqldb.h"
 #include "trainset.h"
 #include "parseutils.h"
@@ -31,6 +32,7 @@ static std::istream *is;
 static std::ostream *os;
 static std::ifstream *ifile = nullptr;
 static std::ofstream *ofile = nullptr;
+std::unordered_map<std::string,acp> nacp;
 
 static sqldb db;
 static trainset ts;
@@ -90,7 +92,13 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
-      if (keyw == "ATOM" || keyw == "ATOMS") {
+      if (keyw == "ACP") {
+        std::string name = popstring(tokens);
+        if (tokens.empty())
+          nacp[name] = acp(name,*is);
+        else
+          nacp[name] = acp(name,tokens.front());
+      } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);

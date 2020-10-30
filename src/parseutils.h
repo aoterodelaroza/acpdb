@@ -28,6 +28,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Transform a string to uppercase
 void uppercase(std::string &s);
 
+// Transform a string to lowercase
+void lowercase(std::string &s);
+
 // Print error and usage messages
 void print_error_usage(const char *prog = 0, const char *errmsg = 0);
 
