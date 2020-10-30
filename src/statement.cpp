@@ -83,7 +83,6 @@ CREATE TABLE Evaluations (
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
-  unit          TEXT CHECK (unit IN ("KCAL/MOL")),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
   UNIQUE(methodid,propid)
@@ -96,7 +95,6 @@ CREATE TABLE Terms (
   l             INTEGER NOT NULL,
   exponent      REAL NOT NULL,
   value         REAL NOT NULL,
-  unit          TEXT CHECK (unit IN ("KCAL/MOL")),
   maxcoef       REAL,
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
@@ -302,7 +300,7 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_EVALUATION] = 
 R"SQL(
-SELECT id,methodid,propid,value,unit
+SELECT id,methodid,propid,value
 FROM Evaluations;
 )SQL",
 
@@ -317,13 +315,13 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_EVALUATION] =
 R"SQL(
-INSERT INTO Evaluations (id,methodid,propid,value,unit)
-       VALUES(:ID,:METHODID,:PROPID,:VALUE,:UNIT)
+INSERT INTO Evaluations (id,methodid,propid,value)
+       VALUES(:ID,:METHODID,:PROPID,:VALUE)
 )SQL",
 
 [statement::STMT_LIST_TERM] = 
 R"SQL(
-SELECT id,methodid,propid,atom,l,exponent,value,unit,maxcoef
+SELECT id,methodid,propid,atom,l,exponent,value,maxcoef
 FROM Terms;
 )SQL",
 
@@ -338,8 +336,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_TERM] =
 R"SQL(
-INSERT INTO Terms (id,methodid,propid,atom,l,exponent,value,unit,maxcoef)
-       VALUES(:ID,:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:UNIT,:MAXCOEF)
+INSERT INTO Terms (id,methodid,propid,atom,l,exponent,value,maxcoef)
+       VALUES(:ID,:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)
 )SQL",
 
 };

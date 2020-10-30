@@ -330,11 +330,6 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     }
     if ((im = kmap.find("VALUE")) != kmap.end())
       stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":VALUE",std::stod(im->second));
-    if ((im = kmap.find("UNIT")) != kmap.end()){
-      std::string unit = im->second;
-      uppercase(unit);
-      stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":UNIT",unit);
-    };
 
     // submit
     stmt[statement::STMT_INSERT_EVALUATION]->step();
@@ -362,11 +357,6 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":EXPONENT",std::stod(im->second));
     if ((im = kmap.find("VALUE")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":VALUE",std::stod(im->second));
-    if ((im = kmap.find("UNIT")) != kmap.end()){
-      std::string unit = im->second;
-      uppercase(unit);
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":UNIT",unit);
-    };
     if ((im = kmap.find("MAXCOEF")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":MAXCOEF",std::stod(im->second));
 
@@ -627,7 +617,6 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap["METHOD"] = kmap["METHOD"];
     smap["PROPERTY"] = skey;
     smap["VALUE"] = to_string_precise(info[k].ref);
-    smap["UNIT"] = "KCAL/MOL";
     insert("EVALUATION",skey,smap);
   }
 
@@ -731,14 +720,14 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,    1,              2,      3,            4};
     type = statement::STMT_LIST_PROPERTY;
   } else if (category == "EVALUATION"){
-    headers = { "id","methodid","propid", "value","unit"};
-    types   = {t_int,     t_int,   t_int,t_double, t_str};
-    cols    = {    0,         1,       2,       3,     4};
+    headers = { "id","methodid","propid", "value"};
+    types   = {t_int,     t_int,   t_int,t_double};
+    cols    = {    0,         1,       2,       3};
     type = statement::STMT_LIST_EVALUATION;
   } else if (category == "TERM"){
-    headers = { "id","methodid","propid", "atom",   "l","exponent", "value","unit","maxcoef"};
-    types   = {t_int,     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_str, t_double};
-    cols    = {    0,         1,       2,      3,     4,         5,       6,     7,        8};
+    headers = { "id","methodid","propid", "atom",   "l","exponent", "value","maxcoef"};
+    types   = {t_int,     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
+    cols    = {    0,         1,       2,      3,     4,         5,       6,        7};
     type = statement::STMT_LIST_TERM;
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);

@@ -193,13 +193,11 @@ INSERT EVALUATION
   METHOD {method.s|method.i}
   PROPERTY {prop.s|prop.i}
   VALUE value.r
-  UNIT unit.s
 END
 
   Insert evaluation into the database. Corresponds to the evaluation
   of property prop.s/prop.i with method method.s/method.i. The
-  evaluation yields the value value.r with units unit.s (currently,
-  only kcal/mol allowed).
+  evaluation yields the value value.r (energies in kcal/mol).
 
 DELETE EVALUATION id.i
 
@@ -216,15 +214,14 @@ INSERT TERM
   L l.i
   EXPONENT exp.r
   VALUE value.r
-  UNIT unit.s
   MAXCOEF maxcoef.r
 END
 
   Insert term into the database. Corresponds to the ACP term
   calculated with method method.s/method.i on property
   prop.s/prop.i for atom with atomic number z.i, angular momentum
-  channel with l = l.i, and exponent exp.r. The value is value.r and
-  unit is unit.s (currently, only kcal/mol allowed). If available, the
+  channel with l = l.i, and exponent exp.r. The value is value.r
+  (energies in kcal/mol). If available, the
   maximum coefficient for this term can also be given (maxcoef.r).
 
 DELETE TERM id.i
@@ -383,7 +380,6 @@ DESCRIBE
 - methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
 - propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
 - value         REAL NOT NULL,
-- unit          TEXT,
 
 ** Table 8: terms
 
@@ -394,6 +390,5 @@ DESCRIBE
 - l             INTEGER NOT NULL,
 - exponent      REAL NOT NULL,
 - value         REAL NOT NULL,
-- unit          TEXT CHECK (unit IN ("KCAL/MOL")),
 - maxcoef       REAL,
 
