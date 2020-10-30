@@ -131,6 +131,8 @@ int main(int argc, char *argv[]) {
         std::string category = popstring(tokens,true);
         if (category == "XYZ")
           ts.write_xyz(db,tokens);
+        else if (category == "DIN")
+          ts.write_din(db,tokens);
         else
           db.list(*os,category,tokens);
       } else if (keyw == "VERIFY") {

@@ -336,7 +336,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
-INNER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = 1)
+INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
 WHERE Properties.setid = :SET AND Methods.id = :METHOD;
@@ -440,9 +440,9 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 
 void trainset::write_xyz(sqldb &db, const std::list<std::string> &tokens){
   if (!db) 
-    throw std::runtime_error("A database file must be connected before using DESCRIBE");
+    throw std::runtime_error("A database file must be connected before using WRITE XYZ");
   if (!isdefined())
-    throw std::runtime_error("The training set must be defined completely before using WRITE_XYZ");
+    throw std::runtime_error("The training set must be defined completely before using WRITE XYZ");
   
   std::string dir = ".";
   if (!tokens.empty()) dir = tokens.front();
@@ -474,5 +474,69 @@ WHERE setid IN ()SQL";
     s.writexyz(ofile);
   }
 
+}
+
+void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using WRITE DIN");
+  if (!isdefined())
+    throw std::runtime_error("The training set must be defined completely before using WRITE DIN");
+  
+  // check dir
+  std::string dir = ".";
+  if (!tokens.empty()) dir = tokens.front();
+  if (!fs::is_directory(tokens.front()))
+    throw std::runtime_error("In WRITE DIN, directory not found: " + dir);
+
+  // define the query statements
+  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
+FROM Properties
+INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
+INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
+INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
+WHERE Properties.setid = :SET AND Methods.id = :METHOD;
+)SQL");
+  statement stname(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT key FROM Structures WHERE id = ?1;
+)SQL");
+
+  for (int i = 0; i < setid.size(); i++){
+    // open and write the din header
+    std::string fname = dir + "/" + setname[i] + ".din";
+    std::ofstream ofile(fname,std::ios::out);
+    if (ofile.fail()) 
+      throw std::runtime_error("Error writing din file " + fname);
+    std::streamsize prec = ofile.precision(10);
+    ofile << "# din file automatically crated by acpdb" << std::endl;
+    ofile << "# setid = " << setid[i] << std::endl;
+    ofile << "# setname = " << setname[i] << std::endl;
+    ofile << "# set_initial_idx = " << set_initial_idx[i] << std::endl;
+    ofile << "# set_final_idx = " << set_final_idx[i] << std::endl;
+    ofile << "# set_size = " << set_size[i] << std::endl;
+    ofile << "# reference method = " << methodname[i] << std::endl;
+    ofile << "# reference id = " << methodid[i] << std::endl;
+  
+    // step over the components of this set
+    st.bind((char *) ":METHOD",methodid[i]);
+    st.bind((char *) ":SET",setid[i]);
+    while (st.step() != SQLITE_DONE){
+      int nstr = sqlite3_column_int(st.ptr(),0);
+      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+      double *coef = (double *) sqlite3_column_blob(st.ptr(),2);
+      double value = sqlite3_column_double(st.ptr(),3);
+
+      for (int j = 0; j < nstr; j++){
+        stname.bind(1,str[j]);
+        stname.step();
+        std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
+        ofile << coef[j] << std::endl;
+        ofile << name << std::endl;
+        stname.reset();
+      }
+      ofile << "0" << std::endl;
+      ofile << value << std::endl;
+    }
+  }
 }
 
