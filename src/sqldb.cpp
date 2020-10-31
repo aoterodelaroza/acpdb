@@ -225,7 +225,8 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     structure s;
     std::unordered_map<std::string,std::string>::const_iterator im;
     if ((im = kmap.find("XYZ")) != kmap.end()){
-      s.readxyz(im->second);
+      if (s.readxyz(im->second))
+        throw std::runtime_error("Error reading xyz file: " + im->second);
     } else {
       throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
     }
@@ -600,7 +601,6 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
         std::string filename = dir + "/" + info[k].names[i] + ".xyz";
         if (!fs::is_regular_file(filename))
           throw std::runtime_error("xyz file not found (" + filename + ") processing din file " + din);
-
         smap["XYZ"] = filename;
         smap["SET"] = key;
         insert("STRUCTURE",skey,smap);
