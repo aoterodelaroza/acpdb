@@ -339,7 +339,8 @@ FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
-WHERE Properties.setid = :SET AND Methods.id = :METHOD;
+WHERE Properties.setid = :SET AND Methods.id = :METHOD
+ORDER BY Properties.id;
 )SQL");
 
   int n = 0;
@@ -495,7 +496,8 @@ FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
-WHERE Properties.setid = :SET AND Methods.id = :METHOD;
+WHERE Properties.setid = :SET AND Methods.id = :METHOD
+ORDER BY Properties.id;
 )SQL");
   statement stname(db.ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT key FROM Structures WHERE id = ?1;

@@ -356,7 +356,7 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 1: literature references (Literature_refs)
 
-- id          INTEGER PRIMARY KEY NOT NULL
+- id          INTEGER PRIMARY KEY AUTOINCREMENT
 - key         TEXT UNIQUE NOT NULL
 - authors     TEXT
 - title       TEXT
@@ -369,13 +369,13 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 2: property types (Property_types)
 
-- id          INTEGER PRIMARY KEY NOT NULL
+- id          INTEGER PRIMARY KEY AUTOINCREMENT
 - key         TEXT UNIQUE NOT NULL
 - description TEXT
 
 ** Table 3: sets
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - key           TEST UNIQUE NOT NULL,
 - property_type INTEGER NOT NULL,   ## foreign key: table 2 (Property_types)
 - description   TEXT
@@ -383,7 +383,7 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 4: methods
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - key           TEXT UNIQUE NOT NULL,
 - comp_details  TEXT,
 - litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
@@ -391,7 +391,7 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 5: structures
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - key           TEXT UNIQUE NOT NULL,
 - setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
 - ismolecule    INTEGER NOT NULL,
@@ -404,7 +404,7 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 6: properties
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - key           TEXT UNIQUE NOT NULL,
 - property_type INTEGER NOT NULL, ## foreign key: table 2 (Property_types)
 - setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
@@ -414,14 +414,14 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ** Table 7: evaluations
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
 - propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
 - value         REAL NOT NULL,
 
 ** Table 8: terms
 
-- id            INTEGER PRIMARY KEY NOT NULL,
+- id            INTEGER PRIMARY KEY AUTOINCREMENT,
 - methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
 - propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
 - atom          INTEGER NOT NULL,

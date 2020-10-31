@@ -131,7 +131,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_LITREF] = 
 R"SQL(
 SELECT id,key,authors,title,journal,volume,page,year,doi,description
-FROM Literature_refs;
+FROM Literature_refs
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_LITREF_ALL] = 
@@ -165,7 +166,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_SET] = 
 R"SQL(
 SELECT id,key,property_type,litrefs,description
-FROM Sets;
+FROM Sets
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_SET_ALL] = 
@@ -199,7 +201,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_METHOD] = 
 R"SQL(
 SELECT id,key,comp_details,litrefs,description
-FROM Methods;
+FROM Methods
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_METHOD_ALL] = 
@@ -233,7 +236,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_STRUCTURE] = 
 R"SQL(
 SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
-FROM Structures;
+FROM Structures
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_STRUCTURE_ALL] = 
@@ -267,7 +271,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_PROPERTY] = 
 R"SQL(
 SELECT id,key,property_type,setid,nstructures,structures,coefficients
-FROM Properties;
+FROM Properties
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_PROPERTY_ALL] = 
@@ -301,7 +306,8 @@ WHERE key = ?1;
 [statement::STMT_LIST_EVALUATION] = 
 R"SQL(
 SELECT id,methodid,propid,value
-FROM Evaluations;
+FROM Evaluations
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_EVALUATION_ALL] = 
@@ -322,7 +328,8 @@ INSERT INTO Evaluations (id,methodid,propid,value)
 [statement::STMT_LIST_TERM] = 
 R"SQL(
 SELECT id,methodid,propid,atom,l,exponent,value,maxcoef
-FROM Terms;
+FROM Terms
+ORDER BY id;
 )SQL",
 
 [statement::STMT_DELETE_TERM_ALL] = 
