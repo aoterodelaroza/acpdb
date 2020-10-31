@@ -340,6 +340,11 @@ WRITE ACP name.s [file.s]
   Write the ACP name.s to file file.s (Gaussian-style format). If no
   file is given, write it in human-readable format to the output.
 
+INFO ACP name.s
+
+  Print information about the given ACP, such as the 1-norm, 2-norm,
+  etc. 
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)

@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <limits>
 #include <map>
+#include <cmath>
 
 const static std::unordered_map<std::string, int> ltoint { 
    {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, 
@@ -161,6 +162,48 @@ void acp::writeacp(std::string &filename) const{
         ofile << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef << std::endl;
     }
   }
-
 }
 
+void acp::info(std::ostream &os) const{
+  // run over the terms in the ACP and write the atom types, lmax, and number of terms
+  std::map<unsigned char,unsigned char> lmax;
+  std::unordered_map<unsigned char,std::vector<int> > nterm;
+
+  // classify the terms
+  double n1 = 0, n2 = 0, ninf = 0;
+  for (int i=0; i<t.size(); i++){
+    if (lmax.find(t[i].atom) == lmax.end())
+      lmax[t[i].atom] = t[i].l;
+    else
+      lmax[t[i].atom] = std::max(lmax[t[i].atom],t[i].l);
+    if (nterm.find(t[i].atom) == nterm.end())
+      nterm[t[i].atom] = {};
+    if (nterm[t[i].atom].size() <= t[i].l)
+      nterm[t[i].atom].resize(t[i].l+1,0);
+    nterm[t[i].atom][t[i].l]++;
+
+    n1 += std::abs(t[i].coef);
+    n2 += t[i].coef*t[i].coef;
+    ninf = std::max(ninf,std::abs(t[i].coef));
+  }
+  n2 = std::sqrt(n2);
+
+  std::streamsize prec = os.precision(5);
+  os << std::scientific;
+  os << "* Information for ACP " + name << std::endl;
+  os << "+ Atoms (lmax) : ";
+  for (auto it = lmax.begin(); it != lmax.end(); it++)
+    os << nameguess(it->first) << "(" << inttol[it->second] << ") ";
+  os << std::endl;
+  os << "+ Number of terms : " << std::endl;
+  for (auto it = lmax.begin(); it != lmax.end(); it++){
+    os << nameguess(it->first) << ": ";
+    for (int i = 0; i <= it->second; i++)
+      os << inttol[i] << "=" << nterm[it->first][i] << " ";
+    os << std::endl;
+  }
+  os << "1-norm = " << n1 << std::endl;
+  os << "2-norm = " << n2 << std::endl;
+  os << "inf-norm (max. abs(coef)) = " << ninf << std::endl;
+  os << std::endl;
+}

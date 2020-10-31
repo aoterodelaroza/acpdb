@@ -48,6 +48,9 @@ class acp {
   // Write the ACP to a file (Gaussian-style version).
   void writeacp(std::string &filename) const;
 
+  // Write info about the ACP to os
+  void info(std::ostream &os) const;
+
  private:
   std::string name;
   std::vector<term> t;
