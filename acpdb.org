@@ -116,15 +116,17 @@ INSERT SET name.s
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
 
+  DIN file.s 
   [METHOD method.s]
-  DIN file.s directory.s
+  [DIRECTORY directory.s]
 END
 
 Add the set with name name.s in the same way as above. In addition,
 belonging to this set, add the structures indicated in the din
-file. The xyz files are found in directory directory.s. Also, add the
+file. The xyz files are found in directory directory.s. If no
+directory is given, use the current directory. Also, add the
 corresponding properties and the corresponding evaluations with method
-method.s. If no METHOD is given, the evaluation is not inserted.
+method.s. If no METHOD is given, the evaluations are not inserted.
 
 DELETE SET {set.s|set.i}
 
