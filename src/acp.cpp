@@ -30,16 +30,6 @@ const static std::unordered_map<std::string, int> ltoint {
 };
 const static std::vector<unsigned char> inttol = {'l','s','p','d','f','g','h'};
 
-static std::istream &get_next_line(std::istream &is, std::string &line, char skipchar){
-  std::string str;
-  while (std::getline(is,line)){
-    std::istringstream iss(line);
-    iss >> str;
-    if (str[0] != skipchar && !str.empty()) break;
-  }
-  return is;
-}
-
 acp::acp(const std::string name_, const std::string &filename){
   std::ifstream ifile(filename,std::ios::in);
   if (ifile.fail()) 

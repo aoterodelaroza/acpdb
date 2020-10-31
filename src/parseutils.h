@@ -69,5 +69,9 @@ std::string nameguess(unsigned char z);
 // fail or eof, return 1. If no double could be read, return res = 0.
 int line_get_double(std::istream &is, std::string &line, std::string &str, double &res);
 
+// Get the next line from stream is. Use skipchar as the comment character.
+std::istream &get_next_line(std::istream &is, std::string &line, char skipchar);
+
+
 #endif
 

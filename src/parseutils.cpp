@@ -184,3 +184,15 @@ int line_get_double(std::istream &is, std::string &line, std::string &str, doubl
   }
   return 0;
 }
+
+// Get the next line from stream is. Use skipchar as the comment
+// character and skip comments and blank lines.
+std::istream &get_next_line(std::istream &is, std::string &line, char skipchar){
+  std::string str;
+  while (std::getline(is,line)){
+    std::istringstream iss(line);
+    iss >> str;
+    if (str[0] != skipchar && !str.empty()) break;
+  }
+  return is;
+}

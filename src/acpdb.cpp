@@ -77,16 +77,13 @@ int main(int argc, char *argv[]) {
 
   // Parse the input file
   std::string line;
-  while(std::getline(*is, line)){
+  while(get_next_line(*is,line,'#')){
     if (is->fail()) 
       throw std::runtime_error("Error reading input file");
 
     // Tokenize the line
     std::list<std::string> tokens(list_all_words(line));
 
-    // Skip blank lines
-    if (tokens.empty()) continue;
-    
     // Get the first keyword
     std::string keyw = popstring(tokens,true);
 
