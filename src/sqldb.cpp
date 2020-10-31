@@ -192,7 +192,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       insert_set_xyz(key, kmap);
 
     // interpret the din/directory/method keyword combination
-    if (kmap.find("DIN") != kmap.end() && kmap.find("DIRECTORY") != kmap.end() && kmap.find("METHOD") != kmap.end())
+    if (kmap.find("DIN") != kmap.end())
       insert_set_din(key, kmap);
 
   } else if (category == "METHOD") {
@@ -510,13 +510,15 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // Check sanity of the keywords
-  if (kmap.find("METHOD") == kmap.end())
-    throw std::runtime_error("Method " + kmap["METHOD"] + " not found");
+  bool havemethod = (kmap.find("METHOD") != kmap.end());
 
-  std::string dir = kmap["DIRECTORY"];
-  if (!fs::is_directory(dir))
-    throw std::runtime_error("Directory " + dir + " not found");
-  
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap["DIRECTORY"];
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+
   std::string din = kmap["DIN"];
   if (!fs::is_regular_file(din))
     throw std::runtime_error("din file " + din + " not found");
@@ -613,11 +615,13 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     insert("PROPERTY",skey,smap);
 
     // insert the evaluation
-    smap.clear();
-    smap["METHOD"] = kmap["METHOD"];
-    smap["PROPERTY"] = skey;
-    smap["VALUE"] = to_string_precise(info[k].ref);
-    insert("EVALUATION",skey,smap);
+    if (havemethod){
+      smap.clear();
+      smap["METHOD"] = kmap["METHOD"];
+      smap["PROPERTY"] = skey;
+      smap["VALUE"] = to_string_precise(info[k].ref);
+      insert("EVALUATION",skey,smap);
+    }
   }
 
   // commit the transaction
