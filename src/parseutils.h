@@ -72,6 +72,12 @@ int line_get_double(std::istream &is, std::string &line, std::string &str, doubl
 // Get the next line from stream is. Use skipchar as the comment character.
 std::istream &get_next_line(std::istream &is, std::string &line, char skipchar);
 
+// Count the number of digits required to represent an integer
+inline int digits(int n_){
+  int digits = 1;
+  while (n_/=10) digits++;
+  return digits;
+}
 
 #endif
 

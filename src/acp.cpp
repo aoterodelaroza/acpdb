@@ -30,7 +30,7 @@ const static std::unordered_map<std::string, int> ltoint {
 };
 const static std::vector<unsigned char> inttol = {'l','s','p','d','f','g','h'};
 
-acp::acp(const std::string name_, const std::string &filename){
+acp::acp(const std::string &name_, const std::string &filename){
   std::ifstream ifile(filename,std::ios::in);
   if (ifile.fail()) 
       throw std::runtime_error("Error opening ACP file " + filename);
@@ -74,7 +74,7 @@ acp::acp(const std::string name_, const std::string &filename){
   name = name_;
 }
 
-acp::acp(const std::string name_, std::istream &is){
+acp::acp(const std::string &name_, std::istream &is){
   std::string line, str;
   while (get_next_line(is,line,'#')){
     std::istringstream iss(line);
@@ -112,6 +112,7 @@ void acp::writeacp(std::ostream &os) const{
   os.precision(prec);
 }
 
+// Write the ACP to a file (Gaussian-style version).
 void acp::writeacp(std::string &filename) const{
   if (t.empty())
     throw std::runtime_error("Cannot write an empty ACP");
@@ -154,6 +155,7 @@ void acp::writeacp(std::string &filename) const{
   }
 }
 
+// Write info about the ACP to os
 void acp::info(std::ostream &os) const{
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
   std::map<unsigned char,unsigned char> lmax;
@@ -197,3 +199,35 @@ void acp::info(std::ostream &os) const{
   os << "inf-norm (max. abs(coef)) = " << ninf << std::endl;
   os << std::endl;
 }
+
+// Split the ACP into several ACPs, each with one term. Write them
+// to files with template templ. If tokens contains the COEF
+// keyword, use that coefficient for the new ACPs.
+void acp::split(const std::string &templ, std::list<std::string> &tokens){
+
+  bool havecoef = false;
+  double coef;
+  if (!tokens.empty()){
+    havecoef = (popstring(tokens,true) == "COEF");
+    if (havecoef) coef = std::stod(popstring(tokens));
+  }
+
+  // write the ACPs
+  int d0 = digits(t.size()+1);
+  for (int i = 0; i < t.size(); i++){
+    int dd = digits(i+1);
+    std::string name_ = name + "-" + std::string(d0-dd,'0') + std::to_string(i+1);
+    std::string filename_ = name_ + ".acp";
+
+    if (havecoef){
+      term t_ = t[i];
+      t_.coef = coef;
+      acp aa(name_, t_);
+      aa.writeacp(filename_);
+    } else {
+      acp aa(name_, t[i]);
+      aa.writeacp(filename_);
+    }
+  }
+}
+

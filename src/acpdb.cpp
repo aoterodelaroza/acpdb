@@ -108,14 +108,21 @@ int main(int argc, char *argv[]) {
           else
             nacp[key].writeacp(file);
         }
-      } else if (keyw == "INFO") {
-        std::string category = popstring(tokens,true);
-        if (category == "ACP"){
-          std::string key = popstring(tokens);
-          if (key.empty() || nacp.find(key) == nacp.end())
-            throw std::runtime_error("Unknown ACP name: " + key);
-          nacp[key].info(*os);
-        }
+      } else if (keyw == "ACPINFO") {
+        std::string key = popstring(tokens);
+        if (key.empty() || nacp.find(key) == nacp.end())
+          throw std::runtime_error("Unknown ACP name: " + key);
+        nacp[key].info(*os);
+      } else if (keyw == "ACPSPLIT") {
+        std::string key = popstring(tokens);
+        if (key.empty() || nacp.find(key) == nacp.end())
+          throw std::runtime_error("Unknown ACP name: " + key);
+
+        std::string templ = popstring(tokens);
+        if (templ.empty())
+          throw std::runtime_error("Empty template string for ACPSPLIT");
+
+        nacp[key].split(templ, tokens);
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {

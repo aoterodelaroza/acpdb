@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <iostream>
 #include <string>
+#include <list>
 
 // A class for ACPs.
 class acp {
@@ -39,8 +40,10 @@ class acp {
 
   // constructors
   acp() : t{}, name{} {};
-  acp(const std::string name_, const std::string &filename);
-  acp(const std::string name_, std::istream &is);
+  acp(const std::string &name_, const std::string &filename);
+  acp(const std::string &name_, std::istream &is);
+  acp(const std::string &name_, std::vector<term> &t_) : name(name_), t(t_) {};
+  acp(const std::string &name_, term t_) : name(name_), t{} { t.push_back(t_); };
 
   // Write the ACP to output stream os (human-readable version).
   void writeacp(std::ostream &os) const;
@@ -50,6 +53,11 @@ class acp {
 
   // Write info about the ACP to os
   void info(std::ostream &os) const;
+
+  // Split the ACP into several ACPs, each with one term. Write them
+  // to files with template templ. If tokens contains the COEF
+  // keyword, use that coefficient for the new ACPs.
+  void split(const std::string &templ, std::list<std::string> &tokens);
 
  private:
   std::string name;
