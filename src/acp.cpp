@@ -22,11 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <limits>
+#include <map>
 
 const static std::unordered_map<std::string, int> ltoint { 
    {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, 
 };
-const static std::vector<char> inttol = {'l','s','p','d','f','g','h'};
+const static std::vector<unsigned char> inttol = {'l','s','p','d','f','g','h'};
 
 static std::istream &get_next_line(std::istream &is, std::string &line, char skipchar){
   std::string str;
@@ -118,5 +119,48 @@ void acp::writeacp(std::ostream &os) const{
   }
   os << std::endl;
   os.precision(prec);
+}
+
+void acp::writeacp(std::string &filename) const{
+  if (t.empty())
+    throw std::runtime_error("Cannot write an empty ACP");
+
+  // run over the terms in the ACP and write the atom types, lmax, and number of terms
+  std::map<unsigned char,unsigned char> lmax;
+  std::unordered_map<unsigned char,std::vector< std::vector<int> > > iterm;
+
+  // classify the terms
+  for (int i=0; i<t.size(); i++){
+    if (lmax.find(t[i].atom) == lmax.end())
+      lmax[t[i].atom] = t[i].l;
+    else
+      lmax[t[i].atom] = std::max(lmax[t[i].atom],t[i].l);
+    if (iterm.find(t[i].atom) == iterm.end())
+      iterm[t[i].atom] = {};
+    if (iterm[t[i].atom].size() <= t[i].l)
+      iterm[t[i].atom].resize(t[i].l+1,{});
+    iterm[t[i].atom][t[i].l].push_back(i);
+  }
+
+  // write the acp
+  std::ofstream ofile(filename,std::ios::out);
+  if (ofile.fail()) 
+    throw std::runtime_error("Error writing ACP file " + filename);
+  ofile << std::scientific;
+  std::streamsize prec = ofile.precision(15);
+
+  for (auto it = lmax.begin(); it != lmax.end(); it++){
+    ofile << "-" << nameguess(it->first) << " 0" << std::endl;
+    ofile << nameguess(it->first) << " " << (int) it->second << " 0" << std::endl;
+    for (int i = 0; i <= it->second; i++){
+      ofile << inttol[i] << std::endl;
+      ofile << iterm[it->first][i].size() << std::endl;
+
+      std::vector<int> &xv = iterm[it->first][i];
+      for (int j = 0; j < xv.size(); j++)
+        ofile << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef << std::endl;
+    }
+  }
+
 }
 

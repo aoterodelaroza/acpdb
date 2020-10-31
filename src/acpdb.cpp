@@ -98,6 +98,20 @@ int main(int argc, char *argv[]) {
           nacp[name] = acp(name,*is);
         else
           nacp[name] = acp(name,tokens.front());
+      } else if (keyw == "WRITE") {
+        std::string category = popstring(tokens,true);
+        if (category == "ACP"){
+          std::string key = popstring(tokens);
+          if (key.empty() || nacp.find(key) == nacp.end())
+            throw std::runtime_error("Unknown ACP name: " + key);
+
+          std::string file = popstring(tokens);
+          if (file.empty())
+            nacp[key].writeacp(*os);
+          else
+            nacp[key].writeacp(file);
+        }
+        
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
@@ -126,7 +140,7 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
-        if (equali_strings(category,"LITREF") && equali_strings(key,"BIBTEX"))
+        if ((category == "LITREF") && equali_strings(key,"BIBTEX"))
           db.insert_litref_bibtex(tokens);
         else{
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(is,true);

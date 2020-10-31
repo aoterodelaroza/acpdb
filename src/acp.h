@@ -45,6 +45,9 @@ class acp {
   // Write the ACP to output stream os (human-readable version).
   void writeacp(std::ostream &os) const;
 
+  // Write the ACP to a file (Gaussian-style version).
+  void writeacp(std::string &filename) const;
+
  private:
   std::string name;
   std::vector<term> t;
