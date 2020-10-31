@@ -16,13 +16,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <stdexcept>
+#include <numeric>
 #include <iostream>
 #include <forward_list>
-#include <string.h>
 #include <algorithm>
 #include <filesystem>
 #include <regex>
 #include <fstream>
+#include <string>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -530,6 +531,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 
   // read the din file header
   int fieldasrxn = 0;
+  bool havefield = false;
   std::string str, saux, line; 
   while (std::getline(ifile,line)){
     if (ifile.fail()) 
@@ -539,15 +541,17 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 
     if (str.substr(0,2) == "#@"){
       iss >> str;
-      if (str == "fieldasrxn")
+      if (str == "fieldasrxn"){
+        havefield = true;
         iss >> fieldasrxn;
+      }
     } else if (str[0] == '#' || str.empty()) 
       continue;
     else
       break;
   }
-  if (fieldasrxn == 0)
-    throw std::runtime_error("Error reading din file (fieldasrxn = 0) " + din);
+  if (!havefield)
+    throw std::runtime_error("Error reading din file (fieldasrxn not present) " + din);
 
   // process the rest of the din file
   int n = 0;
@@ -605,7 +609,13 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     }
 
     // insert property
-    skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+    if (fieldasrxn != 0)
+      skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+    else{
+      skey = key + "." + info[k].names[0];
+      for (int i = 1; i < info[k].names.size(); i++)
+        skey += "_" + info[k].names[i];
+    }
     smap.clear();
     smap["PROPERTY_TYPE"] = "energy_difference";
     smap["SET"] = key;
