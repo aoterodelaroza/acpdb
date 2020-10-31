@@ -593,7 +593,11 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
       smap.clear();
       if (used.find(info[k].names[i]) == used.end()){
         skey = key + "." + info[k].names[i];
-        smap["XYZ"] = dir + "/" + info[k].names[i] + ".xyz";
+        std::string filename = dir + "/" + info[k].names[i] + ".xyz";
+        if (!fs::is_regular_file(filename))
+          throw std::runtime_error("xyz file not found (" + filename + ") processing din file " + din);
+
+        smap["XYZ"] = filename;
         smap["SET"] = key;
         insert("STRUCTURE",skey,smap);
         used[info[k].names[i]] = true;
