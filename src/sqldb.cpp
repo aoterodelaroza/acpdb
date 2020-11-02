@@ -787,6 +787,63 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   os.precision(prec);
 }
 
+// List structures in the database (xyz format)
+void sqldb::list_xyz(std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using LIST XYZ");
+
+  // get the directory
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap["DIRECTORY"];
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+
+  // get the list of sets
+  auto im = kmap.find("SET");
+  std::vector<int> idset;
+  if (im != kmap.end()){
+    std::list<std::string> vlist = list_all_words(im->second);
+    for (auto it = vlist.begin(); it != vlist.end(); ++it){
+      if (isinteger(*it))
+        idset.push_back(std::stoi(*it));
+      else
+        idset.push_back(find_id_from_key(*it,statement::STMT_QUERY_SET));
+    }
+  } else {
+    statement *st = stmt[statement::STMT_LIST_SET];
+    while (st->step() != SQLITE_DONE)
+      idset.push_back(sqlite3_column_int(st->ptr(), 0));
+  }
+  if (idset.empty())
+    throw std::runtime_error("No sets found in LIST XYZ");
+
+  // prepare the statement
+  std::string sttext = R"SQL(
+SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
+FROM Structures
+WHERE setid IN ()SQL";
+  sttext = sttext + std::to_string(idset[0]);
+  for (int i = 1; i < idset.size(); i++)
+    sttext = sttext + "," + std::to_string(idset[i]);
+  sttext = sttext + ");";
+  statement st(db,statement::STMT_CUSTOM,sttext);
+
+  // write the xyz files
+  while (st.step() != SQLITE_DONE){
+    std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
+    std::string fname = dir + "/" + key + ".xyz";
+
+    structure s;
+    s.readdbrow(st.ptr());
+
+    std::ofstream ofile(fname,std::ios::out);
+    if (ofile.fail()) 
+      throw std::runtime_error("Error writing xyz file " + fname);
+    s.writexyz(ofile);
+  }
+}
+
 // Verify the consistency of the database
 void sqldb::verify(std::ostream &os){
   if (!db) throw std::runtime_error("A database file must be connected before using VERIFY");

@@ -84,6 +84,9 @@ class sqldb {
   // List items from the database
   void list(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
+  // List structures in the database (xyz format)
+  void list_xyz(std::unordered_map<std::string,std::string> &kmap);
+
   // Verify the consistency of the database
   void verify(std::ostream &os);
 

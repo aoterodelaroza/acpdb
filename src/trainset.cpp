@@ -468,7 +468,6 @@ WHERE setid IN ()SQL";
   statement st(db.ptr(),statement::STMT_CUSTOM,sttext);
 
   while (st.step() != SQLITE_DONE){
-    // readdbrow
     std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
     std::string fname = dir + "/" + key + ".xyz";
 

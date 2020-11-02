@@ -241,25 +241,26 @@ VERIFY
 
 LIST XYZ
  [DIRECTORY directory.s]
- [SET set.s|set.i]
+ [SET set1.s set2.s ...]
 END
 
   Write xyz files for all structures in the database. If directory.s
   is given, write them in that directory. If SET is given, only the
-  structures in that set. (Use XYZ_TRAINING to write the xyz files for
-  a training set.)
+  structures in those sets are written. (Use XYZ_TRAINING to write the
+  xyz files for a training set.)
 
 LIST DIN
  [DIRECTORY directory.s]
- [SET set.s|set.i]
+ [SET set1.s set2.s ...]
  [METHOD method.s|method.i]
 END
 
   Write din files for all subsets of the current training set. If
-  directory.s is given, write them in that directory. If set is given,
-  write only the din file for that set. Use method method.s/method.i
-  to write the reference values, or 0 if method is not given. (Use
-  DIN_TRAINING to write the din files for a training set.)
+  directory.s is given, write them in that directory. If SET is given,
+  write only the din files for those sets. Use method
+  method.s/method.i to write the reference values, or 0 if method is
+  not given. (Use DIN_TRAINING to write the din files for a training
+  set.)
 
 * Keywords (define the training set)
 

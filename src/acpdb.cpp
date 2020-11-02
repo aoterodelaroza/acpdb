@@ -197,7 +197,10 @@ int main(int argc, char *argv[]) {
           ts.write_xyz(db,tokens);
         else if (category == "DIN_TRAINING")
           ts.write_din(db,tokens);
-        else
+        else if (category == "XYZ"){
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          db.list_xyz(kmap);
+        } else
           db.list(*os,category,tokens);
       } else if (keyw == "VERIFY") {
         db.verify(*os);
