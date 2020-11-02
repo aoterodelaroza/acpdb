@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <stack>
 #include <memory>
+#include <filesystem>
 
 #include "acp.h"
 #include "sqldb.h"
@@ -29,6 +30,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef BTPARSE_FOUND  
 #include "btparse.h"
 #endif
+
+namespace fs = std::filesystem;
 
 // variables for managing the input and output streams
 static std::istream *is;
@@ -65,6 +68,7 @@ int main(int argc, char *argv[]) {
 
   // Connect the input files; build the stack
   std::stack<std::istream *> istack;
+  std::stack<std::string> icwd;
   if (argc >= 2) {
     std::shared_ptr<std::ifstream> afile(new std::ifstream(argv[1],std::ios::in));
     if (afile->fail()) {
@@ -73,8 +77,10 @@ int main(int argc, char *argv[]) {
     }
     ifile.push(afile);
     is = ifile.top().get();
+    icwd.push(fs::canonical(fs::path(argv[1])).parent_path().string());
   } else {
     is = &std::cin;
+    icwd.push(fs::current_path());
   }    
   istack.push(is);
 
@@ -86,11 +92,15 @@ int main(int argc, char *argv[]) {
 
   // Parse the input file
   while(!istack.empty()){
-    // work on the most recent input stream
+    // work on the most recent input stream & directory
     is = istack.top();
+    fs::current_path(icwd.top());
+
+    // end of this stream
     if (is->eof()){
       if (!ifile.empty() && istack.top() == ifile.top().get()) ifile.pop();
       istack.pop();
+      icwd.pop();
       continue;
     }
 
@@ -198,6 +208,7 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("Error opening file " + filename);
         ifile.push(afile);
         istack.push(ifile.top().get());
+        icwd.push(fs::canonical(fs::path(filename)).parent_path().string());
       } else if (keyw == "END") {
         break;
       } else {
