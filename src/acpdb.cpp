@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <cstring>
 #include <stack>
+#include <memory>
 
 #include "acp.h"
 #include "sqldb.h"
@@ -29,12 +30,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "btparse.h"
 #endif
 
+// variables for managing the input and output streams
 static std::istream *is;
 static std::ostream *os;
-static std::ifstream *ifile = nullptr;
-static std::ofstream *ofile = nullptr;
+static std::stack< std::shared_ptr<std::ifstream> > ifile = {};
+static std::shared_ptr<std::ofstream> ofile = nullptr;
 std::unordered_map<std::string,acp> nacp;
 
+// database and training set
 static sqldb db;
 static trainset ts;
 
@@ -48,27 +51,32 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Connect the input and output files
+  // Connect the output file
   if (argc == 3) {
-    ofile = new std::ofstream(argv[2],std::ios::out);
+    ofile.reset(new std::ofstream(argv[2],std::ios::out));
     if (ofile->fail()) {
       std::cout << "Error opening file: " << argv[2] << std::endl;
       return 1;
     }
-    os = ofile;
+    os = ofile.get();
   } else {
     os = &std::cout;
   }    
+
+  // Connect the input files; build the stack
+  std::stack<std::istream *> istack;
   if (argc >= 2) {
-    ifile = new std::ifstream(argv[1],std::ios::in);
-    if (ifile->fail()) {
+    std::shared_ptr<std::ifstream> afile(new std::ifstream(argv[1],std::ios::in));
+    if (afile->fail()) {
       std::cout << "Error opening file: " << argv[1] << std::endl;
       return 1;
     }
-    is = ifile;
+    ifile.push(afile);
+    is = ifile.top().get();
   } else {
     is = &std::cin;
   }    
+  istack.push(is);
 
   // Initialize the btparse library, if present
 #ifdef BTPARSE_FOUND  
@@ -76,25 +84,22 @@ int main(int argc, char *argv[]) {
   bt_set_stringopts(BTE_REGULAR, BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE);
 #endif  
 
-  // build the input stack
-  std::stack<std::istream *> istack;
-  istack.push(is);
-
   // Parse the input file
   while(!istack.empty()){
     // work on the most recent input stream
-    std::istream &isnow = *(istack.top());
-    if (isnow.eof()){
+    is = istack.top();
+    if (is->eof()){
+      if (!ifile.empty() && istack.top() == ifile.top().get()) ifile.pop();
       istack.pop();
       continue;
     }
 
     // fetch a line
     std::string line;
-    get_next_line(isnow,line);
-    if (line.empty() && isnow.eof()) 
+    get_next_line(*is,line);
+    if (line.empty() && is->eof()) 
       continue;
-    if (isnow.fail()) 
+    if (is->fail())
       throw std::runtime_error("Error reading input");
 
     // Tokenize the line
@@ -108,7 +113,7 @@ int main(int argc, char *argv[]) {
       if (keyw == "ACP") {
         std::string name = popstring(tokens);
         if (tokens.empty())
-          nacp[name] = acp(name,isnow);
+          nacp[name] = acp(name,*is);
         else
           nacp[name] = acp(name,tokens.front());
       } else if (keyw == "WRITE") {
@@ -152,7 +157,7 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "ADD") {
         ts.addadditional(db,tokens);
       } else if (keyw == "WEIGHT") {
-        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(isnow,true);
+        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
         ts.setweight(db,tokens,kmap);
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os,db);
@@ -170,7 +175,7 @@ int main(int argc, char *argv[]) {
         if ((category == "LITREF") && equali_strings(key,"BIBTEX"))
           db.insert_litref_bibtex(tokens);
         else{
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(isnow,true);
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.insert(category,key,kmap);
         }
       } else if (keyw == "DELETE") {
@@ -187,8 +192,12 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "VERIFY") {
         db.verify(*os);
       } else if (keyw == "SOURCE") {
-        printf("hello!\n");
-        return 0;
+        std::string filename = popstring(tokens);
+        std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));
+        if (afile->fail()) 
+          throw std::runtime_error("Error opening file " + filename);
+        ifile.push(afile);
+        istack.push(ifile.top().get());
       } else if (keyw == "END") {
         break;
       } else {
@@ -207,14 +216,6 @@ int main(int argc, char *argv[]) {
 
   // Clean up
   db.close();
-  if (ifile){
-    ifile->close();
-    delete ifile;
-  }
-  if (ofile){
-    ofile->close();
-    delete ofile;
-  }
 
   return 0;
 }
