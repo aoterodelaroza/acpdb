@@ -36,7 +36,7 @@ acp::acp(const std::string &name_, const std::string &filename){
       throw std::runtime_error("Error opening ACP file " + filename);
   
   std::string line, str;
-  while (get_next_line(ifile,line,'!')){
+  while (get_next_line(ifile,line,'!','\0')){
     if (ifile.fail()) 
       throw std::runtime_error("Error reading ACP file " + filename);
 
@@ -76,7 +76,7 @@ acp::acp(const std::string &name_, const std::string &filename){
 
 acp::acp(const std::string &name_, std::istream &is){
   std::string line, str;
-  while (get_next_line(is,line,'#')){
+  while (get_next_line(is,line)){
     std::istringstream iss(line);
     iss >> str;
     uppercase(str);
