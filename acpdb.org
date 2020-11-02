@@ -277,6 +277,11 @@ SET name1.s name2.s
 
   Add the named sets from the database to the training set.
 
+SET_NOFIT name1.s name2.s
+
+  Same as SET but these subsets are not passed on to the least-squares
+  fitting routine. These sets are used only for evaluation purposes.
+
 REFERENCE method.s [set.s]
 
   Set the reference method to method.s for the whole training set. If

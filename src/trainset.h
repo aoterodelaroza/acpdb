@@ -38,7 +38,7 @@ class trainset {
   void addexp(const std::list<std::string> &tokens);
 
   // Add sets
-  void addset(sqldb &db, const std::list<std::string> &tokens);
+  void addset(sqldb &db, const std::list<std::string> &tokens, bool dofit);
 
   // Set the reference method
   void setreference(sqldb &db, const std::list<std::string> &tokens);
@@ -82,6 +82,7 @@ class trainset {
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
   std::vector<int> set_size; // size of each set
+  std::vector<bool> set_dofit; // whether this set will be used in the least-squares fit
   std::vector<double> w; // weights for the set elements
 
   std::vector<std::string> methodname; // name of the reference method for each set

@@ -66,7 +66,7 @@ void trainset::addexp(const std::list<std::string> &tokens){
 }
 
 // Add sets
-void trainset::addset(sqldb &db, const std::list<std::string> &tokens){
+void trainset::addset(sqldb &db, const std::list<std::string> &tokens, bool dofit){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using SET");
   if (tokens.size() < 2)
@@ -100,6 +100,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
     set_size.push_back(size);
     set_initial_idx.push_back(ilast);
     set_final_idx.push_back(ilast + size);
+    set_dofit.push_back(dofit);
 
     // initialize the weights to one
     for (int i = 0; i < size; i++)
@@ -313,13 +314,13 @@ void trainset::describe(std::ostream &os, sqldb &db){
 SELECT litrefs, description FROM Sets WHERE id = ?1;
 )SQL");
   os << "+ List of sets (" << setname.size() << ")" << std::endl;
-  os << "| name | id | initial | final | size | ref. method | ref. meth. id | litref | description |" << std::endl;
+  os << "| name | id | initial | final | size | dofit? | ref. method | ref. meth. id | litref | description |" << std::endl;
   for (int i = 0; i < setname.size(); i++){
     st.reset();
     st.bind(1,setid[i]);
     st.step();
     os << "| " << setname[i] << " | " << setid[i] << " | " << set_initial_idx[i] 
-       << " | " << set_final_idx[i] << " | " << set_size[i] 
+       << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i] 
        << " | " << methodname[i] << " | " << methodid[i]
        << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
        << " |" << std::endl;
@@ -522,6 +523,7 @@ SELECT key FROM Structures WHERE id = ?1;
     ofile << "# set_initial_idx = " << set_initial_idx[i] << std::endl;
     ofile << "# set_final_idx = " << set_final_idx[i] << std::endl;
     ofile << "# set_size = " << set_size[i] << std::endl;
+    ofile << "# set used in fit? = " << set_dofit[i] << std::endl;
     ofile << "# reference method = " << methodname[i] << std::endl;
     ofile << "# reference id = " << methodid[i] << std::endl;
   

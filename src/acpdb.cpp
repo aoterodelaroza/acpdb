@@ -159,7 +159,9 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
       } else if (keyw == "SET") {
-        ts.addset(db,tokens);
+        ts.addset(db,tokens,true);
+      } else if (keyw == "SET_NOFIT") {
+        ts.addset(db,tokens,false);
       } else if (keyw == "REFERENCE") {
         ts.setreference(db,tokens);
       } else if (keyw == "EMPTY") {
