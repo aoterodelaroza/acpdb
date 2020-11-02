@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <cstring>
+#include <stack>
 
 #include "acp.h"
 #include "sqldb.h"
@@ -75,11 +76,26 @@ int main(int argc, char *argv[]) {
   bt_set_stringopts(BTE_REGULAR, BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE);
 #endif  
 
+  // build the input stack
+  std::stack<std::istream *> istack;
+  istack.push(is);
+
   // Parse the input file
-  std::string line;
-  while(get_next_line(*is,line,'#')){
-    if (is->fail()) 
-      throw std::runtime_error("Error reading input file");
+  while(!istack.empty()){
+    // work on the most recent input stream
+    std::istream &isnow = *(istack.top());
+    if (isnow.eof()){
+      istack.pop();
+      continue;
+    }
+
+    // fetch a line
+    std::string line;
+    get_next_line(isnow,line);
+    if (line.empty() && isnow.eof()) 
+      continue;
+    if (isnow.fail()) 
+      throw std::runtime_error("Error reading input");
 
     // Tokenize the line
     std::list<std::string> tokens(list_all_words(line));
@@ -92,7 +108,7 @@ int main(int argc, char *argv[]) {
       if (keyw == "ACP") {
         std::string name = popstring(tokens);
         if (tokens.empty())
-          nacp[name] = acp(name,*is);
+          nacp[name] = acp(name,isnow);
         else
           nacp[name] = acp(name,tokens.front());
       } else if (keyw == "WRITE") {
@@ -136,7 +152,7 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "ADD") {
         ts.addadditional(db,tokens);
       } else if (keyw == "WEIGHT") {
-        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(is,true);
+        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(isnow,true);
         ts.setweight(db,tokens,kmap);
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os,db);
@@ -154,7 +170,7 @@ int main(int argc, char *argv[]) {
         if ((category == "LITREF") && equali_strings(key,"BIBTEX"))
           db.insert_litref_bibtex(tokens);
         else{
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(is,true);
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(isnow,true);
           db.insert(category,key,kmap);
         }
       } else if (keyw == "DELETE") {
@@ -170,6 +186,9 @@ int main(int argc, char *argv[]) {
           db.list(*os,category,tokens);
       } else if (keyw == "VERIFY") {
         db.verify(*os);
+      } else if (keyw == "SOURCE") {
+        printf("hello!\n");
+        return 0;
       } else if (keyw == "END") {
         break;
       } else {
@@ -188,8 +207,14 @@ int main(int argc, char *argv[]) {
 
   // Clean up
   db.close();
-  if (ifile) ifile->close();
-  if (ofile) ofile->close();
+  if (ifile){
+    ifile->close();
+    delete ifile;
+  }
+  if (ofile){
+    ofile->close();
+    delete ofile;
+  }
 
   return 0;
 }

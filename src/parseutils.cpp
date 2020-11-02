@@ -54,11 +54,11 @@ std::list<std::string> list_all_words(const std::string &line) {
 // rules. Split each line into a key (first word) and content (rest of
 // the line) pair. If toupper, capitalize the key. If the key END or
 // the eof() is found, return the map.
-std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper){
+std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream &is, bool toupper){
 
   std::unordered_map<std::string,std::string> result;
   std::string ukeyw, keyw, line;
-  while(get_next_line(*is,line)){
+  while(get_next_line(is,line)){
     std::istringstream iss(line);
     iss >> keyw;
     if (keyw.empty()) continue;
@@ -168,8 +168,8 @@ std::string nameguess(unsigned char z){
 
 // Read a line from stream and get the first keyword (str) and maybe
 // double (res) from it. Use the comment and continuation rules. If
-// there was a fail or eof, return 1. If no double could be read,
-// return res = 0.
+// there was a fail, return 1. If no double could be read, return res
+// = 0.
 int line_get_double(std::istream &is, std::string &line, std::string &str, double &res){
 
   str = "";
@@ -197,7 +197,7 @@ std::istream &get_next_line(std::istream &is, std::string &line, char skipchar/*
   while (std::getline(is,aux)){
     if (is.fail()) break;
     if (aux.empty()){
-      if (continued)
+      if (continued || is.eof())
         break;
       else
         continue;

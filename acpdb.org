@@ -354,6 +354,17 @@ ACPSPLIT name.s template.s [COEF value.r]
   ACP contains only one term from the original ACP. If COEF is given,
   set the coefficients for the new ACPs to value.r.
 
+* Quality of life keywords
+
+SOURCE file.s
+
+  Read and execute the commands in file.s . The current working
+  directory is changed to the location of the file.
+
+END
+
+  Terminate the run.
+
 * Database schema
 
 ** Table 1: literature references (Literature_refs)
