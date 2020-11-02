@@ -162,6 +162,10 @@ int main(int argc, char *argv[]) {
         ts.addset(db,tokens,true);
       } else if (keyw == "SET_NOFIT") {
         ts.addset(db,tokens,false);
+      } else if (keyw == "MASK") {
+        std::string key = popstring(tokens);
+        std::string category = popstring(tokens,true);
+        ts.setmask(db,key,category,tokens);
       } else if (keyw == "REFERENCE") {
         ts.setreference(db,tokens);
       } else if (keyw == "EMPTY") {

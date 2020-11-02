@@ -52,13 +52,16 @@ class trainset {
   // Set the weights
   void setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap);
 
+  // Set the masks
+  void setmask(sqldb &db, std::string &key, std::string &category, std::list<std::string> &tokens);
+
   // Describe the current training set
   void describe(std::ostream &os, sqldb &db);
 
   // Is the training set defined?
   inline bool isdefined(){
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
-      !w.empty() && !methodid.empty() && !emptyname.empty();
+      !w.empty() && !methodname.empty() && !emptyname.empty();
   }
 
   // Write the structures in the training set as xyz files
@@ -82,11 +85,12 @@ class trainset {
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
   std::vector<int> set_size; // size of each set
+  std::vector< std::vector<bool> > set_mask; // the element mask for each set
   std::vector<bool> set_dofit; // whether this set will be used in the least-squares fit
   std::vector<double> w; // weights for the set elements
 
-  std::vector<std::string> methodname; // name of the reference method for each set
-  std::vector<int> methodid; // ID of the reference method for each set
+  std::string methodname; // name of the reference method
+  int methodid; // ID of the reference method
 
   std::string emptyname; // name of the empty method
   int emptyid; // ID of the empty method

@@ -282,6 +282,25 @@ SET_NOFIT name1.s name2.s
   Same as SET but these subsets are not passed on to the least-squares
   fitting routine. These sets are used only for evaluation purposes.
 
+MASK {name.s|name.i} RANGE start.i [end.i [step.i]]
+MASK {name.s|name.i} ITEMS item1.i item2.i ...
+MASK {name.s|name.i} PATTERN 0/1 0/1 ...
+MASK {name.s|name.i} ATOMS
+
+  Apply a mask to remove some items from set name.s/name.i from the
+  training set. The items indicated in the command are used in the
+  training set and the others are deactivated. 
+
+  If RANGE, indicate a range starting at start.i to the end of the
+  set. If end.i is given, stop at end.i. If setp.i is given, use that as
+  step. If ITEMS, indicate the items from the set in the training set
+  one by one. If PATTERN, repeat a pattern over the items of the
+  set. item1.i. 0 means the item is not used and 1 means it is used. If
+  ATOMS, deactivate all items in the set that have atoms other than
+  those that are target of ACP development (requires using a previous
+  ATOM command).
+
+
 REFERENCE method.s [set.s]
 
   Set the reference method to method.s for the whole training set. If

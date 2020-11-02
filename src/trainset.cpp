@@ -101,6 +101,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
     set_initial_idx.push_back(ilast);
     set_final_idx.push_back(ilast + size);
     set_dofit.push_back(dofit);
+    set_mask.push_back(std::vector<bool>(size,true));
 
     // initialize the weights to one
     for (int i = 0; i < size; i++)
@@ -114,38 +115,13 @@ void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
     throw std::runtime_error("A database file must be connected before using REFERENCE");
   if (tokens.empty())
     throw std::runtime_error("Invalid REFEENCE command");
-  if (setid.empty())
-    throw std::runtime_error("REFEENCE must come after SET(s)");
-
-  auto it = tokens.begin();
 
   // check if the method is known
-  std::string name = *it;
-  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
-  if (idx == 0)
-    throw std::runtime_error("METHOD identifier not found in database: " + name);
-
-  // resize it to method containers
-  methodname.resize(setid.size());
-  methodid.resize(setid.size());
-
-  // write down the method
-  if (++it == tokens.end()){
-    // apply to all known sets
-    for (int i = 0; i < setid.size(); i++){
-      methodname[i] = name;
-      methodid[i] = idx;
-    }
-  } else {
-    // apply to one set only
-    auto ires = find(setname.begin(),setname.end(),*it);
-    if (ires == setname.end())
-      throw std::runtime_error("SET in METHOD command not found: " + *it);
-
-    const int id = ires - setname.begin();
-    methodname[id] = name;
-    methodid[id] = idx;
-  }
+  auto it = tokens.begin();
+  methodname = *it;
+  methodid = db.find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
+  if (methodid == 0)
+    throw std::runtime_error("METHOD identifier not found in database: " + methodname);
 }
 
 // Set the empty method
@@ -244,8 +220,12 @@ void trainset::setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector
   // calculate the weight from the global and pattern
   int k = 0;
   int npat = wpattern.size();
-  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
-    w[i] = wglobal * wpattern[k++ % npat];
+  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++){
+    if (set_mask[sid][i])
+      w[i] = wglobal * wpattern[k++ % npat];
+    else
+      w[i] = 0;
+  }
 
   // calculate the normalization factor
   double norm = 1.;
@@ -260,9 +240,7 @@ WHERE methodid = :METHOD AND propid IN
   (SELECT id FROM Properties WHERE setid = :SET);
 )SQL");
 
-    if (methodid.empty() || methodid.size() <= sid || methodid[sid] == 0)
-      throw std::runtime_error("Use of NORM_REF requires setting the reference method");
-    st.bind((char *) ":METHOD",methodid[sid]);
+    st.bind((char *) ":METHOD",methodid);
     st.bind((char *) ":SET",setid[sid]);
     st.step();
     norm *= sqlite3_column_double(st.ptr(),0);
@@ -277,6 +255,60 @@ WHERE methodid = :METHOD AND propid IN
     w[set_initial_idx[sid]+witem[i].first-1] = witem[i].second;
 }
 
+// Set the masks
+void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::list<std::string> &tokens){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using MASK");
+  if (setid.empty())
+    throw std::runtime_error("There are no sets in the training set (MASK)");
+
+  // identify the set
+  int sid;
+  bool found;
+  if (isinteger(key))
+    sid = std::stoi(key);
+  else
+    sid = db.find_id_from_key(key,statement::STMT_QUERY_SET);
+  for (int i = 0; i < setid.size(); i++){
+    found = (setid[i] == sid);
+    if (found){
+      sid = i;
+      break;
+    }
+  }
+  if (!found)
+    throw std::runtime_error("Could not find set " + key + " in MASK");
+
+  // interpret the category
+  if (category == "RANGE"){
+    int size = set_mask[sid].size();
+    int istart = 0, iend = size, istep = 1;
+
+    // read the start, end, and step
+    if (tokens.empty())
+      throw std::runtime_error("Empty range in MASK");
+    istart = std::stoi(popstring(tokens)) - 1;
+    if (!tokens.empty()){
+      iend = std::stoi(popstring(tokens));
+      if (!tokens.empty())
+        istep = std::stoi(tokens.front());
+    }
+    if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0) 
+      throw std::runtime_error("Invalid range in MASK");
+
+    // reassign the mask and the size for this set
+    for (int i = 0; i < set_mask[sid].size(); i++)
+      set_mask[sid][i] = false;
+    set_size[sid] = 0;
+    for (int i = istart; i < iend; i+=istep){
+      set_mask[sid][i] = true;
+      set_size[sid]++;
+    }
+  } else {
+    throw std::runtime_error("Unknown category " + category + " in MASK");
+  }
+}
+
 // Describe the current training set
 void trainset::describe(std::ostream &os, sqldb &db){
   if (!db) 
@@ -285,8 +317,8 @@ void trainset::describe(std::ostream &os, sqldb &db){
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
     if (setid.empty()) os << "--- No sets found (SET) ---" << std::endl;
-    if (methodid.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
+    if (methodname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
     throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
   }
 
@@ -314,14 +346,13 @@ void trainset::describe(std::ostream &os, sqldb &db){
 SELECT litrefs, description FROM Sets WHERE id = ?1;
 )SQL");
   os << "+ List of sets (" << setname.size() << ")" << std::endl;
-  os << "| name | id | initial | final | size | dofit? | ref. method | ref. meth. id | litref | description |" << std::endl;
+  os << "| name | id | initial | final | size | dofit? | litref | description |" << std::endl;
   for (int i = 0; i < setname.size(); i++){
     st.reset();
     st.bind(1,setid[i]);
     st.step();
     os << "| " << setname[i] << " | " << setid[i] << " | " << set_initial_idx[i] 
        << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i] 
-       << " | " << methodname[i] << " | " << methodid[i]
        << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
        << " |" << std::endl;
   }
@@ -354,10 +385,11 @@ ORDER BY Properties.id;
   for (int i = 0; i < setid.size(); i++){
     st.reset();
     st.bind((char *) ":SET",setid[i]);
-    st.bind((char *) ":METHOD",methodid[i]);
+    st.bind((char *) ":METHOD",methodid);
 
-    int rc;
+    int rc, k = 0;
     while ((rc = st.step()) != SQLITE_DONE){
+      if (!set_mask[i][k++]) continue;
       os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
          << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) << " | " << sqlite3_column_int(st.ptr(), 2)
          << " | " << w[n] << " | " << sqlite3_column_double(st.ptr(), 3) 
@@ -380,7 +412,7 @@ WHERE Properties.setid = :SET AND Evaluations.methodid = :METHOD;)SQL");
   for (int i = 0; i < setid.size(); i++){
     st.reset();
     st.bind((char *) ":SET",setid[i]);
-    st.bind((char *) ":METHOD",methodid[i]);
+    st.bind((char *) ":METHOD",methodid);
     st.step();
     ncalc += sqlite3_column_int(st.ptr(), 0);
   }
@@ -488,8 +520,6 @@ void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
     throw std::runtime_error("A database file must be connected before using WRITE DIN");
   if (setid.empty())
     throw std::runtime_error("Training set subsets must be defined before using WRITE DIN");
-  if (methodid.empty())
-    throw std::runtime_error("Training set reference method must be defined before using WRITE DIN");
   
   // check dir
   std::string dir = ".";
@@ -524,11 +554,11 @@ SELECT key FROM Structures WHERE id = ?1;
     ofile << "# set_final_idx = " << set_final_idx[i] << std::endl;
     ofile << "# set_size = " << set_size[i] << std::endl;
     ofile << "# set used in fit? = " << set_dofit[i] << std::endl;
-    ofile << "# reference method = " << methodname[i] << std::endl;
-    ofile << "# reference id = " << methodid[i] << std::endl;
+    ofile << "# reference method = " << methodname << std::endl;
+    ofile << "# reference id = " << methodid << std::endl;
   
     // step over the components of this set
-    st.bind((char *) ":METHOD",methodid[i]);
+    st.bind((char *) ":METHOD",methodid);
     st.bind((char *) ":SET",setid[i]);
     while (st.step() != SQLITE_DONE){
       int nstr = sqlite3_column_int(st.ptr(),0);
