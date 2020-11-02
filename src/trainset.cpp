@@ -501,7 +501,6 @@ void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
 FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
-INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
 WHERE Properties.setid = :SET AND Methods.id = :METHOD
 ORDER BY Properties.id;
@@ -517,7 +516,7 @@ SELECT key FROM Structures WHERE id = ?1;
     if (ofile.fail()) 
       throw std::runtime_error("Error writing din file " + fname);
     std::streamsize prec = ofile.precision(10);
-    ofile << "# din file automatically crated by acpdb" << std::endl;
+    ofile << "# din file crated by acpdb" << std::endl;
     ofile << "# setid = " << setid[i] << std::endl;
     ofile << "# setname = " << setname[i] << std::endl;
     ofile << "# set_initial_idx = " << set_initial_idx[i] << std::endl;

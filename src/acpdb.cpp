@@ -200,6 +200,9 @@ int main(int argc, char *argv[]) {
         else if (category == "XYZ"){
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.list_xyz(kmap);
+        } else if (category == "DIN"){
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          db.list_din(kmap);
         } else
           db.list(*os,category,tokens);
       } else if (keyw == "VERIFY") {

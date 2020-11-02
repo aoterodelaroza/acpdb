@@ -844,6 +844,127 @@ WHERE setid IN ()SQL";
   }
 }
 
+// List sets of properties in the database (din format)
+void sqldb::list_din(std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using LIST DIN");
+
+  // get the directory
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap["DIRECTORY"];
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+
+  // get the list of sets
+  auto im = kmap.find("SET");
+  std::vector<int> idset;
+  if (im != kmap.end()){
+    std::list<std::string> vlist = list_all_words(im->second);
+    for (auto it = vlist.begin(); it != vlist.end(); ++it){
+      if (isinteger(*it))
+        idset.push_back(std::stoi(*it));
+      else
+        idset.push_back(find_id_from_key(*it,statement::STMT_QUERY_SET));
+    }
+  } else {
+    statement *st = stmt[statement::STMT_LIST_SET];
+    while (st->step() != SQLITE_DONE)
+      idset.push_back(sqlite3_column_int(st->ptr(), 0));
+  }
+  if (idset.empty())
+    throw std::runtime_error("No sets found in LIST DIN");
+
+  // get the set names
+  statement stname(db,statement::STMT_CUSTOM,R"SQL(
+SELECT key FROM Sets WHERE id = ?1;
+)SQL");
+  std::vector<std::string> nameset;
+  for (int i = 0; i < idset.size(); i++){
+    stname.bind(1,idset[i]);
+    stname.step();
+    std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
+    nameset.push_back(name);
+    stname.reset();
+  }
+
+  // get the method and prepare the statement
+  statement st(db);
+  im = kmap.find("METHOD");
+  int methodid = 0;
+  if (im != kmap.end()){
+    // get the method ID
+    if (isinteger(im->second))
+      methodid = std::stoi(im->second);
+    else
+      methodid = find_id_from_key(im->second,statement::STMT_QUERY_METHOD);
+
+    // prepare the statement text
+    std::string sttext = R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
+FROM Properties
+INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
+INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
+WHERE Properties.setid = :SET AND Methods.id = )SQL";
+    sttext = sttext + std::to_string(methodid) + " " + R"SQL(
+ORDER BY Properties.id;
+)SQL";
+    st.recycle(statement::STMT_CUSTOM,sttext);
+  } else {
+    // no method was given - zeros as reference values
+    std::string sttext = R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties
+WHERE Properties.setid = :SET 
+ORDER BY Properties.id;
+)SQL";
+    st.recycle(statement::STMT_CUSTOM,sttext);
+  }
+
+  // the statement to fetch a structure name
+  stname.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT key FROM Structures WHERE id = ?1;
+)SQL");
+
+  for (int i = 0; i < idset.size(); i++){
+    // open and write the din header
+    std::string fname = dir + "/" + nameset[i] + ".din";
+    std::ofstream ofile(fname,std::ios::out);
+    if (ofile.fail()) 
+      throw std::runtime_error("Error writing din file " + fname);
+    std::streamsize prec = ofile.precision(10);
+    ofile << "# din file crated by acpdb" << std::endl;
+    ofile << "# setid = " << idset[i] << std::endl;
+    ofile << "# setname = " << nameset[i] << std::endl;
+    ofile << "# reference id = " << methodid << std::endl;
+  
+    // step over the components of this set
+    st.bind((char *) ":SET",idset[i]);
+    while (st.step() != SQLITE_DONE){
+      int nstr = sqlite3_column_int(st.ptr(),0);
+      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+      double *coef = (double *) sqlite3_column_blob(st.ptr(),2);
+
+      for (int j = 0; j < nstr; j++){
+        stname.bind(1,str[j]);
+        stname.step();
+        std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
+        ofile << coef[j] << std::endl;
+        ofile << name << std::endl;
+        stname.reset();
+      }
+      ofile << "0" << std::endl;
+      
+      if (methodid > 0){
+        double value = sqlite3_column_double(st.ptr(),3);
+        ofile << value << std::endl;
+      } else {
+        ofile << "0.0" << std::endl;
+      }
+    }
+  }
+}
+
 // Verify the consistency of the database
 void sqldb::verify(std::ostream &os){
   if (!db) throw std::runtime_error("A database file must be connected before using VERIFY");
