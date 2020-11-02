@@ -22,6 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 
+static const std::string blanks(" \t\f\v\n\r");
+
 // Transform a string to uppercase
 void uppercase(std::string &s){
   transform(s.begin(), s.end(), s.begin(), ::toupper);
@@ -48,22 +50,25 @@ std::list<std::string> list_all_words(const std::string &line) {
   return result;
 }  
 
-// Read lines from input stream is. Split each line into a key (first
-// word) and content (rest of the line) pair. If toupper, capitalize
-// the key. If the key END or the eof() is found, return the map.
+// Read lines from input stream is using comment and continuation
+// rules. Split each line into a key (first word) and content (rest of
+// the line) pair. If toupper, capitalize the key. If the key END or
+// the eof() is found, return the map.
 std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream *is, bool toupper){
 
   std::unordered_map<std::string,std::string> result;
   std::string ukeyw, keyw, line;
-  while(*is >> keyw){
-    line.clear();
-    getline(*is,line);
+  while(get_next_line(*is,line)){
+    std::istringstream iss(line);
+    iss >> keyw;
+    if (keyw.empty()) continue;
 
-    if (keyw.empty() || keyw[0] == '#') continue;
     ukeyw = keyw;
     uppercase(ukeyw);
     if (ukeyw == "END") return result;
-    line.erase(line.begin(), std::find_if(line.begin(),line.end(), std::bind1st(std::not_equal_to<char>(),' ')));
+
+    deblank(line.erase(0,keyw.length()));
+
     if (toupper)
       result[ukeyw] = line;
     else
@@ -162,37 +167,61 @@ std::string nameguess(unsigned char z){
 }
 
 // Read a line from stream and get the first keyword (str) and maybe
-// double (res) from it. Skip lines that start with #. If there was a
-// fail or eof, return 1. If no double could be read, return res = 0.
+// double (res) from it. Use the comment and continuation rules. If
+// there was a fail or eof, return 1. If no double could be read,
+// return res = 0.
 int line_get_double(std::istream &is, std::string &line, std::string &str, double &res){
 
-  while (true){
-    std::getline(is,line);
-    if (is.fail() || is.eof()) return 1;
+  str = "";
+  res = 0;
+  get_next_line(is,line);
+  if (is.fail()) return 1;
+  if (line.empty()) return 0;
 
-    std::istringstream iss(line);
-    iss >> str;
-  
-    if (str[0] != '#') {
-      try {
-        res = std::stod(str);
-      } catch (const std::invalid_argument &e) {
-        res = 0;
-      }
-      break;
-    }
-  }
+  std::istringstream iss(line);
+  iss >> str;
+  try {
+    res = std::stod(str);
+  } catch (const std::invalid_argument &e) { }
   return 0;
 }
 
 // Get the next line from stream is. Use skipchar as the comment
-// character and skip comments and blank lines.
-std::istream &get_next_line(std::istream &is, std::string &line, char skipchar){
-  std::string str;
-  while (std::getline(is,line)){
-    std::istringstream iss(line);
-    iss >> str;
-    if (str[0] != skipchar && !str.empty()) break;
+// character and skip comments and blank lines. Remove leading 
+// and trailing blanks from the line.
+std::istream &get_next_line(std::istream &is, std::string &line, char skipchar/*='#'*/, char contchar/*='\\'*/){
+
+  line = "";
+  std::string aux;
+  bool continued = false;
+  while (std::getline(is,aux)){
+    if (is.fail()) break;
+    if (aux.empty()){
+      if (continued)
+        break;
+      else
+        continue;
+    }
+    deblank(aux);
+    if (skipchar && aux[0] == skipchar) continue;
+    if (contchar && aux[aux.length()-1] == contchar){
+      aux = aux.substr(0,aux.length()-1);
+      deblank(aux);
+      line = line + " " + aux;
+      continued = true;
+      continue;
+    }
+
+    line = line + " " + aux;
+    break;
   }
+  deblank(line);
   return is;
+}
+
+// Remove leading and trailing blanks from a string
+void deblank(std::string &str){
+  if (str.empty()) return;
+  str.erase(str.find_last_not_of(blanks)+1);
+  str.erase(0,str.find_first_not_of(blanks));
 }

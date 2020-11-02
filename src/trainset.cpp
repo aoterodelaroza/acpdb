@@ -442,8 +442,8 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 void trainset::write_xyz(sqldb &db, const std::list<std::string> &tokens){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using WRITE XYZ");
-  if (!isdefined())
-    throw std::runtime_error("The training set must be defined completely before using WRITE XYZ");
+  if (setid.empty())
+    throw std::runtime_error("There are no sets in the training set (WRITE XYZ)");
   
   std::string dir = ".";
   if (!tokens.empty()) dir = tokens.front();
