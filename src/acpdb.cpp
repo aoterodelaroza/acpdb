@@ -193,9 +193,9 @@ int main(int argc, char *argv[]) {
         db.erase(category,tokens);
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
-        if (category == "XYZ")
+        if (category == "XYZ_TRAINING")
           ts.write_xyz(db,tokens);
-        else if (category == "DIN")
+        else if (category == "DIN_TRAINING")
           ts.write_din(db,tokens);
         else
           db.list(*os,category,tokens);

@@ -280,8 +280,14 @@ WHERE methodid = :METHOD AND propid IN
 void trainset::describe(std::ostream &os, sqldb &db){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
-  if (!isdefined())
+  if (!isdefined()){
+    if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
+    if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
+    if (setid.empty()) os << "--- No sets found (SET) ---" << std::endl;
+    if (methodid.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
+    if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
     throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
+  }
 
   os << "* Description of the training set (DESCRIBE)" << std::endl << std::endl;
   std::streamsize prec = os.precision(10);
@@ -480,8 +486,10 @@ WHERE setid IN ()SQL";
 void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using WRITE DIN");
-  if (!isdefined())
-    throw std::runtime_error("The training set must be defined completely before using WRITE DIN");
+  if (setid.empty())
+    throw std::runtime_error("Training set subsets must be defined before using WRITE DIN");
+  if (methodid.empty())
+    throw std::runtime_error("Training set reference method must be defined before using WRITE DIN");
   
   // check dir
   std::string dir = ".";

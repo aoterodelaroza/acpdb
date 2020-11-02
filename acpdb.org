@@ -239,6 +239,28 @@ VERIFY
   Check the consistency of the database. Specifically, check that the
   unhandled BLOBs and TEXTs refer to keys that exist.
 
+LIST XYZ
+ [DIRECTORY directory.s]
+ [SET set.s|set.i]
+END
+
+  Write xyz files for all structures in the database. If directory.s
+  is given, write them in that directory. If SET is given, only the
+  structures in that set. (Use XYZ_TRAINING to write the xyz files for
+  a training set.)
+
+LIST DIN
+ [DIRECTORY directory.s]
+ [SET set.s|set.i]
+ [METHOD method.s|method.i]
+END
+
+  Write din files for all subsets of the current training set. If
+  directory.s is given, write them in that directory. If set is given,
+  write only the din file for that set. Use method method.s/method.i
+  to write the reference values, or 0 if method is not given. (Use
+  DIN_TRAINING to write the din files for a training set.)
+
 * Keywords (define the training set)
 
 ATOM|ATOMS at1.s l1.i at2.s l2.i ... 
@@ -316,12 +338,12 @@ DESCRIBE
   Describe the training set. Calculate the number of calculations
   still missing from the database for ACP development.
 
-LIST XYZ [directory.s]
+LIST XYZ_TRAINING [directory.s]
 
   Write xyz files for all structures in the current training set. If
   directory.s is given, write them in that directory.
 
-LIST DIN [directory.s]
+LIST DIN_TRAINING [directory.s]
 
   Write din files for all subsets of the current training set. If
   directory.s is given, write them in that directory.
