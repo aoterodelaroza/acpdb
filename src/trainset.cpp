@@ -336,6 +336,16 @@ void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::
       set_mask[sid][item] = true;
     }
 
+  } else if (category == "PATTERN") {
+    if (tokens.empty())
+      throw std::runtime_error("Empty pattern in MASK");
+    std::vector<bool> pattern(tokens.size(),false);
+    int n = 0;
+    while (!tokens.empty())
+      pattern[n++] = (popstring(tokens) != "0");
+    for (int i = 0; i < set_mask[sid].size(); i++)
+      set_mask[sid][i] = pattern[i % pattern.size()];
+
   } else {
     throw std::runtime_error("Unknown category " + category + " in MASK");
   }
