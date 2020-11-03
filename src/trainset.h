@@ -72,6 +72,9 @@ class trainset {
 
  private:
 
+  // return the orderid constraint for set id
+  std::string set_constraint(int id);
+
   // Set the weights for one set from the indicated parameters.
   void setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem);
 

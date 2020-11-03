@@ -173,6 +173,7 @@ LIST STRUCTURE
 INSERT PROPERTY name.s
   PROPERTY_TYPE {prop.s|prop.i}
   SET {set.s|set.i}
+  ORDER order.i
   NSTRUCTURES nstruct.i
   STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
   COEFFICIENTS c1.r c2.r c3.r ...
@@ -181,7 +182,7 @@ END
   Insert property with key name.s. This property belongs in set
   set.s/set.i and involves nstruct.i structures, given by ids
   s1.s/s1.i, etc. The recipe for the calculation of the property uses
-  coefficients c1.r, etc.
+  coefficients c1.r, etc. This system is number order.i in the set.
 
 DELETE PROPERTY {name.s|name.i}
 
@@ -468,6 +469,7 @@ END
 - key           TEXT UNIQUE NOT NULL,
 - property_type INTEGER NOT NULL, ## foreign key: table 2 (Property_types)
 - setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
+- orderid       INTEGER NOT NULL,
 - nstructures   INTEGER NOT NULL,
 - structures    BLOB NOT NULL, ## references table 5 (Structures)
 - coefficients  BLOB NOT NULL,

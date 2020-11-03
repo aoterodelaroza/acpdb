@@ -72,6 +72,7 @@ CREATE TABLE Properties (
   key           TEXT UNIQUE NOT NULL,
   property_type INTEGER NOT NULL,
   setid         INTEGER NOT NULL,
+  orderid       INTEGER NOT NULL,
   nstructures   INTEGER NOT NULL,
   structures    BLOB NOT NULL,
   coefficients  BLOB NOT NULL,
@@ -292,8 +293,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_PROPERTY] =
 R"SQL(
-INSERT INTO Properties (id,key,property_type,setid,nstructures,structures,coefficients)
-       VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
+       VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL",
 
 [statement::STMT_QUERY_PROPERTY] = 

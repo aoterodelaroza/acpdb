@@ -272,6 +272,8 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       else
         stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,statement::STMT_QUERY_SET));
     }
+    if ((im = kmap.find("ORDERID")) != kmap.end())
+      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":ORDERID",std::stoi(im->second));
 
     // bind structures
     int nstructures = 0;
@@ -619,6 +621,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
     smap.clear();
     smap["PROPERTY_TYPE"] = "energy_difference";
     smap["SET"] = key;
+    smap["ORDERID"] = std::to_string(k+1);
     smap["NSTRUCTURES"] = std::to_string(n);
     smap["STRUCTURES"] = "";
     smap["COEFFICIENTS"] = "";
@@ -733,9 +736,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,    1,     2,          3,       4,             5,    6};
     type = statement::STMT_LIST_STRUCTURE;
   } else if (category == "PROPERTY"){
-    headers = { "id","key","property_type","setid","nstructures"};
-    types   = {t_int,t_str,          t_int,  t_int,        t_int};
-    cols    = {    0,    1,              2,      3,            4};
+    headers = { "id","key","property_type","setid","orderid","nstructures"};
+    types   = {t_int,t_str,          t_int,  t_int,    t_int,        t_int};
+    cols    = {    0,    1,              2,      3,        4,            5};
     type = statement::STMT_LIST_PROPERTY;
   } else if (category == "EVALUATION"){
     headers = { "id","methodid","propid", "value"};
@@ -907,7 +910,7 @@ INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
 WHERE Properties.setid = :SET AND Methods.id = )SQL";
     sttext = sttext + std::to_string(methodid) + " " + R"SQL(
-ORDER BY Properties.id;
+ORDER BY Properties.orderid;
 )SQL";
     st.recycle(statement::STMT_CUSTOM,sttext);
   } else {
@@ -916,7 +919,7 @@ ORDER BY Properties.id;
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
 FROM Properties
 WHERE Properties.setid = :SET 
-ORDER BY Properties.id;
+ORDER BY Properties.orderid;
 )SQL";
     st.recycle(statement::STMT_CUSTOM,sttext);
   }
