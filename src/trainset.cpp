@@ -91,7 +91,7 @@ void trainset::addexp(const std::list<std::string> &tokens){
 void trainset::addset(sqldb &db, const std::list<std::string> &tokens, bool dofit){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using SET");
-  if (tokens.size() < 2)
+  if (tokens.size() < 1)
     throw std::runtime_error("Invalid SET command");
 
   statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
@@ -301,6 +301,10 @@ void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::
   if (!found)
     throw std::runtime_error("Could not find set " + key + " in MASK");
 
+  // reset the mask
+  for (int i = 0; i < set_mask[sid].size(); i++)
+    set_mask[sid][i] = false;
+
   // interpret the category
   if (category == "RANGE"){
     int size = set_mask[sid].size();
@@ -319,15 +323,28 @@ void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::
       throw std::runtime_error("Invalid range in MASK");
 
     // reassign the mask and the size for this set
-    for (int i = 0; i < set_mask[sid].size(); i++)
-      set_mask[sid][i] = false;
-    set_size[sid] = 0;
-    for (int i = istart; i < iend; i+=istep){
+    for (int i = istart; i < iend; i+=istep)
       set_mask[sid][i] = true;
-      set_size[sid]++;
+
+  } else if (category == "ITEMS") {
+    if (tokens.empty())
+      throw std::runtime_error("Empty item list in MASK");
+    while (!tokens.empty()){
+      int item = std::stoi(popstring(tokens)) - 1;
+      if (item < 0 || item >= set_mask[sid].size())
+        throw std::runtime_error("Item " + std::to_string(item) + " out of range in MASK");
+      set_mask[sid][item] = true;
     }
+
   } else {
     throw std::runtime_error("Unknown category " + category + " in MASK");
+  }
+
+  // recalculate set_size
+  set_size[sid] = 0;
+  for (int i = 0; i < set_mask[sid].size(); i++){
+    if (set_mask[sid][i])
+      set_size[sid]++;
   }
 }
 
@@ -411,11 +428,12 @@ ORDER BY Properties.orderid;
 
     int rc, k = 0;
     while ((rc = st.step()) != SQLITE_DONE){
-      if (!set_mask[i][k++]) continue;
-      os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
-         << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) << " | " << sqlite3_column_int(st.ptr(), 2)
-         << " | " << w[n] << " | " << sqlite3_column_double(st.ptr(), 3) 
-         << " |" << std::endl;
+      if (set_mask[i][k++]){
+        os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
+           << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) << " | " << sqlite3_column_int(st.ptr(), 2)
+           << " | " << w[n] << " | " << sqlite3_column_double(st.ptr(), 3) 
+           << " |" << std::endl;
+      }
       n++;
     }
   }
