@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <cmath>
 #include <filesystem>
+#include <unordered_map>
 
 namespace fs = std::filesystem;
 
@@ -345,6 +346,53 @@ void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::
       pattern[n++] = (popstring(tokens) != "0");
     for (int i = 0; i < set_mask[sid].size(); i++)
       set_mask[sid][i] = pattern[i % pattern.size()];
+
+  } else if (category == "ATOMS") {
+    if (zat.empty())
+      throw std::runtime_error("ATOMS in MASK is not possible if no atoms have been defined");
+    
+    // build the array of structures that contain only the atoms in the zat array
+    std::unordered_map<int,bool> usest;
+    statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+    while (st.step() != SQLITE_DONE){
+      int id = sqlite3_column_int(st.ptr(),0);
+      int nat = sqlite3_column_int(st.ptr(),1);
+      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+
+      bool res = true;
+      for (int j = 0; j < nat; j++){
+        bool found = false;
+        for (int k = 0; k < zat.size(); k++){
+          if (zat[k] == zat_[j]){
+            found = true;
+            break;
+          }
+        }
+        if (!found){
+          res = false;
+          break;
+        }
+      }
+      usest[id] = res;
+    }
+
+    // run over the properties in this set and write the mask
+    st.recycle(statement::STMT_CUSTOM,"SELECT nstructures,structures FROM Properties WHERE setid = " + 
+               std::to_string(setid[sid]) + " ORDER BY orderid;");
+    int n = 0;
+    while (st.step() != SQLITE_DONE){
+      int nstr = sqlite3_column_int(st.ptr(),0);
+      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+      
+      bool found = false;
+      for (int i = 0; i < nstr; i++){
+        if (!usest[str[i]]){
+          found = true;
+          break;
+        }
+      }
+      set_mask[sid][n++] = !found;
+    }
 
   } else {
     throw std::runtime_error("Unknown category " + category + " in MASK");
