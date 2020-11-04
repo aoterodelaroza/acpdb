@@ -432,7 +432,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   // Properties //
   int nall = std::accumulate(set_size.begin(),set_size.end(),0);
   os << "+ List of properties (" << nall << ")" << std::endl;
-  os << "| id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
+  os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
@@ -442,7 +442,7 @@ WHERE Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL");
 
-  int n = 0;
+  int n = 0, nin = 0;
   for (int i = 0; i < setid.size(); i++){
     st.reset();
     st.bind((char *) ":SET",setid[i]);
@@ -456,7 +456,8 @@ ORDER BY Properties.orderid;
           valstr = "n/a";
         else
           valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
-        os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
+        os << "| " << (set_dofit[i]?"yes":"no") << " | " << ++nin << " | " << sqlite3_column_text(st.ptr(), 1) 
+           << " | " << sqlite3_column_int(st.ptr(), 0)
            << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
            << " | " << sqlite3_column_int(st.ptr(), 2)
            << " | " << w[n] << " | " << valstr << " |" << std::endl;
