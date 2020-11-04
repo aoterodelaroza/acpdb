@@ -674,7 +674,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
     throw std::runtime_error("In INSERT OLDDAT, names.dat file found: " + name);
   std::ifstream ifile(name,std::ios::in);
   if (ifile.fail()) 
-    throw std::runtime_error("In INSERT OLDAT, error reading names.dat file: " + name);
+    throw std::runtime_error("In INSERT OLDDAT, error reading names.dat file: " + name);
   
   statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT Properties.key, Properties.id FROM Properties WHERE Properties.setid = :SET ORDER BY Properties.orderid;");
   for (int i = 0; i < setid.size(); i++){
@@ -713,14 +713,14 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   name = directory + "/ref.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail()) 
-    throw std::runtime_error("In INSERT OLDAT, error reading ref.dat file: " + name);
+    throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
 
   for (auto it = propid.begin(); it != propid.end(); ++it){
     std::unordered_map<std::string,std::string> smap;
     std::string valstr;
     std::getline(ifile,valstr);
     if (ifile.fail()) 
-      throw std::runtime_error("In INSERT OLDAT, unexpected error or end of file in ref.dat file: " + name);
+      throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in ref.dat file: " + name);
 
     smap["METHOD"] = std::to_string(refid);
     smap["PROPERTY"] = std::to_string(*it);
@@ -729,20 +729,21 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   }
   ifile.peek();
   if (!ifile.eof())
-    throw std::runtime_error("In INSERT OLDAT, the ref.dat file contains extra lines: " + name);
+    throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
+  ifile.close();
 
   // Insert data for empty method in empty.dat
   name = directory + "/empty.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail()) 
-    throw std::runtime_error("In INSERT OLDAT, error reading empty.dat file: " + name);
+    throw std::runtime_error("In INSERT OLDDAT, error reading empty.dat file: " + name);
 
   for (auto it = propid.begin(); it != propid.end(); ++it){
     std::unordered_map<std::string,std::string> smap;
     std::string valstr;
     std::getline(ifile,valstr);
     if (ifile.fail()) 
-      throw std::runtime_error("In INSERT OLDAT, unexpected error or end of file in empty.dat file: " + name);
+      throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in empty.dat file: " + name);
 
     smap["METHOD"] = std::to_string(emptyid);
     smap["PROPERTY"] = std::to_string(*it);
@@ -751,9 +752,46 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   }
   ifile.peek();
   if (!ifile.eof())
-    throw std::runtime_error("In INSERT OLDAT, the empty.dat file contains extra lines: " + name);
+    throw std::runtime_error("In INSERT OLDDAT, the empty.dat file contains extra lines: " + name);
+  ifile.close();
 
-  // Start inserting data
+  // Insert data for ACP terms
+  for (int iat = 0; iat < zat.size(); iat++){
+    for (int il = 0; il <= lmax[iat]; il++){
+      for (int iexp = 0; iexp < exp.size(); iexp++){
+        std::string atom = nameguess(zat[iat]);
+        lowercase(atom);
+        name = directory + "/" + atom + "_" + inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
+        ifile = std::ifstream(name,std::ios::in);
+        if (ifile.fail()) 
+          throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
+
+        for (auto it = propid.begin(); it != propid.end(); ++it){
+          std::unordered_map<std::string,std::string> smap;
+          std::string valstr;
+          std::getline(ifile,valstr);
+          if (ifile.fail()) 
+            throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in term file: " + name);
+
+          smap["METHOD"] = std::to_string(emptyid);
+          smap["PROPERTY"] = std::to_string(*it);
+          smap["ATOM"] = std::to_string(zat[iat]);
+          smap["L"] = std::to_string(il);
+          smap["EXPONENT"] = to_string_precise(exp[iexp]);
+          smap["VALUE"] = valstr;
+          db.insert("TERM","",smap);
+        }
+        
+
+        ifile.peek();
+        if (!ifile.eof())
+          throw std::runtime_error("In INSERT OLDDAT, the term file contains extra lines: " + name);
+        ifile.close();
+      }
+    }
+  }
+
+  // Commit the transaction
   db.commit_transaction();
 }
 
