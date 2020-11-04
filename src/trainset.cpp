@@ -376,7 +376,7 @@ void trainset::describe(std::ostream &os, sqldb &db){
   if (!isdefined()){
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
-    if (setid.empty()) os << "--- No sets found (SET) ---" << std::endl;
+    if (setid.empty()) os << "--- No subsets found (SUBSET) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
     if (methodname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
     throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
@@ -405,13 +405,14 @@ void trainset::describe(std::ostream &os, sqldb &db){
   statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT litrefs, description FROM Sets WHERE id = ?1;
 )SQL");
-  os << "+ List of sets (" << setname.size() << ")" << std::endl;
-  os << "| name | id | initial | final | size | dofit? | litref | description |" << std::endl;
+  os << "+ List of subsets (" << setname.size() << ")" << std::endl;
+  os << "| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |" << std::endl;
   for (int i = 0; i < setname.size(); i++){
     st.reset();
     st.bind(1,setid[i]);
     st.step();
-    os << "| " << setname[i] << " | " << setid[i] << " | " << set_initial_idx[i] 
+    os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i] 
+       << " | " << set_initial_idx[i] 
        << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i] 
        << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
        << " |" << std::endl;
@@ -419,8 +420,9 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   os << std::endl;
 
   // Methods //
-  os << "+ List of methods (see above for reference)" << std::endl;
+  os << "+ List of methods" << std::endl;
   os << "| type | name | id | for fit? |" << std::endl;
+  os << "| reference | " << methodname << " | " << methodid << " | |" << std::endl;
   os << "| empty | " << emptyname << " | " << emptyid << " | |" << std::endl;
   for (int i = 0; i < addname.size() ; i++){
     os << "| additional | " << addname[i] << " | " << addid[i] << " | " << addisfit[i] << " |" << std::endl;
@@ -430,7 +432,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   // Properties //
   int nall = std::accumulate(set_size.begin(),set_size.end(),0);
   os << "+ List of properties (" << nall << ")" << std::endl;
-  os << "| id | property | propid | set | proptype | nstruct | weight | refvalue |" << std::endl;
+  os << "| id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
@@ -451,7 +453,8 @@ ORDER BY Properties.orderid;
     while ((rc = st.step()) != SQLITE_DONE){
       if (set_mask[i][k++]){
         os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
-           << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) << " | " << sqlite3_column_int(st.ptr(), 2)
+           << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
+           << " | " << sqlite3_column_int(st.ptr(), 2)
            << " | " << w[n] << " | " << sqlite3_column_double(st.ptr(), 3) 
            << " |" << std::endl;
       }
