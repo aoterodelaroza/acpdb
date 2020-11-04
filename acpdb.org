@@ -393,6 +393,31 @@ ACPSPLIT name.s template.s [COEF value.r]
   ACP contains only one term from the original ACP. If COEF is given,
   set the coefficients for the new ACPs to value.r.
 
+* High-level operations
+
+INSERT OLDDAT [directory.s]
+
+  Insert data in bulk from old-style ACP data files. Requires the
+  definition of a complete training set.
+
+  The data files all reside in the indicated directory (in ./ if not
+  given). This command first searches for the file called names.dat,
+  and verifies that the names in it match with those in the current
+  training set. This is done to ensure the integrity of the
+  database. After this operation is complete, the following data is
+  read and inserted:
+
+  - ref.dat: evaluation of the reference method in the training set.
+
+  - empty.dat: evaluation of the empty method in the training set.
+
+  - x_y_z.dat, where x is the atom (lowercase symbol), y is the
+    angular momentum (lowercase), and z is the exponent index. Insert
+    the corresponding ACP term.
+
+  In all cases, the insertion verifies that the file contains exactly
+  the same number of entries as the current training set.
+
 * Quality of life keywords
 
 SOURCE file.s

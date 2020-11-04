@@ -664,12 +664,15 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
     throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
-  if (!fs::is_directory(directory))
-    throw std::runtime_error("In INSERT OLDDAT, directory not found: " + directory);
+
+  std::string dir = ".";
+  if (!directory.empty()) dir = directory;
+  if (!fs::is_directory(dir))
+    throw std::runtime_error("In INSERT OLDDAT, directory not found: " + dir);
 
   // Check that the names.dat matches. Build the list of property IDs.
   std::list<int> propid;
-  std::string name = directory + "/names.dat";
+  std::string name = dir + "/names.dat";
   if (!fs::is_regular_file(name))
     throw std::runtime_error("In INSERT OLDDAT, names.dat file found: " + name);
   std::ifstream ifile(name,std::ios::in);
@@ -710,7 +713,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   db.begin_transaction();
 
   // Insert data for reference method in ref.dat
-  name = directory + "/ref.dat";
+  name = dir + "/ref.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail()) 
     throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
@@ -733,7 +736,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   ifile.close();
 
   // Insert data for empty method in empty.dat
-  name = directory + "/empty.dat";
+  name = dir + "/empty.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail()) 
     throw std::runtime_error("In INSERT OLDDAT, error reading empty.dat file: " + name);
@@ -761,7 +764,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
       for (int iexp = 0; iexp < exp.size(); iexp++){
         std::string atom = nameguess(zat[iat]);
         lowercase(atom);
-        name = directory + "/" + atom + "_" + inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
+        name = dir + "/" + atom + "_" + inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
         ifile = std::ifstream(name,std::ios::in);
         if (ifile.fail()) 
           throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
