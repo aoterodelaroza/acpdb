@@ -436,10 +436,9 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
-INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
+LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
-INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
-WHERE Properties.setid = :SET AND Methods.id = :METHOD
+WHERE Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL");
 
@@ -450,13 +449,17 @@ ORDER BY Properties.orderid;
     st.bind((char *) ":METHOD",methodid);
 
     int rc, k = 0;
+    std::string valstr;
     while ((rc = st.step()) != SQLITE_DONE){
       if (set_mask[i][k++]){
+        if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
+          valstr = "n/a";
+        else
+          valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
         os << "| " << n << " | " << sqlite3_column_text(st.ptr(), 1) << " | " << sqlite3_column_int(st.ptr(), 0)
            << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
            << " | " << sqlite3_column_int(st.ptr(), 2)
-           << " | " << w[n] << " | " << sqlite3_column_double(st.ptr(), 3) 
-           << " |" << std::endl;
+           << " | " << w[n] << " | " << valstr << " |" << std::endl;
       }
       n++;
     }

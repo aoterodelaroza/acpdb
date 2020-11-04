@@ -274,6 +274,10 @@ EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
 
   List of exponents.
 
+REFERENCE method.s
+
+  Set the reference method to method.s for the whole training set.
+
 SUBSET [alias.s]
  SET name.s
  NOFIT
@@ -334,10 +338,6 @@ END
   WEIGHT_ITEM keyword or the product of the GLOBAL weight, times the
   PATTERN weight corresponding to the item, divided by the
   normalization factors indicated by the corresponding keywords.
-
-REFERENCE method.s
-
-  Set the reference method to method.s for the whole training set.
 
 EMPTY method.s
 
