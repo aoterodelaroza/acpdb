@@ -287,10 +287,10 @@ void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
 
   // check if the method is known
   auto it = tokens.begin();
-  methodname = *it;
-  methodid = db.find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
-  if (methodid == 0)
-    throw std::runtime_error("METHOD identifier not found in database: " + methodname);
+  refname = *it;
+  refid = db.find_id_from_key(refname,statement::STMT_QUERY_METHOD);
+  if (refid == 0)
+    throw std::runtime_error("METHOD identifier not found in database: " + refname);
 }
 
 // Set the empty method
@@ -355,7 +355,7 @@ WHERE methodid = :METHOD AND propid IN
     text = text + set_constraint(sid) + ");";
     statement st(db.ptr(),statement::STMT_CUSTOM,text);
 
-    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":METHOD",refid);
     st.step();
     norm *= sqlite3_column_double(st.ptr(),0);
   }
@@ -378,7 +378,7 @@ void trainset::describe(std::ostream &os, sqldb &db){
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
     if (setid.empty()) os << "--- No subsets found (SUBSET) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
-    if (methodname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
+    if (refname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
     throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
   }
 
@@ -422,7 +422,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   // Methods //
   os << "+ List of methods" << std::endl;
   os << "| type | name | id | for fit? |" << std::endl;
-  os << "| reference | " << methodname << " | " << methodid << " | |" << std::endl;
+  os << "| reference | " << refname << " | " << refid << " | |" << std::endl;
   os << "| empty | " << emptyname << " | " << emptyid << " | |" << std::endl;
   for (int i = 0; i < addname.size() ; i++){
     os << "| additional | " << addname[i] << " | " << addid[i] << " | " << addisfit[i] << " |" << std::endl;
@@ -446,7 +446,7 @@ ORDER BY Properties.orderid;
   for (int i = 0; i < setid.size(); i++){
     st.reset();
     st.bind((char *) ":SET",setid[i]);
-    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":METHOD",refid);
 
     int rc, k = 0;
     std::string valstr;
@@ -478,7 +478,7 @@ SELECT COUNT(*)
 FROM Evaluations
 INNER JOIN Properties ON Properties.id = Evaluations.propid
 WHERE Evaluations.methodid = )SQL";
-    text = text + std::to_string(methodid) + " AND " + set_constraint(i) + ";";
+    text = text + std::to_string(refid) + " AND " + set_constraint(i) + ";";
     st.recycle(statement::STMT_CUSTOM,text);
     st.step();
     ncalc += sqlite3_column_int(st.ptr(), 0);
@@ -630,11 +630,11 @@ SELECT key FROM Structures WHERE id = ?1;
     ofile << "# set_final_idx = " << set_final_idx[i] << std::endl;
     ofile << "# set_size = " << set_size[i] << std::endl;
     ofile << "# set used in fit? = " << set_dofit[i] << std::endl;
-    ofile << "# reference method = " << methodname << std::endl;
-    ofile << "# reference id = " << methodid << std::endl;
+    ofile << "# reference method = " << refname << std::endl;
+    ofile << "# reference id = " << refid << std::endl;
   
     // step over the components of this set
-    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":METHOD",refid);
     st.bind((char *) ":SET",setid[i]);
     while (st.step() != SQLITE_DONE){
       int nstr = sqlite3_column_int(st.ptr(),0);
@@ -654,5 +654,106 @@ SELECT key FROM Structures WHERE id = ?1;
       ofile << value << std::endl;
     }
   }
+}
+
+// Insert data in bulk into the database using data files from
+// previous ACP development programs using this training set as
+// template
+void trainset::insert_olddat(sqldb &db, const std::string &directory){
+  if (!db) 
+    throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
+  if (!fs::is_directory(directory))
+    throw std::runtime_error("In INSERT OLDDAT, directory not found: " + directory);
+
+  // Check that the names.dat matches. Build the list of property IDs.
+  std::list<int> propid;
+  std::string name = directory + "/names.dat";
+  if (!fs::is_regular_file(name))
+    throw std::runtime_error("In INSERT OLDDAT, names.dat file found: " + name);
+  std::ifstream ifile(name,std::ios::in);
+  if (ifile.fail()) 
+    throw std::runtime_error("In INSERT OLDAT, error reading names.dat file: " + name);
+  
+  statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT Properties.key, Properties.id FROM Properties WHERE Properties.setid = :SET ORDER BY Properties.orderid;");
+  for (int i = 0; i < setid.size(); i++){
+    if (!set_dofit[i]) continue;
+    st.bind((char *) ":SET",setid[i]);
+
+    int n = 0;
+    while (st.step() != SQLITE_DONE){
+      if (set_mask[i][n++]){
+        // check the name
+        std::string name = (char *) sqlite3_column_text(st.ptr(), 0);
+        std::string namedat;
+        std::getline(ifile,namedat);
+        deblank(namedat);
+        if (name != namedat){
+          std::cout << "In INSERT OLDDAT, names.dat and names for the training set do not match." << std::endl;
+          std::cout << "The mismatch is:" << std::endl;
+          std::cout << "  Set: " << i << " (db-name=" << setname[i] << ", alias=" << alias[i] << ")" << std::endl;
+          std::cout << "  Item: " << n << std::endl;
+          std::cout << "  Database name: " << name << std::endl;
+          std::cout << "  names.dat name: " << namedat << std::endl;
+          return;
+        }
+
+        // write down the property id
+        propid.push_back(sqlite3_column_int(st.ptr(), 1));
+      }
+    }
+  }
+  ifile.close();
+  
+  // Start inserting data
+  db.begin_transaction();
+
+  // Insert data for reference method in ref.dat
+  name = directory + "/ref.dat";
+  ifile = std::ifstream(name,std::ios::in);
+  if (ifile.fail()) 
+    throw std::runtime_error("In INSERT OLDAT, error reading ref.dat file: " + name);
+
+  for (auto it = propid.begin(); it != propid.end(); ++it){
+    std::unordered_map<std::string,std::string> smap;
+    std::string valstr;
+    std::getline(ifile,valstr);
+    if (ifile.fail()) 
+      throw std::runtime_error("In INSERT OLDAT, unexpected error or end of file in ref.dat file: " + name);
+
+    smap["METHOD"] = std::to_string(refid);
+    smap["PROPERTY"] = std::to_string(*it);
+    smap["VALUE"] = valstr;
+    db.insert("EVALUATION","",smap);
+  }
+  ifile.peek();
+  if (!ifile.eof())
+    throw std::runtime_error("In INSERT OLDAT, the ref.dat file contains extra lines: " + name);
+
+  // Insert data for empty method in empty.dat
+  name = directory + "/empty.dat";
+  ifile = std::ifstream(name,std::ios::in);
+  if (ifile.fail()) 
+    throw std::runtime_error("In INSERT OLDAT, error reading empty.dat file: " + name);
+
+  for (auto it = propid.begin(); it != propid.end(); ++it){
+    std::unordered_map<std::string,std::string> smap;
+    std::string valstr;
+    std::getline(ifile,valstr);
+    if (ifile.fail()) 
+      throw std::runtime_error("In INSERT OLDAT, unexpected error or end of file in empty.dat file: " + name);
+
+    smap["METHOD"] = std::to_string(emptyid);
+    smap["PROPERTY"] = std::to_string(*it);
+    smap["VALUE"] = valstr;
+    db.insert("EVALUATION","",smap);
+  }
+  ifile.peek();
+  if (!ifile.eof())
+    throw std::runtime_error("In INSERT OLDAT, the empty.dat file contains extra lines: " + name);
+
+  // Start inserting data
+  db.commit_transaction();
 }
 

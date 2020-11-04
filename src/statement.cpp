@@ -115,6 +115,9 @@ INSERT INTO Property_types (key,description)
 [statement::STMT_COMMIT_TRANSACTION] =
 "COMMIT TRANSACTION;",
 
+[statement::STMT_ROLLBACK_TRANSACTION] =
+"ROLLBACK TRANSACTION;",
+
 [statement::STMT_CHECK_DATABASE] = 
 R"SQL(
 SELECT COUNT(type)

@@ -385,7 +385,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
     throw std::runtime_error(std::string("Could not open bibtex file in INSERT: ") + filename);
 
   // begin the transaction
-  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+  begin_transaction();
 
   // loop over the contents of the bib file and add to the database
   boolean rc;
@@ -435,7 +435,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   }
 
   // commit the transaction
-  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+  commit_transaction();
 
   // close the file
   fclose(fp);
@@ -459,7 +459,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
   std::unordered_map<std::string,std::string> smap;
 
   // begin the transaction
-  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+  begin_transaction();
 
   if (fs::is_directory(tokens.front())){
     // add a directory //
@@ -506,7 +506,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
   }
 
   // commit the transaction
-  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+  commit_transaction();
 }
 
 // Insert additional info from an INSERT SET command (xyz keyword)
@@ -584,9 +584,10 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
         throw std::runtime_error("Error reading din file " + din);
     }
   }
+  ifile.close();
 
   // begin the transaction
-  stmt[statement::STMT_BEGIN_TRANSACTION]->execute();
+  begin_transaction();
 
   // process the entries
   std::unordered_map<std::string,boolean> used;
@@ -642,7 +643,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
   }
 
   // commit the transaction
-  stmt[statement::STMT_COMMIT_TRANSACTION]->execute();
+  commit_transaction();
 }
 
 // Delete items from the database

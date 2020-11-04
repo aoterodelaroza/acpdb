@@ -93,6 +93,15 @@ class sqldb {
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);
 
+  // Begin a transaction
+  void begin_transaction(){ stmt[statement::STMT_BEGIN_TRANSACTION]->execute(); }
+
+  // Commit a transaction
+  void commit_transaction(){ stmt[statement::STMT_COMMIT_TRANSACTION]->execute(); }
+
+  // Rollback a transaction
+  void rollback_transaction(){ stmt[statement::STMT_ROLLBACK_TRANSACTION]->execute(); }
+
   // Return a pointer to the database
   sqlite3 *ptr() { return db; }
 

@@ -52,10 +52,15 @@ class trainset {
   // Describe the current training set
   void describe(std::ostream &os, sqldb &db);
 
+  // Insert data in bulk into the database using data files from
+  // previous ACP development programs using this training set as
+  // template
+  void insert_olddat(sqldb &db, const std::string &directory);
+
   // Is the training set defined?
   inline bool isdefined(){
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
-      !w.empty() && !methodname.empty() && !emptyname.empty();
+      !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
   // Write the structures in the training set as xyz files
@@ -87,8 +92,8 @@ class trainset {
   std::vector<bool> set_dofit; // whether this set will be used in the least-squares fit
   std::vector<double> w; // weights for the set elements
 
-  std::string methodname; // name of the reference method
-  int methodid; // ID of the reference method
+  std::string refname; // name of the reference method
+  int refid; // ID of the reference method
 
   std::string emptyname; // name of the empty method
   int emptyid; // ID of the empty method

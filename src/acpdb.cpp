@@ -181,9 +181,11 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
-        if ((category == "LITREF") && equali_strings(key,"BIBTEX"))
+        if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
           db.insert_litref_bibtex(tokens);
-        else{
+        } else if (category == "OLDDAT"){
+          ts.insert_olddat(db,key);
+        } else {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.insert(category,key,kmap);
         }
