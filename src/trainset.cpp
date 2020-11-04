@@ -88,48 +88,194 @@ void trainset::addexp(const std::list<std::string> &tokens){
   }
 }
 
-// Add sets
-void trainset::addset(sqldb &db, const std::list<std::string> &tokens, bool dofit){
+// Add a subset (combination of set, mask, weights)
+void trainset::addsubset(sqldb &db, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) 
-    throw std::runtime_error("A database file must be connected before using SET");
-  if (tokens.size() < 1)
-    throw std::runtime_error("Invalid SET command");
+    throw std::runtime_error("A database file must be connected before using SUBSET");
+  if (kmap.find("SET") == kmap.end() || kmap["SET"].empty())
+    throw std::runtime_error("The keyword SET is required inside SUBSET");
 
+  //// add the set ////
+
+  // identify the set; add the name and the set index
+  std::string name = kmap["SET"];
+  int idx = db.find_id_from_key(name,statement::STMT_QUERY_SET);
+  int sid = setid.size();
+  if (idx == 0)
+    throw std::runtime_error("SET identifier not found in database: " + name);
+  setname.push_back(name);
+  setid.push_back(idx);
+
+  // add the alias
+  std::string alias_ = key;
+  if (alias_.empty()) alias_ = name;
+  alias.push_back(alias_);
+
+  // find the set size
   statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 )SQL");
+  st.bind(1,idx);
+  st.step();
+  int size = sqlite3_column_int(st.ptr(),0);
+  st.reset();
+  if (size == 0)
+    throw std::runtime_error("SET does not have any associated properties: " + name);
 
-  for (auto it = tokens.begin(); it != tokens.end(); it++) {
-    std::string name = *it;
+  // write down the initial index, final index, and initialize the size
+  int ilast = 0;
+  if (!set_final_idx.empty()) ilast = set_final_idx.back();
+  set_initial_idx.push_back(ilast);
+  set_final_idx.push_back(ilast + size);
 
-    // add the name and the set index
-    int idx = db.find_id_from_key(name,statement::STMT_QUERY_SET);
-    if (idx == 0)
-      throw std::runtime_error("SET identifier not found in database: " + name);
-    setname.push_back(name);
-    setid.push_back(idx);
+  // initialize the weights to one and the mask to false
+  for (int i = 0; i < size; i++)
+    w.push_back(1.);
+  set_mask.push_back(std::vector(size,true));
 
-    // find the set size
-    st.bind(1,idx);
-    st.step();
-    int size = sqlite3_column_int(st.ptr(),0);
-    st.reset();
-    if (size == 0)
-      throw std::runtime_error("SET does not have any associated properties: " + name);
+  // is this set used in the fit? (nofit keyword)
+  set_dofit.push_back(kmap.find("NOFIT") == kmap.end());
 
-    // write down the initial index, final index, and size of this set
-    int ilast = 0;
-    if (!set_final_idx.empty()) ilast = set_final_idx.back();
-    set_size.push_back(size);
-    set_initial_idx.push_back(ilast);
-    set_final_idx.push_back(ilast + size);
-    set_dofit.push_back(dofit);
-    set_mask.push_back(std::vector<bool>(size,true));
+  //// mask ////
+  if (kmap.find("MASK") != kmap.end()){
+    // set all elements in the mask to zero
+    for (int i = 0; i < set_mask[sid].size(); i++)
+      set_mask[sid][i] = false;
 
-    // initialize the weights to one
-    for (int i = 0; i < size; i++)
-      w.push_back(1.);
+    std::list<std::string> tokens(list_all_words(kmap["MASK"]));
+    std::string keyw = popstring(tokens,true);
+
+    if (keyw == "RANGE"){
+      int istart = 0, iend = size, istep = 1;
+
+      // read the start, end, and step
+      if (tokens.empty())
+        throw std::runtime_error("Empty range in SUBSET/MASK");
+      istart = std::stoi(popstring(tokens)) - 1;
+      if (!tokens.empty()){
+        iend = std::stoi(popstring(tokens));
+        if (!tokens.empty())
+          istep = std::stoi(tokens.front());
+      }
+      if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0) 
+        throw std::runtime_error("Invalid range in SUBSET/MASK");
+
+      // reassign the mask and the size for this set
+      for (int i = istart; i < iend; i+=istep)
+        set_mask[sid][i] = true;
+
+    } else if (keyw == "ITEMS") {
+      if (tokens.empty())
+        throw std::runtime_error("Empty item list in SUBSET/MASK");
+      while (!tokens.empty()){
+        int item = std::stoi(popstring(tokens)) - 1;
+        if (item < 0 || item >= size)
+          throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in MASK");
+        set_mask[sid][item] = true;
+      }
+
+    } else if (keyw == "PATTERN") {
+      if (tokens.empty())
+        throw std::runtime_error("Empty pattern in SUBSET/MASK");
+      std::vector<bool> pattern(tokens.size(),false);
+      int n = 0;
+      while (!tokens.empty())
+        pattern[n++] = (popstring(tokens) != "0");
+      for (int i = 0; i < set_mask[sid].size(); i++)
+        set_mask[sid][i] = pattern[i % pattern.size()];
+
+    } else if (keyw == "ATOMS") {
+      if (zat.empty())
+        throw std::runtime_error("ATOMS in SUBSET/MASK is not possible if no atoms have been defined");
+    
+      // build the array of structures that contain only the atoms in the zat array
+      std::unordered_map<int,bool> usest;
+      statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+      while (st.step() != SQLITE_DONE){
+        int id = sqlite3_column_int(st.ptr(),0);
+        int nat = sqlite3_column_int(st.ptr(),1);
+        unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+
+        bool res = true;
+        for (int j = 0; j < nat; j++){
+          bool found = false;
+          for (int k = 0; k < zat.size(); k++){
+            if (zat[k] == zat_[j]){
+              found = true;
+              break;
+            }
+          }
+          if (!found){
+            res = false;
+            break;
+          }
+        }
+        usest[id] = res;
+      }
+
+      // run over the properties in this set and write the mask
+      st.recycle(statement::STMT_CUSTOM,"SELECT nstructures,structures FROM Properties WHERE setid = " + 
+                 std::to_string(setid[sid]) + " ORDER BY orderid;");
+      int n = 0;
+      while (st.step() != SQLITE_DONE){
+        int nstr = sqlite3_column_int(st.ptr(),0);
+        int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+      
+        bool found = false;
+        for (int i = 0; i < nstr; i++){
+          if (!usest[str[i]]){
+            found = true;
+            break;
+          }
+        }
+        set_mask[sid][n++] = !found;
+      }
+    } else {
+      throw std::runtime_error("Unknown category " + keyw + " in MASK");
+    }
   }
+
+  // calculate set_size
+  set_size.push_back(0);
+  for (int i = 0; i < set_mask[sid].size(); i++){
+    if (set_mask[sid][i])
+      set_size[sid]++;
+  }
+  
+  //// weights ////
+  // parse the keymap
+  double wglobal = 1.;
+  if (kmap.find("WEIGHT_GLOBAL") != kmap.end())
+    wglobal = std::stod(kmap["WEIGHT_GLOBAL"]);
+
+  std::vector<double> wpattern = {1};
+  if (kmap.find("WEIGHT_PATTERN") != kmap.end()){
+    wpattern.clear();
+    std::list<std::string> wlist = list_all_words(kmap["WEIGHT_PATTERN"]);
+    for (auto it = wlist.begin(); it != wlist.end(); ++it)
+      wpattern.push_back(std::stod(*it));
+  }
+
+  bool norm_ref = (kmap.find("NORM_REF") != kmap.end());
+  bool norm_nitem = (kmap.find("NORM_NITEM") != kmap.end());
+  bool norm_nitemsqrt = (kmap.find("NORM_NITEMSQRT") != kmap.end());
+
+  std::vector<std::pair<int, double> > witem = {};
+  if (kmap.find("WEIGHT_ITEM") != kmap.end()){
+    std::list<std::string> wlist = list_all_words(kmap["WEIGHT_ITEM"]);
+
+    auto it = wlist.begin();
+    while (it != wlist.end()){
+      int idx = std::stoi(*(it++));
+      if (it == wlist.end())
+        throw std::runtime_error("Incorrect use of ITEM in SUBSET/WEIGHT keyword");
+      double w = std::stod(*(it++));
+      witem.push_back(std::pair(idx,w));
+    }
+  }
+
+  // set the weights
+  setweight_onlyone(db, sid, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
 }
 
 // Set the reference method
@@ -182,61 +328,6 @@ void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
   addisfit.push_back(++it != tokens.end() && equali_strings(*it,"FIT"));
 }
 
-// Set the weights
-void trainset::setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap){
-  if (!db) 
-    throw std::runtime_error("A database file must be connected before using WEIGHT");
-  if (setid.empty())
-    throw std::runtime_error("WEIGHT must come after SET(s)");
-
-  double wglobal = 1.;
-  std::vector<double> wpattern = {1};
-  bool norm_ref = false;
-  bool norm_nitem = false;
-  bool norm_nitemsqrt = false;
-  std::vector<std::pair<int, double> > witem = {};
-
-  // parse the keymap
-  std::unordered_map<std::string,std::string>::const_iterator im;
-  if ((im = kmap.find("GLOBAL")) != kmap.end())
-    wglobal = std::stod(im->second);
-  if ((im = kmap.find("PATTERN")) != kmap.end()){
-    wpattern.clear();
-    std::list<std::string> wlist = list_all_words(im->second);
-    for (auto it = wlist.begin(); it != wlist.end(); ++it)
-      wpattern.push_back(std::stod(*it));
-  }
-  norm_ref = (kmap.find("NORM_REF") != kmap.end());
-  norm_nitem = (kmap.find("NORM_NITEM") != kmap.end());
-  norm_nitemsqrt = (kmap.find("NORM_NITEMSQRT") != kmap.end());
-  if ((im = kmap.find("ITEM")) != kmap.end()){
-    std::list<std::string> wlist = list_all_words(im->second);
-
-    auto it = wlist.begin();
-    while (it != wlist.end()){
-      int idx = std::stoi(*(it++));
-      if (it == wlist.end())
-        throw std::runtime_error("Incorrect use of ITEM in WEIGHT keyword");
-      double w = std::stod(*(it++));
-      witem.push_back(std::pair(idx,w));
-    }
-  }
-
-  if (tokens.empty()){
-    // all sets
-    for (int i = 0; i < setid.size(); i++)
-      setweight_onlyone(db, i, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
-  } else {
-    // only the indicated set
-    std::string sname = tokens.front();
-    auto ires = find(setname.begin(),setname.end(),sname);
-    if (ires == setname.end())
-      throw std::runtime_error("SET in WEIGHT command not found: " + sname);
-    const int sid = ires - setname.begin();
-    setweight_onlyone(db, sid, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
-  }
-}
-
 // Set the weights for one set from the indicated parameters.
 void trainset::setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem){
   
@@ -276,134 +367,6 @@ WHERE methodid = :METHOD AND propid IN
   // set individual items
   for (int i = 0; i < witem.size(); i++)
     w[set_initial_idx[sid]+witem[i].first-1] = witem[i].second;
-}
-
-// Set the masks
-void trainset::setmask(sqldb &db, std::string &key, std::string &category, std::list<std::string> &tokens){
-  if (!db) 
-    throw std::runtime_error("A database file must be connected before using MASK");
-  if (setid.empty())
-    throw std::runtime_error("There are no sets in the training set (MASK)");
-
-  // identify the set
-  int sid;
-  bool found;
-  if (isinteger(key))
-    sid = std::stoi(key);
-  else
-    sid = db.find_id_from_key(key,statement::STMT_QUERY_SET);
-  for (int i = 0; i < setid.size(); i++){
-    found = (setid[i] == sid);
-    if (found){
-      sid = i;
-      break;
-    }
-  }
-  if (!found)
-    throw std::runtime_error("Could not find set " + key + " in MASK");
-
-  // reset the mask
-  for (int i = 0; i < set_mask[sid].size(); i++)
-    set_mask[sid][i] = false;
-
-  // interpret the category
-  if (category == "RANGE"){
-    int size = set_mask[sid].size();
-    int istart = 0, iend = size, istep = 1;
-
-    // read the start, end, and step
-    if (tokens.empty())
-      throw std::runtime_error("Empty range in MASK");
-    istart = std::stoi(popstring(tokens)) - 1;
-    if (!tokens.empty()){
-      iend = std::stoi(popstring(tokens));
-      if (!tokens.empty())
-        istep = std::stoi(tokens.front());
-    }
-    if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0) 
-      throw std::runtime_error("Invalid range in MASK");
-
-    // reassign the mask and the size for this set
-    for (int i = istart; i < iend; i+=istep)
-      set_mask[sid][i] = true;
-
-  } else if (category == "ITEMS") {
-    if (tokens.empty())
-      throw std::runtime_error("Empty item list in MASK");
-    while (!tokens.empty()){
-      int item = std::stoi(popstring(tokens)) - 1;
-      if (item < 0 || item >= set_mask[sid].size())
-        throw std::runtime_error("Item " + std::to_string(item) + " out of range in MASK");
-      set_mask[sid][item] = true;
-    }
-
-  } else if (category == "PATTERN") {
-    if (tokens.empty())
-      throw std::runtime_error("Empty pattern in MASK");
-    std::vector<bool> pattern(tokens.size(),false);
-    int n = 0;
-    while (!tokens.empty())
-      pattern[n++] = (popstring(tokens) != "0");
-    for (int i = 0; i < set_mask[sid].size(); i++)
-      set_mask[sid][i] = pattern[i % pattern.size()];
-
-  } else if (category == "ATOMS") {
-    if (zat.empty())
-      throw std::runtime_error("ATOMS in MASK is not possible if no atoms have been defined");
-    
-    // build the array of structures that contain only the atoms in the zat array
-    std::unordered_map<int,bool> usest;
-    statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
-    while (st.step() != SQLITE_DONE){
-      int id = sqlite3_column_int(st.ptr(),0);
-      int nat = sqlite3_column_int(st.ptr(),1);
-      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
-
-      bool res = true;
-      for (int j = 0; j < nat; j++){
-        bool found = false;
-        for (int k = 0; k < zat.size(); k++){
-          if (zat[k] == zat_[j]){
-            found = true;
-            break;
-          }
-        }
-        if (!found){
-          res = false;
-          break;
-        }
-      }
-      usest[id] = res;
-    }
-
-    // run over the properties in this set and write the mask
-    st.recycle(statement::STMT_CUSTOM,"SELECT nstructures,structures FROM Properties WHERE setid = " + 
-               std::to_string(setid[sid]) + " ORDER BY orderid;");
-    int n = 0;
-    while (st.step() != SQLITE_DONE){
-      int nstr = sqlite3_column_int(st.ptr(),0);
-      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
-      
-      bool found = false;
-      for (int i = 0; i < nstr; i++){
-        if (!usest[str[i]]){
-          found = true;
-          break;
-        }
-      }
-      set_mask[sid][n++] = !found;
-    }
-
-  } else {
-    throw std::runtime_error("Unknown category " + category + " in MASK");
-  }
-
-  // recalculate set_size
-  set_size[sid] = 0;
-  for (int i = 0; i < set_mask[sid].size(); i++){
-    if (set_mask[sid][i])
-      set_size[sid]++;
-  }
 }
 
 // Describe the current training set

@@ -158,23 +158,16 @@ int main(int argc, char *argv[]) {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
-      } else if (keyw == "SET") {
-        ts.addset(db,tokens,true);
-      } else if (keyw == "SET_NOFIT") {
-        ts.addset(db,tokens,false);
-      } else if (keyw == "MASK") {
-        std::string key = popstring(tokens);
-        std::string category = popstring(tokens,true);
-        ts.setmask(db,key,category,tokens);
       } else if (keyw == "REFERENCE") {
         ts.setreference(db,tokens);
       } else if (keyw == "EMPTY") {
         ts.setempty(db,tokens);
       } else if (keyw == "ADD") {
         ts.addadditional(db,tokens);
-      } else if (keyw == "WEIGHT") {
+      } else if (keyw == "SUBSET") {
+        std::string alias = popstring(tokens);
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-        ts.setweight(db,tokens,kmap);
+        ts.addsubset(db,alias,kmap);
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os,db);
       } else if (keyw == "CREATE") {

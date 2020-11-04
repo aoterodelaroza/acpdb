@@ -37,8 +37,8 @@ class trainset {
   // Add exponents
   void addexp(const std::list<std::string> &tokens);
 
-  // Add sets
-  void addset(sqldb &db, const std::list<std::string> &tokens, bool dofit);
+  // Add a subset (combination of set, mask, weights)
+  void addsubset(sqldb &db, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Set the reference method
   void setreference(sqldb &db, const std::list<std::string> &tokens);
@@ -48,12 +48,6 @@ class trainset {
 
   // Add an additional method
   void addadditional(sqldb &db, const std::list<std::string> &tokens);
-
-  // Set the weights
-  void setweight(sqldb &db, const std::list<std::string> &tokens, std::unordered_map<std::string,std::string> &kmap);
-
-  // Set the masks
-  void setmask(sqldb &db, std::string &key, std::string &category, std::list<std::string> &tokens);
 
   // Describe the current training set
   void describe(std::ostream &os, sqldb &db);
@@ -82,6 +76,7 @@ class trainset {
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
   std::vector<double> exp; // exponents
 
+  std::vector<std::string> alias; // alias of the sets
   std::vector<std::string> setname; // name of the sets
   std::vector<int> setid; // IDs of the sets
 
