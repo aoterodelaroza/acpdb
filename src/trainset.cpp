@@ -483,7 +483,7 @@ WHERE Evaluations.methodid = )SQL";
     st.step();
     ncalc += sqlite3_column_int(st.ptr(), 0);
   }
-  os << "+ Reference: " << ncalc << "/" << nall << std::endl;
+  os << "+ Reference: " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
  
   ncalc = 0;
   for (int i = 0; i < setid.size(); i++){
@@ -497,7 +497,7 @@ WHERE Evaluations.methodid = )SQL";
     st.step();
     ncalc += sqlite3_column_int(st.ptr(), 0);
   }
-  os << "+ Empty: " << ncalc << "/" << nall << std::endl;
+  os << "+ Empty: " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
 
   for (int j = 0; j < addid.size(); j++){
     ncalc = 0;
@@ -512,7 +512,7 @@ WHERE Evaluations.methodid = )SQL";
       st.step();
       ncalc += sqlite3_column_int(st.ptr(), 0);
     }
-    os << "+ Additional (" << addname[j] << "): " << ncalc << "/" << nall << std::endl;
+    os << "+ Additional (" << addname[j] << "): " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
   }
  
   // terms
@@ -521,7 +521,6 @@ SELECT COUNT(*)
 FROM Terms
 INNER JOIN Properties ON Properties.id = Terms.propid
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP)SQL";
-
   sttext = sttext + " AND ((" + set_constraint(0) + ")";
   for (int i = 1; i < setid.size(); i++)
     sttext = sttext + " OR (" + set_constraint(i) + ")";
@@ -541,13 +540,13 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.step();
         ncalc = sqlite3_column_int(st.ptr(), 0);
         os << "| " << nameguess(zat[iz]) << " | " << inttol[il] << " | " 
-           << exp[ie] << " | " << ncalc << "/" << nall << " |" << std::endl;
+           << exp[ie] << " | " << ncalc << "/" << nall << " |" << (ncalc==nall?" (complete)":" (missing)") << std::endl;
         ncall += ncalc;
         ntall += nall;
       }
     }
   }
-  os << "+ Total terms: " << ncalc << "/" << ntall << std::endl;
+  os << "+ Total terms: " << ncall << "/" << ntall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
   os << std::endl;
 
   // clean up
@@ -784,7 +783,6 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
           smap["VALUE"] = valstr;
           db.insert("TERM","",smap);
         }
-        
 
         ifile.peek();
         if (!ifile.eof())
