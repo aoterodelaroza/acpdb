@@ -69,10 +69,10 @@ INSERT LITREF BIBTEX bibfile.s
   Insert the literature references contained in bibtex file
   bibfile.s. Only entries of type article are inserted.
 
-DELETE LITREF {key.s|key.i|*}
+DELETE LITREF [key.s|key.i]
 
   Delete a literature reference using the reference key or id
-  number. If *, delete all literature references.
+  number. If no key is given, delete all literature references.
 
 LIST LITREF [BIBTEX]
 
@@ -128,7 +128,7 @@ directory is given, use the current directory. Also, add the
 corresponding properties and the corresponding evaluations with method
 method.s. If no METHOD is given, the evaluations are not inserted.
 
-DELETE SET {set.s|set.i}
+DELETE SET [set.s|set.i]
 
   Delete a set (Table 3).
 
@@ -146,7 +146,7 @@ END
   method has computational details COMP_DETAILS. LITREFS: literature
   references. DESCRIPTION: a description of the method.
 
-DELETE METHOD {method.s|method.i}
+DELETE METHOD [method.s|method.i]
 
   Delete a method (Table 4).
 
@@ -162,7 +162,7 @@ END
   Insert structure with key name.s from xyz file file.s. This
   structure belongs in set set.s/set.i.
 
-DELETE STRUCTURE {struct.s|struct.i}
+DELETE STRUCTURE [struct.s|struct.i]
 
   Delete a structure (Table 5).
 
@@ -184,7 +184,7 @@ END
   s1.s/s1.i, etc. The recipe for the calculation of the property uses
   coefficients c1.r, etc. This system is number order.i in the set.
 
-DELETE PROPERTY {name.s|name.i}
+DELETE PROPERTY [name.s|name.i]
 
   Delete a property (Table 6).
 
@@ -227,9 +227,9 @@ END
   (energies in kcal/mol). If available, the
   maximum coefficient for this term can also be given (maxcoef.r).
 
-DELETE TERM id.i
+DELETE TERM 
 
-  Delete a term by ID (Table 8).
+  Delete all terms.
 
 LIST TERM
 

@@ -334,11 +334,6 @@ FROM Terms;
 [statement::STMT_DELETE_TERM_ALL] = 
 "DELETE FROM Terms;",
 
-[statement::STMT_DELETE_TERM_WITH_ID] =
-R"SQL(
-DELETE FROM Terms;
-)SQL",
-
 [statement::STMT_INSERT_TERM] =
 R"SQL(
 INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)

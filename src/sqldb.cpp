@@ -650,12 +650,6 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
-  // whether star has been passed
-  bool istar = false;
-  auto it = std::find(tokens.begin(), tokens.end(), "*");
-  if (it != tokens.end())
-    istar = true;
-
   // pick the statment
   statement::stmttype all, id, key;
   if (category == "LITREF") {
@@ -684,12 +678,12 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
     key = statement::STMT_CUSTOM;
   } else if (category == "TERM") {
     all = statement::STMT_DELETE_TERM_ALL;
-    id  = statement::STMT_DELETE_TERM_WITH_ID;
+    id  = statement::STMT_DELETE_TERM_ALL;
     key = statement::STMT_CUSTOM;
   }
 
   // execute
-  if (istar)
+  if (tokens.empty() || category == "TERM")
     stmt[all]->execute();
   else{
     for (auto it = tokens.begin(); it != tokens.end(); it++){
@@ -747,9 +741,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,         1,       2,       3};
     type = statement::STMT_LIST_EVALUATION;
   } else if (category == "TERM"){
-    headers = { "id","methodid","propid", "atom",   "l","exponent", "value","maxcoef"};
-    types   = {t_int,     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
-    cols    = {    0,         1,       2,      3,     4,         5,       6,        7};
+    headers = {"methodid","propid", "atom",   "l","exponent", "value","maxcoef"};
+    types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
+    cols    = {         0,       1,      2,     3,         4,       5,        6};
     type = statement::STMT_LIST_TERM;
   } else { 
     throw std::runtime_error("Unknown LIST category: " + category);

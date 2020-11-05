@@ -76,10 +76,9 @@ class statement {
 	     STMT_INSERT_EVALUATION = 40, // insert evaluations
 	     STMT_LIST_TERM = 41, // list terms
 	     STMT_DELETE_TERM_ALL = 42, // delete terms, all
-	     STMT_DELETE_TERM_WITH_ID = 43, // delete terms, with id
-	     STMT_INSERT_TERM = 44, // insert terms
+	     STMT_INSERT_TERM = 43, // insert terms
   };
-  static const int number_stmt_types = 45; // number of statement types
+  static const int number_stmt_types = 44; // number of statement types
 
   //// Operators ////
 
