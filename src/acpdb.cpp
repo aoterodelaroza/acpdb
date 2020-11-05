@@ -154,6 +154,11 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("Empty template string for ACPSPLIT");
 
         nacp[key].split(templ, tokens);
+      } else if (keyw == "ACPEVAL") {
+        std::string key = popstring(tokens);
+        if (key.empty() || nacp.find(key) == nacp.end())
+          throw std::runtime_error("Unknown ACP name: " + key);
+        ts.eval_acp(*os,db,nacp[key]);
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {

@@ -393,6 +393,20 @@ ACPSPLIT name.s template.s [COEF value.r]
   ACP contains only one term from the original ACP. If COEF is given,
   set the coefficients for the new ACPs to value.r.
 
+* Evaluations
+
+ACPEVAL name.s [output.s]
+
+  Evaluate the ACP with name name.s on the current training set. If
+  output.s is given, write the output to that file instead of the
+  standard output
+
+EMPTYEVAL [output.s]
+
+  Evaluate the empty for the current training set. If output.s is
+  given, write the output to that file instead of the standard output
+
+
 * High-level operations
 
 INSERT OLDDAT [directory.s] [NOREFERENCE]

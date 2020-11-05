@@ -27,14 +27,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // A class for ACPs.
 class acp {
 
+ public:
+
+  // Structures
   struct term {
     unsigned char atom;
     unsigned char l;
     double exp;
     double coef;
   };
-
- public:
 
   //// Operators ////
 
@@ -58,6 +59,12 @@ class acp {
   // to files with template templ. If tokens contains the COEF
   // keyword, use that coefficient for the new ACPs.
   void split(const std::string &templ, std::list<std::string> &tokens);
+
+  // Get ACP size
+  inline int size() const { return t.size(); };
+
+  // Get ACP term i
+  inline term get_term(int i) const { return t[i]; };
 
  private:
   std::string name;

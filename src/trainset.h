@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <list>
 #include <vector>
 #include <numeric>
+#include "acp.h"
 #include "sqldb.h"
 #include "sqlite3.h"
 
@@ -69,9 +70,13 @@ class trainset {
   // Write the din files in the training set
   void write_din(sqldb &db, const std::list<std::string> &tokens);
 
+  // Evaluate an ACP on the current training set
+  void eval_acp(std::ostream &os, sqldb &db, const acp &a);
+  
+
  private:
 
-  // return the orderid constraint for set id
+  // Return the orderid constraint for set id
   std::string set_constraint(int id);
 
   // Set the weights for one set from the indicated parameters.

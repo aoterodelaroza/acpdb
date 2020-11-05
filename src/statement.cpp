@@ -80,26 +80,24 @@ CREATE TABLE Properties (
   FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
 CREATE TABLE Evaluations (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
+  PRIMARY KEY(methodid,propid)
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
-  UNIQUE(methodid,propid)
 );
 CREATE TABLE Terms (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
   methodid      INTEGER NOT NULL,
-  propid        INTEGER NOT NULL,
   atom          INTEGER NOT NULL,
   l             INTEGER NOT NULL,
   exponent      REAL NOT NULL,
+  propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
   maxcoef       REAL,
+  PRIMARY KEY (methodid,atom,l,exponent,propid),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
-  UNIQUE(methodid,propid,atom,l,exponent)
 );
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
@@ -309,9 +307,8 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_EVALUATION] = 
 R"SQL(
-SELECT id,methodid,propid,value
-FROM Evaluations
-ORDER BY id;
+SELECT methodid,propid,value
+FROM Evaluations;
 )SQL",
 
 [statement::STMT_DELETE_EVALUATION_ALL] = 
@@ -319,21 +316,19 @@ ORDER BY id;
 
 [statement::STMT_DELETE_EVALUATION_WITH_ID] =
 R"SQL(
-DELETE FROM Evaluations
-WHERE id = ?1;
+DELETE FROM Evaluations;
 )SQL",
 
 [statement::STMT_INSERT_EVALUATION] =
 R"SQL(
-INSERT INTO Evaluations (id,methodid,propid,value)
-       VALUES(:ID,:METHODID,:PROPID,:VALUE)
+INSERT INTO Evaluations (methodid,propid,value)
+       VALUES(:METHODID,:PROPID,:VALUE)
 )SQL",
 
 [statement::STMT_LIST_TERM] = 
 R"SQL(
-SELECT id,methodid,propid,atom,l,exponent,value,maxcoef
-FROM Terms
-ORDER BY id;
+SELECT methodid,propid,atom,l,exponent,value,maxcoef
+FROM Terms;
 )SQL",
 
 [statement::STMT_DELETE_TERM_ALL] = 
@@ -341,14 +336,13 @@ ORDER BY id;
 
 [statement::STMT_DELETE_TERM_WITH_ID] =
 R"SQL(
-DELETE FROM Terms
-WHERE id = ?1;
+DELETE FROM Terms;
 )SQL",
 
 [statement::STMT_INSERT_TERM] =
 R"SQL(
-INSERT INTO Terms (id,methodid,propid,atom,l,exponent,value,maxcoef)
-       VALUES(:ID,:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)
+INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
+       VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)
 )SQL",
 
 };
