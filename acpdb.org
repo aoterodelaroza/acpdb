@@ -425,6 +425,10 @@ SOURCE file.s
   Read and execute the commands in file.s . The current working
   directory is changed to the location of the file.
 
+ECHO message.s
+
+  Echo the message.
+
 END
 
   Terminate the run.

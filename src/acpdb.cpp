@@ -216,6 +216,10 @@ int main(int argc, char *argv[]) {
         ifile.push(afile);
         istack.push(ifile.top().get());
         icwd.push(fs::canonical(fs::path(filename)).parent_path().string());
+      } else if (keyw == "ECHO") {
+        std::string aux = line.substr(5);
+        deblank(aux);
+        *os << aux << std::endl;
       } else if (keyw == "END") {
         break;
       } else {
