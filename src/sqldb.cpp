@@ -674,7 +674,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
     key = statement::STMT_DELETE_PROPERTY_WITH_KEY;
   } else if (category == "EVALUATION") {
     all = statement::STMT_DELETE_EVALUATION_ALL;
-    id  = statement::STMT_DELETE_EVALUATION_WITH_ID;
+    id  = statement::STMT_DELETE_EVALUATION_ALL;
     key = statement::STMT_CUSTOM;
   } else if (category == "TERM") {
     all = statement::STMT_DELETE_TERM_ALL;
@@ -683,7 +683,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   }
 
   // execute
-  if (tokens.empty() || category == "TERM")
+  if (tokens.empty() || category == "TERM" || category == "EVALUATION")
     stmt[all]->execute();
   else{
     for (auto it = tokens.begin(); it != tokens.end(); it++){
@@ -736,9 +736,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,    1,              2,      3,        4,            5};
     type = statement::STMT_LIST_PROPERTY;
   } else if (category == "EVALUATION"){
-    headers = { "id","methodid","propid", "value"};
-    types   = {t_int,     t_int,   t_int,t_double};
-    cols    = {    0,         1,       2,       3};
+    headers = {"methodid","propid", "value"};
+    types   = {     t_int,   t_int,t_double};
+    cols    = {         0,       1,       2};
     type = statement::STMT_LIST_EVALUATION;
   } else if (category == "TERM"){
     headers = {"methodid","propid", "atom",   "l","exponent", "value","maxcoef"};

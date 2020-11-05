@@ -314,11 +314,6 @@ FROM Evaluations;
 [statement::STMT_DELETE_EVALUATION_ALL] = 
 "DELETE FROM Evaluations;",
 
-[statement::STMT_DELETE_EVALUATION_WITH_ID] =
-R"SQL(
-DELETE FROM Evaluations;
-)SQL",
-
 [statement::STMT_INSERT_EVALUATION] =
 R"SQL(
 INSERT INTO Evaluations (methodid,propid,value)
