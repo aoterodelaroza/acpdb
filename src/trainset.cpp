@@ -658,7 +658,7 @@ SELECT key FROM Structures WHERE id = ?1;
 // Insert data in bulk into the database using data files from
 // previous ACP development programs using this training set as
 // template
-void trainset::insert_olddat(sqldb &db, const std::string &directory){
+void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<std::string> &tokens){
   if (!db) 
     throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
   if (!isdefined())
@@ -712,27 +712,31 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory){
   db.begin_transaction();
 
   // Insert data for reference method in ref.dat
-  name = dir + "/ref.dat";
-  ifile = std::ifstream(name,std::ios::in);
-  if (ifile.fail()) 
-    throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
-
-  for (auto it = propid.begin(); it != propid.end(); ++it){
-    std::unordered_map<std::string,std::string> smap;
-    std::string valstr;
-    std::getline(ifile,valstr);
+  std::string knext = "";
+  if (!tokens.empty()) knext = popstring(tokens,true);
+  if (knext != "NOREFERENCE"){
+    name = dir + "/ref.dat";
+    ifile = std::ifstream(name,std::ios::in);
     if (ifile.fail()) 
-      throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in ref.dat file: " + name);
+      throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
 
-    smap["METHOD"] = std::to_string(refid);
-    smap["PROPERTY"] = std::to_string(*it);
-    smap["VALUE"] = valstr;
-    db.insert("EVALUATION","",smap);
+    for (auto it = propid.begin(); it != propid.end(); ++it){
+      std::unordered_map<std::string,std::string> smap;
+      std::string valstr;
+      std::getline(ifile,valstr);
+      if (ifile.fail()) 
+        throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in ref.dat file: " + name);
+
+      smap["METHOD"] = std::to_string(refid);
+      smap["PROPERTY"] = std::to_string(*it);
+      smap["VALUE"] = valstr;
+      db.insert("EVALUATION","",smap);
+    }
+    ifile.peek();
+    if (!ifile.eof())
+      throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
+    ifile.close();
   }
-  ifile.peek();
-  if (!ifile.eof())
-    throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
-  ifile.close();
 
   // Insert data for empty method in empty.dat
   name = dir + "/empty.dat";

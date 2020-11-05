@@ -395,7 +395,7 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 * High-level operations
 
-INSERT OLDDAT [directory.s]
+INSERT OLDDAT [directory.s] [NOREFERENCE]
 
   Insert data in bulk from old-style ACP data files. Requires the
   definition of a complete training set.
@@ -407,7 +407,8 @@ INSERT OLDDAT [directory.s]
   database. After this operation is complete, the following data is
   read and inserted:
 
-  - ref.dat: evaluation of the reference method in the training set.
+  - ref.dat: evaluation of the reference method in the training
+    set. The reference is not inserted if NOREFERENCE is present.
 
   - empty.dat: evaluation of the empty method in the training set.
 

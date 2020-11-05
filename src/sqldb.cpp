@@ -1025,4 +1025,3 @@ SELECT id FROM Structures WHERE id = ?1;
     }
   }  
 }
-
