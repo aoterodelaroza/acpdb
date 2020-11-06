@@ -1,1 +1,2 @@
 #cmakedefine BTPARSE_FOUND
+#cmakedefine CEREAL_FOUND

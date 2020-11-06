@@ -437,6 +437,21 @@ INSERT OLDDAT [directory.s] [NOREFERENCE]
 
 * Quality of life keywords
 
+TRAINING SAVE name.s
+
+  Save the current training set definition to the connected database
+  under name name.s.
+
+TRAINING LOAD name.s
+
+  Load the training set definition with name name.s from the connected
+  database.
+
+TRAINING DELETE [name.s]
+
+  Delete the training set with name name.s from the database. If no
+  name is given, delete all training sets.
+
 SOURCE file.s
 
   Read and execute the commands in file.s . The current working

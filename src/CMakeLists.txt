@@ -20,6 +20,12 @@ if (BTPARSE_FOUND)
   target_compile_definitions(acpdb PRIVATE ${BTPARSE_DEFINITIONS})
 endif()
 
+## cereal
+if (CEREAL_FOUND)
+  target_include_directories(acpdb PRIVATE ${CEREAL_INCLUDE_DIR})
+  target_compile_definitions(acpdb PRIVATE ${CEREAL_DEFINITIONS})
+endif()
+
 ## configuration file
 configure_file(config.h.in config.h)
 

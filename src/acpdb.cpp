@@ -229,6 +229,17 @@ int main(int argc, char *argv[]) {
           db.list(*os,category,tokens);
       } else if (keyw == "VERIFY") {
         db.verify(*os);
+      } else if (keyw == "TRAINING") {
+        std::string key = popstring(tokens,true);
+        std::string name = popstring(tokens);
+        if (key == "SAVE")
+          ts.savedb(name);
+        else if (key == "LOAD")
+          ts.loaddb(name);
+        else if (key == "DELETE")
+          ts.deletedb(name);
+        else
+          throw std::runtime_error("Unknown command in TRAINING");
       } else if (keyw == "SOURCE") {
         std::string filename = popstring(tokens);
         std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));

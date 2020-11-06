@@ -35,5 +35,5 @@ find_package_handle_standard_args(BTPARSE
 
 mark_as_advanced(BTPARSE_INCLUDE_DIR BTPARSE_LIBRARIES)
 if (NOT BTPARSE_FOUND)
-  set(BTPARSE_DIR "${BTPARSE_DIR}" CACHE STRING "Directory containing the qhull library.")
+  set(BTPARSE_DIR "${BTPARSE_DIR}" CACHE STRING "Directory containing the btparse library.")
 endif()

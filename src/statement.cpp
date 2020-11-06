@@ -99,6 +99,11 @@ CREATE TABLE Terms (
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
+CREATE TABLE Training_set_repo (
+  key TEXT PRIMARY KEY,
+  size INTEGER NOT NULL,
+  training_set BLOB NOT NULL
+);
 INSERT INTO Property_types (key,description)
        VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
               ('energy','The total energy of a molecule or crystal');

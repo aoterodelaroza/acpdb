@@ -26,6 +26,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "acp.h"
 #include "sqldb.h"
 #include "sqlite3.h"
+#include "config.h"
+#ifdef CEREAL_FOUND
+#include <cereal/archives/binary.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+#endif
 
 // A class for training sets.
 class trainset {
@@ -57,7 +63,7 @@ class trainset {
   void addadditional(const std::list<std::string> &tokens);
 
   // Describe the current training set
-  void describe(std::ostream &os);
+  void describe(std::ostream &os) const;
 
   // Insert data in bulk into the database using data files from
   // previous ACP development programs using this training set as
@@ -65,31 +71,41 @@ class trainset {
   void insert_olddat(const std::string &directory, std::list<std::string> &tokens);
 
   // Is the training set defined?
-  inline bool isdefined(){
+  inline bool isdefined() const{
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
   // Write the structures in the training set as xyz files
-  void write_xyz(const std::list<std::string> &tokens);
+  void write_xyz(const std::list<std::string> &tokens) const;
 
   // Write the din files in the training set
-  void write_din(const std::list<std::string> &tokens);
+  void write_din(const std::list<std::string> &tokens) const;
 
   // Evaluate an ACP on the current training set
-  void eval_acp(std::ostream &os, const acp &a);
+  void eval_acp(std::ostream &os, const acp &a) const;
   
+  // Save the current training set to the database
+  void savedb(std::string &name) const;
+
+  // Load the training set from the database
+  void loaddb(std::string &name);
+
+  // Delete a training set from the database (or all the t.s.)
+  void deletedb(std::string &name) const;
 
  private:
 
-  // Set the weights for one set from the indicated parameters.
-  void setweight_onlyone(int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem);
+  // Insert a subset into the Training_set table
+  void insert_subset_db(int sid);
 
   //// Variables ////
 
   sqldb *db; // Database pointer
 
   int ntot; // Total number of properties in the training set
+
+  std::vector<int> propid; // propids for the elements in the training set
 
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
@@ -114,6 +130,15 @@ class trainset {
   std::vector<std::string> addname; // names of the additional methods
   std::vector<bool> addisfit; // whether the additional method has FIT or not
   std::vector<int> addid; // IDs of the additional methods
+
+  // serialization
+#ifdef CEREAL_FOUND
+  friend class cereal::access;
+  template<class Archive> void serialize(Archive & archive){
+    archive(ntot,propid,zat,lmax,exp,alias,setname,setid,set_initial_idx,set_final_idx,
+            set_size,set_dofit,w,refname,refid,emptyname,emptyid,addname,addisfit,addid);
+  }
+#endif
 };
 
 #endif

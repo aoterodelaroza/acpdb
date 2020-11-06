@@ -27,6 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <filesystem>
 #include <unordered_map>
+#include <cstring>
 
 namespace fs = std::filesystem;
 
@@ -222,30 +223,26 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
     }
   }
 
-  // calculate the size and final index of the set, update the total size, populate the Training_set table
-  db->begin_transaction();
+  // build the propid, size, total size, and final index of the set
+  set_size.push_back(0);
+  set_final_idx.push_back(ilast);
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
 )SQL");
   st.bind(1,setid[sid]);
-  statement stinsert(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid) VALUES (:ID,:PROPID);");
-  set_size.push_back(0);
-  set_final_idx.push_back(ilast);
   for (int i = 0; i < set_mask.size(); i++){
     st.step();
-    int propid = sqlite3_column_int(st.ptr(),0);
+    int propid_ = sqlite3_column_int(st.ptr(),0);
     if (set_mask[i]){
       set_size[sid]++;
       set_final_idx[sid]++;
       ntot++;
-      stinsert.bind((char *) ":ID", ntot);
-      stinsert.bind((char *) ":PROPID", propid);
-      stinsert.step();
+      propid.push_back(propid_);
     }
   }
-  st.finalize();
-  stinsert.finalize();
-  db->commit_transaction();
+
+  // populate the Training_set table
+  insert_subset_db(sid);
 
   //// weights ////
   // parse the keymap
@@ -371,7 +368,7 @@ void trainset::addadditional(const std::list<std::string> &tokens){
 }
 
 // Describe the current training set
-void trainset::describe(std::ostream &os){
+void trainset::describe(std::ostream &os) const {
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
   if (!isdefined()){
@@ -536,7 +533,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   os.precision(prec);
 }
 
-void trainset::write_xyz(const std::list<std::string> &tokens){
+void trainset::write_xyz(const std::list<std::string> &tokens) const{
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE XYZ");
   if (setid.empty())
@@ -573,7 +570,7 @@ WHERE setid IN ()SQL";
 
 }
 
-void trainset::write_din(const std::list<std::string> &tokens){
+void trainset::write_din(const std::list<std::string> &tokens) const{
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE DIN");
   if (setid.empty())
@@ -655,7 +652,6 @@ void trainset::insert_olddat(const std::string &directory, std::list<std::string
     throw std::runtime_error("In INSERT OLDDAT, directory not found: " + dir);
 
   // Check that the names.dat matches and write down the property ids
-  std::list<int> propid;
   std::string name = dir + "/names.dat";
   if (!fs::is_regular_file(name))
     throw std::runtime_error("In INSERT OLDDAT, names.dat file found: " + name);
@@ -682,7 +678,6 @@ ORDER BY Training_set.id;
       std::cout << "  names.dat name: " << namedat << std::endl;
       return;
     }
-    propid.push_back(sqlite3_column_int(st.ptr(),1));
   }
   ifile.peek();
   if (!ifile.eof())
@@ -701,7 +696,7 @@ ORDER BY Training_set.id;
     if (ifile.fail()) 
       throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
 
-    for (auto it = propid.begin(); it != propid.end(); ++it){
+    for (int i = 0; i < propid.size(); i++){
       std::unordered_map<std::string,std::string> smap;
       std::string valstr;
       std::getline(ifile,valstr);
@@ -709,7 +704,7 @@ ORDER BY Training_set.id;
         throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in ref.dat file: " + name);
 
       smap["METHOD"] = std::to_string(refid);
-      smap["PROPERTY"] = std::to_string(*it);
+      smap["PROPERTY"] = std::to_string(propid[i]);
       smap["VALUE"] = valstr;
       db->insert("EVALUATION","",smap);
     }
@@ -727,7 +722,7 @@ ORDER BY Training_set.id;
   if (ifile.fail()) 
     throw std::runtime_error("In INSERT OLDDAT, error reading empty.dat file: " + name);
 
-  for (auto it = propid.begin(); it != propid.end(); ++it){
+  for (int i = 0; i < propid.size(); i++){
     std::unordered_map<std::string,std::string> smap;
     std::string valstr;
     std::getline(ifile,valstr);
@@ -735,7 +730,7 @@ ORDER BY Training_set.id;
       throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in empty.dat file: " + name);
 
     smap["METHOD"] = std::to_string(emptyid);
-    smap["PROPERTY"] = std::to_string(*it);
+    smap["PROPERTY"] = std::to_string(propid[i]);
     smap["VALUE"] = valstr;
     db->insert("EVALUATION","",smap);
     yempty[n++] = std::stod(valstr);
@@ -757,7 +752,7 @@ ORDER BY Training_set.id;
           throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
 
         n = 0;
-        for (auto it = propid.begin(); it != propid.end(); ++it){
+        for (int i = 0; i < propid.size(); i++){
           std::unordered_map<std::string,std::string> smap;
           std::string valstr;
           std::getline(ifile,valstr);
@@ -765,7 +760,7 @@ ORDER BY Training_set.id;
             throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in term file: " + name);
 
           smap["METHOD"] = std::to_string(emptyid);
-          smap["PROPERTY"] = std::to_string(*it);
+          smap["PROPERTY"] = std::to_string(propid[i]);
           smap["ATOM"] = std::to_string(zat[iat]);
           smap["L"] = std::to_string(il);
           smap["EXPONENT"] = to_string_precise(exp[iexp]);
@@ -786,7 +781,7 @@ ORDER BY Training_set.id;
 }
 
 // Evaluate an ACP on the current training set
-void trainset::eval_acp(std::ostream &os, const acp &a){
+void trainset::eval_acp(std::ostream &os, const acp &a) const{
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using ACPEVAL");
   if (!isdefined())
@@ -932,5 +927,103 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
        << std::endl;
   }
   os.precision(prec);
+}
+
+// Save the current training set to the database
+void trainset::savedb(std::string &name) const{
+#ifdef CEREAL_FOUND
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using TRAINING");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using TRAINING SAVE");
+  if (name.empty())
+    throw std::runtime_error("TRAINING SAVE requires a name for the saved training set");
+
+  // serialize
+  std::stringstream ss;
+  cereal::BinaryOutputArchive oarchive(ss);
+  oarchive(*this);
+  int nsize = ss.str().size();
+
+  // insert into the database
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Training_set_repo (key,size,training_set) VALUES(:KEY,:SIZE,:TRAINING_SET);
+)SQL");
+ st.bind((char *) ":KEY",name);
+ st.bind((char *) ":SIZE",nsize);
+ st.bind((char *) ":TRAINING_SET",(void *) ss.str().data(),true,nsize);
+ if (st.step() != SQLITE_DONE)
+   throw std::runtime_error("Failed inserting training set in the database (TRAINING SAVE)");
+#else
+  throw std::runtime_error("Cannot use TRAINING SAVE: not compiled with cereal support");
+#endif
+}
+
+// Load the training set from the database
+void trainset::loaddb(std::string &name){
+#ifdef CEREAL_FOUND
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using TRAINING");
+  if (name.empty())
+    throw std::runtime_error("TRAINING LOAD requires a name for the loaded training set");
+
+  // fetch from the database
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT size, training_set
+FROM Training_set_repo
+WHERE key = ?1;
+)SQL");
+  st.bind(1,name);
+  if (st.step() != SQLITE_ROW)
+    throw std::runtime_error("Failed retrieving training set from the database (TRAINING LOAD)");
+
+  // de-searialize
+  std::stringstream ss;
+  int nsize = sqlite3_column_int(st.ptr(),0);
+  const char *ptr = (const char *) sqlite3_column_blob(st.ptr(),1);
+  ss.write(ptr,nsize);
+  cereal::BinaryInputArchive iarchive(ss);
+  iarchive(*this);
+
+  // reset the Training_set table
+  setdb(db);
+  for (int i = 0; i < setid.size(); i++)
+    insert_subset_db(i);
+
+#else
+  throw std::runtime_error("Cannot use TRAINING SAVE: not compiled with cereal support");
+#endif
+}
+
+// Delete a training set from the database (or all the t.s.)
+void trainset::deletedb(std::string &name) const{
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using TRAINING");
+
+  statement st(db->ptr());
+  if (name.empty()){
+    st.recycle(statement::STMT_CUSTOM,R"SQL(
+DELETE FROM Training_set_repo;
+)SQL");
+  } else {
+    st.recycle(statement::STMT_CUSTOM,R"SQL(
+DELETE FROM Training_set_repo WHERE key = ?1;
+)SQL");
+    st.bind(1,name);
+  }
+ if (st.step() != SQLITE_DONE)
+   throw std::runtime_error("Failed deleting training set in the database (TRAINING DELETE)");
+}
+
+// Insert a subset into the Training_set table
+void trainset::insert_subset_db(int sid){
+  db->begin_transaction();
+  statement st(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid) VALUES (:ID,:PROPID);");
+  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++){
+    st.bind((char *) ":ID", i);
+    st.bind((char *) ":PROPID", propid[i]);
+    st.step();
+  }
+  db->commit_transaction();
 }
 
