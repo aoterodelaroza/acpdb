@@ -452,6 +452,10 @@ TRAINING DELETE [name.s]
   Delete the training set with name name.s from the database. If no
   name is given, delete all training sets.
 
+TRAINING LIST
+
+  List training sets from the database.
+
 SOURCE file.s
 
   Read and execute the commands in file.s . The current working

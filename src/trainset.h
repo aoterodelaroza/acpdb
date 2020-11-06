@@ -94,6 +94,9 @@ class trainset {
   // Delete a training set from the database (or all the t.s.)
   void deletedb(std::string &name) const;
 
+  // List training sets from the database
+  void listdb(std::ostream &os) const;
+
  private:
 
   // Insert a subset into the Training_set table

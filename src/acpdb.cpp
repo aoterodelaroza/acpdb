@@ -240,6 +240,8 @@ int main(int argc, char *argv[]) {
           ts.loaddb(name);
         else if (key == "DELETE")
           ts.deletedb(name);
+        else if (key == "LIST")
+          ts.listdb(*os);
         else
           throw std::runtime_error("Unknown command in TRAINING");
       } else if (keyw == "SOURCE") {

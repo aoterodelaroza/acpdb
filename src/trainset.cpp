@@ -1016,6 +1016,22 @@ DELETE FROM Training_set_repo WHERE key = ?1;
    throw std::runtime_error("Failed deleting training set in the database (TRAINING DELETE)");
 }
 
+// List training sets from the database
+void trainset::listdb(std::ostream &os) const {
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using TRAINING");
+  
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT key,size,training_set
+FROM Training_set_repo;
+)SQL");
+  os << "| Name |" << std::endl;
+  while (st.step() != SQLITE_DONE){
+    std::string key = (char *) sqlite3_column_text(st.ptr(), 0);
+    os << "| " << key << " |" << std::endl;
+  }
+}
+
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){
   db->begin_transaction();
