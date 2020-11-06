@@ -90,8 +90,6 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   if (kmap.find("SET") == kmap.end() || kmap["SET"].empty())
     throw std::runtime_error("The keyword SET is required inside SUBSET");
 
-  //// add the set ////
-
   // identify the set; add the name and the set index
   std::string name = kmap["SET"];
   int idx = db->find_id_from_key(name,statement::STMT_QUERY_SET);
@@ -113,29 +111,23 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
   st.bind(1,idx);
   st.step();
   int size = sqlite3_column_int(st.ptr(),0);
-  st.reset();
   if (size == 0)
     throw std::runtime_error("SET does not have any associated properties: " + name);
 
-  // write down the initial index, final index, and initialize the size
+  // write down the initial index
   int ilast = 0;
   if (!set_final_idx.empty()) ilast = set_final_idx.back();
   set_initial_idx.push_back(ilast);
-  set_final_idx.push_back(ilast + size);
-
-  // initialize the weights to one and the mask to false
-  for (int i = 0; i < size; i++)
-    w.push_back(1.);
-  set_mask.push_back(std::vector(size,true));
 
   // is this set used in the fit? (nofit keyword)
   set_dofit.push_back(kmap.find("NOFIT") == kmap.end());
 
   //// mask ////
+  std::vector<bool> set_mask(size,true);
   if (kmap.find("MASK") != kmap.end()){
     // set all elements in the mask to zero
-    for (int i = 0; i < set_mask[sid].size(); i++)
-      set_mask[sid][i] = false;
+    for (int i = 0; i < set_mask.size(); i++)
+      set_mask[i] = false;
 
     std::list<std::string> tokens(list_all_words(kmap["MASK"]));
     std::string keyw = popstring(tokens,true);
@@ -157,7 +149,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 
       // reassign the mask and the size for this set
       for (int i = istart; i < iend; i+=istep)
-        set_mask[sid][i] = true;
+        set_mask[i] = true;
 
     } else if (keyw == "ITEMS") {
       if (tokens.empty())
@@ -166,7 +158,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
         int item = std::stoi(popstring(tokens)) - 1;
         if (item < 0 || item >= size)
           throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in MASK");
-        set_mask[sid][item] = true;
+        set_mask[item] = true;
       }
 
     } else if (keyw == "PATTERN") {
@@ -176,8 +168,8 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
       int n = 0;
       while (!tokens.empty())
         pattern[n++] = (popstring(tokens) != "0");
-      for (int i = 0; i < set_mask[sid].size(); i++)
-        set_mask[sid][i] = pattern[i % pattern.size()];
+      for (int i = 0; i < set_mask.size(); i++)
+        set_mask[i] = pattern[i % pattern.size()];
 
     } else if (keyw == "ATOMS") {
       if (zat.empty())
@@ -223,14 +215,14 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
             break;
           }
         }
-        set_mask[sid][n++] = !found;
+        set_mask[n++] = !found;
       }
     } else {
       throw std::runtime_error("Unknown category " + keyw + " in MASK");
     }
   }
 
-  // calculate the size of the set, update the total size, and populate the Training_set table
+  // calculate the size and final index of the set, update the total size, populate the Training_set table
   db->begin_transaction();
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
@@ -238,17 +230,21 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
   st.bind(1,setid[sid]);
   statement stinsert(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid) VALUES (:ID,:PROPID);");
   set_size.push_back(0);
-  for (int i = 0; i < set_mask[sid].size(); i++){
+  set_final_idx.push_back(ilast);
+  for (int i = 0; i < set_mask.size(); i++){
     st.step();
     int propid = sqlite3_column_int(st.ptr(),0);
-    if (set_mask[sid][i]){
+    if (set_mask[i]){
       set_size[sid]++;
+      set_final_idx[sid]++;
       ntot++;
       stinsert.bind((char *) ":ID", ntot);
       stinsert.bind((char *) ":PROPID", propid);
       stinsert.step();
     }
   }
+  st.finalize();
+  stinsert.finalize();
   db->commit_transaction();
 
   //// weights ////
@@ -284,7 +280,40 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
   }
 
   // set the weights
-  setweight_onlyone(sid, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
+  // calculate the weight from the global and pattern
+  int k = 0;
+  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
+    w.push_back(wglobal * wpattern[k++ % wpattern.size()]);
+
+  // calculate the normalization factor
+  double norm = 1.;
+  if (norm_nitem)
+    norm *= set_size[sid];
+  if (norm_nitemsqrt)
+    norm *= std::sqrt(set_size[sid]);
+  if (norm_ref){
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT AVG(abs(value)) FROM Evaluations, Training_set, Properties
+WHERE Properties.id = Evaluations.propid AND Properties.setid = :SETID AND
+Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
+)SQL");
+    st.bind((char *) ":SETID",setid[sid]);
+    st.bind((char *) ":METHOD",refid);
+    st.step();
+    double res = sqlite3_column_double(st.ptr(),0);
+    if (std::abs(res) > 1e-40)
+      norm *= res;
+    else
+      throw std::runtime_error("In SUBSET, cannot use NORM_REF without known reference data");
+  }
+
+  // apply the normalization factor
+  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
+    w[i] /= norm;
+
+  // set individual items
+  for (int i = 0; i < witem.size(); i++)
+    w[set_initial_idx[sid]+witem[i].first-1] = witem[i].second;
 }
 
 // Set the reference method
@@ -337,48 +366,6 @@ void trainset::addadditional(const std::list<std::string> &tokens){
   addisfit.push_back(++it != tokens.end() && equali_strings(*it,"FIT"));
 }
 
-// Set the weights for one set from the indicated parameters.
-void trainset::setweight_onlyone(int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem){
-  
-  // calculate the weight from the global and pattern
-  int k = 0;
-  int npat = wpattern.size();
-  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++){
-    if (set_mask[sid][i])
-      w[i] = wglobal * wpattern[k++ % npat];
-    else
-      w[i] = 0;
-  }
-
-  // calculate the normalization factor
-  double norm = 1.;
-  if (norm_nitem)
-    norm *= set_size[sid];
-  if (norm_nitemsqrt)
-    norm *= std::sqrt(set_size[sid]);
-  if (norm_ref){
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT AVG(abs(value)) FROM Evaluations, Training_set, Properties
-WHERE Properties.id = Evaluations.propid AND Properties.setid = :SETID AND
-Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
-)SQL");
-    st.bind((char *) ":SETID",setid[sid]);
-    st.bind((char *) ":METHOD",refid);
-    st.step();
-    double res = sqlite3_column_double(st.ptr(),0);
-    if (std::abs(res) > 1e-40)
-      norm *= res;
-  }
-
-  // apply the normalization factor
-  for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
-    w[i] /= norm;
-
-  // set individual items
-  for (int i = 0; i < witem.size(); i++)
-    w[set_initial_idx[sid]+witem[i].first-1] = witem[i].second;
-}
-
 // Describe the current training set
 void trainset::describe(std::ostream &os){
   if (!db || !(*db)) 
@@ -422,7 +409,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
     st.bind(1,setid[i]);
     st.step();
     os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i] 
-       << " | " << set_initial_idx[i] 
+       << " | " << set_initial_idx[i]+1
        << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i] 
        << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
        << " |" << std::endl;

@@ -102,7 +102,6 @@ class trainset {
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
   std::vector<int> set_size; // size of each set
-  std::vector< std::vector<bool> > set_mask; // the element mask for each set
   std::vector<bool> set_dofit; // whether this set will be used in the least-squares fit
   std::vector<double> w; // weights for the set elements
 
