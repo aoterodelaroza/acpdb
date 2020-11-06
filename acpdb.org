@@ -469,78 +469,98 @@ END
 
 ** Table 1: literature references (Literature_refs)
 
-- id          INTEGER PRIMARY KEY AUTOINCREMENT
-- key         TEXT UNIQUE NOT NULL
-- authors     TEXT
-- title       TEXT
-- journal     TEXT
-- volume      TEXT
-- page        TEXT
-- year        TEXT
-- doi         TEXT UNIQUE
-- description TEXT
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  key         TEXT UNIQUE NOT NULL,
+  authors     TEXT,
+  title       TEXT,
+  journal     TEXT,
+  volume      TEXT,
+  page        TEXT,
+  year        TEXT,
+  doi         TEXT UNIQUE,
+  description TEXT
 
 ** Table 2: property types (Property_types)
 
-- id          INTEGER PRIMARY KEY AUTOINCREMENT
-- key         TEXT UNIQUE NOT NULL
-- description TEXT
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  key         TEXT UNIQUE NOT NULL,
+  description TEXT
 
 ** Table 3: sets
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- key           TEST UNIQUE NOT NULL,
-- property_type INTEGER NOT NULL,   ## foreign key: table 2 (Property_types)
-- description   TEXT
-- litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  property_type INTEGER NOT NULL,
+  litrefs       TEXT,
+  description   TEXT,
+  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
 
 ** Table 4: methods
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- key           TEXT UNIQUE NOT NULL,
-- comp_details  TEXT,
-- litrefs       TEXT, ## foreign key: table 1 (Literature_refs)
-- description   TEXT, 
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  comp_details  TEXT,
+  litrefs       TEXT,
+  description   TEXT
 
 ** Table 5: structures
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- key           TEXT UNIQUE NOT NULL,
-- setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
-- ismolecule    INTEGER NOT NULL,
-- charge        INTEGER,
-- multiplicity  INTEGER,
-- nat           INTEGER NOT NULL,
-- cell          BLOB,
-- zatoms        BLOB NOT NULL,
-- coordinates   BLOB NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  setid         INTEGER NOT NULL,
+  ismolecule    INTEGER NOT NULL,
+  charge        INTEGER,
+  multiplicity  INTEGER,
+  nat           INTEGER NOT NULL,
+  cell          BLOB,
+  zatoms        BLOB NOT NULL,
+  coordinates   BLOB NOT NULL,
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 
 ** Table 6: properties
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- key           TEXT UNIQUE NOT NULL,
-- property_type INTEGER NOT NULL, ## foreign key: table 2 (Property_types)
-- setid         INTEGER NOT NULL, ## foreign key: table 3 (Sets)
-- orderid       INTEGER NOT NULL,
-- nstructures   INTEGER NOT NULL,
-- structures    BLOB NOT NULL, ## references table 5 (Structures)
-- coefficients  BLOB NOT NULL,
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  property_type INTEGER NOT NULL,
+  setid         INTEGER NOT NULL,
+  orderid       INTEGER NOT NULL,
+  nstructures   INTEGER NOT NULL,
+  structures    BLOB NOT NULL,
+  coefficients  BLOB NOT NULL,
+  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE,
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 
 ** Table 7: evaluations
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
-- propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
-- value         REAL NOT NULL,
+  methodid      INTEGER NOT NULL,
+  propid        INTEGER NOT NULL,
+  value         REAL NOT NULL,
+  PRIMARY KEY(methodid,propid)
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 
 ** Table 8: terms
 
-- id            INTEGER PRIMARY KEY AUTOINCREMENT,
-- methodid      INTEGER NOT NULL, ## foreign key: table 4 (Methods)
-- propid        INTEGER NOT NULL, ## foreign key: table 6 (Properties)
-- atom          INTEGER NOT NULL,
-- l             INTEGER NOT NULL,
-- exponent      REAL NOT NULL,
-- value         REAL NOT NULL,
-- maxcoef       REAL,
+  methodid      INTEGER NOT NULL,
+  atom          INTEGER NOT NULL,
+  l             INTEGER NOT NULL,
+  exponent      REAL NOT NULL,
+  propid        INTEGER NOT NULL,
+  value         REAL NOT NULL,
+  maxcoef       REAL,
+  PRIMARY KEY (methodid,atom,l,exponent,propid),
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+
+** Table 9: training set to property translation table (Training_set)
+
+  id INTEGER PRIMARY KEY,
+  propid INTEGER NOT NULL,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+
+** Table 10: training set repository
+
+  key TEXT PRIMARY KEY,
+  size INTEGER NOT NULL,
+  training_set BLOB NOT NULL
 
