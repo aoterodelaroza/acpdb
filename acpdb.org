@@ -332,7 +332,8 @@ END
     number of items in each set.
 
   - WEIGHT_ITEM i1.i w1.r ...: give specific weights to individual
-    items in the set.
+    items in the set. Note that if a mask is also given, the item
+    numbers correspond to the set after the mask is applied.
 
   The final weight of an item is either the value given by the
   WEIGHT_ITEM keyword or the product of the GLOBAL weight, times the

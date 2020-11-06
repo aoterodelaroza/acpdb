@@ -312,8 +312,12 @@ Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
     w[i] /= norm;
 
   // set individual items
-  for (int i = 0; i < witem.size(); i++)
-    w[set_initial_idx[sid]+witem[i].first-1] = witem[i].second;
+  for (int i = 0; i < witem.size(); i++){
+    int id = set_initial_idx[sid]+witem[i].first-1;
+    if (id < set_initial_idx[sid] || id >= set_final_idx[sid])
+      throw std::runtime_error("In SUBSET, WEIGHT ITEM out of bounds");
+    w[id] = witem[i].second;
+  }
 }
 
 // Set the reference method
