@@ -719,7 +719,9 @@ ORDER BY Training_set.id;
     ifile.close();
   }
 
-  // Insert data for empty method in empty.dat
+  // Insert data for empty method in empty.dat; save the empty for insertion of ACP terms
+  int n = 0;
+  std::vector<double> yempty(ntot,0.0);
   name = dir + "/empty.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail()) 
@@ -736,6 +738,7 @@ ORDER BY Training_set.id;
     smap["PROPERTY"] = std::to_string(*it);
     smap["VALUE"] = valstr;
     db->insert("EVALUATION","",smap);
+    yempty[n++] = std::stod(valstr);
   }
   ifile.peek();
   if (!ifile.eof())
@@ -753,6 +756,7 @@ ORDER BY Training_set.id;
         if (ifile.fail()) 
           throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
 
+        n = 0;
         for (auto it = propid.begin(); it != propid.end(); ++it){
           std::unordered_map<std::string,std::string> smap;
           std::string valstr;
@@ -765,7 +769,7 @@ ORDER BY Training_set.id;
           smap["ATOM"] = std::to_string(zat[iat]);
           smap["L"] = std::to_string(il);
           smap["EXPONENT"] = to_string_precise(exp[iexp]);
-          smap["VALUE"] = valstr;
+          smap["VALUE"] = to_string_precise((std::stod(valstr)-yempty[n++])/0.001);
           db->insert("TERM","",smap);
         }
 
@@ -785,22 +789,64 @@ ORDER BY Training_set.id;
 void trainset::eval_acp(std::ostream &os, const acp &a){
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using ACPEVAL");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
 
-  std::vector< std::vector<double> > xempty, xref, xacp;
-  std::vector< std::vector< std::vector<double> > > xadd;
+  // initialize container vectors
+  std::vector<double> yempty(ntot,0.0), yacp(ntot,0.0), yadd(ntot,0.0), ytotal(ntot,0.0), yref(ntot,0.0);
+  std::vector<std::string> names(ntot,"");
 
-  // Reserve space for the xadd
-  xadd.reserve(addid.size());
+  // get the names
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT Properties.key
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
+  int n = 0;
+  while (st.step() != SQLITE_DONE)
+    names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
+  if (n != ntot)
+    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in names");
 
-  // prepare text for the terms
-  std::string text = R"SQL(
-SELECT Terms.propid, Terms.value
-FROM Terms
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;
-)SQL";
-  statement st(db->ptr(),statement::STMT_CUSTOM,text);
+  // get the empty, reference, additional methods
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Evaluations.value
+FROM Evaluations, Training_set
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
 
-  // the ACP terms
+  n = 0;
+  st.bind((char *) ":METHOD",emptyid);
+  while (st.step() != SQLITE_DONE)
+    yempty[n++] = sqlite3_column_double(st.ptr(),0);
+  if (n != ntot)
+    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in empty");
+
+  n = 0;
+  st.bind((char *) ":METHOD",refid);
+  while (st.step() != SQLITE_DONE)
+    yref[n++] = sqlite3_column_double(st.ptr(),0);
+  if (n != ntot)
+    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in reference");
+
+  for (int j = 0; j < addid.size(); j++){
+    n = 0;
+    st.bind((char *) ":METHOD",addid[j]);
+    while (st.step() != SQLITE_DONE)
+      yadd[n++] += sqlite3_column_double(st.ptr(),0);
+    if (n != ntot)
+      throw std::runtime_error("In ACPEVAL, unexpected end of the database column in additional method " + addname[j]);
+  }
+
+  // get the ACP contribution
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Terms.value
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid;
+)SQL");
+
   for (int i = 0; i < a.size(); i++){
     acp::term t = a.get_term(i);
     st.reset();
@@ -808,31 +854,16 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
     st.bind((char *) ":ATOM",(int) t.atom);
     st.bind((char *) ":L",(int) t.l);
     st.bind((char *) ":EXP",t.exp);
-    
-    std::cout << i << std::endl;
-    while (st.step() != SQLITE_DONE){ }
+
+    n = 0;
+    while (st.step() != SQLITE_DONE)
+      yacp[n++] += sqlite3_column_double(st.ptr(),0) * t.coef;
+    if (n != ntot)
+      throw std::runtime_error("In ACPEVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
   }
 
-  
-  // Fetch the values
-//  for (int i = 0; i < setid.size(); i++){
-//    // Empty, reference, additional
-//    xempty.push_back(fetch_evaluation(db,emptyid,i));
-//    xref.push_back(fetch_evaluation(db,emptyid,i));
-//    for (int j = 0; j < addid.size(); j++)
-//      xadd[j].push_back(fetch_evaluation(db,addid[j],i));
-//
-//    // ACP terms
-//    for (int j = 0; j < a.size(); j++){
-//      acp::term t = a.get_term(j);
-//      std::cout << i << " " << j << std::endl;
-//      fetch_term(db,emptyid,i,t.atom,t.l,t.exp);
-//    }
-//  }
-
-  // std::vector<double> res = fetch_evaluation(db,1,1);
-  // for (int i = 0 ; i < res.size(); i++)
-  //   std::cout << i << " " << res[i] << std::endl;
+  for (int i = 0; i < ntot; i++)
+    std::cout << i << " " << names[i] << " " << w[i] << " " << yempty[i] << " " << yacp[i] << " " << yadd[i] << " " << yref[i] << std::endl;
 
 // # Evaluation: final
 // # Statistics: 
@@ -867,16 +898,5 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 // 1       db/s225_2pyridoxine2aminopyridin09     2.35740978     -14.4694653900        -5.6667046837       -14.5890484837       -15.1300000000         0.5409515163  
 // 2       db/s225_2pyridoxine2aminopyridin10     0.47148196     -15.1898155200        -9.1293643227       -16.2316922027       -16.7000000000         0.4683077973  
 
-
-//   // count reference, empty, and additional values
-//   int ncalc = 0;
-//   for (int i = 0; i < setid.size(); i++){
-//     st.recycle(statement::STMT_CUSTOM,text);
-//     st.step();
-//     ncalc += sqlite3_column_int(st.ptr(), 0);
-//   }
-//   os << "+ Reference: " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
-
-  printf("hello!\n");
 }
 
