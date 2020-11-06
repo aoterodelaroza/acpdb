@@ -57,6 +57,22 @@ std::string trainset::set_constraint(int id){
   return res;
 }
 
+// Register the database and create the Training_set table
+void trainset::setdb(sqldb *db_){
+  db = db_;
+
+  // Drop the Training_set table if it exists, then create it
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+DROP TABLE IF EXISTS Training_set;
+CREATE TABLE Training_set (
+  id INTEGER PRIMARY KEY,
+  propid INTEGER NOT NULL,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+);
+)SQL");
+  st.execute();
+}
+
 // Add atoms and max. angular momentum
 void trainset::addatoms(const std::list<std::string> &tokens){
 
@@ -89,8 +105,8 @@ void trainset::addexp(const std::list<std::string> &tokens){
 }
 
 // Add a subset (combination of set, mask, weights)
-void trainset::addsubset(sqldb &db, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
-  if (!db) 
+void trainset::addsubset(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using SUBSET");
   if (kmap.find("SET") == kmap.end() || kmap["SET"].empty())
     throw std::runtime_error("The keyword SET is required inside SUBSET");
@@ -99,7 +115,7 @@ void trainset::addsubset(sqldb &db, const std::string &key, std::unordered_map<s
 
   // identify the set; add the name and the set index
   std::string name = kmap["SET"];
-  int idx = db.find_id_from_key(name,statement::STMT_QUERY_SET);
+  int idx = db->find_id_from_key(name,statement::STMT_QUERY_SET);
   int sid = setid.size();
   if (idx == 0)
     throw std::runtime_error("SET identifier not found in database: " + name);
@@ -112,7 +128,7 @@ void trainset::addsubset(sqldb &db, const std::string &key, std::unordered_map<s
   alias.push_back(alias_);
 
   // find the set size
-  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 )SQL");
   st.bind(1,idx);
@@ -190,7 +206,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
     
       // build the array of structures that contain only the atoms in the zat array
       std::unordered_map<int,bool> usest;
-      statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+      statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
       while (st.step() != SQLITE_DONE){
         int id = sqlite3_column_int(st.ptr(),0);
         int nat = sqlite3_column_int(st.ptr(),1);
@@ -235,13 +251,27 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
     }
   }
 
-  // calculate set_size
+  // calculate the size of the set, update the total size, and populate the Training_set table
+  db->begin_transaction();
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
+)SQL");
+  st.bind(1,setid[sid]);
+  statement stinsert(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid) VALUES (:ID,:PROPID);");
   set_size.push_back(0);
   for (int i = 0; i < set_mask[sid].size(); i++){
-    if (set_mask[sid][i])
+    st.step();
+    int propid = sqlite3_column_int(st.ptr(),0);
+    if (set_mask[sid][i]){
       set_size[sid]++;
+      ntot++;
+      stinsert.bind((char *) ":ID", ntot);
+      stinsert.bind((char *) ":PROPID", propid);
+      stinsert.step();
+    }
   }
-  
+  db->commit_transaction();
+
   //// weights ////
   // parse the keymap
   double wglobal = 1.;
@@ -275,12 +305,12 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
   }
 
   // set the weights
-  setweight_onlyone(db, sid, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
+  setweight_onlyone(sid, wglobal, wpattern, norm_ref, norm_nitem, norm_nitemsqrt, witem);
 }
 
 // Set the reference method
-void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
-  if (!db) 
+void trainset::setreference(const std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using REFERENCE");
   if (tokens.empty())
     throw std::runtime_error("Invalid REFEENCE command");
@@ -288,20 +318,20 @@ void trainset::setreference(sqldb &db, const std::list<std::string> &tokens){
   // check if the method is known
   auto it = tokens.begin();
   refname = *it;
-  refid = db.find_id_from_key(refname,statement::STMT_QUERY_METHOD);
+  refid = db->find_id_from_key(refname,statement::STMT_QUERY_METHOD);
   if (refid == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + refname);
 }
 
 // Set the empty method
-void trainset::setempty(sqldb &db, const std::list<std::string> &tokens){
-  if (!db) 
+void trainset::setempty(const std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using EMPTY");
   if (tokens.empty())
     throw std::runtime_error("Invalid EMPTY command");
   
   std::string name = tokens.front();
-  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  int idx = db->find_id_from_key(name,statement::STMT_QUERY_METHOD);
   if (idx == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + name);
 
@@ -310,8 +340,8 @@ void trainset::setempty(sqldb &db, const std::list<std::string> &tokens){
 }
 
 // Add an additional method
-void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
-  if (!db) 
+void trainset::addadditional(const std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using ADD");
   if (tokens.empty())
     throw std::runtime_error("Invalid ADD command");
@@ -319,7 +349,7 @@ void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
   auto it = tokens.begin();
 
   std::string name = *it;
-  int idx = db.find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  int idx = db->find_id_from_key(name,statement::STMT_QUERY_METHOD);
   if (idx == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + name);
 
@@ -329,7 +359,7 @@ void trainset::addadditional(sqldb &db, const std::list<std::string> &tokens){
 }
 
 // Set the weights for one set from the indicated parameters.
-void trainset::setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem){
+void trainset::setweight_onlyone(int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem){
   
   // calculate the weight from the global and pattern
   int k = 0;
@@ -353,7 +383,7 @@ SELECT AVG(abs(value)) FROM Evaluations
 WHERE methodid = :METHOD AND propid IN 
   (SELECT id FROM Properties WHERE )SQL";
     text = text + set_constraint(sid) + ");";
-    statement st(db.ptr(),statement::STMT_CUSTOM,text);
+    statement st(db->ptr(),statement::STMT_CUSTOM,text);
 
     st.bind((char *) ":METHOD",refid);
     st.step();
@@ -370,8 +400,8 @@ WHERE methodid = :METHOD AND propid IN
 }
 
 // Describe the current training set
-void trainset::describe(std::ostream &os, sqldb &db){
-  if (!db) 
+void trainset::describe(std::ostream &os){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
   if (!isdefined()){
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
@@ -402,7 +432,7 @@ void trainset::describe(std::ostream &os, sqldb &db){
   os << std::endl;
 
   // Sets //
-  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT litrefs, description FROM Sets WHERE id = ?1;
 )SQL");
   os << "+ List of subsets (" << setname.size() << ")" << std::endl;
@@ -553,8 +583,8 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   os.precision(prec);
 }
 
-void trainset::write_xyz(sqldb &db, const std::list<std::string> &tokens){
-  if (!db) 
+void trainset::write_xyz(const std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE XYZ");
   if (setid.empty())
     throw std::runtime_error("There are no sets in the training set (WRITE XYZ)");
@@ -573,7 +603,7 @@ WHERE setid IN ()SQL";
   for (int i = 1; i < setid.size(); i++)
     sttext = sttext + "," + std::to_string(setid[i]);
   sttext = sttext + ");";
-  statement st(db.ptr(),statement::STMT_CUSTOM,sttext);
+  statement st(db->ptr(),statement::STMT_CUSTOM,sttext);
 
   while (st.step() != SQLITE_DONE){
     std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
@@ -590,8 +620,8 @@ WHERE setid IN ()SQL";
 
 }
 
-void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
-  if (!db) 
+void trainset::write_din(const std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE DIN");
   if (setid.empty())
     throw std::runtime_error("Training set subsets must be defined before using WRITE DIN");
@@ -603,7 +633,7 @@ void trainset::write_din(sqldb &db, const std::list<std::string> &tokens){
     throw std::runtime_error("In WRITE DIN, directory not found: " + dir);
 
   // define the query statements
-  statement st(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
 FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
@@ -611,7 +641,7 @@ INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
 WHERE Properties.setid = :SET AND Methods.id = :METHOD
 ORDER BY Properties.orderid;
 )SQL");
-  statement stname(db.ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement stname(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT key FROM Structures WHERE id = ?1;
 )SQL");
 
@@ -658,8 +688,8 @@ SELECT key FROM Structures WHERE id = ?1;
 // Insert data in bulk into the database using data files from
 // previous ACP development programs using this training set as
 // template
-void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<std::string> &tokens){
-  if (!db) 
+void trainset::insert_olddat(const std::string &directory, std::list<std::string> &tokens){
+  if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
@@ -678,7 +708,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
   if (ifile.fail()) 
     throw std::runtime_error("In INSERT OLDDAT, error reading names.dat file: " + name);
   
-  statement st(db.ptr(),statement::STMT_CUSTOM,"SELECT Properties.key, Properties.id FROM Properties WHERE Properties.setid = :SET ORDER BY Properties.orderid;");
+  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT Properties.key, Properties.id FROM Properties WHERE Properties.setid = :SET ORDER BY Properties.orderid;");
   for (int i = 0; i < setid.size(); i++){
     if (!set_dofit[i]) continue;
     st.bind((char *) ":SET",setid[i]);
@@ -709,7 +739,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
   ifile.close();
   
   // Start inserting data
-  db.begin_transaction();
+  db->begin_transaction();
 
   // Insert data for reference method in ref.dat
   std::string knext = "";
@@ -730,7 +760,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
       smap["METHOD"] = std::to_string(refid);
       smap["PROPERTY"] = std::to_string(*it);
       smap["VALUE"] = valstr;
-      db.insert("EVALUATION","",smap);
+      db->insert("EVALUATION","",smap);
     }
     ifile.peek();
     if (!ifile.eof())
@@ -754,7 +784,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
     smap["METHOD"] = std::to_string(emptyid);
     smap["PROPERTY"] = std::to_string(*it);
     smap["VALUE"] = valstr;
-    db.insert("EVALUATION","",smap);
+    db->insert("EVALUATION","",smap);
   }
   ifile.peek();
   if (!ifile.eof())
@@ -785,7 +815,7 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
           smap["L"] = std::to_string(il);
           smap["EXPONENT"] = to_string_precise(exp[iexp]);
           smap["VALUE"] = valstr;
-          db.insert("TERM","",smap);
+          db->insert("TERM","",smap);
         }
 
         ifile.peek();
@@ -797,11 +827,13 @@ void trainset::insert_olddat(sqldb &db, const std::string &directory, std::list<
   }
 
   // Commit the transaction
-  db.commit_transaction();
+  db->commit_transaction();
 }
 
 // Evaluate an ACP on the current training set
-void trainset::eval_acp(std::ostream &os, sqldb &db, const acp &a){
+void trainset::eval_acp(std::ostream &os, const acp &a){
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using ACPEVAL");
 
   std::vector< std::vector<double> > xempty, xref, xacp;
   std::vector< std::vector< std::vector<double> > > xadd;
@@ -815,7 +847,7 @@ SELECT Terms.propid, Terms.value
 FROM Terms
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;
 )SQL";
-  statement st(db.ptr(),statement::STMT_CUSTOM,text);
+  statement st(db->ptr(),statement::STMT_CUSTOM,text);
 
   // the ACP terms
   for (int i = 0; i < a.size(); i++){

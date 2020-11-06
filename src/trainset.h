@@ -32,6 +32,12 @@ class trainset {
 
  public:
 
+  // Constructor
+  trainset() : db(nullptr), ntot(0) {};
+
+  // Register the database and create the Training_set table
+  void setdb(sqldb *db_);
+
   // Add atoms and max. angular momentum
   void addatoms(const std::list<std::string> &tokens);
 
@@ -39,24 +45,24 @@ class trainset {
   void addexp(const std::list<std::string> &tokens);
 
   // Add a subset (combination of set, mask, weights)
-  void addsubset(sqldb &db, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void addsubset(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Set the reference method
-  void setreference(sqldb &db, const std::list<std::string> &tokens);
+  void setreference(const std::list<std::string> &tokens);
 
   // Set the empty method
-  void setempty(sqldb &db, const std::list<std::string> &tokens);
+  void setempty(const std::list<std::string> &tokens);
 
   // Add an additional method
-  void addadditional(sqldb &db, const std::list<std::string> &tokens);
+  void addadditional(const std::list<std::string> &tokens);
 
   // Describe the current training set
-  void describe(std::ostream &os, sqldb &db);
+  void describe(std::ostream &os);
 
   // Insert data in bulk into the database using data files from
   // previous ACP development programs using this training set as
   // template
-  void insert_olddat(sqldb &db, const std::string &directory, std::list<std::string> &tokens);
+  void insert_olddat(const std::string &directory, std::list<std::string> &tokens);
 
   // Is the training set defined?
   inline bool isdefined(){
@@ -65,13 +71,13 @@ class trainset {
   }
 
   // Write the structures in the training set as xyz files
-  void write_xyz(sqldb &db, const std::list<std::string> &tokens);
+  void write_xyz(const std::list<std::string> &tokens);
 
   // Write the din files in the training set
-  void write_din(sqldb &db, const std::list<std::string> &tokens);
+  void write_din(const std::list<std::string> &tokens);
 
   // Evaluate an ACP on the current training set
-  void eval_acp(std::ostream &os, sqldb &db, const acp &a);
+  void eval_acp(std::ostream &os, const acp &a);
   
 
  private:
@@ -80,7 +86,13 @@ class trainset {
   std::string set_constraint(int id);
 
   // Set the weights for one set from the indicated parameters.
-  void setweight_onlyone(sqldb &db, int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem);
+  void setweight_onlyone(int sid, double wglobal, std::vector<double> wpattern, bool norm_ref, bool norm_nitem, bool norm_nitemsqrt, std::vector<std::pair<int,double> > witem);
+
+  //// Variables ////
+
+  sqldb *db; // Database pointer
+
+  int ntot; // Total number of properties in the training set
 
   std::vector<unsigned char> zat;  // atomic numbers for the atoms
   std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms

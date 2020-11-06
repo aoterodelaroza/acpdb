@@ -158,38 +158,41 @@ int main(int argc, char *argv[]) {
         std::string key = popstring(tokens);
         if (key.empty() || nacp.find(key) == nacp.end())
           throw std::runtime_error("Unknown ACP name: " + key);
-        ts.eval_acp(*os,db,nacp[key]);
+        ts.eval_acp(*os,nacp[key]);
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
       } else if (keyw == "REFERENCE") {
-        ts.setreference(db,tokens);
+        ts.setreference(tokens);
       } else if (keyw == "EMPTY") {
-        ts.setempty(db,tokens);
+        ts.setempty(tokens);
       } else if (keyw == "ADD") {
-        ts.addadditional(db,tokens);
+        ts.addadditional(tokens);
       } else if (keyw == "SUBSET") {
         std::string alias = popstring(tokens);
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-        ts.addsubset(db,alias,kmap);
+        ts.addsubset(alias,kmap);
       } else if (keyw == "DESCRIBE") {
-        ts.describe(*os,db);
+        ts.describe(*os);
       } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();
+        ts.setdb(&db);
       } else if (keyw == "CONNECT") {
         db.connect(popstring(tokens));
         db.checksane(true);
+        ts.setdb(&db);
       } else if (keyw == "DISCONNECT") {
         db.close();
+        ts.setdb(nullptr);
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
         if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
           db.insert_litref_bibtex(tokens);
         } else if (category == "OLDDAT"){
-          ts.insert_olddat(db,key,tokens);
+          ts.insert_olddat(key,tokens);
         } else {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.insert(category,key,kmap);
@@ -200,9 +203,9 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
         if (category == "XYZ_TRAINING")
-          ts.write_xyz(db,tokens);
+          ts.write_xyz(tokens);
         else if (category == "DIN_TRAINING")
-          ts.write_din(db,tokens);
+          ts.write_din(tokens);
         else if (category == "XYZ"){
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.list_xyz(kmap);
