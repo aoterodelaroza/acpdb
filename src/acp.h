@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <string>
 #include <list>
+#include <cmath>
 
 // A class for ACPs.
 class acp {
@@ -59,6 +60,30 @@ class acp {
   // to files with template templ. If tokens contains the COEF
   // keyword, use that coefficient for the new ACPs.
   void split(const std::string &templ, std::list<std::string> &tokens);
+
+  // Calculate the 1-norm of the coefficients
+  inline double norm1() const {
+    double res = 0;
+    for (int i=0; i<t.size(); i++)
+      res += std::abs(t[i].coef);
+    return res;
+  };
+
+  // Calculate the 2-norm of the coefficients
+  inline double norm2() const {
+    double res = 0;
+    for (int i=0; i<t.size(); i++)
+      res += t[i].coef*t[i].coef;
+    return std::sqrt(res);
+  };
+
+  // Calculate the inf-norm of the coefficients
+  inline double norminf() const {
+    double res = 0;
+    for (int i=0; i<t.size(); i++)
+      res = std::max(res,std::abs(t[i].coef));
+    return res;
+  };
 
   // Get ACP size
   inline int size() const { return t.size(); };

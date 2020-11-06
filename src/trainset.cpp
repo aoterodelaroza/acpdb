@@ -846,7 +846,6 @@ SELECT Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid;
 )SQL");
-
   for (int i = 0; i < a.size(); i++){
     acp::term t = a.get_term(i);
     st.reset();
@@ -862,43 +861,76 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
       throw std::runtime_error("In ACPEVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
   }
 
-//  for (int i = 0; i < ntot; i++)
-//    std::cout << i << " " << names[i] << " " << w[i] << " " << yempty[i] << " " << yacp[i] << " " << yadd[i] << " " << yref[i] << std::endl;
+  // calculate statistics
+  int nset = setid.size();
+  std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0);
+  double wrms = 0.0, rmst = 0.0, maet = 0.0, mset = 0.0;
+  int maxsetl = 0;
+  n = 0;
+  for (int i = 0; i < setid.size(); i++){
+    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
+      double xdiff = yempty[n] + yacp[n] + yadd[n] - yref[n];
+      mae[i] += std::abs(xdiff);
+      mse[i] += xdiff;
+      rms[i] += xdiff * xdiff;
+      maet += std::abs(xdiff);
+      mset += xdiff;
+      rmst += xdiff * xdiff;
+      wrms += w[n] * xdiff * xdiff;
+      n++;
+    }
+    double nsetsize = setid.size();
+    mae[i] /= nsetsize;
+    mse[i] /= nsetsize;
+    rms[i] = std::sqrt(rms[i]/nsetsize);
+    maxsetl = std::max(maxsetl,(int) alias[i].size());
+  }
+  maet /= ntot;
+  mset /= ntot;
+  rmst = std::sqrt(rmst/ntot);
+  wrms = std::sqrt(wrms);
+  if (n != ntot)
+    throw std::runtime_error("In ACPEVAL, inconsistent ntot, set_initial_idx, and set_final_idx");
 
+
+  std::streamsize prec = os.precision(7);
+  os << std::fixed;
   os << "# Evaluation: " << a.get_name() << std::endl;
   os << "# Statistics: " << std::endl;
+  os << "#   2-norm  =  " << a.norm2() << std::endl;
+  os << "#   1-norm  =  " << a.norm1() << std::endl;
+  os << "#   maxcoef =  " << a.norminf() << std::endl;
 
-// # Statistics: 
-// #   2-norm  =    4.067088    
-// #   1-norm  =    25.497848   
-// #   maxcoef = 1.896049    
-// #   wrms    =    72.28675158   
-// #   s22        rms = 0.68878398     mae = 0.48504389     mse =   0.33183702  
-// #   s66        rms = 0.55143257     mae = 0.41573574     mse =   0.27510574  
-// #   s22x5      rms = 0.82793492     mae = 0.47061037     mse =   0.36455189  
-// #   s66x8      rms = 0.59165961     mae = 0.37744554     mse =   0.26455244  
-// #   BBI        rms = 0.89413580     mae = 0.85973223     mse =   0.85973223  
-// #   SSI        rms = 0.35267871     mae = 0.22527576     mse =   0.17220130  
-// #   dipep-conf rms = 1.48249924     mae = 1.18912068     mse =  -0.49992785  
-// #   P26        rms = 1.40004061     mae = 1.10780464     mse =   0.04409143  
-// #   ACHC       rms = 0.33171013     mae = 0.26852197     mse =  -0.13091791  
-// #   defmol     rms = 1.93459865     mae = 1.11164817     mse =   0.24438685  
-// #   blind15    rms = 0.90166798     mae = 0.57205963     mse =   0.01135845  
-// #   chelic_c   rms = 4.77660334     mae = 4.76944690     mse =   4.76944690  
-// #   chelic_r   rms = 0.26442527     mae = 0.20847002     mse =  -0.01466698  
-// #   nhelic_c   rms = 4.90709263     mae = 4.89819692     mse =   4.89819692  
-// #   nhelic_r   rms = 0.30783609     mae = 0.25527633     mse =   0.07665135  
-// #   eep        rms = 0.34806911     mae = 0.30504250     mse =   0.01842110  
-// #   eer        rms = 0.47919342     mae = 0.38216028     mse =  -0.29351462  
-// #   wallachp   rms = 0.27071501     mae = 0.21858201     mse =  -0.00391333  
-// #   wallachr   rms = 0.71405049     mae = 0.53525235     mse =   0.18881722  
-// #   x23c       rms = 2.46825193     mae = 1.88508121     mse =  -0.90673550  
-// #   x23p       rms = 0.95197033     mae = 0.66263153     mse =  -0.26939351  
-// #   x23s       rms = 0.90989413     mae = 0.55755261     mse =  -0.03984996  
-// #   all        rms = 1.51224007     mae = 0.84132163     mse =   0.12332794  
-// Id                     Name                      wei             yempty                yscf                ytotal                yref                 diff        
-// 1       db/s225_2pyridoxine2aminopyridin09     2.35740978     -14.4694653900        -5.6667046837       -14.5890484837       -15.1300000000         0.5409515163  
-// 2       db/s225_2pyridoxine2aminopyridin10     0.47148196     -15.1898155200        -9.1293643227       -16.2316922027       -16.7000000000         0.4683077973  
+  os.precision(8);
+  os << "#   wrms    =  " << wrms << std::endl;
 
+  for (int i = 0; i < setid.size(); i++){
+    os << "# " << std::right << std::setw(maxsetl) << alias[i]
+       << std::left << "  rms = " << std::right << std::setw(14) << rms[i]
+       << std::left << "  mae = " << std::right << std::setw(14) << mae[i]
+       << std::left << "  mse = " << std::right << std::setw(14) << mse[i]
+       << std::endl;
+  }
+  os << "# " << std::right << std::setw(maxsetl) << "all"
+     << std::left << "  rms = " << std::right << std::setw(14) << rmst
+     << std::left << "  mae = " << std::right << std::setw(14) << maet
+     << std::left << "  mse = " << std::right << std::setw(14) << mset
+     << std::endl;
+
+  os << "Id           Name                                wei          yempty           yacp             yadd             ytotal           yref             diff" << std::endl;
+  int idwidth = digits(ntot);
+  for (int i = 0; i < ntot; i++){
+    os << std::setw(idwidth) << std::left << i << " "
+       << std::setw(40) << std::left << names[i] << " "
+       << std::setprecision(6) << std::setw(10) << std::right << w[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yempty[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yacp[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yadd[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yempty[i]+yacp[i]+yadd[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yref[i] << " "
+       << std::setprecision(10) << std::setw(16) << std::right << yempty[i]+yacp[i]+yadd[i]-yref[i]
+       << std::endl;
+  }
+  os.precision(prec);
 }
 
