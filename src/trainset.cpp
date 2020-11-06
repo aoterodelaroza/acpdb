@@ -879,7 +879,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
       wrms += w[n] * xdiff * xdiff;
       n++;
     }
-    double nsetsize = setid.size();
+    double nsetsize = set_size[i];
     mae[i] /= nsetsize;
     mse[i] /= nsetsize;
     rms[i] = std::sqrt(rms[i]/nsetsize);
