@@ -66,6 +66,9 @@ class acp {
   // Get ACP term i
   inline term get_term(int i) const { return t[i]; };
 
+  // Get ACP name
+  inline std::string get_name() const { return name; };
+
  private:
   std::string name;
   std::vector<term> t;

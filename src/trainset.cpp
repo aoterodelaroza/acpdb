@@ -862,10 +862,12 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
       throw std::runtime_error("In ACPEVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
   }
 
-  for (int i = 0; i < ntot; i++)
-    std::cout << i << " " << names[i] << " " << w[i] << " " << yempty[i] << " " << yacp[i] << " " << yadd[i] << " " << yref[i] << std::endl;
+//  for (int i = 0; i < ntot; i++)
+//    std::cout << i << " " << names[i] << " " << w[i] << " " << yempty[i] << " " << yacp[i] << " " << yadd[i] << " " << yref[i] << std::endl;
 
-// # Evaluation: final
+  os << "# Evaluation: " << a.get_name() << std::endl;
+  os << "# Statistics: " << std::endl;
+
 // # Statistics: 
 // #   2-norm  =    4.067088    
 // #   1-norm  =    25.497848   

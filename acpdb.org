@@ -398,9 +398,10 @@ ACPSPLIT name.s template.s [COEF value.r]
 
 ACPEVAL name.s [output.s]
 
-  Evaluate the ACP with name name.s on the current training set. If
-  output.s is given, write the output to that file instead of the
-  standard output
+  Evaluate the ACP with name name.s on the current training set. If an
+  ACP with that name does not exist, try to find an ACP file with that
+  name and evaluate it. If output.s is given, write the output to that
+  file instead of the standard output
 
 EMPTYEVAL [output.s]
 

@@ -156,9 +156,14 @@ int main(int argc, char *argv[]) {
         nacp[key].split(templ, tokens);
       } else if (keyw == "ACPEVAL") {
         std::string key = popstring(tokens);
-        if (key.empty() || nacp.find(key) == nacp.end())
-          throw std::runtime_error("Unknown ACP name: " + key);
-        ts.eval_acp(*os,nacp[key]);
+        acp a;
+        if (key.empty())
+          throw std::runtime_error("Need ACP name or file name in ACPEVAL");
+        else if (nacp.find(key) != nacp.end())
+          a = nacp[key];
+        else
+          a = acp(key,key);
+        ts.eval_acp(*os,a);
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
