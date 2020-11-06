@@ -163,7 +163,15 @@ int main(int argc, char *argv[]) {
           a = nacp[key];
         else
           a = acp(key,key);
-        ts.eval_acp(*os,a);
+
+        if (!tokens.empty()){
+          std::ofstream of(tokens.front(),std::ios::out);
+          if (of.fail())
+            throw std::runtime_error("Error opening file: " + tokens.front());
+          ts.eval_acp(of,a);
+        } else {
+          ts.eval_acp(*os,a);
+        }
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
