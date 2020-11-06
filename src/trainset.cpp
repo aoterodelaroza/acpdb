@@ -35,40 +35,19 @@ const static std::unordered_map<std::string, int> ltoint {
 };
 const static std::vector<char> inttol = {'l','s','p','d','f','g','h'};
 
-// return the set constraint for set id
-std::string trainset::set_constraint(int id){
-  if (set_mask[id].empty()) return "";
-
-  bool alltrue = true;
-  for (int i = 0; i < set_mask[id].size(); i++)
-    alltrue = (alltrue && set_mask[id][i]);
-
-  std::string res = " Properties.setid = " + std::to_string(setid[id]) + " AND Properties.orderid ";
-  if (alltrue){
-    res = res + "BETWEEN 1 AND " + std::to_string(set_mask[id].size());
-  } else {
-    res = res + "IN (";
-    for (int i = 0; i < set_mask[id].size(); i++){
-      if (set_mask[id][i])
-        res = res + std::to_string(i+1) + ",";
-    }
-    res = res.substr(0,res.size()-1) + ")";
-  }
-  return res;
-}
-
 // Register the database and create the Training_set table
 void trainset::setdb(sqldb *db_){
   db = db_;
 
   // Drop the Training_set table if it exists, then create it
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-DROP TABLE IF EXISTS Training_set;
-CREATE TABLE Training_set (
+CREATE TABLE IF NOT EXISTS Training_set (
   id INTEGER PRIMARY KEY,
   propid INTEGER NOT NULL,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
+DELETE FROM Training_set;
+CREATE UNIQUE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid);
 )SQL");
   st.execute();
 }
@@ -378,16 +357,17 @@ void trainset::setweight_onlyone(int sid, double wglobal, std::vector<double> wp
   if (norm_nitemsqrt)
     norm *= std::sqrt(set_size[sid]);
   if (norm_ref){
-    std::string text = R"SQL(
-SELECT AVG(abs(value)) FROM Evaluations
-WHERE methodid = :METHOD AND propid IN 
-  (SELECT id FROM Properties WHERE )SQL";
-    text = text + set_constraint(sid) + ");";
-    statement st(db->ptr(),statement::STMT_CUSTOM,text);
-
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT AVG(abs(value)) FROM Evaluations, Training_set, Properties
+WHERE Properties.id = Evaluations.propid AND Properties.setid = :SETID AND
+Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
+)SQL");
+    st.bind((char *) ":SETID",setid[sid]);
     st.bind((char *) ":METHOD",refid);
     st.step();
-    norm *= sqlite3_column_double(st.ptr(),0);
+    double res = sqlite3_column_double(st.ptr(),0);
+    if (std::abs(res) > 1e-40)
+      norm *= res;
   }
 
   // apply the normalization factor
@@ -460,14 +440,14 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   os << std::endl;
 
   // Properties //
-  int nall = std::accumulate(set_size.begin(),set_size.end(),0);
-  os << "+ List of properties (" << nall << ")" << std::endl;
+  os << "+ List of properties (" << ntot << ")" << std::endl;
   os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
+INNER JOIN Training_set ON (Properties.id = Training_set.propid)
 WHERE Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL");
@@ -478,21 +458,17 @@ ORDER BY Properties.orderid;
     st.bind((char *) ":SET",setid[i]);
     st.bind((char *) ":METHOD",refid);
 
-    int rc, k = 0;
     std::string valstr;
-    while ((rc = st.step()) != SQLITE_DONE){
-      if (set_mask[i][k++]){
-        if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
-          valstr = "n/a";
-        else
-          valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
-        os << "| " << (set_dofit[i]?"yes":"no") << " | " << ++nin << " | " << sqlite3_column_text(st.ptr(), 1) 
-           << " | " << sqlite3_column_int(st.ptr(), 0)
-           << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
-           << " | " << sqlite3_column_int(st.ptr(), 2)
-           << " | " << w[n] << " | " << valstr << " |" << std::endl;
-      }
-      n++;
+    while (st.step() != SQLITE_DONE){
+      if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
+        valstr = "n/a";
+      else
+        valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
+      os << "| " << (set_dofit[i]?"yes":"no") << " | " << ++nin << " | " << sqlite3_column_text(st.ptr(), 1) 
+         << " | " << sqlite3_column_int(st.ptr(), 0)
+         << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
+         << " | " << sqlite3_column_int(st.ptr(), 2)
+         << " | " << w[n++] << " | " << valstr << " |" << std::endl;
     }
   }
   os << std::endl;
@@ -501,62 +477,48 @@ ORDER BY Properties.orderid;
   os << "* Calculation completion for the current training set" << std::endl;
 
   // count reference, empty, and additional values
-  int ncalc = 0;
+  int ncalc_ref = 0, ncalc_empty = 0;
+  std::vector<int> ncalc_add(addid.size(),0);
   for (int i = 0; i < setid.size(); i++){
-    std::string text = R"SQL(
+    st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT COUNT(*)
-FROM Evaluations
-INNER JOIN Properties ON Properties.id = Evaluations.propid
-WHERE Evaluations.methodid = )SQL";
-    text = text + std::to_string(refid) + " AND " + set_constraint(i) + ";";
-    st.recycle(statement::STMT_CUSTOM,text);
-    st.step();
-    ncalc += sqlite3_column_int(st.ptr(), 0);
-  }
-  os << "+ Reference: " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
- 
-  ncalc = 0;
-  for (int i = 0; i < setid.size(); i++){
-    std::string text = R"SQL(
-SELECT COUNT(*)
-FROM Evaluations
-INNER JOIN Properties ON Properties.id = Evaluations.propid
-WHERE Evaluations.methodid = )SQL";
-    text = text + std::to_string(emptyid) + " AND " + set_constraint(i) + ";";
-    st.recycle(statement::STMT_CUSTOM,text);
-    st.step();
-    ncalc += sqlite3_column_int(st.ptr(), 0);
-  }
-  os << "+ Empty: " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
+FROM Evaluations, Properties, Training_set
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Properties.id 
+AND Properties.setid = :SET AND Training_set.propid = Evaluations.propid;)SQL");
 
-  for (int j = 0; j < addid.size(); j++){
-    ncalc = 0;
-    for (int i = 0; i < setid.size(); i++){
-      std::string text = R"SQL(
-SELECT COUNT(*)
-FROM Evaluations
-INNER JOIN Properties ON Properties.id = Evaluations.propid
-WHERE Evaluations.methodid = )SQL";
-      text = text + std::to_string(addid[j]) + " AND " + set_constraint(i) + ";";
-      st.recycle(statement::STMT_CUSTOM,text);
+    // reference
+    st.bind((char *) ":METHOD",refid);
+    st.bind((char *) ":SET",setid[i]);
+    st.step();
+    ncalc_ref += sqlite3_column_int(st.ptr(), 0);
+
+    // empty
+    st.reset();
+    st.bind((char *) ":METHOD",emptyid);
+    st.bind((char *) ":SET",setid[i]);
+    st.step();
+    ncalc_empty += sqlite3_column_int(st.ptr(), 0);
+
+    // additional
+    for (int j = 0; j < addid.size(); j++){
+      st.reset();
+      st.bind((char *) ":METHOD",addid[j]);
+      st.bind((char *) ":SET",setid[i]);
       st.step();
-      ncalc += sqlite3_column_int(st.ptr(), 0);
+      ncalc_add[j] += sqlite3_column_int(st.ptr(), 0);
     }
-    os << "+ Additional (" << addname[j] << "): " << ncalc << "/" << nall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
   }
- 
+  os << "+ Reference: " << ncalc_ref << "/" << ntot << (ncalc_ref==ntot?" (complete)":" (missing)") << std::endl;
+  os << "+ Empty: " << ncalc_empty << "/" << ntot << (ncalc_empty==ntot?" (complete)":" (missing)") << std::endl;
+  for (int j = 0; j < addid.size(); j++)
+    os << "+ Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ntot << (ncalc_add[j]==ntot?" (complete)":" (missing)") << std::endl;
+
   // terms
-  std::string sttext = R"SQL(
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT COUNT(*)
 FROM Terms
-INNER JOIN Properties ON Properties.id = Terms.propid
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP)SQL";
-  sttext = sttext + " AND ((" + set_constraint(0) + ")";
-  for (int i = 1; i < setid.size(); i++)
-    sttext = sttext + " OR (" + set_constraint(i) + ")";
-  sttext = sttext + ");";
-  st.recycle(statement::STMT_CUSTOM,sttext);
-
+INNER JOIN Training_set ON Training_set.propid = Terms.propid
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
   int ncall = 0, ntall = 0;
   os << "+ Terms: " << std::endl;
   for (int iz = 0; iz < zat.size(); iz++){
@@ -568,15 +530,15 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.bind((char *) ":L",il);
         st.bind((char *) ":EXP",exp[ie]);
         st.step();
-        ncalc = sqlite3_column_int(st.ptr(), 0);
+        int ncalc = sqlite3_column_int(st.ptr(), 0);
         os << "| " << nameguess(zat[iz]) << " | " << inttol[il] << " | " 
-           << exp[ie] << " | " << ncalc << "/" << nall << " |" << (ncalc==nall?" (complete)":" (missing)") << std::endl;
+           << exp[ie] << " | " << ncalc << "/" << ntot << " |" << (ncalc==ntot?" (complete)":" (missing)") << std::endl;
         ncall += ncalc;
-        ntall += nall;
+        ntall += ntot;
       }
     }
   }
-  os << "+ Total terms: " << ncall << "/" << ntall << (ncalc==nall?" (complete)":" (missing)") << std::endl;
+  os << "+ Total terms: " << ncall << "/" << ntall << (ncall==ntall?" (complete)":" (missing)") << std::endl;
   os << std::endl;
 
   // clean up
@@ -638,6 +600,7 @@ SELECT Properties.nstructures, Properties.structures, Properties.coefficients, E
 FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
+INNER JOIN Training_set ON (Properties.id = Training_set.id)
 WHERE Properties.setid = :SET AND Methods.id = :METHOD
 ORDER BY Properties.orderid;
 )SQL");
