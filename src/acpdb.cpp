@@ -154,15 +154,17 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("Empty template string for ACPSPLIT");
 
         nacp[key].split(templ, tokens);
-      } else if (keyw == "ACPEVAL") {
-        std::string key = popstring(tokens);
+      } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
         acp a;
-        if (key.empty())
-          throw std::runtime_error("Need ACP name or file name in ACPEVAL");
-        else if (nacp.find(key) != nacp.end())
-          a = nacp[key];
-        else
-          a = acp(key,key);
+        if (keyw == "ACPEVAL"){
+          std::string key = popstring(tokens);
+          if (key.empty())
+            throw std::runtime_error("Need ACP name or file name in ACPEVAL");
+          else if (nacp.find(key) != nacp.end())
+            a = nacp[key];
+          else
+            a = acp(key,key);
+        }
 
         if (!tokens.empty()){
           std::ofstream of(tokens.front(),std::ios::out);

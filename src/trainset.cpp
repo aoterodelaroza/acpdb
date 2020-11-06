@@ -887,14 +887,15 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   if (n != ntot)
     throw std::runtime_error("In ACPEVAL, inconsistent ntot, set_initial_idx, and set_final_idx");
 
-
   std::streamsize prec = os.precision(7);
   os << std::fixed;
-  os << "# Evaluation: " << a.get_name() << std::endl;
+  os << "# Evaluation: " << (a?a.get_name():emptyname) << std::endl;
   os << "# Statistics: " << std::endl;
-  os << "#   2-norm  =  " << a.norm2() << std::endl;
-  os << "#   1-norm  =  " << a.norm1() << std::endl;
-  os << "#   maxcoef =  " << a.norminf() << std::endl;
+  if (a){
+    os << "#   2-norm  =  " << a.norm2() << std::endl;
+    os << "#   1-norm  =  " << a.norm1() << std::endl;
+    os << "#   maxcoef =  " << a.norminf() << std::endl;
+  }
 
   os.precision(8);
   os << "#   wrms    =  " << wrms << std::endl;

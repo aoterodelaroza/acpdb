@@ -47,6 +47,9 @@ class acp {
   acp(const std::string &name_, std::vector<term> &t_) : name(name_), t(t_) {};
   acp(const std::string &name_, term t_) : name(name_), t{} { t.push_back(t_); };
 
+  // bool operator
+  operator bool() const { return (t.size() > 0); }
+
   // Write the ACP to output stream os (human-readable version).
   void writeacp(std::ostream &os) const;
 
