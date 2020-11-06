@@ -657,12 +657,13 @@ void trainset::insert_olddat(const std::string &directory, std::list<std::string
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
 
+  // Check directory
   std::string dir = ".";
   if (!directory.empty()) dir = directory;
   if (!fs::is_directory(dir))
     throw std::runtime_error("In INSERT OLDDAT, directory not found: " + dir);
 
-  // Check that the names.dat matches. Build the list of property IDs.
+  // Check that the names.dat matches and write down the property ids
   std::list<int> propid;
   std::string name = dir + "/names.dat";
   if (!fs::is_regular_file(name))
@@ -671,34 +672,30 @@ void trainset::insert_olddat(const std::string &directory, std::list<std::string
   if (ifile.fail()) 
     throw std::runtime_error("In INSERT OLDDAT, error reading names.dat file: " + name);
   
-  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT Properties.key, Properties.id FROM Properties WHERE Properties.setid = :SET ORDER BY Properties.orderid;");
-  for (int i = 0; i < setid.size(); i++){
-    if (!set_dofit[i]) continue;
-    st.bind((char *) ":SET",setid[i]);
-
-    int n = 0;
-    while (st.step() != SQLITE_DONE){
-      if (set_mask[i][n++]){
-        // check the name
-        std::string name = (char *) sqlite3_column_text(st.ptr(), 0);
-        std::string namedat;
-        std::getline(ifile,namedat);
-        deblank(namedat);
-        if (name != namedat){
-          std::cout << "In INSERT OLDDAT, names.dat and names for the training set do not match." << std::endl;
-          std::cout << "The mismatch is:" << std::endl;
-          std::cout << "  Set: " << i << " (db-name=" << setname[i] << ", alias=" << alias[i] << ")" << std::endl;
-          std::cout << "  Item: " << n << std::endl;
-          std::cout << "  Database name: " << name << std::endl;
-          std::cout << "  names.dat name: " << namedat << std::endl;
-          return;
-        }
-
-        // write down the property id
-        propid.push_back(sqlite3_column_int(st.ptr(), 1));
-      }
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT Properties.key, Properties.id
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
+  while (st.step() != SQLITE_DONE){
+    // check the name
+    std::string namedb = (char *) sqlite3_column_text(st.ptr(), 0);
+    std::string namedat;
+    std::getline(ifile,namedat);
+    deblank(namedat);
+    if (namedb != namedat){
+      std::cout << "In INSERT OLDDAT, names.dat and names for the training set do not match." << std::endl;
+      std::cout << "The mismatch is:" << std::endl;
+      std::cout << "  Database name: " << namedb << std::endl;
+      std::cout << "  names.dat name: " << namedat << std::endl;
+      return;
     }
+    propid.push_back(sqlite3_column_int(st.ptr(),1));
   }
+  ifile.peek();
+  if (!ifile.eof())
+    throw std::runtime_error("In INSERT OLDDAT, the names.dat file contains extra lines: " + name);
   ifile.close();
   
   // Start inserting data
