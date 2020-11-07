@@ -802,7 +802,7 @@ void trainset::insert_dat(std::unordered_map<std::string,std::string> &kmap){
 
   if (kmap.find("TERM") == kmap.end()){
     // The data file corresponds to an evaluation //
-    std::ifstream ifile(kmap["FILE"],std::ios::in);
+    std::ifstream ifile(name,std::ios::in);
     if (ifile.fail()) 
       throw std::runtime_error("In INSERT DAT, error reading data file: " + name);
 
@@ -820,12 +820,77 @@ void trainset::insert_dat(std::unordered_map<std::string,std::string> &kmap){
     }
     ifile.peek();
     if (!ifile.eof())
-      throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
+      throw std::runtime_error("In INSERT DAT, the data file contains extra lines: " + name);
     ifile.close();
   } else {
     // The data file corresponds to a term //
-    printf("hello!\n");
+    std::list<std::string> tokens(list_all_words(kmap["TERM"]));
 
+    // check the atom
+    int izat_ = zatguess(popstring(tokens));
+    if (izat_ == 0)
+      throw std::runtime_error("In INSERT DAT, TERM keyword, unknown atom");
+    int iat_ = -1;
+    for (int i = 0; i < zat.size(); i++){
+      if (izat_ == zat[i]){
+        iat_ = i;
+        break;
+      }
+    }
+    if (iat_ < 0)
+      throw std::runtime_error("In INSERT DAT, TERM keyword, atom not in training set");
+    
+    // check the l
+    std::string l_ = popstring(tokens);
+    if (!isinteger(l_))
+      throw std::runtime_error("In INSERT DAT, TERM keyword, invalid angular momentum: " + l_ + " (should be an integer)");
+    int il_ = std::stoi(l_);
+    if (il_ < 0 || il_ >= lmax[iat_])
+      throw std::runtime_error("In INSERT DAT, TERM keyword, lmax " + l_ + " not in range for given atom");
+
+    // check the exponent
+    std::string exp_ = popstring(tokens);
+    if (exp_.empty())
+      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent not found");
+    double xexp;
+    try { 
+      xexp = std::stod(exp_);
+    } catch (const std::exception &e) {
+      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent is not a number");
+    }
+    int iexp_ = -1;
+    for (int i = 0; i < exp.size(); i++){
+      if (std::abs(xexp - exp[i]) < 1e-20){
+        iexp_ = i;
+        break;
+      }
+    }
+    if (iexp_ < 0)
+      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent not in training set");
+
+    std::ifstream ifile(name,std::ios::in);
+    if (ifile.fail()) 
+      throw std::runtime_error("In INSERT DAT, error reading data file: " + name);
+
+    for (int i = 0; i < propid.size(); i++){
+      std::unordered_map<std::string,std::string> smap;
+      std::string valstr;
+      std::getline(ifile,valstr);
+      if (ifile.fail()) 
+        throw std::runtime_error("In INSERT DAT, unexpected error or end of file in data file: " + name);
+
+      smap["METHOD"] = std::to_string(methodid);
+      smap["PROPERTY"] = std::to_string(propid[i]);
+      smap["ATOM"] = std::to_string(izat_);
+      smap["L"] = l_;
+      smap["EXPONENT"] = to_string_precise(exp[iexp_]);
+      smap["VALUE"] = valstr;
+      db->insert("TERM","",smap);
+    }
+    ifile.peek();
+    if (!ifile.eof())
+      throw std::runtime_error("In INSERT DAT, the term file contains extra lines: " + name);
+    ifile.close();
   }
 
   // Commit the transaction

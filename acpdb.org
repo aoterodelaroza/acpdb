@@ -412,6 +412,21 @@ EMPTYEVAL [output.s]
 
 * High-level operations
 
+INSERT DAT
+ FILE datfile.s
+ METHOD method.s
+ [TERM zat.i l.i exp.r]
+END
+
+  Insert the data file datfile.s. To do this, the training set must be
+  defined and the data file must contain exactly the same number of
+  lines as properties in the training set, with one numerical value
+  per line. If only METHOD is present, the data is inserted as an
+  evaluation for that method on the training set. If TERM is given
+  with valid atomic number (zat.i), angular momentum (l.i), and
+  exponent (exp.r) from the training set, then the data is inserted as
+  that term for the corresponding method.
+
 INSERT OLDDAT [directory.s] [NOREFERENCE]
 
   Insert data in bulk from old-style ACP data files. Requires the
