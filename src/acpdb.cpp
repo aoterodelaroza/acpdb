@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
   // Connect the output file
   if (argc == 3) {
-    ofile.reset(new std::ofstream(argv[2],std::ios::out));
+    ofile.reset(new std::ofstream(argv[2],std::ios::trunc));
     if (ofile->fail()) {
       std::cout << "Error opening file: " << argv[2] << std::endl;
       return 1;
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (!tokens.empty()){
-          std::ofstream of(tokens.front(),std::ios::out);
+          std::ofstream of(tokens.front(),std::ios::trunc);
           if (of.fail())
             throw std::runtime_error("Error opening file: " + tokens.front());
           ts.eval_acp(of,a);
@@ -175,7 +175,10 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(*os,a);
         }
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
-        ts.addatoms(tokens);
+        if (tokens.empty())
+          ts.clearatoms();
+        else
+          ts.addatoms(tokens);
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
       } else if (keyw == "REFERENCE") {
@@ -244,6 +247,8 @@ int main(int argc, char *argv[]) {
           ts.listdb(*os);
         else
           throw std::runtime_error("Unknown command in TRAINING");
+      } else if (keyw == "DUMP") {
+        ts.dump();
       } else if (keyw == "SOURCE") {
         std::string filename = popstring(tokens);
         std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));

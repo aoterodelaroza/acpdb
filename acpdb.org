@@ -265,10 +265,11 @@ END
 
 * Keywords (define the training set)
 
-ATOM|ATOMS at1.s l1.i at2.s l2.i ... 
+ATOM|ATOMS [at1.s l1.i at2.s l2.i ... ]
 
   Define the atoms for which ACPs will be fitted and the maximum
-  angular momentum channel for each.
+  angular momentum channel for each. If no atoms are given, clear
+  the atom list.
 
 EXP|EXPONENT|EXPONENTS exp1.r exp2.r ... 
 

@@ -47,6 +47,9 @@ class trainset {
   // Add atoms and max. angular momentum
   void addatoms(const std::list<std::string> &tokens);
 
+  // Clear the atom list
+  void clearatoms() { zat.clear(); lmax.clear(); }
+
   // Add exponents
   void addexp(const std::list<std::string> &tokens);
 
@@ -96,6 +99,9 @@ class trainset {
 
   // List training sets from the database
   void listdb(std::ostream &os) const;
+
+  // Write the octavedump.dat file
+  void dump() const;
 
  private:
 

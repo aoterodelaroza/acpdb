@@ -562,7 +562,7 @@ WHERE setid IN ()SQL";
     structure s;
     s.readdbrow(st.ptr());
 
-    std::ofstream ofile(fname,std::ios::out);
+    std::ofstream ofile(fname,std::ios::trunc);
     if (ofile.fail()) 
       throw std::runtime_error("Error writing xyz file " + fname);
     s.writexyz(ofile);
@@ -599,7 +599,7 @@ SELECT key FROM Structures WHERE id = ?1;
   for (int i = 0; i < setid.size(); i++){
     // open and write the din header
     std::string fname = dir + "/" + setname[i] + ".din";
-    std::ofstream ofile(fname,std::ios::out);
+    std::ofstream ofile(fname,std::ios::trunc);
     if (ofile.fail()) 
       throw std::runtime_error("Error writing din file " + fname);
     std::streamsize prec = ofile.precision(10);
@@ -1030,6 +1030,61 @@ FROM Training_set_repo;
     std::string key = (char *) sqlite3_column_text(st.ptr(), 0);
     os << "| " << key << " |" << std::endl;
   }
+}
+
+// Write the octavedump.dat file
+void trainset::dump() const {
+  printf("hello!\n");
+  std::ofstream ofile("octavedump.dat",std::ios::trunc | std::ios::binary);
+
+  // write the dimension integers first
+  int ncols = 0;
+  for (int iat = 0; iat < zat.size(); iat++)
+    ncols += exp.size() * (lmax[iat]+1);
+  int sizes[5] = {zat.size(), exp.size(), propid.size(), ncols, addid.size()};
+  ofile.write((const char *) &sizes,5*sizeof(int));
+
+  // write the atomic names
+  std::string atoms = "";
+  for (int iat = 0; iat < zat.size(); iat++){
+    std::string str = nameguess(zat[iat]);
+    if (str.size() == 1) str = str + " ";
+    atoms += str;
+  }
+  const char *atoms_c = atoms.c_str();
+  ofile.write(atoms_c,zat.size()*2*sizeof(char));
+  
+  // write the lmax vector
+  const unsigned char *lmax_c = lmax.data();
+  ofile.write((const char *) lmax_c,lmax.size()*sizeof(unsigned char));
+
+  // write the exponent vector
+  const double *exp_c = exp.data();
+  ofile.write((const char *) exp_c,exp.size()*sizeof(double));
+
+  // write the x matrix
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT Terms.value
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid;
+)SQL");
+  for (int iz = 0; iz < zat.size(); iz++){
+    for (int il = 0; il <= lmax[iz]; il++){
+      for (int ie = 0; ie < exp.size(); ie++){
+        st.reset();
+        st.bind((char *) ":METHOD",emptyid);
+        st.bind((char *) ":ATOM",(int) zat[iz]);
+        st.bind((char *) ":L",il);
+        st.bind((char *) ":EXP",exp[ie]);
+        while (st.step() != SQLITE_DONE){
+          double value = sqlite3_column_double(st.ptr(),0);
+          ofile.write((const char *) &value,sizeof(double));
+        }
+      }
+    }
+  }
+
+  ofile.close();
 }
 
 // Insert a subset into the Training_set table

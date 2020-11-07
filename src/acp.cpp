@@ -135,7 +135,7 @@ void acp::writeacp(std::string &filename) const{
   }
 
   // write the acp
-  std::ofstream ofile(filename,std::ios::out);
+  std::ofstream ofile(filename,std::ios::trunc);
   if (ofile.fail()) 
     throw std::runtime_error("Error writing ACP file " + filename);
   ofile << std::scientific;

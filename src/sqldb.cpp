@@ -835,7 +835,7 @@ WHERE setid IN ()SQL";
     structure s;
     s.readdbrow(st.ptr());
 
-    std::ofstream ofile(fname,std::ios::out);
+    std::ofstream ofile(fname,std::ios::trunc);
     if (ofile.fail()) 
       throw std::runtime_error("Error writing xyz file " + fname);
     s.writexyz(ofile);
@@ -927,7 +927,7 @@ SELECT key FROM Structures WHERE id = ?1;
   for (int i = 0; i < idset.size(); i++){
     // open and write the din header
     std::string fname = dir + "/" + nameset[i] + ".din";
-    std::ofstream ofile(fname,std::ios::out);
+    std::ofstream ofile(fname,std::ios::trunc);
     if (ofile.fail()) 
       throw std::runtime_error("Error writing din file " + fname);
     std::streamsize prec = ofile.precision(10);
