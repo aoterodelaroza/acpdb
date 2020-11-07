@@ -248,7 +248,10 @@ int main(int argc, char *argv[]) {
           ts.deletedb(name);
         else if (key == "LIST")
           ts.listdb(*os);
-        else
+        else if (key == "CLEAR"){
+          ts = trainset();
+          ts.setdb(&db);
+        } else
           throw std::runtime_error("Unknown command in TRAINING");
       } else if (keyw == "DUMP") {
         ts.dump();

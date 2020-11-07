@@ -472,6 +472,10 @@ TRAINING LIST
 
   List training sets from the database.
 
+TRAINING CLEAR
+
+  Clear the current training set.
+
 SOURCE file.s
 
   Read and execute the commands in file.s . The current working
