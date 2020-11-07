@@ -1034,15 +1034,28 @@ FROM Training_set_repo;
 
 // Write the octavedump.dat file
 void trainset::dump() const {
-  printf("hello!\n");
   std::ofstream ofile("octavedump.dat",std::ios::trunc | std::ios::binary);
 
+  // permutation for the additional methods (first fit, then nofit)
+  uint64_t nyfit = 0;
+  std::vector<int> iaddperm;
+  for (int i = 0; i < addid.size(); i++){
+    if (addisfit[i]){
+      iaddperm.push_back(i);
+      nyfit++;
+    }
+  }
+  for (int i = 0; i < addid.size(); i++)
+    if (!addisfit[i]) iaddperm.push_back(i);
+
   // write the dimension integers first
-  int ncols = 0;
-  for (int iat = 0; iat < zat.size(); iat++)
-    ncols += exp.size() * (lmax[iat]+1);
-  int sizes[5] = {zat.size(), exp.size(), propid.size(), ncols, addid.size()};
-  ofile.write((const char *) &sizes,5*sizeof(int));
+  uint64_t ncols = 0, addmaxl = 0;
+  for (int i = 0; i < zat.size(); i++)
+    ncols += exp.size() * (lmax[i]+1);
+  for (int i = 0; i < addname.size(); i++)
+    addmaxl = std::max(addmaxl,(uint64_t) addname[i].size());
+  uint64_t sizes[7] = {zat.size(), exp.size(), propid.size(), ncols, addid.size(), nyfit, addmaxl};
+  ofile.write((const char *) &sizes,7*sizeof(uint64_t));
 
   // write the atomic names
   std::string atoms = "";
@@ -1054,6 +1067,13 @@ void trainset::dump() const {
   const char *atoms_c = atoms.c_str();
   ofile.write(atoms_c,zat.size()*2*sizeof(char));
   
+  // write the additional method names
+  for (int i = 0; i < addname.size(); i++){
+    std::string name = addname[iaddperm[i]] + std::string(addmaxl-addname[iaddperm[i]].size(),' ');
+    const char *name_c = name.c_str();
+    ofile.write(name_c,addmaxl*sizeof(char));
+  }
+
   // write the lmax vector
   const unsigned char *lmax_c = lmax.data();
   ofile.write((const char *) lmax_c,lmax.size()*sizeof(unsigned char));
@@ -1061,6 +1081,10 @@ void trainset::dump() const {
   // write the exponent vector
   const double *exp_c = exp.data();
   ofile.write((const char *) exp_c,exp.size()*sizeof(double));
+
+  // write the w vector
+  const double *w_c = w.data();
+  ofile.write((const char *) w_c,w.size()*sizeof(double));
 
   // write the x matrix
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
@@ -1076,11 +1100,40 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.bind((char *) ":ATOM",(int) zat[iz]);
         st.bind((char *) ":L",il);
         st.bind((char *) ":EXP",exp[ie]);
+        int n = 0;
         while (st.step() != SQLITE_DONE){
           double value = sqlite3_column_double(st.ptr(),0);
           ofile.write((const char *) &value,sizeof(double));
         }
       }
+    }
+  }
+
+  // write the yref column
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Evaluations.value
+FROM Evaluations, Training_set
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
+)SQL");
+  st.bind((char *) ":METHOD", refid);
+  while (st.step() != SQLITE_DONE){
+    double value = sqlite3_column_double(st.ptr(),0);
+    ofile.write((const char *) &value,sizeof(double));
+  }
+
+  // write the yempty column
+  st.bind((char *) ":METHOD", emptyid);
+  while (st.step() != SQLITE_DONE){
+    double value = sqlite3_column_double(st.ptr(),0);
+    ofile.write((const char *) &value,sizeof(double));
+  }
+
+  // write the additional y columns (fit)
+  for (int i = 0; i < addid.size(); i++){
+    st.bind((char *) ":METHOD", addid[iaddperm[i]]);
+    while (st.step() != SQLITE_DONE){
+      double value = sqlite3_column_double(st.ptr(),0);
+      ofile.write((const char *) &value,sizeof(double));
     }
   }
 
