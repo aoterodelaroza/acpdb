@@ -1,0 +1,152 @@
+The octave lasso routines were written by Mark Schmidt at the UBC in 2005. See:
+
+https://www.cs.ubc.ca/~schmidtm/Software/lasso.html
+
+A copy of the webpage information follows.
+
+--
+
+This is a set of Matlab routines I wrote for the course CS542B: Non-linear Optimization by M. Friedlander. It implements a variety of ways to solve 'LASSO' problems (Least Squares with a penalty on the L1-norm of the parameters). That is, problems of the form:
+
+min(w): ||Xw - y||^2 + v|w|
+(the 'scaled norm' variant)
+
+or:
+
+min(w): ||Xw - y||^2, subject to |w| <= t
+(the 'constrained norm' variant)
+
+In the above, X is the 'n by p' design matrix, containing the p features for each of the n instances. y is the 'n by 1' regression target, and w is the 'p by 1' parameter vector that linearly transforms the rows of X to match the targets y. v and t are parameters that control the strength of the regularization. The goal is to find the w that minimizes the squared error between Xw and y, subject to the regularization.
+
+The solutions to these types of problems are the subject of intense current research in the signal processing community (among others, such as statistics and machine learning), since penalizing the L1 norm leads to sparsity in terms of w (that is, only a subset of w is non-zero, so irrelevant features should get ignored). However, the non-differentiability of the objective has led to the proposal of a large (and confusing) variety of approaches to solve these types of problems. This course project surveyed these different methods, and "Matlab-implemented" a variety of the methods.
+
+Methods
+
+There are 15 general strategies available, although several variations of these strategies are available via the 'mode' and 'mode2' parameters. Here is a high-level overview (and whether it solves the 'scaled' or 'constrained' formulation above):
+ActiveSet (constrained):
+An Active Set Quadratic Program solver designed for this problem.
+
+BlockCoordinate (scaled):
+A method that optimizes parameters blocks (uses another scaled solver as a
+sub-routine).
+
+Constrained (constrained or scaled, depending on mode):
+Formulates the problem as a constrained optimization problem (4 different
+ways), and uses a generic constrained solver (3 solvers available).
+
+GaussSeidel (scaled):
+A method that optimizes individual parameters, choosing the parameter that is
+furthest from the first-order optimality condition (bottom-up and top-down
+strategy implemented).
+
+Grafting (scaled):
+A method that optimizes a set of working parameters with standard unconstrained
+optimization using sub-gradients, and introduces parameters incrementally
+(ie. bottom-up).
+
+IteratedRidge (scaled):
+An EM-like algorithm that solves a sequence of ridge-regression problems (4
+strategies to deal with instability and 3 strategies to solve ridge problem
+available).
+
+IterativeSoftThresholding (scaled, where norm(X) is less than or equal to 1):
+A fixed-point algorithm that repeatedly applies the soft-threshold 
+operator to the current weight vector moved in the direction of steepest descent.
+
+LARS (constrained)*:
+Uses a version of the LARS algorithm where we stop at the desired value of
+lambda.
+
+NonNegativeSquared (scaled):
+Uses a reformulation in terms of non-negative-squared variables, that can be
+solved with an unconstrained optimizer.
+
+PrimalDualLogBarrier (scaled):
+An Interior Point Quadratic Program solver designed specifically for this
+problem.
+
+Projection (scaled):
+Uses a bound-constrained formulation, solved with a second-order
+gradient-projection strategy.
+
+Shooting (scaled):
+A method that optimizes individual parameters, cycling through them in order.
+
+SignConstraints (constrained):
+The algorithm of Tibshirani, where a sequence of Quadratic Programs are solved,
+each having 1 additional constraint.
+
+SubGradient (scaled):
+A sub-gradient strategy based on the first-order optimality conditions.
+
+UnconstrainedApx (scaled):
+Uses a smooth approximation to |w|_1, and solves with an unconstrained
+optimizer (3 approximations available).  Also implements a strategy where the
+approximation is deformed into |w|_1 to speed convergence.
+*This method is not available in the on-line package. Contact me if you want this additional method, or use the nice implementation of LARS by Karl Sjöstrand available here (which can be used to compute the entire regularization path).
+Usage
+
+All the methods have a common interface:
+w = Lasso*(X,y,lambda)
+(where * is one of the methods above, and the third parameter serves the purpose of v in the 'scaled' formulations or t in the 'constrained' formulations)
+Many of the methods have additional parameters that can be passed as additional arguments using {field,value} pairs. For example, to turn off verbosity and use a different strategy for solving for the Newton direction in the Primal-Dual method, use:
+w = LassoPrimalDualLogBarrier(X,y,lambda,'verbose',0,'mode',1);
+
+Example
+
+After adding the 'lasso' and 'lasso/sub' directories to the Matlab path, running 'example_lasso' will load a data set, then run the various 'scaled' solvers and show their result (it should be the same across methods), then pause. After resuming, it will run the various 'constrained' solvers with the corresponding value of 't' and show their result.
+Download
+
+The complete set of .m files are available here. The report for the class project is available here.
+
+Citations
+
+If you use this code in a publication, please cite the work using the following information:
+M. Schmidt. Least Squares Optimization with L1-Norm Regularization. CS542B Project Report, 2005.
+Warm-Starting
+
+On September 17 2009, I put an updated version of LassoActiveSet.m into the archive that supports 'warm-starting'. This may be able to solve problems much faster if you have a good initialization. For example, if you run 'example_lasso_warmStart.m', it will produce output similar to:
+Running with cold start
+      iter            n(w)         n(step)            f(w) opt(wi)  free
+         1       0.00e+000       0.00e+000       2.65e+004     0     0
+         2       3.08e+000       3.08e+000       2.65e+004     1     1
+         3       5.37e+000       2.32e+000       2.23e+004     2     2
+         4       7.58e+000       2.22e+000       1.94e+004     3     3
+         5       9.66e+000       2.16e+000       1.76e+004     4     4
+         6       1.10e+001       2.15e+000       1.57e+004    18     5
+         7       1.10e+001       2.54e+000       1.41e+004    56     6
+         8       1.10e+001       2.90e+000       1.31e+004    77     7
+         9       1.10e+001       1.99e+000       1.20e+004    85     8
+        10       1.10e+001       1.82e+000       1.15e+004    87     9
+        11       1.10e+001       1.37e+000       1.11e+004    88    10
+        12       1.10e+001       8.46e-001       1.09e+004    90    11
+        13       1.10e+001       8.94e-001       1.08e+004    93    12
+        14       1.10e+001       4.25e-001       1.07e+004    94    13
+        15       1.10e+001       2.99e-001       1.07e+004    95    14
+        16       1.10e+001       2.24e-001       1.06e+004    96    15
+        17       1.10e+001       2.02e-001       1.06e+004    98    16
+        18       1.10e+001       1.30e-001       1.06e+004    99    17
+        19       1.10e+001       4.25e-002       1.06e+004   100    18
+All Components satisfy condition
+Number of iterations: 19
+
+
+Running with warm start
+      iter            n(w)         n(step)            f(w) opt(wi)  free
+         1       1.10e+001       1.00e+000       1.16e+004    99    17
+         2       1.10e+001       4.25e-002       1.06e+004   100    18
+All Components satisfy condition
+Number of iterations: 2
+
+max_difference_between_cold_and_warm_start_solutions =
+
+  1.5543e-015
+In this case, the good initialization of the active set method reduces the number of iterations from 19 down to 2.
+L1General
+
+The L1General package contains a variety of the newer methods available for solving L1-regularization problems, and also addresses the more general case where the squared error is replaced by a general differentiable function.
+Updates
+
+In 2017, the package was updated after fixing a bug in the computeSlope.m function found by Jundong Li (this results in minor changes in th performance of some methods). 
+
+Mark Schmidt > Software > lasso 
