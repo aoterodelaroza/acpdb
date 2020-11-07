@@ -1102,39 +1102,37 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.bind((char *) ":EXP",exp[ie]);
         int n = 0;
         while (st.step() != SQLITE_DONE){
+          if (n++ >= propid.size())
+            throw std::runtime_error("Too many rows dumping terms data");
           double value = sqlite3_column_double(st.ptr(),0);
           ofile.write((const char *) &value,sizeof(double));
         }
+        if (n != propid.size())
+          throw std::runtime_error("Too few rows dumping terms data");
       }
     }
   }
 
-  // write the yref column
+  // write the yref, yempt, and yadd columns
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Evaluations.value
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
 )SQL");
-  st.bind((char *) ":METHOD", refid);
-  while (st.step() != SQLITE_DONE){
-    double value = sqlite3_column_double(st.ptr(),0);
-    ofile.write((const char *) &value,sizeof(double));
-  }
-
-  // write the yempty column
-  st.bind((char *) ":METHOD", emptyid);
-  while (st.step() != SQLITE_DONE){
-    double value = sqlite3_column_double(st.ptr(),0);
-    ofile.write((const char *) &value,sizeof(double));
-  }
-
-  // write the additional y columns (fit)
-  for (int i = 0; i < addid.size(); i++){
-    st.bind((char *) ":METHOD", addid[iaddperm[i]]);
+  std::vector<int> ids = {refid,emptyid};
+  for (int i = 0; i < addid.size(); i++)
+    ids.push_back(addid[iaddperm[i]]);
+  for (int i = 0; i < ids.size(); i++){
+    st.bind((char *) ":METHOD", ids[i]);
+    int n = 0;
     while (st.step() != SQLITE_DONE){
+      if (n++ >= propid.size())
+        throw std::runtime_error("Too many rows dumping y data");
       double value = sqlite3_column_double(st.ptr(),0);
       ofile.write((const char *) &value,sizeof(double));
     }
+    if (n != propid.size())
+      throw std::runtime_error("Too few rows dumping y data");
   }
 
   ofile.close();
