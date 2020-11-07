@@ -2,7 +2,7 @@
 
 * Command-line syntax
 
-apcfit -h [inputfile [outputfile]]
+apcdb -h [inputfile [outputfile]]
 
 The input file is a keyword-driven case-insensitive text
 file. Comments are #. If the input or the output file are not present,

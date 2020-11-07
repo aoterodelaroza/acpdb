@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS Training_set (
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
 DELETE FROM Training_set;
-CREATE UNIQUE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid);
+CREATE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid);
 )SQL");
   st.execute();
 }
@@ -533,6 +533,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   os.precision(prec);
 }
 
+// Write the structures in the training set as xyz files
 void trainset::write_xyz(const std::list<std::string> &tokens) const{
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE XYZ");
@@ -570,6 +571,7 @@ WHERE setid IN ()SQL";
 
 }
 
+// Write the din files in the training set
 void trainset::write_din(const std::list<std::string> &tokens) const{
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE DIN");
