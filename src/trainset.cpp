@@ -643,7 +643,7 @@ void trainset::insert_olddat(const std::string &directory, std::list<std::string
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
   if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
+    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see missing data)");
 
   // Check directory
   std::string dir = ".";
@@ -774,6 +774,58 @@ ORDER BY Training_set.id;
         ifile.close();
       }
     }
+  }
+
+  // Commit the transaction
+  db->commit_transaction();
+}
+
+// Insert data from a dat file into the database
+void trainset::insert_dat(std::unordered_map<std::string,std::string> &kmap){
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using INSERT DAT");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using INSERT DAT (use DESCRIBE to see missing data)");
+
+  if (kmap.find("FILE") == kmap.end() || kmap["FILE"].empty())
+    throw std::runtime_error("INSERT DAT requires a data file (use the FILE keyword)");
+  std::string name = kmap["FILE"];
+
+  if (kmap.find("METHOD") == kmap.end() || kmap["METHOD"].empty())
+    throw std::runtime_error("INSERT DAT requires a method (use the METHOD keyword)");
+  int methodid = db->find_id_from_key(kmap["METHOD"],statement::STMT_QUERY_METHOD);
+  if (!methodid)
+    throw std::runtime_error("Unknown method in INSERT DAT: " + kmap["METHOD"]);
+    
+  // Start inserting data
+  db->begin_transaction();
+
+  if (kmap.find("TERM") == kmap.end()){
+    // The data file corresponds to an evaluation //
+    std::ifstream ifile(kmap["FILE"],std::ios::in);
+    if (ifile.fail()) 
+      throw std::runtime_error("In INSERT DAT, error reading data file: " + name);
+
+    for (int i = 0; i < propid.size(); i++){
+      std::unordered_map<std::string,std::string> smap;
+      std::string valstr;
+      std::getline(ifile,valstr);
+      if (ifile.fail()) 
+        throw std::runtime_error("In INSERT DAT, unexpected error or end of file in data file: " + name);
+
+      smap["METHOD"] = std::to_string(methodid);
+      smap["PROPERTY"] = std::to_string(propid[i]);
+      smap["VALUE"] = valstr;
+      db->insert("EVALUATION","",smap);
+    }
+    ifile.peek();
+    if (!ifile.eof())
+      throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
+    ifile.close();
+  } else {
+    // The data file corresponds to a term //
+    printf("hello!\n");
+
   }
 
   // Commit the transaction

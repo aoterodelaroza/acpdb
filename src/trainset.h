@@ -73,6 +73,9 @@ class trainset {
   // template
   void insert_olddat(const std::string &directory, std::list<std::string> &tokens);
 
+  // Insert data from a dat file into the database
+  void insert_dat(std::unordered_map<std::string,std::string> &kmap);
+
   // Is the training set defined?
   inline bool isdefined() const{
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
