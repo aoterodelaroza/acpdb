@@ -94,10 +94,18 @@ class sqldb {
   // Write input files for a database set
   void write_set_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
-  // Write an input file for structure id in the database with
-  // property type type. Optional keywords go in the gmap map. Put the
+  // Write the structures with IDs given by the keys in smap. The
+  // values of smap give the types (xyz for an xyz file or
+  // energy_difference, etc. for an input file).  gmap, dir, a: see
+  // write_one_structure.
+  void write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap = {}, const std::string &dir = "./", const acp &a = {});
+
+  // Write the structure id in the database. type can be either "xyz"
+  // to write an xyz file or the property type
+  // (energy_difference,etc.)  for an input file. Optional keywords go
+  // in the gmap map, and are type- and structure dependent. Put the
   // file in directory dir and use ACP a in it.
-  void write_one_input(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap, const std::string &dir = "./", const acp &a = {});
+  void write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap = {}, const std::string &dir = "./", const acp &a = {});
 
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);

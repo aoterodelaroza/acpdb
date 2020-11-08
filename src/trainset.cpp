@@ -1323,9 +1323,8 @@ WHERE Properties.property_type = Property_types.id AND Properties.id = Training_
       smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
   }
 
-  // write the inputs one by one
-  for (auto it = smap.begin(); it != smap.end(); it++)
-    db->write_one_input(it->first,it->second,gmap,dir,a);
+  // write the inputs
+  db->write_many_structures(smap,gmap,dir,a);
 }
 
 // Insert a subset into the Training_set table

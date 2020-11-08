@@ -1068,15 +1068,25 @@ WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQ
       smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
   }
   
-  // write the inputs one by one
-  for (auto it = smap.begin(); it != smap.end(); it++)
-    write_one_input(it->first,it->second,gmap,dir,a);
+  // write the inputs
+  write_many_structures(smap,gmap,dir,a);
 }
 
-// Write an input file for structure id in the database with
-// property type type. Optional keywords go in the gmap map. Put the
+// Write the structures with IDs given by the keys in smap. The
+// values of smap give the types (xyz for an xyz file or
+// energy_difference, etc. for an input file).  gmap, dir, a: see
+// write_one_structure.
+void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+  for (auto it = smap.begin(); it != smap.end(); it++)
+    write_one_structure(it->first,it->second,gmap,dir,a);
+}
+
+// Write the structure id in the database. type can be either "xyz"
+// to write an xyz file or the property type
+// (energy_difference,etc.)  for an input file. Optional keywords go
+// in the gmap map, and are type- and structure dependent. Put the
 // file in directory dir and use ACP a in it.
-void sqldb::write_one_input(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+void sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
 
   // get the structure and build the file name
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -1094,14 +1104,20 @@ FROM Structures WHERE id = ?1;
   s.readdbrow(st.ptr());
 
   // append the extension and open the file stream
-  if (ismolecule)
-    name = name + ".gjf";
-  else
+  if (ismolecule) {
+    if (type == "xyz")
+      name = name + ".xyz";
+    else
+      name = name + ".gjf";
+  } else {
     throw std::runtime_error("Cannot do crystals yet");
+  }
   std::ofstream ofile(name,std::ios::trunc);
 
   // write the input file
-  if (type == "energy_difference" && ismolecule){
+  if (type == "xyz" && ismolecule) {
+    
+  } else if (type == "energy_difference" && ismolecule){
     if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
     std::string methodk = gmap.at("METHOD");
     std::string gbsk = "";
