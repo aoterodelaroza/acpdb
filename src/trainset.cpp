@@ -544,35 +544,27 @@ void trainset::write_xyz(const std::list<std::string> &tokens) const{
   if (setid.empty())
     throw std::runtime_error("There are no sets in the training set (WRITE XYZ)");
   
+  // directory
   std::string dir = ".";
   if (!tokens.empty()) dir = tokens.front();
-  
   if (!fs::is_directory(tokens.front()))
     throw std::runtime_error("In WRITE XYZ, directory not found: " + dir);
 
-   std::string sttext = R"SQL(
-SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
-FROM Structures
-WHERE setid IN ()SQL";
-   sttext = sttext + std::to_string(setid[0]);
-  for (int i = 1; i < setid.size(); i++)
-    sttext = sttext + "," + std::to_string(setid[i]);
-  sttext = sttext + ");";
-  statement st(db->ptr(),statement::STMT_CUSTOM,sttext);
-
+  // collect the structure indices for the training set
+  std::unordered_map<int,std::string> smap;
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT DISTINCT Properties.nstructures, Properties.structures
+FROM Properties, Property_types, Training_set
+WHERE Properties.id = Training_set.propid;)SQL");
   while (st.step() != SQLITE_DONE){
-    std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
-    std::string fname = dir + "/" + key + ".xyz";
-
-    structure s;
-    s.readdbrow(st.ptr());
-
-    std::ofstream ofile(fname,std::ios::trunc);
-    if (ofile.fail()) 
-      throw std::runtime_error("Error writing xyz file " + fname);
-    s.writexyz(ofile);
+    int n = sqlite3_column_int(st.ptr(),0);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+    for (int i = 0; i < n; i++)
+      smap[str[i]] = "xyz";
   }
 
+  // write the inputs
+  db->write_many_structures(smap,{},dir);
 }
 
 // Write the din files in the training set
