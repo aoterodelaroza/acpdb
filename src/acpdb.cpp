@@ -138,6 +138,23 @@ int main(int argc, char *argv[]) {
             nacp[key].writeacp(*os);
           else
             nacp[key].writeacp(file);
+        } else {
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+
+          // get the ACP
+          acp a;
+          if (kmap.find("ACP") != kmap.end()){
+            std::string acpname = kmap["ACP"];
+            if (nacp.find(acpname) != nacp.end())
+              a = nacp[acpname];
+            else
+              a = acp(acpname,acpname);
+          }
+
+          if (kmap.find("SET") == kmap.end())
+            printf("fixme!\n");
+          else
+            db.write_set_inputs(kmap,a);
         }
       } else if (keyw == "ACPINFO") {
         std::string key = popstring(tokens);

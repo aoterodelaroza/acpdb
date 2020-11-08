@@ -1019,3 +1019,70 @@ SELECT id FROM Structures WHERE id = ?1;
     }
   }  
 }
+
+// Write input files for a database set
+void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+  if (!db) 
+    throw std::runtime_error("Error reading connected database");
+  
+  // method
+  if (kmap.find("METHOD") == kmap.end())
+    throw std::runtime_error("A METHOD must be given to write the input files for a set");
+  std::string methodname = kmap["METHOD"];
+  int methodid = find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
+  if (methodid == 0)
+    throw std::runtime_error("Unknown METHOD in write_set_inputs");
+
+  // set
+  if (kmap.find("SET") == kmap.end())
+    throw std::runtime_error("A SET must be given to write the input files for a set");
+  std::string setname = kmap["SET"];
+  int setid = find_id_from_key(setname,statement::STMT_QUERY_SET);
+  if (setid == 0)
+    throw std::runtime_error("Unknown SET in write_set_inputs");
+
+  // directory
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap["DIRECTORY"];
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+
+  // collect the structure indices for this set (better here than in
+  // the Sets table).
+  std::unordered_map<int,bool> smap;
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT nstructures, structures
+FROM Properties, Structures
+WHERE Properties.setid = ?1)SQL");
+  st.bind(1,setid);
+  while (st.step() != SQLITE_DONE){
+    int n = sqlite3_column_int(st.ptr(),0);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+    for (int i = 0; i < n; i++)
+      smap[str[i]] = true;
+  }
+  
+  // write the inputs one by one
+  for (auto it = smap.begin(); it != smap.end(); it++)
+    write_one_input(it->first,methodid,dir,a);
+
+}
+
+// Write an input file for structure id in the database. Put the file in
+// directory dir and use ACP a in it.
+void sqldb::write_one_input(int id, int methodid, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+  
+  // get the structure and build the file name
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
+FROM Structures WHERE id = ?1;
+)SQL");
+  st.bind(1,id);
+  st.step();
+  std::string name = dir + "/" + std::string((char *) sqlite3_column_text(st.ptr(), 0));
+
+  std::cout << name << std::endl;
+}
+
