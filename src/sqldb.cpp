@@ -528,12 +528,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
   // Check sanity of the keywords
   bool havemethod = (kmap.find("METHOD") != kmap.end());
 
-  std::string dir = ".";
-  if (kmap.find("DIRECTORY") != kmap.end()){
-    dir = kmap["DIRECTORY"];
-    if (!fs::is_directory(dir))
-      throw std::runtime_error("Directory " + dir + " not found");
-  }
+  std::string dir = fetch_directory(kmap);
 
   std::string din = kmap["DIN"];
   if (!fs::is_regular_file(din))
@@ -835,12 +830,7 @@ void sqldb::list_din(std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST DIN");
 
   // get the directory
-  std::string dir = ".";
-  if (kmap.find("DIRECTORY") != kmap.end()){
-    dir = kmap["DIRECTORY"];
-    if (!fs::is_directory(dir))
-      throw std::runtime_error("Directory " + dir + " not found");
-  }
+  std::string dir = fetch_directory(kmap);
 
   // get the list of sets
   auto im = kmap.find("SET");
