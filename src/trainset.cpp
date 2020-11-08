@@ -1283,6 +1283,47 @@ ORDER BY Training_set.id;
   ofile.close();
 }
 
+// Write input files for the training set structures
+void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using WRITE");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using WRITE");
+
+  // method
+  if (kmap.find("METHOD") == kmap.end())
+    throw std::runtime_error("A METHOD must be given to write the input files for the training set");
+  std::string methodname = kmap["METHOD"];
+  int methodid = db->find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
+  if (methodid == 0)
+    throw std::runtime_error("Unknown METHOD in write_inputs");
+
+  // directory
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap["DIRECTORY"];
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+
+  // collect the structure indices for the training set
+  std::unordered_map<int,std::string> smap;
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
+FROM Properties, Property_types, Training_set
+WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid;)SQL");
+  while (st.step() != SQLITE_DONE){
+    int n = sqlite3_column_int(st.ptr(),1);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+    for (int i = 0; i < n; i++)
+      smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+  }
+
+  // write the inputs one by one
+  for (auto it = smap.begin(); it != smap.end(); it++)
+    db->write_one_input(it->first,methodid,it->second,dir,a);
+}
+
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){
   db->begin_transaction();

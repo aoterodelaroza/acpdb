@@ -106,6 +106,9 @@ class trainset {
   // Write the octavedump.dat file
   void dump() const;
 
+  // Write input files for the training set structures
+  void write_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a);
+
   // Returns true if the argument is a known set alias
   inline bool isalias(const std::string &str) const{
     return (std::find(alias.begin(),alias.end(),str) != alias.end());

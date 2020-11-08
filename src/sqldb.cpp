@@ -1054,7 +1054,7 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   std::unordered_map<int,std::string> smap;
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT Property_types.key, Properties.nstructures, Properties.structures
-FROM Properties, Structures, Property_types
+FROM Properties, Property_types
 WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
   st.bind(1,setid);
   while (st.step() != SQLITE_DONE){
@@ -1067,7 +1067,6 @@ WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQ
   // write the inputs one by one
   for (auto it = smap.begin(); it != smap.end(); it++)
     write_one_input(it->first,methodid,it->second,dir,a);
-
 }
 
 // Write an input file for structure id in the database with

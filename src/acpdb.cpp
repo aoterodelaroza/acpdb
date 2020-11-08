@@ -176,8 +176,8 @@ int main(int argc, char *argv[]) {
               a = acp(acpname,acpname);
           }
           if (kmap.find("SET") == kmap.end()){
-            // no set has been given
-            printf("fixme!\n");
+            // no set has been given, the whole training set (without repetitions)
+            ts.write_inputs(kmap,a);
           } else if (ts.isalias(kmap["SET"])){
             // set is an alias from the training set
             kmap["SET"] = ts.alias_to_setname(kmap["SET"]);
