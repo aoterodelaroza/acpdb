@@ -43,6 +43,12 @@ std::list<std::string> list_all_words(const std::string &line);
 // the key. If the key END or the eof() is found, return the map.
 std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream &is, bool toupper = false);
 
+// Read fields from string str with field deliminter ;. Each field
+// must be of the form a=b. Build a map containing "a" as the key and
+// "b" as the value. If toupper, capitalize the key. Then, return the
+// map.
+std::unordered_map<std::string,std::string> map_keyword_pairs(const std::string &str, char delim = ';', bool toupper = false);
+
 // Get and remove front from list of strings. If the list is empty,
 // return a zero-length string.
 std::string popstring(std::list<std::string> &list, bool toupper = false);

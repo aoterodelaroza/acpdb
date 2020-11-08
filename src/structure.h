@@ -62,9 +62,10 @@ class structure {
   // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
   int writexyz(std::ostream &os) const;
 
-  // Write a Gaussian input file to output stream os. Return non-zero
-  // if error; 0 if correct.
-  int writegjf(std::ostream &os, const std::string &root, const acp &a) const;
+  // Write a Gaussian input file to output stream os. keyw = method
+  // keyword. gbs = basis set file. root = root of the file name. a =
+  // ACP used. Return non-zero if error; 0 if correct.
+  int writegjf(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, const acp &a) const;
 
   // Read the structure from a database row obtained via
   // SELECT. Non-zero if error, 0 if correct. The SELECT order is:

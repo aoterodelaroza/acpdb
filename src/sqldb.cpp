@@ -205,7 +205,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
 
     // bind
     stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
-    std::forward_list<std::string> vlist = {"COMP_DETAILS","LITREFS","DESCRIPTION"};
+    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","LITREFS","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
       im = kmap.find(*it);
       if (im != kmap.end())
@@ -721,9 +721,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,    1,              2,        3,            4};
     type = statement::STMT_LIST_SET;
   } else if (category == "METHOD"){
-    headers = { "id","key","comp_details","litrefs","description"};
-    types   = {t_int,t_str,         t_str,    t_str,        t_str};
-    cols    = {    0,    1,             2,        3,            4};
+    headers = { "id","key","gaussian_keyword","litrefs","description"};
+    types   = {t_int,t_str,             t_str,    t_str,        t_str};
+    cols    = {    0,    1,                 2,        3,            4};
     type = statement::STMT_LIST_METHOD;
   } else if (category == "STRUCTURE"){
     headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
@@ -1025,13 +1025,17 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   if (!db) 
     throw std::runtime_error("Error reading connected database");
   
-  // method
+  // Unpack the Gaussian keyword into a map
   if (kmap.find("METHOD") == kmap.end())
     throw std::runtime_error("A METHOD must be given to write the input files for a set");
   std::string methodname = kmap["METHOD"];
-  int methodid = find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
-  if (methodid == 0)
-    throw std::runtime_error("Unknown METHOD in write_set_inputs");
+  statement st(db,statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
+  st.bind(1,methodname);
+  st.step();
+  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
+    throw std::runtime_error("METHOD is unknown or has no Gaussian keyword in write_set_inputs");
+  std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
+  std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
 
   // set
   if (kmap.find("SET") == kmap.end())
@@ -1052,7 +1056,7 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   // collect the structure indices for this set (better here than in
   // the Sets table).
   std::unordered_map<int,std::string> smap;
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types
 WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
@@ -1066,14 +1070,14 @@ WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQ
   
   // write the inputs one by one
   for (auto it = smap.begin(); it != smap.end(); it++)
-    write_one_input(it->first,methodid,it->second,dir,a);
+    write_one_input(it->first,it->second,gmap,dir,a);
 }
 
 // Write an input file for structure id in the database with
-// property type type. Put the file in directory dir and use ACP a
-// in it.
-void sqldb::write_one_input(int id, int methodid, const std::string type, const std::string &dir/*="./"*/, const acp &a/*={}*/){
-  
+// property type type. Optional keywords go in the gmap map. Put the
+// file in directory dir and use ACP a in it.
+void sqldb::write_one_input(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+
   // get the structure and build the file name
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
@@ -1098,7 +1102,12 @@ FROM Structures WHERE id = ?1;
 
   // write the input file
   if (type == "energy_difference" && ismolecule){
-    if (s.writegjf(ofile,fileroot,a))
+    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
+    std::string methodk = gmap.at("METHOD");
+    std::string gbsk = "";
+    if (gmap.find("GBS") != gmap.end()) gbsk = gmap.at("GBS");
+
+    if (s.writegjf(ofile,methodk,gbsk,fileroot,a))
       throw std::runtime_error("Error writing input file: " + name);
   } else {
     throw std::runtime_error("Unknown combination of structure and property type");

@@ -147,14 +147,14 @@ LIST SET
   List the known sets.
 
 INSERT METHOD name.s
-  COMP_DETAILS ...
+  GAUSSIAN_KEYWORD ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
   DESCRIPTION ...
 END    
 
-  Insert a computational method with name name.s in the database. The
-  method has computational details COMP_DETAILS. LITREFS: literature
-  references. DESCRIPTION: a description of the method.
+  Insert a computational method with name name.s in the database. To
+  run in Gaussian, use the keywords GAUSSIAN_KEYWORD. LITREFS:
+  literature references. DESCRIPTION: a description of the method.
 
 DELETE METHOD [method.s|method.i]
 
@@ -540,11 +540,11 @@ END
 
 ** Table 4: methods
 
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  key           TEXT UNIQUE NOT NULL,
-  comp_details  TEXT,
-  litrefs       TEXT,
-  description   TEXT
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  key              TEXT UNIQUE NOT NULL,
+  gaussian_keyword TEXT,
+  litrefs          TEXT,
+  description      TEXT
 
 ** Table 5: structures
 

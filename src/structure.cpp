@@ -69,9 +69,10 @@ int structure::writexyz(std::ostream &os) const {
   return write_coordinate_block(os,true);
 }
 
-// Write a Gaussian input file to output stream os. Return non-zero if
-// error; 0 if correct.
-int structure::writegjf(std::ostream &os, const std::string &root, const acp &a) const {
+// Write a Gaussian input file to output stream os. keyw = method
+// keyword. gbs = basis set file. root = root of the file name. a =
+// ACP used. Return non-zero if error; 0 if correct.
+int structure::writegjf(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, const acp &a) const{
   if (!ismol || !x || !z) return 1;
 
   // header
@@ -79,7 +80,7 @@ int structure::writegjf(std::ostream &os, const std::string &root, const acp &a)
      << "%mem=" << globals::mem << "GB" << std::endl
      << "%nproc=" << globals::ncpu << std::endl
      << "#t " 
-     << "B3LYP/sto-3g "
+     << keyw << " "
      << (a?"pseudo=read ":"")
      << "Symm=none int=(grid=ultrafine) guess=(read,tcheck) output=wfx" << std::endl
      << std::endl << "title" << std::endl << std::endl;
@@ -90,6 +91,11 @@ int structure::writegjf(std::ostream &os, const std::string &root, const acp &a)
   if (res) return res;
   os << std::endl;
 
+  // gen basis set
+  if (!gbs.empty())
+    os << "@" << gbs << "/N" << std::endl << std::endl;
+
+  // acp
   if (a){
     a.writeacp_gaussian(os);
     os << std::endl;

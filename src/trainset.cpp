@@ -1294,9 +1294,13 @@ void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, c
   if (kmap.find("METHOD") == kmap.end())
     throw std::runtime_error("A METHOD must be given to write the input files for the training set");
   std::string methodname = kmap["METHOD"];
-  int methodid = db->find_id_from_key(methodname,statement::STMT_QUERY_METHOD);
-  if (methodid == 0)
-    throw std::runtime_error("Unknown METHOD in write_inputs");
+  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
+  st.bind(1,methodname);
+  st.step();
+  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
+    throw std::runtime_error("METHOD is unknown or has no Gaussian keyword in write_inputs");
+  std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
+  std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
 
   // directory
   std::string dir = ".";
@@ -1308,7 +1312,7 @@ void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, c
 
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types, Training_set
 WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid;)SQL");
@@ -1321,7 +1325,7 @@ WHERE Properties.property_type = Property_types.id AND Properties.id = Training_
 
   // write the inputs one by one
   for (auto it = smap.begin(); it != smap.end(); it++)
-    db->write_one_input(it->first,methodid,it->second,dir,a);
+    db->write_one_input(it->first,it->second,gmap,dir,a);
 }
 
 // Insert a subset into the Training_set table

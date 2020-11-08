@@ -79,6 +79,38 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream &is, 
   return result;
 }
 
+// Read fields from string str with field deliminter ;. Each field
+// must be of the form a=b. Build a map containing "a" as the key and
+// "b" as the value. If toupper, capitalize the key. Then, return the
+// map.
+std::unordered_map<std::string,std::string> map_keyword_pairs(const std::string &str, char delim/*=';'*/, bool toupper/*=false*/){
+
+  std::unordered_map<std::string,std::string> res;
+  std::string line = str;
+
+  while (true){
+    std::size_t id = line.find_first_of(delim);
+    std::string field = line.substr(0,id);
+    if (field.empty()) break;
+
+    std::size_t eid = field.find_first_of('=');
+    if (eid == std::string::npos) continue;
+    std::string key = field.substr(0,eid);
+    std::string val = field.substr(eid+1);
+
+    deblank(key);
+    deblank(val);
+    if (toupper) uppercase(key);
+    res[key] = val;
+
+    if (id == std::string::npos) break;
+    line = line.substr(id+1);
+  }
+
+  return res;
+}
+
+
 // Get and remove front from list of strings. If toupper is true,
 // convert the string to uppercase.
 std::string popstring(std::list<std::string> &list, bool toupper){

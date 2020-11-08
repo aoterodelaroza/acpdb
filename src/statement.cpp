@@ -48,11 +48,11 @@ CREATE TABLE Sets (
   FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
 );
 CREATE TABLE Methods (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  key           TEXT UNIQUE NOT NULL,
-  comp_details  TEXT,
-  litrefs       TEXT,
-  description   TEXT
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  key              TEXT UNIQUE NOT NULL,
+  gaussian_keyword TEXT,
+  litrefs          TEXT,
+  description      TEXT
 );
 CREATE TABLE Structures (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -207,7 +207,7 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_METHOD] = 
 R"SQL(
-SELECT id,key,comp_details,litrefs,description
+SELECT id,key,gaussian_keyword,litrefs,description
 FROM Methods
 ORDER BY id;
 )SQL",
@@ -229,8 +229,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_METHOD] =
 R"SQL(
-INSERT INTO Methods (key,comp_details,litrefs,description)
-       VALUES(:KEY,:COMP_DETAILS,:LITREFS,:DESCRIPTION);
+INSERT INTO Methods (key,gaussian_keyword,litrefs,description)
+       VALUES(:KEY,:GAUSSIAN_KEYWORD,:LITREFS,:DESCRIPTION);
 )SQL",
 
 [statement::STMT_QUERY_METHOD] = 
