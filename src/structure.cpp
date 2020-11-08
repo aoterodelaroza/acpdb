@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <cstring>
 #include "parseutils.h"
+#include "globals.h"
 
 // Read an xyz file. Return non-zero if error; 0 if correct.
 int structure::readxyz(const std::string &filename){
@@ -75,8 +76,8 @@ int structure::writegjf(std::ostream &os, const std::string &root, const acp &a)
 
   // header
   os << "%chk=" << root << ".chk" << std::endl
-     << "%mem=" << 2 << "GB" << std::endl
-     << "%nproc=" << 4 << std::endl
+     << "%mem=" << globals::mem << "GB" << std::endl
+     << "%nproc=" << globals::ncpu << std::endl
      << "#t " 
      << "B3LYP/sto-3g "
      << (a?"pseudo=read ":"")

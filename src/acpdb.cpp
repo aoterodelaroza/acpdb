@@ -26,19 +26,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqldb.h"
 #include "trainset.h"
 #include "parseutils.h"
+#include "globals.h"
 
 #ifdef BTPARSE_FOUND  
 #include "btparse.h"
 #endif
 
+// namespace alias
 namespace fs = std::filesystem;
+
+// global variables (globals.h)
+int globals::ncpu = 4;
+int globals::mem = 2;
 
 // variables for managing the input and output streams
 static std::istream *is;
 static std::ostream *os;
 static std::stack< std::shared_ptr<std::ifstream> > ifile = {};
 static std::shared_ptr<std::ofstream> ofile = nullptr;
-std::unordered_map<std::string,acp> nacp;
+static std::unordered_map<std::string,acp> nacp;
 
 // database and training set
 static sqldb db;
@@ -120,7 +126,19 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
-      if (keyw == "ACP") {
+      if (keyw == "NCPU") {
+        if (!isinteger(tokens.front()))
+          throw std::runtime_error("NCPU must be an integer greater than zero");
+        globals::ncpu = std::stoi(tokens.front());
+        if (globals::ncpu <= 0)
+          throw std::runtime_error("NCPU must be an integer greater than zero");
+      } else if (keyw == "MEM") {
+        if (!isinteger(tokens.front()))
+          throw std::runtime_error("MEM must be an integer greater than zero");
+        globals::mem = std::stoi(tokens.front());
+        if (globals::mem <= 0)
+          throw std::runtime_error("MEM must be an integer greater than zero");
+      } else if (keyw == "ACP") {
         std::string name = popstring(tokens);
         if (tokens.empty())
           nacp[name] = acp(name,*is);

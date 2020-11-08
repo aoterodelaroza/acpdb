@@ -36,6 +36,16 @@ Whenver set names are required, an asterisk stands for the current
 training set. When a method name is required, an asterisk stands for
 the method used in the original reference.
 
+* Global variables
+
+NCPU ncpu.i
+
+  Set the number of processors for the input writers.
+
+MEM mem.i
+
+  Set the amount of memory (in GB) for the input writers.
+
 * Keywords (database build)
 
 CREATE acpdb_file.s
