@@ -1282,29 +1282,17 @@ void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, c
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using WRITE");
 
-  // method
+  // unpack the gaussian keyword into a map for this method
   if (kmap.find("METHOD") == kmap.end())
     throw std::runtime_error("A METHOD must be given to write the input files for the training set");
-  std::string methodname = kmap["METHOD"];
-  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
-  st.bind(1,methodname);
-  st.step();
-  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
-    throw std::runtime_error("METHOD is unknown or has no Gaussian keyword in write_inputs");
-  std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
-  std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
+  auto gmap = db->get_gaussian_map(kmap["METHOD"]);
 
   // directory
-  std::string dir = ".";
-  if (kmap.find("DIRECTORY") != kmap.end()){
-    dir = kmap["DIRECTORY"];
-    if (!fs::is_directory(dir))
-      throw std::runtime_error("Directory " + dir + " not found");
-  }
+  std::string dir = fetch_directory(kmap);
 
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types, Training_set
 WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid;)SQL");

@@ -1003,7 +1003,7 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   if (!db) 
     throw std::runtime_error("Error reading connected database");
   
-  // Unpack the Gaussian keyword into a map
+  // unpack the gaussian keyword into a map for this method
   if (kmap.find("METHOD") == kmap.end())
     throw std::runtime_error("A METHOD must be given to write the input files for a set");
   auto gmap = get_gaussian_map(kmap["METHOD"]);
