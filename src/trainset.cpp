@@ -983,7 +983,7 @@ ORDER BY Training_set.id;
   // calculate statistics
   int nset = setid.size();
   std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0);
-  double wrms = 0.0, rmst = 0.0, maet = 0.0, mset = 0.0;
+  double wrms = 0.0, wrmsall = 0.0, rmst = 0.0, maet = 0.0, mset = 0.0;
   int maxsetl = 0;
   n = 0;
   for (int i = 0; i < setid.size(); i++){
@@ -995,7 +995,9 @@ ORDER BY Training_set.id;
       maet += std::abs(xdiff);
       mset += xdiff;
       rmst += xdiff * xdiff;
-      wrms += w[n] * xdiff * xdiff;
+      wrmsall += w[n] * xdiff * xdiff;
+      if (set_dofit[i])
+        wrms += w[n] * xdiff * xdiff;
       n++;
     }
     double nsetsize = set_size[i];
@@ -1008,6 +1010,7 @@ ORDER BY Training_set.id;
   mset /= ntot;
   rmst = std::sqrt(rmst/ntot);
   wrms = std::sqrt(wrms);
+  wrmsall = std::sqrt(wrmsall);
   if (n != ntot)
     throw std::runtime_error("In ACPEVAL, inconsistent ntot, set_initial_idx, and set_final_idx");
 
@@ -1023,6 +1026,7 @@ ORDER BY Training_set.id;
 
   os.precision(8);
   os << "#   wrms    =  " << wrms << std::endl;
+  os << "#   wrmsall =  " << wrmsall << " (including evaluation subsets)" << std::endl;
 
   for (int i = 0; i < setid.size(); i++){
     os << "# " << std::right << std::setw(maxsetl) << alias[i]

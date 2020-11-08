@@ -425,7 +425,9 @@ END
   evaluation for that method on the training set. If TERM is given
   with valid atomic number (zat.i), angular momentum (l.i), and
   exponent (exp.r) from the training set, then the data is inserted as
-  that term for the corresponding method.
+  that term for the corresponding method. Due to the nature of this
+  operation, avoid having NOFIT subsets in the training set when using
+  INSERT DAT.
 
 INSERT OLDDAT [directory.s] [NOREFERENCE]
 
@@ -449,7 +451,9 @@ INSERT OLDDAT [directory.s] [NOREFERENCE]
     the corresponding ACP term.
 
   In all cases, the insertion verifies that the file contains exactly
-  the same number of entries as the current training set.
+  the same number of entries as the current training set. Due to the
+  nature of this operation, avoid having NOFIT subsets in the training
+  set when using INSERT OLDDAT.
 
 * Quality of life keywords
 
