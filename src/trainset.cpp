@@ -1170,7 +1170,8 @@ void trainset::dump() const {
 
   // calculate the number of rows and the weights with only the dofit sets
   std::vector<double> wtrain;
-  int nrows = 0, n = 0;
+  unsigned long int nrows = 0;
+  int n = 0;
   for (int i = 0; i < setid.size(); i++){
     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
       if (set_dofit[i]){
