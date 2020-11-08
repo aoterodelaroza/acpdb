@@ -94,9 +94,10 @@ class sqldb {
   // Write input files for a database set
   void write_set_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
-  // Write an input file for structure id in the database. Put the file in
-  // directory dir and use ACP a in it.
-  void write_one_input(int id, int methodid, const std::string &dir = "./", const acp &a = {});
+  // Write an input file for structure id in the database with
+  // property type type. Put the file in directory dir and use ACP a
+  // in it.
+  void write_one_input(int id, int methodid, const std::string type, const std::string &dir = "./", const acp &a = {});
 
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);

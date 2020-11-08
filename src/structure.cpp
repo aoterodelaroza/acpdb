@@ -25,20 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include "parseutils.h"
 
-// Delete the storage space
-void structure::deallocate(){
-  if (x) delete x;
-  if (z) delete z;
-  if (r) delete r;
-}
-
-// Allocate the storage space
-void structure::allocate(){
-  z = new unsigned char[nat];
-  x = new double[3*nat];
-  r = new double[3*3];
-}
-
 // Read an xyz file. Return non-zero if error; 0 if correct.
 int structure::readxyz(const std::string &filename){
 
@@ -77,21 +63,108 @@ int structure::readxyz(const std::string &filename){
 // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
 int structure::writexyz(std::ostream &os) const {
   if (!x || !z) return 1;
-  os << nat << std::endl 
-     << charge << " " << mult << std::endl;
-  
-  std::streamsize prec = os.precision(10);
-  os << std::scientific;
-  for (int i = 0; i < nat; i++){
-    os << std::setw(2) << std::left << nameguess(z[i])
-       << std::setw(18) << std::right << x[3*i+0]
-       << std::setw(18) << std::right << x[3*i+1]
-       << std::setw(18) << std::right << x[3*i+2] << std::endl;
-  }
-  os.precision(prec);
-  os << std::defaultfloat;
+  os << nat << std::endl;
   if (os.fail()) return 2;
+  return write_coordinate_block(os,true);
+}
 
+// Write a Gaussian input file to output stream os. Return non-zero if
+// error; 0 if correct.
+int structure::writegjf(std::ostream &os, const std::string &root, const acp &a) const {
+  if (!ismol || !x || !z) return 1;
+
+  // header
+  os << "%chk=" << root << ".chk" << std::endl
+     << "%mem=" << 2 << "GB" << std::endl
+     << "%nproc=" << 4 << std::endl
+     << "#t " 
+     << "B3LYP/sto-3g "
+     << (a?"pseudo=read ":"")
+     << "Symm=none int=(grid=ultrafine) guess=(read,tcheck) output=wfx" << std::endl
+     << std::endl << "title" << std::endl << std::endl;
+  if (os.fail()) return 2;
+  
+  // coordinate block
+  int res = write_coordinate_block(os,true);
+  if (res) return res;
+  os << std::endl;
+
+  if (a){
+    // fixme
+    os << std::endl;
+// -H 0
+// H 1 0
+// l
+// 7
+//   2   0.080000000   -0.001888400
+//   2   0.100000000   0.016035496
+//   2   0.120000000   -0.025949883
+//   2   0.180000000   0.020492803
+//   2   0.200000000   0.008918412
+//   2   0.300000000   -0.053514839
+//   2   0.600000000   0.094516152
+// s
+// 3
+//   2   0.080000000   -0.018800745
+//   2   0.160000000   0.085154377
+//   2   1.800000000   -0.435627212
+// -B 0
+// B 2 0
+// l
+// 3
+//   2   0.080000000   0.001807291
+//   2   0.140000000   -0.015254895
+//   2   0.600000000   -0.015803107
+// s
+// 2
+//   2   0.080000000   0.009451214
+//   2   3.000000000   -0.014145559
+// p
+// 2
+//   2   0.140000000   0.059070622
+//   2   0.160000000   0.003487334
+// -C 0
+// C 2 0
+// l
+// 5
+//   2   0.080000000   0.000297208
+//   2   0.100000000   -0.003200997
+//   2   0.140000000   0.002245758
+//   2   0.300000000   -0.024350000
+//   2   2.000000000   -0.036395699
+// s
+// 1
+//   2   0.100000000   -0.009860735
+// p
+// 3
+//   2   0.080000000   0.019940162
+//   2   0.260000000   0.035253331
+//   2   0.280000000   0.022895155
+// -O 0
+// O 2 0
+// l
+// 4
+//   2   0.080000000   -0.003439305
+//   2   0.100000000   0.003987536
+//   2   0.200000000   -0.003397997
+//   2   0.500000000   0.013876306
+// s
+// 3
+//   2   0.080000000   0.099029657
+//   2   0.400000000   -0.255692870
+//   2   0.500000000   -0.360290615
+// p
+// 4
+//   2   0.080000000   0.004773039
+//   2   0.100000000   0.025539738
+//   2   0.500000000   -0.366444102
+//   2   4.000000000   0.929961297
+// 
+  }
+
+  // wfx file
+  os << root << ".wfx" << std::endl << std::endl;
+  
   return 0;
 }
 
@@ -117,3 +190,27 @@ int structure::readdbrow(sqlite3_stmt *stmt){
 
   return 0;
 }
+
+// Write the atomic coordinates block as:
+//  symbol x y z
+//  ..
+// If withcm, precede the block with the charge and multiplicity.
+// Return non-zero if error, 0 if correct.
+int structure::write_coordinate_block(std::ostream &os, bool withcm/*= false*/) const{
+  if (!x || !z) return 1;
+  if (withcm)
+    os << charge << " " << mult << std::endl;
+  std::streamsize prec = os.precision(10);
+  os << std::scientific;
+  for (int i = 0; i < nat; i++){
+    os << std::setw(2) << std::left << nameguess(z[i])
+       << std::setw(18) << std::right << x[3*i+0]
+       << std::setw(18) << std::right << x[3*i+1]
+       << std::setw(18) << std::right << x[3*i+2] << std::endl;
+  }
+  os.precision(prec);
+  os << std::defaultfloat;
+  if (os.fail()) return 2;
+  return 0;
+}
+

@@ -20,7 +20,9 @@
 #define STRUCTURE_H
 
 #include <string>
+#include <cstring>
 #include "sqlite3.h"
+#include "acp.h"
 
 // A class for molecular or crystal structures
 class structure {
@@ -30,6 +32,16 @@ class structure {
   //// Operators ////
   // constructors
   structure() : ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) {};
+  structure(bool ismol_, int nat_, int charge_, int mult_, const double *r_, const double *x_, const unsigned char *z_) 
+    : ismol(ismol_), nat(nat_), charge(charge_), mult(mult_) {
+    allocate();
+    if (r_)
+      memcpy(r, r_, 9*sizeof(double));
+    else
+      memset(r, 0.0, 9*sizeof(double));
+    memcpy(x, x_, 3*nat*sizeof(double));
+    memcpy(z, z_, nat*sizeof(unsigned char));
+  };
   structure(const std::string &filename) : 
     ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) { 
     readxyz(filename); 
@@ -48,9 +60,15 @@ class structure {
   int readxyz(const std::string &filename);
 
   // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
-  int writexyz (std::ostream &os) const;
+  int writexyz(std::ostream &os) const;
 
-  // Read the structure from a database row obtained via SELECT. Non-zero if error, 0 if correct.
+  // Write a Gaussian input file to output stream os. Return non-zero
+  // if error; 0 if correct.
+  int writegjf(std::ostream &os, const std::string &root, const acp &a) const;
+
+  // Read the structure from a database row obtained via
+  // SELECT. Non-zero if error, 0 if correct. The SELECT order is:
+  // (id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
   int readdbrow (sqlite3_stmt *stmt);
 
   // c++ accessor functions
@@ -65,11 +83,26 @@ class structure {
  private:
   //// Private methods ////
 
+  // Write the atomic coordinates block as:
+  //  symbol x y z
+  //  ..
+  // If withcm, precede the block with the charge and multiplicity.
+  // Return non-zero if error, 0 if correct.
+  int write_coordinate_block(std::ostream &os, bool withcm = false) const;
+
   // Delete the storage space
-  void deallocate();
+  inline void deallocate(){
+    if (x) delete x;
+    if (z) delete z;
+    if (r) delete r;
+  }
 
   // Allocate the storage space
-  void allocate();
+  inline void allocate(){
+    z = new unsigned char[nat];
+    x = new double[3*nat];
+    r = new double[3*3];
+  }
 
   //// Private data ////
 

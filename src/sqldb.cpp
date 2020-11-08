@@ -1051,38 +1051,61 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
 
   // collect the structure indices for this set (better here than in
   // the Sets table).
-  std::unordered_map<int,bool> smap;
+  std::unordered_map<int,std::string> smap;
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-SELECT nstructures, structures
-FROM Properties, Structures
-WHERE Properties.setid = ?1)SQL");
+SELECT Property_types.key, Properties.nstructures, Properties.structures
+FROM Properties, Structures, Property_types
+WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
   st.bind(1,setid);
   while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),0);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+    int n = sqlite3_column_int(st.ptr(),1);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
     for (int i = 0; i < n; i++)
-      smap[str[i]] = true;
+      smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
   }
   
   // write the inputs one by one
   for (auto it = smap.begin(); it != smap.end(); it++)
-    write_one_input(it->first,methodid,dir,a);
+    write_one_input(it->first,methodid,it->second,dir,a);
 
 }
 
-// Write an input file for structure id in the database. Put the file in
-// directory dir and use ACP a in it.
-void sqldb::write_one_input(int id, int methodid, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+// Write an input file for structure id in the database with
+// property type type. Put the file in directory dir and use ACP a
+// in it.
+void sqldb::write_one_input(int id, int methodid, const std::string type, const std::string &dir/*="./"*/, const acp &a/*={}*/){
   
   // get the structure and build the file name
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-SELECT key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
+SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
 FROM Structures WHERE id = ?1;
 )SQL");
   st.bind(1,id);
   st.step();
-  std::string name = dir + "/" + std::string((char *) sqlite3_column_text(st.ptr(), 0));
+  std::string fileroot = std::string((char *) sqlite3_column_text(st.ptr(), 1));
+  std::string name = dir + "/" + fileroot;
+  bool ismolecule = sqlite3_column_int(st.ptr(), 3);
 
-  std::cout << name << std::endl;
+  // build the molecule/crystal structure
+  structure s;
+  s.readdbrow(st.ptr());
+
+  // append the extension and open the file stream
+  if (ismolecule)
+    name = name + ".gjf";
+  else
+    throw std::runtime_error("Cannot do crystals yet");
+  std::ofstream ofile(name,std::ios::trunc);
+
+  // write the input file
+  if (type == "energy_difference" && ismolecule){
+    if (s.writegjf(ofile,fileroot,a))
+      throw std::runtime_error("Error writing input file: " + name);
+  } else {
+    throw std::runtime_error("Unknown combination of structure and property type");
+  }
+
+  // clean up
+  ofile.close();
 }
 
