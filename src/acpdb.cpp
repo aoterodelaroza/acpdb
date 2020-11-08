@@ -31,6 +31,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef BTPARSE_FOUND  
 #include "btparse.h"
 #endif
+#ifdef ZLIB_FOUND  
+#include "zstr/zstr.hpp"
+#endif
 
 // namespace alias
 namespace fs = std::filesystem;
@@ -38,6 +41,12 @@ namespace fs = std::filesystem;
 // global variables (globals.h)
 int globals::ncpu = 4;
 int globals::mem = 2;
+#ifdef ZLIB_FOUND  
+int globals::no_compress = Z_NO_COMPRESSION;
+#else
+int globals::no_compress = 0;
+#endif
+int globals::compression = globals::no_compress;
 
 // variables for managing the input and output streams
 static std::istream *is;
@@ -141,6 +150,21 @@ int main(int argc, char *argv[]) {
         globals::mem = std::stoi(tokens.front());
         if (globals::mem <= 0)
           throw std::runtime_error("MEM must be an integer greater than zero");
+
+      } else if (keyw == "COMPRESS") {
+#ifdef ZLIB_FOUND  
+        std::string keyw = popstring(tokens,true);
+        if (keyw == "BEST_SPEED")
+          globals::compression = Z_BEST_SPEED;
+        else if (keyw == "BEST_COMPRESSION")
+          globals::compression = Z_BEST_COMPRESSION;
+        else if (keyw == "DEFAULT")
+          globals::compression = Z_DEFAULT_COMPRESSION;
+        else
+          throw std::runtime_error("Unknown compression level (BEST_SPEED,BEST_COMPRESSION,DEFAULT)");
+#else
+        throw std::runtime_error("Cannot use compression: not compiled with zlib support");
+#endif        
 
         //
       } else if (keyw == "ACP") {

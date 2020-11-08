@@ -1,2 +1,3 @@
 #cmakedefine BTPARSE_FOUND
 #cmakedefine CEREAL_FOUND
+#cmakedefine ZLIB_FOUND

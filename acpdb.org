@@ -36,6 +36,12 @@ Whenver set names are required, an asterisk stands for the current
 training set. When a method name is required, an asterisk stands for
 the method used in the original reference.
 
+* Packages for full functionality
+
+zlib1g-dev (zlib)
+libbtparse-dev
+libcereal-dev
+
 * Global variables
 
 NCPU ncpu.i

@@ -23,6 +23,8 @@ namespace globals {
   //// global variables for use in the input generators ////
   extern int ncpu; // number of cores
   extern int mem;  // memory in GB
+  extern int compression; // compression level (Z_NO_COMPRESSION, Z_BEST_SPEED, Z_BEST_COMPRESSION, Z_DEFAULT_COMPRESSION)
+  extern int no_compress; // nocompression flag
 }
 
 #endif
