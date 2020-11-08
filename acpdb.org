@@ -455,6 +455,11 @@ INSERT OLDDAT [directory.s] [NOREFERENCE]
   nature of this operation, avoid having NOFIT subsets in the training
   set when using INSERT OLDDAT.
 
+DUMP
+
+  Write the octavedump.dat file for the LASSO fit corresponding to the
+  current dataset.
+
 * Quality of life keywords
 
 TRAINING SAVE name.s
