@@ -45,10 +45,11 @@ void trainset::setdb(sqldb *db_){
 CREATE TABLE IF NOT EXISTS Training_set (
   id INTEGER PRIMARY KEY,
   propid INTEGER NOT NULL,
+  isfit INTEGER,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
 DELETE FROM Training_set;
-CREATE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid);
+CREATE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid,isfit);
 )SQL");
   st.execute();
 }
@@ -292,7 +293,8 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
     statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT AVG(abs(value)) FROM Evaluations, Training_set, Properties
 WHERE Properties.id = Evaluations.propid AND Properties.setid = :SETID AND
-Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
+Evaluations.methodid = :METHOD AND 
+Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     st.bind((char *) ":SETID",setid[sid]);
     st.bind((char *) ":METHOD",refid);
@@ -420,10 +422,10 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   // Methods //
   os << "+ List of methods" << std::endl;
   os << "| type | name | id | for fit? |" << std::endl;
-  os << "| reference | " << refname << " | " << refid << " | |" << std::endl;
-  os << "| empty | " << emptyname << " | " << emptyid << " | |" << std::endl;
+  os << "| reference | " << refname << " | " << refid << " | n/a |" << std::endl;
+  os << "| empty | " << emptyname << " | " << emptyid << " | n/a |" << std::endl;
   for (int i = 0; i < addname.size() ; i++){
-    os << "| additional | " << addname[i] << " | " << addid[i] << " | " << addisfit[i] << " |" << std::endl;
+    os << "| additional | " << addname[i] << " | " << addid[i] << " | " << (addisfit[i]?"yes":"no") << " |" << std::endl;
   }
   os << std::endl;
 
@@ -431,79 +433,81 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   os << "+ List of properties (" << ntot << ")" << std::endl;
   os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key
+SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
 INNER JOIN Training_set ON (Properties.id = Training_set.propid)
-WHERE Properties.setid = :SET
-ORDER BY Properties.orderid;
+ORDER BY Training_set.id;
 )SQL");
-
-  int n = 0, nin = 0;
-  for (int i = 0; i < setid.size(); i++){
-    st.reset();
-    st.bind((char *) ":SET",setid[i]);
-    st.bind((char *) ":METHOD",refid);
-
+  st.bind((char *) ":METHOD",refid);
+  int n = 0;
+  while (st.step() != SQLITE_DONE){
     std::string valstr;
-    while (st.step() != SQLITE_DONE){
-      if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
-        valstr = "n/a";
-      else
-        valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
-      os << "| " << (set_dofit[i]?"yes":"no") << " | " << ++nin << " | " << sqlite3_column_text(st.ptr(), 1) 
-         << " | " << sqlite3_column_int(st.ptr(), 0)
-         << " | " << alias[i] << " | " << setname[i] << " | " << sqlite3_column_text(st.ptr(), 4) 
-         << " | " << sqlite3_column_int(st.ptr(), 2)
-         << " | " << w[n++] << " | " << valstr << " |" << std::endl;
-    }
+    if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
+      valstr = "n/a";
+    else
+      valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
+    bool isfit = (sqlite3_column_type(st.ptr(),6) != SQLITE_NULL);
+    auto it = std::find(setid.begin(),setid.end(),sqlite3_column_type(st.ptr(),5)); 
+    if (it == setid.end())
+      throw std::runtime_error("Could not find set id in DESCRIBE");
+    int sid = it - setid.begin();
+    
+    os << "| " << (isfit?"yes":"no") << " | " << n+1 << " | " << sqlite3_column_text(st.ptr(), 1) 
+       << " | " << sqlite3_column_int(st.ptr(), 0)
+       << " | " << alias[sid] << " | " << setname[sid] << " | " << sqlite3_column_text(st.ptr(), 4) 
+       << " | " << sqlite3_column_int(st.ptr(), 2)
+       << " | " << w[n] << " | " << valstr << " |" << std::endl;
+    n++;
   }
   os << std::endl;
 
   // Completion //
   os << "* Calculation completion for the current training set" << std::endl;
 
+  // number of evaluations to be done
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT COUNT(DISTINCT Training_set.propid)
+FROM Training_set;)SQL");
+  st.step();
+  int ncalc_all = sqlite3_column_int(st.ptr(), 0);
+  st.reset();
+
   // count reference, empty, and additional values
-  int ncalc_ref = 0, ncalc_empty = 0;
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT COUNT(DISTINCT Training_set.propid)
+FROM Evaluations, Training_set
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;)SQL");
+
+  // reference
+  st.bind((char *) ":METHOD",refid);
+  st.step();
+  int ncalc_ref = sqlite3_column_int(st.ptr(), 0);
+  st.reset();
+
+  // empty
+  st.bind((char *) ":METHOD",emptyid);
+  st.step();
+  int ncalc_empty = sqlite3_column_int(st.ptr(), 0);
+  st.reset();
+
+  // additional
   std::vector<int> ncalc_add(addid.size(),0);
-  for (int i = 0; i < setid.size(); i++){
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT COUNT(*)
-FROM Evaluations, Properties, Training_set
-WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Properties.id 
-AND Properties.setid = :SET AND Training_set.propid = Evaluations.propid;)SQL");
-
-    // reference
-    st.bind((char *) ":METHOD",refid);
-    st.bind((char *) ":SET",setid[i]);
+  for (int j = 0; j < addid.size(); j++){
+    st.bind((char *) ":METHOD",addid[j]);
     st.step();
-    ncalc_ref += sqlite3_column_int(st.ptr(), 0);
-
-    // empty
+    ncalc_add[j] = sqlite3_column_int(st.ptr(), 0);
     st.reset();
-    st.bind((char *) ":METHOD",emptyid);
-    st.bind((char *) ":SET",setid[i]);
-    st.step();
-    ncalc_empty += sqlite3_column_int(st.ptr(), 0);
-
-    // additional
-    for (int j = 0; j < addid.size(); j++){
-      st.reset();
-      st.bind((char *) ":METHOD",addid[j]);
-      st.bind((char *) ":SET",setid[i]);
-      st.step();
-      ncalc_add[j] += sqlite3_column_int(st.ptr(), 0);
-    }
   }
-  os << "+ Reference: " << ncalc_ref << "/" << ntot << (ncalc_ref==ntot?" (complete)":" (missing)") << std::endl;
-  os << "+ Empty: " << ncalc_empty << "/" << ntot << (ncalc_empty==ntot?" (complete)":" (missing)") << std::endl;
+  os << "+ Reference: " << ncalc_ref << "/" << ncalc_all << (ncalc_ref==ncalc_all?" (complete)":" (missing)") << std::endl;
+  os << "+ Empty: " << ncalc_empty << "/" << ncalc_all << (ncalc_empty==ncalc_all?" (complete)":" (missing)") << std::endl;
   for (int j = 0; j < addid.size(); j++)
-    os << "+ Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ntot << (ncalc_add[j]==ntot?" (complete)":" (missing)") << std::endl;
+    os << "+ Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ncalc_all << (ncalc_add[j]==ncalc_all?" (complete)":" (missing)") << std::endl;
 
   // terms
   st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT COUNT(*)
+SELECT COUNT(DISTINCT Training_set.propid)
 FROM Terms
 INNER JOIN Training_set ON Training_set.propid = Terms.propid
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
@@ -520,9 +524,9 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.step();
         int ncalc = sqlite3_column_int(st.ptr(), 0);
         os << "| " << nameguess(zat[iz]) << " | " << inttol[il] << " | " 
-           << exp[ie] << " | " << ncalc << "/" << ntot << " |" << (ncalc==ntot?" (complete)":" (missing)") << std::endl;
+           << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
         ncall += ncalc;
-        ntall += ntot;
+        ntall += ncalc_all;
       }
     }
   }
@@ -678,7 +682,7 @@ ORDER BY Training_set.id;
       std::cout << "The mismatch is:" << std::endl;
       std::cout << "  Database name: " << namedb << std::endl;
       std::cout << "  names.dat name: " << namedat << std::endl;
-      return;
+      throw std::runtime_error("In INSERT OLDDAT, non-matching names were found");
     }
   }
   ifile.peek();
@@ -958,7 +962,8 @@ ORDER BY Training_set.id;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid;
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+ORDER BY Training_set.id;
 )SQL");
   for (int i = 0; i < a.size(); i++){
     acp::term t = a.get_term(i);
@@ -1167,13 +1172,26 @@ void trainset::dump() const {
   for (int i = 0; i < addid.size(); i++)
     if (!addisfit[i]) iaddperm.push_back(i);
 
+  // calculate the number of rows and the weights with only the dofit sets
+  std::vector<double> wtrain;
+  int nrows = 0, n = 0;
+  for (int i = 0; i < setid.size(); i++){
+    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
+      if (set_dofit[i]){
+        wtrain.push_back(w[n]);
+        nrows++;
+      }
+      n++;
+    }
+  }
+
   // write the dimension integers first
   uint64_t ncols = 0, addmaxl = 0;
   for (int i = 0; i < zat.size(); i++)
     ncols += exp.size() * (lmax[i]+1);
   for (int i = 0; i < addname.size(); i++)
     addmaxl = std::max(addmaxl,(uint64_t) addname[i].size());
-  uint64_t sizes[7] = {zat.size(), exp.size(), propid.size(), ncols, addid.size(), nyfit, addmaxl};
+  uint64_t sizes[7] = {zat.size(), exp.size(), nrows, ncols, addid.size(), nyfit, addmaxl};
   ofile.write((const char *) &sizes,7*sizeof(uint64_t));
 
   // write the atomic names
@@ -1202,14 +1220,16 @@ void trainset::dump() const {
   ofile.write((const char *) exp_c,exp.size()*sizeof(double));
 
   // write the w vector
-  const double *w_c = w.data();
-  ofile.write((const char *) w_c,w.size()*sizeof(double));
+  const double *w_c = wtrain.data();
+  ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
 
   // write the x matrix
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid;
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP 
+      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+ORDER BY Training_set.id;
 )SQL");
   for (int iz = 0; iz < zat.size(); iz++){
     for (int il = 0; il <= lmax[iz]; il++){
@@ -1221,12 +1241,12 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
         st.bind((char *) ":EXP",exp[ie]);
         int n = 0;
         while (st.step() != SQLITE_DONE){
-          if (n++ >= propid.size())
+          if (n++ >= nrows)
             throw std::runtime_error("Too many rows dumping terms data");
           double value = sqlite3_column_double(st.ptr(),0);
           ofile.write((const char *) &value,sizeof(double));
         }
-        if (n != propid.size())
+        if (n != nrows)
           throw std::runtime_error("Too few rows dumping terms data");
       }
     }
@@ -1236,7 +1256,9 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Evaluations.value
 FROM Evaluations, Training_set
-WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;
+WHERE Evaluations.methodid = :METHOD 
+      AND Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+ORDER BY Training_set.id;
 )SQL");
   std::vector<int> ids = {refid,emptyid};
   for (int i = 0; i < addid.size(); i++)
@@ -1245,12 +1267,12 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
     st.bind((char *) ":METHOD", ids[i]);
     int n = 0;
     while (st.step() != SQLITE_DONE){
-      if (n++ >= propid.size())
+      if (n++ >= nrows)
         throw std::runtime_error("Too many rows dumping y data");
       double value = sqlite3_column_double(st.ptr(),0);
       ofile.write((const char *) &value,sizeof(double));
     }
-    if (n != propid.size())
+    if (n != nrows)
       throw std::runtime_error("Too few rows dumping y data");
   }
 
@@ -1260,10 +1282,13 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){
   db->begin_transaction();
-  statement st(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid) VALUES (:ID,:PROPID);");
+  statement st(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid,isfit) VALUES (:ID,:PROPID,:ISFIT);");
   for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++){
+    st.reset();
     st.bind((char *) ":ID", i);
     st.bind((char *) ":PROPID", propid[i]);
+    if (set_dofit[sid])
+      st.bind((char *) ":ISFIT", 1);
     st.step();
   }
   db->commit_transaction();
