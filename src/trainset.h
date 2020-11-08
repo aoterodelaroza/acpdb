@@ -106,6 +106,21 @@ class trainset {
   // Write the octavedump.dat file
   void dump() const;
 
+  // Returns true if the argument is a known set alias
+  inline bool isalias(const std::string &str) const{
+    return (std::find(alias.begin(),alias.end(),str) != alias.end());
+  }
+
+  // Returns the set name corresponding to the alias in argument
+  // string, or empty string if no such alias exist.
+  inline std::string alias_to_setname(const std::string &str) const{
+    auto it = std::find(alias.begin(),alias.end(),str);
+    if (it == alias.end()) 
+      return "";
+    else
+      return setname[it - alias.begin()];
+  }
+
  private:
 
   // Insert a subset into the Training_set table

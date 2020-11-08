@@ -126,27 +126,35 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
+      // 
       if (keyw == "NCPU") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("NCPU must be an integer greater than zero");
         globals::ncpu = std::stoi(tokens.front());
         if (globals::ncpu <= 0)
           throw std::runtime_error("NCPU must be an integer greater than zero");
+
+        //
       } else if (keyw == "MEM") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("MEM must be an integer greater than zero");
         globals::mem = std::stoi(tokens.front());
         if (globals::mem <= 0)
           throw std::runtime_error("MEM must be an integer greater than zero");
+
+        //
       } else if (keyw == "ACP") {
         std::string name = popstring(tokens);
         if (tokens.empty())
           nacp[name] = acp(name,*is);
         else
           nacp[name] = acp(name,tokens.front());
+
+        //
       } else if (keyw == "WRITE") {
         std::string category = popstring(tokens,true);
         if (category == "ACP"){
+          // WRITE ACP keyword
           std::string key = popstring(tokens);
           if (key.empty() || nacp.find(key) == nacp.end())
             throw std::runtime_error("Unknown ACP name: " + key);
@@ -157,9 +165,8 @@ int main(int argc, char *argv[]) {
           else
             nacp[key].writeacp_gaussian(file);
         } else {
+          // WRITE environment
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-
-          // get the ACP
           acp a;
           if (kmap.find("ACP") != kmap.end()){
             std::string acpname = kmap["ACP"];
@@ -168,17 +175,27 @@ int main(int argc, char *argv[]) {
             else
               a = acp(acpname,acpname);
           }
-
-          if (kmap.find("SET") == kmap.end())
+          if (kmap.find("SET") == kmap.end()){
+            // no set has been given
             printf("fixme!\n");
-          else
+          } else if (ts.isalias(kmap["SET"])){
+            // set is an alias from the training set
+            kmap["SET"] = ts.alias_to_setname(kmap["SET"]);
             db.write_set_inputs(kmap,a);
+          } else {
+            // write a set from the database
+            db.write_set_inputs(kmap,a);
+          }
         }
+
+        //
       } else if (keyw == "ACPINFO") {
         std::string key = popstring(tokens);
         if (key.empty() || nacp.find(key) == nacp.end())
           throw std::runtime_error("Unknown ACP name: " + key);
         nacp[key].info(*os);
+
+        //
       } else if (keyw == "ACPSPLIT") {
         std::string key = popstring(tokens);
         if (key.empty() || nacp.find(key) == nacp.end())
@@ -189,6 +206,8 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("Empty template string for ACPSPLIT");
 
         nacp[key].split(templ, tokens);
+
+        //
       } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
         acp a;
         if (keyw == "ACPEVAL"){
@@ -209,36 +228,58 @@ int main(int argc, char *argv[]) {
         } else {
           ts.eval_acp(*os,a);
         }
+
+        //
       } else if (keyw == "ATOM" || keyw == "ATOMS") {
         if (tokens.empty())
           ts.clearatoms();
         else
           ts.addatoms(tokens);
+
+        //
       } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
         ts.addexp(tokens);
+
+        //
       } else if (keyw == "REFERENCE") {
         ts.setreference(tokens);
+
+        //
       } else if (keyw == "EMPTY") {
         ts.setempty(tokens);
+
+        //
       } else if (keyw == "ADD") {
         ts.addadditional(tokens);
+
+        //
       } else if (keyw == "SUBSET") {
         std::string alias = popstring(tokens);
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
         ts.addsubset(alias,kmap);
+
+        //
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os);
+
+        //
       } else if (keyw == "CREATE") {
         db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         db.create();
         ts.setdb(&db);
+
+        //
       } else if (keyw == "CONNECT") {
         db.connect(popstring(tokens));
         db.checksane(true);
         ts.setdb(&db);
+
+        //
       } else if (keyw == "DISCONNECT") {
         db.close();
         ts.setdb(nullptr);
+
+        //
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
@@ -253,9 +294,13 @@ int main(int argc, char *argv[]) {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.insert(category,key,kmap);
         }
+
+        //
       } else if (keyw == "DELETE") {
         std::string category = popstring(tokens,true);
         db.erase(category,tokens);
+
+        //
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
         if (category == "XYZ_TRAINING")
@@ -270,8 +315,12 @@ int main(int argc, char *argv[]) {
           db.list_din(kmap);
         } else
           db.list(*os,category,tokens);
+
+        //
       } else if (keyw == "VERIFY") {
         db.verify(*os);
+
+        //
       } else if (keyw == "TRAINING") {
         std::string key = popstring(tokens,true);
         std::string name = popstring(tokens);
@@ -288,8 +337,12 @@ int main(int argc, char *argv[]) {
           ts.setdb(&db);
         } else
           throw std::runtime_error("Unknown command in TRAINING");
+
+        //
       } else if (keyw == "DUMP") {
         ts.dump();
+
+        //
       } else if (keyw == "SOURCE") {
         std::string filename = popstring(tokens);
         std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));
@@ -298,12 +351,18 @@ int main(int argc, char *argv[]) {
         ifile.push(afile);
         istack.push(ifile.top().get());
         icwd.push(fs::canonical(fs::path(filename)).parent_path().string());
+
+        //
       } else if (keyw == "ECHO") {
         std::string aux = line.substr(5);
         deblank(aux);
         *os << aux << std::endl;
+
+        //
       } else if (keyw == "END") {
         break;
+
+        //
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
       }        
