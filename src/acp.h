@@ -51,10 +51,13 @@ class acp {
   operator bool() const { return (t.size() > 0); }
 
   // Write the ACP to output stream os (human-readable version).
-  void writeacp(std::ostream &os) const;
+  void writeacp_text(std::ostream &os) const;
+
+  // Write the ACP to an output stream (Gaussian-style version).
+  void writeacp_gaussian(std::ostream &os) const;
 
   // Write the ACP to a file (Gaussian-style version).
-  void writeacp(std::string &filename) const;
+  void writeacp_gaussian(const std::string &filename) const;
 
   // Write info about the ACP to os
   void info(std::ostream &os) const;

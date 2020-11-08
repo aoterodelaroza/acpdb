@@ -135,9 +135,9 @@ int main(int argc, char *argv[]) {
 
           std::string file = popstring(tokens);
           if (file.empty())
-            nacp[key].writeacp(*os);
+            nacp[key].writeacp_text(*os);
           else
-            nacp[key].writeacp(file);
+            nacp[key].writeacp_gaussian(file);
         } else {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
 

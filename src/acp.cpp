@@ -99,7 +99,7 @@ acp::acp(const std::string &name_, std::istream &is){
 }
 
 // Write the ACP to output stream os (human-readable version).
-void acp::writeacp(std::ostream &os) const{
+void acp::writeacp_text(std::ostream &os) const{
   os << "* Terms for ACP " + name << std::endl;
 
   os << "| id | atom | l | exponent | coefficient |" << std::endl;
@@ -112,8 +112,19 @@ void acp::writeacp(std::ostream &os) const{
   os.precision(prec);
 }
 
-// Write the ACP to a file (Gaussian-style version).
-void acp::writeacp(std::string &filename) const{
+// Write the ACP to an output stream (Gaussian-style version).
+void acp::writeacp_gaussian(const std::string &filename) const{
+  std::ofstream ofile(filename,std::ios::trunc);
+  if (ofile.fail()) 
+    throw std::runtime_error("Error opening ACP file for write: " + filename);
+
+  writeacp_gaussian(ofile);
+  if (ofile.fail()) 
+    throw std::runtime_error("Error writing ACP file: " + filename);
+}
+
+// Write the ACP to a stream (Gaussian-style version).
+void acp::writeacp_gaussian(std::ostream &os) const{
   if (t.empty())
     throw std::runtime_error("Cannot write an empty ACP");
 
@@ -135,24 +146,23 @@ void acp::writeacp(std::string &filename) const{
   }
 
   // write the acp
-  std::ofstream ofile(filename,std::ios::trunc);
-  if (ofile.fail()) 
-    throw std::runtime_error("Error writing ACP file " + filename);
-  ofile << std::scientific;
-  std::streamsize prec = ofile.precision(15);
+  os << std::scientific;
+  std::streamsize prec = os.precision(15);
 
   for (auto it = lmax.begin(); it != lmax.end(); it++){
-    ofile << "-" << nameguess(it->first) << " 0" << std::endl;
-    ofile << nameguess(it->first) << " " << (int) it->second << " 0" << std::endl;
+    os << "-" << nameguess(it->first) << " 0" << std::endl;
+    os << nameguess(it->first) << " " << (int) it->second << " 0" << std::endl;
     for (int i = 0; i <= it->second; i++){
-      ofile << inttol[i] << std::endl;
-      ofile << iterm[it->first][i].size() << std::endl;
+      os << inttol[i] << std::endl;
+      os << iterm[it->first][i].size() << std::endl;
 
       std::vector<int> &xv = iterm[it->first][i];
       for (int j = 0; j < xv.size(); j++)
-        ofile << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef << std::endl;
+        os << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef << std::endl;
     }
   }
+  os.precision(prec);
+  os << std::defaultfloat;
 }
 
 // Write info about the ACP to os
@@ -223,10 +233,10 @@ void acp::split(const std::string &templ, std::list<std::string> &tokens){
       term t_ = t[i];
       t_.coef = coef;
       acp aa(name_, t_);
-      aa.writeacp(filename_);
+      aa.writeacp_gaussian(filename_);
     } else {
       acp aa(name_, t[i]);
-      aa.writeacp(filename_);
+      aa.writeacp_gaussian(filename_);
     }
   }
 }
