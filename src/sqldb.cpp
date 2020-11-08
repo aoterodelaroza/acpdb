@@ -53,6 +53,18 @@ int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
   return rc;
 }
 
+// Get the Gaussian map from the method key
+std::unordered_map<std::string,std::string> sqldb::get_gaussian_map(const std::string &methodkey){
+  statement st(db,statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
+  st.bind(1,methodkey);
+  st.step();
+  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
+    throw std::runtime_error("METHOD is unknown or has no associated Gaussian keyword: " + methodkey);
+  std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
+  std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
+  return gmap;
+}
+
 // Check if the DB is sane, empty, or not sane. If except_on_empty,
 // raise exception on empty. Always raise excepton on error. Return
 // 1 if sane, 0 if empty.
@@ -785,61 +797,37 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   os.precision(prec);
 }
 
-// List structures in the database (xyz format)
+// List structures in the database or one of its subsets (xyz format)
 void sqldb::list_xyz(std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST XYZ");
 
   // get the directory
-  std::string dir = ".";
-  if (kmap.find("DIRECTORY") != kmap.end()){
-    dir = kmap["DIRECTORY"];
-    if (!fs::is_directory(dir))
-      throw std::runtime_error("Directory " + dir + " not found");
-  }
+  std::string dir = fetch_directory(kmap);
 
-  // get the list of sets
+  // build the structure map
+  std::unordered_map<int,std::string> smap;
   auto im = kmap.find("SET");
-  std::vector<int> idset;
   if (im != kmap.end()){
     std::list<std::string> vlist = list_all_words(im->second);
+    statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT Structures.id
+FROM Structures, Sets
+WHERE Structures.setid = Sets.id AND Sets.key = ?1;)SQL");
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      if (isinteger(*it))
-        idset.push_back(std::stoi(*it));
-      else
-        idset.push_back(find_id_from_key(*it,statement::STMT_QUERY_SET));
+      st.bind(1,*it);
+      while (st.step() != SQLITE_DONE)
+        smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
     }
   } else {
-    statement *st = stmt[statement::STMT_LIST_SET];
-    while (st->step() != SQLITE_DONE)
-      idset.push_back(sqlite3_column_int(st->ptr(), 0));
+    statement st(db,statement::STMT_CUSTOM,"SELECT Structures.id FROM Structures;");
+    while (st.step() != SQLITE_DONE)
+      smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
   }
-  if (idset.empty())
-    throw std::runtime_error("No sets found in LIST XYZ");
+  if (smap.empty())
+    throw std::runtime_error("No structures found in LIST XYZ specification");
 
-  // prepare the statement
-  std::string sttext = R"SQL(
-SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
-FROM Structures
-WHERE setid IN ()SQL";
-  sttext = sttext + std::to_string(idset[0]);
-  for (int i = 1; i < idset.size(); i++)
-    sttext = sttext + "," + std::to_string(idset[i]);
-  sttext = sttext + ");";
-  statement st(db,statement::STMT_CUSTOM,sttext);
-
-  // write the xyz files
-  while (st.step() != SQLITE_DONE){
-    std::string key = (char *) sqlite3_column_text(st.ptr(), 1);
-    std::string fname = dir + "/" + key + ".xyz";
-
-    structure s;
-    s.readdbrow(st.ptr());
-
-    std::ofstream ofile(fname,std::ios::trunc);
-    if (ofile.fail()) 
-      throw std::runtime_error("Error writing xyz file " + fname);
-    s.writexyz(ofile);
-  }
+  // write the structures to sidk
+  write_many_structures(smap,{},dir);
 }
 
 // List sets of properties in the database (din format)
@@ -1028,14 +1016,7 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   // Unpack the Gaussian keyword into a map
   if (kmap.find("METHOD") == kmap.end())
     throw std::runtime_error("A METHOD must be given to write the input files for a set");
-  std::string methodname = kmap["METHOD"];
-  statement st(db,statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
-  st.bind(1,methodname);
-  st.step();
-  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
-    throw std::runtime_error("METHOD is unknown or has no Gaussian keyword in write_set_inputs");
-  std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
-  std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
+  auto gmap = get_gaussian_map(kmap["METHOD"]);
 
   // set
   if (kmap.find("SET") == kmap.end())
@@ -1046,17 +1027,12 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
     throw std::runtime_error("Unknown SET in write_set_inputs");
 
   // directory
-  std::string dir = ".";
-  if (kmap.find("DIRECTORY") != kmap.end()){
-    dir = kmap["DIRECTORY"];
-    if (!fs::is_directory(dir))
-      throw std::runtime_error("Directory " + dir + " not found");
-  }
+  std::string dir = fetch_directory(kmap);
 
   // collect the structure indices for this set (better here than in
   // the Sets table).
   std::unordered_map<int,std::string> smap;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types
 WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
@@ -1098,6 +1074,7 @@ FROM Structures WHERE id = ?1;
   std::string fileroot = std::string((char *) sqlite3_column_text(st.ptr(), 1));
   std::string name = dir + "/" + fileroot;
   bool ismolecule = sqlite3_column_int(st.ptr(), 3);
+  bool isxyz = equali_strings(type,"xyz");
 
   // build the molecule/crystal structure
   structure s;
@@ -1105,7 +1082,7 @@ FROM Structures WHERE id = ?1;
 
   // append the extension and open the file stream
   if (ismolecule) {
-    if (type == "xyz")
+    if (isxyz)
       name = name + ".xyz";
     else
       name = name + ".gjf";
@@ -1115,9 +1092,9 @@ FROM Structures WHERE id = ?1;
   std::ofstream ofile(name,std::ios::trunc);
 
   // write the input file
-  if (type == "xyz" && ismolecule) {
-    
-  } else if (type == "energy_difference" && ismolecule){
+  if (isxyz && ismolecule) {
+    s.writexyz(ofile);
+  } else if (equali_strings(type,"energy_difference") && ismolecule){
     if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
     std::string methodk = gmap.at("METHOD");
     std::string gbsk = "";

@@ -252,7 +252,7 @@ VERIFY
 
 LIST XYZ
  [DIRECTORY directory.s]
- [SET {set1.s|set1.i} {set2.s|set2.i} ...]
+ [SET set1.s set2.s ...]
 END
 
   Write xyz files for all structures in the database. If directory.s

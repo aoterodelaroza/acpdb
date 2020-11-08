@@ -82,7 +82,7 @@ class sqldb {
   // List items from the database
   void list(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
-  // List structures in the database (xyz format)
+  // List structures in the database or one of its subsets (xyz format)
   void list_xyz(std::unordered_map<std::string,std::string> &kmap);
 
   // List sets of properties in the database (din format)
@@ -109,6 +109,9 @@ class sqldb {
 
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);
+
+  // Get the Gaussian map from the method key
+  std::unordered_map<std::string,std::string> get_gaussian_map(const std::string &methodkey);
 
   // Begin a transaction
   void begin_transaction(){ stmt[statement::STMT_BEGIN_TRANSACTION]->execute(); }

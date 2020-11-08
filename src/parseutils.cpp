@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 static const std::string blanks(" \t\f\v\n\r");
 
@@ -249,6 +252,18 @@ std::istream &get_next_line(std::istream &is, std::string &line, char skipchar/*
   }
   deblank(line);
   return is;
+}
+
+// Fetch the directory from the map and check it. Return the string or "." if
+// the key was not present.
+std::string fetch_directory(const std::unordered_map<std::string,std::string> &kmap){
+  std::string dir = ".";
+  if (kmap.find("DIRECTORY") != kmap.end()){
+    dir = kmap.at("DIRECTORY");
+    if (!fs::is_directory(dir))
+      throw std::runtime_error("Directory " + dir + " not found");
+  }
+  return dir;
 }
 
 // Remove leading and trailing blanks from a string

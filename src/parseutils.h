@@ -79,6 +79,10 @@ int line_get_double(std::istream &is, std::string &line, std::string &str, doubl
 // character and contchar as continuation character.
 std::istream &get_next_line(std::istream &is, std::string &line, char skipchar = '#', char contchar = '\\');
 
+// Fetch the directory from the map and check it. Return the string or "." if
+// the key was not present.
+std::string fetch_directory(const std::unordered_map<std::string,std::string> &kmap);
+
 // Remove leading and trailing blanks from a string
 void deblank(std::string &str);
 
