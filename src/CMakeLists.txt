@@ -26,9 +26,6 @@ if (CEREAL_FOUND)
   target_compile_definitions(acpdb PRIVATE ${CEREAL_DEFINITIONS})
 endif()
 
-## zstr/zlib
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/zstr")
-
 ## configuration file
 configure_file(config.h.in config.h)
 

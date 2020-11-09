@@ -30,7 +30,6 @@ include(utils)
 ## interface options
 option(USE_BTPARSE "Use the btparse bibtex file parser for bibtex support." ON)
 option(USE_CEREAL "Use the cereal library for training set serialization." ON)
-option(USE_ZLIB "Use the zlib library for compression of input files." ON)
 
 ## sqlite3
 find_package(SQLite3 REQUIRED)
@@ -43,11 +42,6 @@ endif()
 ## cereal
 if (USE_CEREAL)
   find_package(CEREAL)
-endif()
-
-## zlib
-if (USE_ZLIB)
-  find_package(ZLIB)
 endif()
 
 ## process subdirectories
