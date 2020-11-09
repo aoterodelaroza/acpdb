@@ -186,8 +186,7 @@ int main(int argc, char *argv[]) {
             }
           } else if (ts.isalias(kmap["SET"])){
             // set is an alias from the training set
-            kmap["SET"] = ts.alias_to_setname(kmap["SET"]);
-            db.write_structures(kmap,a);
+            ts.write_structures(kmap,a);
           } else {
             // write a set from the database
             db.write_structures(kmap,a);

@@ -297,7 +297,7 @@ SUBSET [alias.s]
  NORM_REF
  NORM_NITEM
  NORM_NITEMSQRT
- WEIGHT_ITEM i1.i w1.r i2.i w2.r ...
+ WEIGHT_ITEMS i1.i w1.r i2.i w2.r ...
 END
 
   Add a subset to the training set with alias alias.s. If no alias is

@@ -264,8 +264,8 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
   bool norm_nitemsqrt = (kmap.find("NORM_NITEMSQRT") != kmap.end());
 
   std::vector<std::pair<int, double> > witem = {};
-  if (kmap.find("WEIGHT_ITEM") != kmap.end()){
-    std::list<std::string> wlist = list_all_words(kmap["WEIGHT_ITEM"]);
+  if (kmap.find("WEIGHT_ITEMS") != kmap.end()){
+    std::list<std::string> wlist = list_all_words(kmap["WEIGHT_ITEMS"]);
 
     auto it = wlist.begin();
     while (it != wlist.end()){
@@ -1263,24 +1263,46 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
   int npack = 0;
   if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
 
+  // set
+  bool haveset = (kmap.find("SET") != kmap.end());
+  int idini, idfin;
+  if (haveset){
+    std::string setname = kmap["SET"];
+    auto it = std::find(alias.begin(),alias.end(),setname);
+    if (it == alias.end())
+      throw std::runtime_error("Unknown SET in write_structures (no alias found)");
+    int sid = it - alias.begin();
+    idini = set_initial_idx[sid];
+    idfin = set_final_idx[sid]-1;
+  } else {
+    idini = 0;
+    idfin = ntot-1;
+  }
+
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
   if (havemethod){
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+      statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types, Training_set
-WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid;)SQL");
-    while (st.step() != SQLITE_DONE){
-      int n = sqlite3_column_int(st.ptr(),1);
-      const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-      for (int i = 0; i < n; i++)
-        smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
-    }
+WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
+      AND Training_set.id BETWEEN ?1 AND ?2;
+)SQL");
+      st.bind(1,idini);
+      st.bind(2,idfin);
+      while (st.step() != SQLITE_DONE){
+        int n = sqlite3_column_int(st.ptr(),1);
+        const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+        for (int i = 0; i < n; i++)
+          smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+      }
   } else {
     statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Properties.nstructures, Properties.structures
 FROM Properties, Training_set
-WHERE Properties.id = Training_set.propid;)SQL");
+WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;)SQL");
+    st.bind(1,idini);
+    st.bind(2,idfin);
     while (st.step() != SQLITE_DONE){
       int n = sqlite3_column_int(st.ptr(),0);
       const int *str = (int *)sqlite3_column_blob(st.ptr(),1);

@@ -982,7 +982,7 @@ void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, 
     std::string setname = kmap["SET"];
     setid = find_id_from_key(setname,statement::STMT_QUERY_SET);
     if (setid == 0)
-      throw std::runtime_error("Unknown SET in write_set_inputs");
+      throw std::runtime_error("Unknown SET in write_structures");
   }
 
   // directory and pack number
