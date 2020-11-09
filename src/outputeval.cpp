@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "outputeval.h"
 #include "parseutils.h"
 #include <iomanip>
+#include <cmath>
 
 // Write a table comparing column approx with column ref to stream
 // os. The rows have ids, names, and weights as indicated by the
@@ -70,5 +71,41 @@ void output_eval(std::ostream &os,
        << std::endl;
   }
   os.precision(prec);
+}
 
+// Calculate the statistics from columns x1 and x2, with weights
+// w. Return the wrms, rms, mae, and mse. If istart and iend are
+// given, restrict the stats calculation to the range istart:iend-1.
+// If w is empty, all weights are assumed to be one.
+void calc_stats(const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
+                double &wrms, double &rms, double &mae, double &mse, 
+                const int istart/*=-1*/, const int iend/*=-1*/){
+
+  // set the range and initialize
+  int i0 = 0, i1 = x1.size();
+  if (istart >= 0 && iend >= 0){
+    i0 = istart;
+    i1 = iend;
+  }
+  wrms = 0;
+  rms = 0;
+  mae = 0;
+  mse = 0;
+
+  // calculate statistics
+  for (int i = i0; i < i1; i++){
+    double xdiff = x1[i] - x2[i];
+    mae += std::abs(xdiff);
+    mse += xdiff;
+    rms += xdiff * xdiff;
+    if (!w.empty())
+      wrms += w[i] * xdiff * xdiff;
+    else
+      wrms += xdiff * xdiff;
+  }
+  double n = i1-i0;
+  mae /= n;
+  mse /= n;
+  rms = std::sqrt(rms/n);
+  wrms = std::sqrt(wrms);
 }

@@ -1377,7 +1377,7 @@ ORDER BY Training_set.id;
         continue;
       } 
 
-      // check if all the components are in the data file
+      // check if the components are in the data file
       int nstr = sqlite3_column_int(st.ptr(),3);
       int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
       double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
@@ -1395,6 +1395,7 @@ ORDER BY Training_set.id;
         value += coef[i] * datmap[strname];
       }
 
+      // populate the vectors
       if (!found){
         names_missing_fromdat.push_back(key);
       } else {
@@ -1406,6 +1407,30 @@ ORDER BY Training_set.id;
       }
     }
     datmap.clear();
+
+    // output the header and the statistics
+    os << "# Evaluation: " << file << std::endl
+       << "# Reference: " << refm << std::endl
+       << "# Statistics: " << (names_missing_fromdat.empty() && names_missing_fromdat.empty()?"":"(partial data)")
+       << std::endl;
+    if (ids.empty())
+      os << "#   (not enough data for statistics)" << std::endl;
+    else{
+      // calculate the statistics
+      double wrms, rms, mae, mse;
+      calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse);
+
+      std::streamsize prec = os.precision(7);
+      os << std::fixed;
+      os.precision(8);
+      os << "# " << std::left << std::setw(10) << "all"
+         << std::left << "  rms = " << std::right << std::setw(14) << rms
+         << std::left << "  mae = " << std::right << std::setw(14) << mae
+         << std::left << "  mse = " << std::right << std::setw(14) << mse
+         << std::left << " wrms = " << std::right << std::setw(14) << wrms
+         << std::endl;
+      os.precision(prec);
+    }    
 
     // output the results
     output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);

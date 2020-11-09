@@ -33,5 +33,13 @@ void output_eval(std::ostream &os,
                  std::vector<double> ref, const std::string &refname,
                  std::vector<std::vector<double> > add={}, const std::vector<std::string> addname={});
 
+// Calculate the statistics from columns x1 and x2, with weights
+// w. Return the wrms, rms, mae, and mse. If istart and iend are
+// given, restrict the stats calculation to the range istart:iend-1.
+// If w is empty, all weights are assumed to be one.
+void calc_stats(const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
+                double &wrms, double &rms, double &mae, double &mse, 
+                const int istart = -1, const int iend = -1);
+
 #endif
 
