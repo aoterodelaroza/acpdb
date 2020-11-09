@@ -77,8 +77,9 @@ void output_eval(std::ostream &os,
 // ids id. Return the wrms, rms, mae, and mse. If istart and iend are
 // given, restrict the stats calculation to the range istart:iend-1.
 // If idini and idend are given, restrict the stats calculation to the
-// items with id between idini and idend -1. If w is empty, all
-// weights are assumed to be one. Returns the number of items processed.
+// items with id between idini and idend -1. ids can be left empty if
+// idini or idend are < 0. If w is empty, all weights are assumed to
+// be one. Returns the number of items processed.
 int calc_stats(const std::vector<int> ids,
                 const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
                 double &wrms, double &rms, double &mae, double &mse, 

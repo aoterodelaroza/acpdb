@@ -945,38 +945,20 @@ ORDER BY Training_set.id;
   }
 
   // calculate statistics
+  for (int i = 0; i < ntot; i++)
+    ytotal[i] = yempty[i] + yacp[i] + yadd[i];
   int nset = setid.size();
-  std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0);
-  double wrms = 0.0, wrmsall = 0.0, rmst = 0.0, maet = 0.0, mset = 0.0;
+  std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0), wrms(nset,0.0);
+  double rmst, maet, mset, wrmst, wrms_total_nofit = 0;
   int maxsetl = 0;
-  n = 0;
   for (int i = 0; i < setid.size(); i++){
-    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
-      double xdiff = yempty[n] + yacp[n] + yadd[n] - yref[n];
-      mae[i] += std::abs(xdiff);
-      mse[i] += xdiff;
-      rms[i] += xdiff * xdiff;
-      maet += std::abs(xdiff);
-      mset += xdiff;
-      rmst += xdiff * xdiff;
-      wrmsall += w[n] * xdiff * xdiff;
-      if (set_dofit[i])
-        wrms += w[n] * xdiff * xdiff;
-      n++;
-    }
-    double nsetsize = set_size[i];
-    mae[i] /= nsetsize;
-    mse[i] /= nsetsize;
-    rms[i] = std::sqrt(rms[i]/nsetsize);
+    calc_stats({},ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],set_initial_idx[i],set_final_idx[i]);
+    if (set_dofit[i])
+      wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
   }
-  maet /= ntot;
-  mset /= ntot;
-  rmst = std::sqrt(rmst/ntot);
-  wrms = std::sqrt(wrms);
-  wrmsall = std::sqrt(wrmsall);
-  if (n != ntot)
-    throw std::runtime_error("In ACPEVAL, inconsistent ntot, set_initial_idx, and set_final_idx");
+  wrms_total_nofit = std::sqrt(wrms_total_nofit);
+  calc_stats({},ytotal,yref,w,wrmst,rmst,maet,mset);
 
   std::streamsize prec = os.precision(7);
   os << std::fixed;
@@ -989,8 +971,8 @@ ORDER BY Training_set.id;
   }
 
   os.precision(8);
-  os << "#   wrms    =  " << wrms << std::endl;
-  os << "#   wrmsall =  " << wrmsall << " (including evaluation subsets)" << std::endl;
+  os << "#   wrms    =  " << wrms_total_nofit << std::endl;
+  os << "#   wrmsall =  " << wrmst << " (including evaluation subsets)" << std::endl;
 
   for (int i = 0; i < setid.size(); i++){
     os << "# " << std::right << std::setw(maxsetl) << alias[i]
