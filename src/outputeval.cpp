@@ -73,13 +73,17 @@ void output_eval(std::ostream &os,
   os.precision(prec);
 }
 
-// Calculate the statistics from columns x1 and x2, with weights
-// w. Return the wrms, rms, mae, and mse. If istart and iend are
+// Calculate the statistics from columns x1 and x2 with weights w and
+// ids id. Return the wrms, rms, mae, and mse. If istart and iend are
 // given, restrict the stats calculation to the range istart:iend-1.
-// If w is empty, all weights are assumed to be one.
-void calc_stats(const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
+// If idini and idend are given, restrict the stats calculation to the
+// items with id between idini and idend -1. If w is empty, all
+// weights are assumed to be one. Returns the number of items processed.
+int calc_stats(const std::vector<int> ids,
+                const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
                 double &wrms, double &rms, double &mae, double &mse, 
-                const int istart/*=-1*/, const int iend/*=-1*/){
+                const int istart/*=-1*/, const int iend/*=-1*/,
+                const int idini/*=-1*/, const int idend/*=-1*/){
 
   // set the range and initialize
   int i0 = 0, i1 = x1.size();
@@ -93,7 +97,11 @@ void calc_stats(const std::vector<double> x1, const std::vector<double> x2, cons
   mse = 0;
 
   // calculate statistics
+  int n = 0;
   for (int i = i0; i < i1; i++){
+    if (idini >= 0 && idend >= 0 && (ids[i] < idini || ids[i] >= idend))
+      continue;
+    n++;
     double xdiff = x1[i] - x2[i];
     mae += std::abs(xdiff);
     mse += xdiff;
@@ -103,9 +111,11 @@ void calc_stats(const std::vector<double> x1, const std::vector<double> x2, cons
     else
       wrms += xdiff * xdiff;
   }
-  double n = i1-i0;
-  mae /= n;
-  mse /= n;
-  rms = std::sqrt(rms/n);
-  wrms = std::sqrt(wrms);
+  if (n > 0){
+    mae /= n;
+    mse /= n;
+    rms = std::sqrt(rms/n);
+    wrms = std::sqrt(wrms);
+  }
+  return n;
 }

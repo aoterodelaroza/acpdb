@@ -35,9 +35,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // namespace alias
 namespace fs = std::filesystem;
 
-// global variables (globals.h)
+// global variables and constants (globals.h)
 int globals::ncpu = 4;
 int globals::mem = 2;
+double globals::ha_to_kcal = 627.50947;
 
 // variables for managing the input and output streams
 static std::istream *is;

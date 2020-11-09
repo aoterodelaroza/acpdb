@@ -90,7 +90,8 @@ void deblank(std::string &str);
 //   string  double
 // This populates the map with string as key and the double as value.Skip
 // blank lines and comments (#). Ignore the third and subsequent fields.
-std::unordered_map<std::string,double> read_data_file(const std::string &file);
+// Multiply the values by the conversion factor convf.
+std::unordered_map<std::string,double> read_data_file(const std::string &file,const double convf=1.0);
 
 // Count the number of digits required to represent an integer
 inline int digits(int n_){

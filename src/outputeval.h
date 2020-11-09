@@ -33,13 +33,18 @@ void output_eval(std::ostream &os,
                  std::vector<double> ref, const std::string &refname,
                  std::vector<std::vector<double> > add={}, const std::vector<std::string> addname={});
 
-// Calculate the statistics from columns x1 and x2, with weights
-// w. Return the wrms, rms, mae, and mse. If istart and iend are
+// Calculate the statistics from columns x1 and x2 with weights w and
+// ids id. Return the wrms, rms, mae, and mse. If istart and iend are
 // given, restrict the stats calculation to the range istart:iend-1.
-// If w is empty, all weights are assumed to be one.
-void calc_stats(const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
+// If idini and idend are given, restrict the stats calculation to the
+// items with id between idini and idend -1. If w is empty, all
+// weights are assumed to be one. Returns the number of items
+// processed.
+int calc_stats(const std::vector<int> ids,
+                const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
                 double &wrms, double &rms, double &mae, double &mse, 
-                const int istart = -1, const int iend = -1);
+                const int istart = -1, const int iend = -1, 
+                const int idini = -1, const int idend = -1);
 
 #endif
 

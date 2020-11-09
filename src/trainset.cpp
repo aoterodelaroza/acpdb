@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "trainset.h"
 #include "parseutils.h"
 #include "outputeval.h"
+#include "globals.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -1325,7 +1326,7 @@ void trainset::read_structures(std::ostream &os, const std::string &file, std::u
   // set
   bool haveset = (kmap.find("SET") != kmap.end());
   int idini, idfin;
-  if (kmap.find("SET") != kmap.end()){
+  if (haveset){
     std::string setname = kmap["SET"];
     auto it = std::find(alias.begin(),alias.end(),setname);
     if (it == alias.end())
@@ -1339,7 +1340,7 @@ void trainset::read_structures(std::ostream &os, const std::string &file, std::u
   }
 
   // get the data from the file
-  auto datmap = read_data_file(file);
+  auto datmap = read_data_file(file,globals::ha_to_kcal);
 
   if (kmap.find("COMPARE") != kmap.end()){
     // verify that we have a reference method
@@ -1413,24 +1414,42 @@ ORDER BY Training_set.id;
        << "# Reference: " << refm << std::endl
        << "# Statistics: " << (names_missing_fromdat.empty() && names_missing_fromdat.empty()?"":"(partial data)")
        << std::endl;
+    std::streamsize prec = os.precision(7);
+    os << std::fixed;
+    os.precision(8);
     if (ids.empty())
       os << "#   (not enough data for statistics)" << std::endl;
-    else{
-      // calculate the statistics
+    else if (haveset){
+      // calculate the statistics for the given set
       double wrms, rms, mae, mse;
-      calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse);
+      calc_stats(ids,datvalues,refvalues,ws,wrms,rms,mae,mse);
 
-      std::streamsize prec = os.precision(7);
-      os << std::fixed;
-      os.precision(8);
       os << "# " << std::left << std::setw(10) << "all"
-         << std::left << "  rms = " << std::right << std::setw(14) << rms
-         << std::left << "  mae = " << std::right << std::setw(14) << mae
-         << std::left << "  mse = " << std::right << std::setw(14) << mse
-         << std::left << " wrms = " << std::right << std::setw(14) << wrms
+         << std::left << "  rms = " << std::right << std::setw(12) << rms
+         << std::left << "  mae = " << std::right << std::setw(12) << mae
+         << std::left << "  mse = " << std::right << std::setw(12) << mse
+         << std::left << " wrms = " << std::right << std::setw(12) << wrms
          << std::endl;
-      os.precision(prec);
-    }    
+    } else {
+      // calculate the statistics for all sets
+      double wrms, rms, mae, mse;
+      for (int i = 0; i < setid.size(); i++){
+        int n = calc_stats(ids,datvalues,refvalues,ws,wrms,rms,mae,mse,-1,-1,set_initial_idx[i],set_final_idx[i]);
+        if (n == 0){
+          os << "# " << std::left << std::setw(10) << alias[i] << "   (no data)" << std::endl;
+        } else{
+          os << "# " << std::left << std::setw(10) << alias[i]
+             << std::left << "  rms = " << std::right << std::setw(12) << rms
+             << std::left << "  mae = " << std::right << std::setw(12) << mae
+             << std::left << "  mse = " << std::right << std::setw(12) << mse
+             << std::left << " wrms = " << std::right << std::setw(12) << wrms;
+          if (n < set_size[i])
+            os << "   (partial: " << n << " of " << set_size[i] << ")";
+          os << std::endl;
+        }
+      }
+    }
+    os.precision(prec);
 
     // output the results
     output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);

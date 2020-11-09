@@ -23,6 +23,9 @@ namespace globals {
   //// global variables for use in the input generators ////
   extern int ncpu; // number of cores
   extern int mem;  // memory in GB
+
+  // universal constants and conversion factors
+  extern double ha_to_kcal; // Hartree to kcal/mol
 }
 
 #endif
