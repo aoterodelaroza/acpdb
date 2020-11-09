@@ -1318,7 +1318,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
 
 // Read data for the training set or one of its subsets from a file,
 // then compare to reference method refm.
-void trainset::read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap, const acp &a){
+void trainset::read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap){
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using READ");
   if (!isdefined())
@@ -1410,9 +1410,13 @@ ORDER BY Training_set.id;
 
   // output the header and the statistics
   os << "# Evaluation: " << file << std::endl
-     << "# Reference: " << refm << std::endl
-     << "# Statistics: " << (names_missing_fromdat.empty() && names_missing_fromdat.empty()?"":"(partial data)")
-     << std::endl;
+     << "# Reference: " << refm << std::endl;
+  if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
+    os << "# Statistics: " << "(partial, missing: " 
+       << names_missing_fromdat.size() << " from file, "
+       << names_missing_fromdb.size() << " from database)" << std::endl;
+  else
+    os << "# Statistics: " << std::endl;
   std::streamsize prec = os.precision(7);
   os << std::fixed;
   os.precision(8);

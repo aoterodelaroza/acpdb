@@ -200,9 +200,7 @@ int main(int argc, char *argv[]) {
           acp a = kmap_to_acp(kmap);
           if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
             if (kmap.find("COMPARE") != kmap.end())
-              ts.read_and_compare(*os,file,kmap["COMPARE"],kmap,a);
-            else
-              printf("bleh!\n");
+              ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
           } else {
             db.read_structures(*os,file,kmap);
           }
@@ -210,7 +208,7 @@ int main(int argc, char *argv[]) {
         //
       } else if (keyw == "ACPINFO") {
         acp a = string_to_acp(popstring(tokens));
-        if (a)
+        if (!a)
           throw std::runtime_error("Unknown ACP: " + a.get_name());
         else
           a.info(*os);
@@ -223,7 +221,7 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("Empty template string for ACPSPLIT");
 
         acp a = string_to_acp(key);
-        if (a)
+        if (!a)
           throw std::runtime_error("Unknown ACP: " + a.get_name());
         else
           a.split(templ, tokens);
@@ -233,7 +231,7 @@ int main(int argc, char *argv[]) {
         acp a;
         if (keyw == "ACPEVAL"){
           a = string_to_acp(popstring(tokens));
-          if (a)
+          if (!a)
             throw std::runtime_error("Unknown ACP: " + a.get_name());
         }
 

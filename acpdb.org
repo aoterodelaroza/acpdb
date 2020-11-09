@@ -444,7 +444,6 @@ READ file.s
   SET set.s
   COMPARE method.s
   INSERT method.s
-  ACP acp.s
 END
 
   Read calculated properties from file.s. This file must have lines of
@@ -471,14 +470,9 @@ END
   data corresponds to the database set with that name.
 
   If COMPARE is present, compare the data in file.s against method
-  method.s, which is taken as reference for the comparison. If ACP is
-  also present, then compare to the linear model prediction using the
-  given ACP. The acp.s can be an ACP name or a file. Using the ACP
-  keyword requires a training set and that the necessary data is
-  available in the database.
-
-  If INSERT is present, insert the calculated properties into the
-  database as the evaluation of method method.s.
+  method.s, which is taken as reference for the comparison. If INSERT
+  is present, insert the calculated properties into the database as
+  the evaluation of method method.s.
 
 * High-level operations
 
