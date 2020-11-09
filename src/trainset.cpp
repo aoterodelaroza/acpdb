@@ -564,7 +564,7 @@ WHERE Properties.id = Training_set.propid;)SQL");
   }
 
   // write the inputs
-  db->write_many_structures(smap,{},dir);
+  db->write_many_structures(smap,{},dir,0);
 }
 
 // Write the din files in the training set
@@ -1305,7 +1305,7 @@ WHERE Properties.property_type = Property_types.id AND Properties.id = Training_
   }
 
   // write the inputs
-  db->write_many_structures(smap,gmap,dir,a);
+  db->write_many_structures(smap,gmap,dir,0,a);
 }
 
 // Insert a subset into the Training_set table

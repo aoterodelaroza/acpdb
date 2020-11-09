@@ -822,7 +822,7 @@ WHERE Structures.setid = Sets.id AND Sets.key = ?1;)SQL");
     throw std::runtime_error("No structures found in LIST XYZ specification");
 
   // write the structures to sidk
-  write_many_structures(smap,{},dir);
+  write_many_structures(smap,{},dir,0);
 }
 
 // List sets of properties in the database (din format)
@@ -1035,24 +1035,49 @@ WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQ
   }
   
   // write the inputs
-  write_many_structures(smap,gmap,dir,a);
+  write_many_structures(smap,gmap,dir,0,a);
 }
 
 // Write the structures with IDs given by the keys in smap. The
 // values of smap give the types (xyz for an xyz file or
 // energy_difference, etc. for an input file).  gmap, dir, a: see
 // write_one_structure.
-void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
-  for (auto it = smap.begin(); it != smap.end(); it++)
-    write_one_structure(it->first,it->second,gmap,dir,a);
+void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap/*={}*/, 
+                                  const std::string &dir/*="./"*/, int npack/*=0*/, const acp &a/*={}*/){
+
+  if (npack <= 0 || npack >= smap.size()){
+    for (auto it = smap.begin(); it != smap.end(); it++)
+      write_one_structure(it->first,it->second,gmap,dir,a);
+  } else {
+    int n = 0, ipack = 0;
+    int slen = digits((int) smap.size()/npack);
+    if (smap.size() % npack != 0) slen++;
+
+    std::list<fs::path> written;
+    for (auto it = smap.begin(); it != smap.end(); it++){
+      written.push_back(fs::path(write_one_structure(it->first,it->second,gmap,dir,a)));
+
+      // create a new package if written has npack items or we are about to finish
+      if (++n % npack == 0 || std::next(it) == smap.end() && !written.empty()){
+        std::string tarcmd = std::to_string(++ipack);
+        tarcmd.insert(0,slen-tarcmd.size(),'0');
+        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+        for (auto iw = written.begin(); iw != written.end(); iw++)
+          tarcmd = tarcmd + " " + iw->string();
+
+        if (system(tarcmd.c_str()))
+          throw std::runtime_error("Error running tar command on input files");
+        for (auto iw = written.begin(); iw != written.end(); iw++)
+          remove(dir / *iw);
+        written.clear();
+      }
+    }
+  }
 }
 
-// Write the structure id in the database. type can be either "xyz"
-// to write an xyz file or the property type
-// (energy_difference,etc.)  for an input file. Optional keywords go
-// in the gmap map, and are type- and structure dependent. Put the
-// file in directory dir and use ACP a in it.
-void sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+// Write the structure id in the database. Options have the same
+// meaning as in write_many_structures. Returns the written filename. 
+std::string sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
 
   // get the structure and build the file name
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -1062,7 +1087,8 @@ FROM Structures WHERE id = ?1;
   st.bind(1,id);
   st.step();
   std::string fileroot = std::string((char *) sqlite3_column_text(st.ptr(), 1));
-  std::string name = dir + "/" + fileroot;
+  std::string name = dir + "/";
+  name += fileroot;
   bool ismolecule = sqlite3_column_int(st.ptr(), 3);
   bool isxyz = equali_strings(type,"xyz");
 
@@ -1071,14 +1097,16 @@ FROM Structures WHERE id = ?1;
   s.readdbrow(st.ptr());
 
   // append the extension and open the file stream
+  std::string ext;
   if (ismolecule) {
     if (isxyz)
-      name = name + ".xyz";
+      ext = ".xyz";
     else
-      name = name + ".gjf";
+      ext = ".gjf";
   } else {
     throw std::runtime_error("Cannot do crystals yet");
   }
+  name += ext;
   std::ofstream ofile(name,std::ios::trunc);
 
   // write the input file
@@ -1096,7 +1124,8 @@ FROM Structures WHERE id = ?1;
     throw std::runtime_error("Unknown combination of structure and property type");
   }
 
-  // clean up
+  // clean up and exit
   ofile.close();
+  return (fileroot + ext);
 }
 

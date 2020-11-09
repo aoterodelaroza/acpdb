@@ -96,16 +96,16 @@ class sqldb {
 
   // Write the structures with IDs given by the keys in smap. The
   // values of smap give the types (xyz for an xyz file or
-  // energy_difference, etc. for an input file).  gmap, dir, a: see
-  // write_one_structure.
-  void write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap = {}, const std::string &dir = "./", const acp &a = {});
+  // energy_difference, etc. for an input file). gmap:
+  // writer-dependent options for the structures. dir: output
+  // directory. npack = package and compress in packets of npack
+  // files (0 = no packing). a: ACP to use in the inputs.
+  void write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap = {}, 
+                             const std::string &dir = "./", int npack = 0, const acp &a = {});
 
-  // Write the structure id in the database. type can be either "xyz"
-  // to write an xyz file or the property type
-  // (energy_difference,etc.)  for an input file. Optional keywords go
-  // in the gmap map, and are type- and structure dependent. Put the
-  // file in directory dir and use ACP a in it.
-  void write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap = {}, const std::string &dir = "./", const acp &a = {});
+  // Write the structure id in the database. Options have the same
+  // meaning as in write_many_structures. Returns the written file.
+  std::string write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap = {}, const std::string &dir = "./", const acp &a = {});
 
   // Find the property type ID corresponding to the key 
   int find_id_from_key(const std::string &key,statement::stmttype type);
