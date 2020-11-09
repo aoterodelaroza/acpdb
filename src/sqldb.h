@@ -82,9 +82,6 @@ class sqldb {
   // List items from the database
   void list(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
-  // List structures in the database or one of its subsets (xyz format)
-  void list_xyz(std::unordered_map<std::string,std::string> &kmap);
-
   // List sets of properties in the database (din format)
   void list_din(std::unordered_map<std::string,std::string> &kmap);
 
@@ -92,7 +89,7 @@ class sqldb {
   void verify(std::ostream &os);
 
   // Write input files for a database set
-  void write_set_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a);
+  void write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Write the structures with IDs given by the keys in smap. The
   // values of smap give the types (xyz for an xyz file or

@@ -82,9 +82,6 @@ class trainset {
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
-  // Write the structures in the training set as xyz files
-  void write_xyz(const std::list<std::string> &tokens) const;
-
   // Write the din files in the training set
   void write_din(const std::list<std::string> &tokens) const;
 
@@ -107,7 +104,7 @@ class trainset {
   void dump() const;
 
   // Write input files for the training set structures
-  void write_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a);
+  void write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Returns true if the argument is a known set alias
   inline bool isalias(const std::string &str) const{

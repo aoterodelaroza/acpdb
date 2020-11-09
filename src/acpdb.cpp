@@ -167,6 +167,7 @@ int main(int argc, char *argv[]) {
         } else {
           // WRITE environment
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          bool havemethod = (kmap.find("METHOD") != kmap.end());
           acp a;
           if (kmap.find("ACP") != kmap.end()){
             std::string acpname = kmap["ACP"];
@@ -176,15 +177,20 @@ int main(int argc, char *argv[]) {
               a = acp(acpname,acpname);
           }
           if (kmap.find("SET") == kmap.end()){
-            // no set has been given, the whole training set (without repetitions)
-            ts.write_inputs(kmap,a);
+            if (ts.isdefined()){
+              // no set has been given, the whole training set (without repetitions)
+              ts.write_structures(kmap,a);
+            } else {
+              // no set has been given and no TS, the whole database
+              db.write_structures(kmap,a);
+            }
           } else if (ts.isalias(kmap["SET"])){
             // set is an alias from the training set
             kmap["SET"] = ts.alias_to_setname(kmap["SET"]);
-            db.write_set_inputs(kmap,a);
+            db.write_structures(kmap,a);
           } else {
             // write a set from the database
-            db.write_set_inputs(kmap,a);
+            db.write_structures(kmap,a);
           }
         }
 
@@ -303,14 +309,9 @@ int main(int argc, char *argv[]) {
         //
       } else if (keyw == "LIST") {
         std::string category = popstring(tokens,true);
-        if (category == "XYZ_TRAINING")
-          ts.write_xyz(tokens);
-        else if (category == "DIN_TRAINING")
+        if (category == "DIN_TRAINING")
           ts.write_din(tokens);
-        else if (category == "XYZ"){
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          db.list_xyz(kmap);
-        } else if (category == "DIN"){
+        else if (category == "DIN"){
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.list_din(kmap);
         } else

@@ -792,41 +792,6 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   os.precision(prec);
 }
 
-// List structures in the database or one of its subsets (xyz format)
-void sqldb::list_xyz(std::unordered_map<std::string,std::string> &kmap){
-  if (!db) throw std::runtime_error("A database file must be connected before using LIST XYZ");
-
-  // get the directory and pack number
-  std::string dir = fetch_directory(kmap);
-  int npack = 0;
-  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
-
-  // build the structure map
-  std::unordered_map<int,std::string> smap;
-  auto im = kmap.find("SET");
-  if (im != kmap.end()){
-    std::list<std::string> vlist = list_all_words(im->second);
-    statement st(db,statement::STMT_CUSTOM,R"SQL(
-SELECT Structures.id
-FROM Structures, Sets
-WHERE Structures.setid = Sets.id AND Sets.key = ?1;)SQL");
-    for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      st.bind(1,*it);
-      while (st.step() != SQLITE_DONE)
-        smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
-    }
-  } else {
-    statement st(db,statement::STMT_CUSTOM,"SELECT Structures.id FROM Structures;");
-    while (st.step() != SQLITE_DONE)
-      smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
-  }
-  if (smap.empty())
-    throw std::runtime_error("No structures found in LIST XYZ specification");
-
-  // write the structures to sidk
-  write_many_structures(smap,{},dir,npack);
-}
-
 // List sets of properties in the database (din format)
 void sqldb::list_din(std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST DIN");
@@ -1001,22 +966,24 @@ SELECT id FROM Structures WHERE id = ?1;
 }
 
 // Write input files for a database set
-void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
   if (!db) 
     throw std::runtime_error("Error reading connected database");
   
   // unpack the gaussian keyword into a map for this method
-  if (kmap.find("METHOD") == kmap.end())
-    throw std::runtime_error("A METHOD must be given to write the input files for a set");
-  auto gmap = get_gaussian_map(kmap["METHOD"]);
+  bool havemethod = (kmap.find("METHOD") != kmap.end());
+  std::unordered_map<std::string,std::string> gmap = {};
+  if (havemethod) gmap = get_gaussian_map(kmap["METHOD"]);
 
   // set
-  if (kmap.find("SET") == kmap.end())
-    throw std::runtime_error("A SET must be given to write the input files for a set");
-  std::string setname = kmap["SET"];
-  int setid = find_id_from_key(setname,statement::STMT_QUERY_SET);
-  if (setid == 0)
-    throw std::runtime_error("Unknown SET in write_set_inputs");
+  bool haveset = (kmap.find("SET") != kmap.end());
+  int setid = 0;
+  if (haveset){
+    std::string setname = kmap["SET"];
+    setid = find_id_from_key(setname,statement::STMT_QUERY_SET);
+    if (setid == 0)
+      throw std::runtime_error("Unknown SET in write_set_inputs");
+  }
 
   // directory and pack number
   std::string dir = fetch_directory(kmap);
@@ -1026,16 +993,49 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   // collect the structure indices for this set (better here than in
   // the Sets table).
   std::unordered_map<int,std::string> smap;
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  if (havemethod){
+    if (haveset){
+      // method and set
+      statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types
 WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
-  st.bind(1,setid);
-  while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),1);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-    for (int i = 0; i < n; i++)
-      smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+      st.bind(1,setid);
+      while (st.step() != SQLITE_DONE){
+        int n = sqlite3_column_int(st.ptr(),1);
+        const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+        for (int i = 0; i < n; i++)
+          smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+      }
+    } else {
+      // method but not set
+      statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT Property_types.key, Properties.nstructures, Properties.structures
+FROM Properties, Property_types
+WHERE Properties.property_type = Property_types.id )SQL");
+      while (st.step() != SQLITE_DONE){
+        int n = sqlite3_column_int(st.ptr(),1);
+        const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+        for (int i = 0; i < n; i++)
+          smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+      }
+    }
+  } else {
+    if (haveset){
+      // set but not method
+      statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT Structures.id
+FROM Structures, Sets
+WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
+      st.bind(1,setid);
+      while (st.step() != SQLITE_DONE)
+        smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
+    } else {
+      // neither method nor set
+      statement st(db,statement::STMT_CUSTOM,"SELECT Structures.id FROM Structures;");
+      while (st.step() != SQLITE_DONE)
+        smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
+    }
   }
   
   // write the inputs

@@ -537,36 +537,6 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   os.precision(prec);
 }
 
-// Write the structures in the training set as xyz files
-void trainset::write_xyz(const std::list<std::string> &tokens) const{
-  if (!db || !(*db)) 
-    throw std::runtime_error("A database file must be connected before using WRITE XYZ");
-  if (setid.empty())
-    throw std::runtime_error("There are no sets in the training set (WRITE XYZ)");
-  
-  // directory
-  std::string dir = ".";
-  if (!tokens.empty()) dir = tokens.front();
-  if (!fs::is_directory(tokens.front()))
-    throw std::runtime_error("In WRITE XYZ, directory not found: " + dir);
-
-  // collect the structure indices for the training set
-  std::unordered_map<int,std::string> smap;
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT DISTINCT Properties.nstructures, Properties.structures
-FROM Properties, Property_types, Training_set
-WHERE Properties.id = Training_set.propid;)SQL");
-  while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),0);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
-    for (int i = 0; i < n; i++)
-      smap[str[i]] = "xyz";
-  }
-
-  // write the inputs
-  db->write_many_structures(smap,{},dir,0);
-}
-
 // Write the din files in the training set
 void trainset::write_din(const std::list<std::string> &tokens) const{
   if (!db || !(*db)) 
@@ -1277,16 +1247,16 @@ ORDER BY Training_set.id;
 }
 
 // Write input files for the training set structures
-void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+void trainset::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using WRITE");
 
-  // unpack the gaussian keyword into a map for this method
-  if (kmap.find("METHOD") == kmap.end())
-    throw std::runtime_error("A METHOD must be given to write the input files for the training set");
-  auto gmap = db->get_gaussian_map(kmap["METHOD"]);
+  // unpack the gaussian keyword into a map for this method, if a method was given
+  bool havemethod = (kmap.find("METHOD") != kmap.end());
+  std::unordered_map<std::string,std::string> gmap = {};
+  if (havemethod) gmap = db->get_gaussian_map(kmap["METHOD"]);
 
   // directory and pack number
   std::string dir = fetch_directory(kmap);
@@ -1295,15 +1265,28 @@ void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, c
 
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  if (havemethod){
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types, Training_set
 WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid;)SQL");
-  while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),1);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-    for (int i = 0; i < n; i++)
-      smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+    while (st.step() != SQLITE_DONE){
+      int n = sqlite3_column_int(st.ptr(),1);
+      const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+      for (int i = 0; i < n; i++)
+        smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+    }
+  } else {
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT DISTINCT Properties.nstructures, Properties.structures
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid;)SQL");
+    while (st.step() != SQLITE_DONE){
+      int n = sqlite3_column_int(st.ptr(),0);
+      const int *str = (int *)sqlite3_column_blob(st.ptr(),1);
+      for (int i = 0; i < n; i++)
+        smap[str[i]] = "xyz";
+    }
   }
 
   // write the inputs
