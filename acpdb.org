@@ -259,12 +259,14 @@ VERIFY
 LIST XYZ
  [DIRECTORY directory.s]
  [SET set1.s set2.s ...]
+ [PACK ipack.i]
 END
 
   Write xyz files for all structures in the database. If directory.s
   is given, write them in that directory. If SET is given, only the
   structures in those sets are written. (Use XYZ_TRAINING to write the
-  xyz files for a training set.)
+  xyz files for a training set.) If PACK is used, make tar.xz archives
+  containing ipack.i xyz files each.
 
 LIST DIN
  [DIRECTORY directory.s]

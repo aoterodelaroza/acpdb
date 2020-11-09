@@ -796,8 +796,10 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
 void sqldb::list_xyz(std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST XYZ");
 
-  // get the directory
+  // get the directory and pack number
   std::string dir = fetch_directory(kmap);
+  int npack = 0;
+  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
 
   // build the structure map
   std::unordered_map<int,std::string> smap;
@@ -822,7 +824,7 @@ WHERE Structures.setid = Sets.id AND Sets.key = ?1;)SQL");
     throw std::runtime_error("No structures found in LIST XYZ specification");
 
   // write the structures to sidk
-  write_many_structures(smap,{},dir,0);
+  write_many_structures(smap,{},dir,npack);
 }
 
 // List sets of properties in the database (din format)
@@ -1016,8 +1018,10 @@ void sqldb::write_set_inputs(std::unordered_map<std::string,std::string> &kmap, 
   if (setid == 0)
     throw std::runtime_error("Unknown SET in write_set_inputs");
 
-  // directory
+  // directory and pack number
   std::string dir = fetch_directory(kmap);
+  int npack = 0;
+  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
 
   // collect the structure indices for this set (better here than in
   // the Sets table).
@@ -1035,7 +1039,7 @@ WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQ
   }
   
   // write the inputs
-  write_many_structures(smap,gmap,dir,0,a);
+  write_many_structures(smap,gmap,dir,npack,a);
 }
 
 // Write the structures with IDs given by the keys in smap. The
@@ -1050,8 +1054,9 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, cons
       write_one_structure(it->first,it->second,gmap,dir,a);
   } else {
     int n = 0, ipack = 0;
-    int slen = digits((int) smap.size()/npack);
-    if (smap.size() % npack != 0) slen++;
+    unsigned long div = smap.size() / (unsigned long) npack;
+    if (smap.size() % npack != 0) div++;
+    int slen = digits((int) div);
 
     std::list<fs::path> written;
     for (auto it = smap.begin(); it != smap.end(); it++){

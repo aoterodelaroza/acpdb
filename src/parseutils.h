@@ -92,6 +92,11 @@ inline int digits(int n_){
   while (n_/=10) digits++;
   return digits;
 }
+inline int digits(unsigned long n_){
+  int digits = 1;
+  while (n_/=10) digits++;
+  return digits;
+}
 
 #endif
 

@@ -1288,8 +1288,10 @@ void trainset::write_inputs(std::unordered_map<std::string,std::string> &kmap, c
     throw std::runtime_error("A METHOD must be given to write the input files for the training set");
   auto gmap = db->get_gaussian_map(kmap["METHOD"]);
 
-  // directory
+  // directory and pack number
   std::string dir = fetch_directory(kmap);
+  int npack = 0;
+  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
 
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
@@ -1305,7 +1307,7 @@ WHERE Properties.property_type = Property_types.id AND Properties.id = Training_
   }
 
   // write the inputs
-  db->write_many_structures(smap,gmap,dir,0,a);
+  db->write_many_structures(smap,gmap,dir,npack,a);
 }
 
 // Insert a subset into the Training_set table
