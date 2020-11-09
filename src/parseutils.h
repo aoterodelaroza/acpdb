@@ -86,6 +86,12 @@ std::string fetch_directory(const std::unordered_map<std::string,std::string> &k
 // Remove leading and trailing blanks from a string
 void deblank(std::string &str);
 
+// Read data from a file. The data must be:
+//   string  double
+// This populates the map with string as key and the double as value.Skip
+// blank lines and comments (#). Ignore the third and subsequent fields.
+std::unordered_map<std::string,double> read_data_file(const std::string &file);
+
 // Count the number of digits required to represent an integer
 inline int digits(int n_){
   int digits = 1;

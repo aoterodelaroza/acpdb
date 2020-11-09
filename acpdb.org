@@ -437,7 +437,8 @@ END
   The files are written to directory dir.s (default: ./). If PACK is
   present, create tar.xz compressed archives with at most ipack.i
   structures each (only if the number of structures is greater than
-  ipack.i).
+  ipack.i). The PACK keyword invokes the tar utility through a
+  system() call.
 
 READ file.s
   SET set.s
@@ -457,7 +458,9 @@ END
   valuex.r are the calculated values (typically, energies) for those
   structures. The structure names are the same as root of the file
   names generated using WRITE, so this file can be easily generated
-  with utilities such as grep or awk.
+  with utilities such as grep or awk. Blank lines and comments (#) are
+  ignored. Only the first two fields in each line are read; the rest
+  are ignored.
 
   If no SET is present, the input data corresponds to the whole
   training set. If no SET is present and the training set has not been

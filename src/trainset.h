@@ -107,7 +107,7 @@ class trainset {
   void write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Read data for the training set structures
-  void read_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a);
+  void read_structures(std::ostream &os, const std::string &file, std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Returns true if the argument is a known set alias
   inline bool isalias(const std::string &str) const{

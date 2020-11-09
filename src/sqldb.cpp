@@ -1043,7 +1043,7 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
 }
 
 // Read data for the database
-void sqldb::read_structures(std::unordered_map<std::string,std::string> &kmap){
+void sqldb::read_structures(std::ostream &os, const std::string &file, std::unordered_map<std::string,std::string> &kmap){
   printf("In read_structures, sqldb\n");
 }
 

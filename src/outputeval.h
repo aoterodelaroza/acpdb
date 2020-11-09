@@ -1,0 +1,37 @@
+// -*- c++-mode -*-
+/*
+Copyright (c) 2020 Alberto Otero de la Roza <aoterodelaroza@gmail.com>
+
+acpdb is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at
+your option) any later version.
+
+acpdb is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef OUTPUTEVAL_H
+#define OUTPUTEVAL_H
+
+#include <vector>
+#include <string>
+#include <iostream>
+
+// Write a table comparing column approx with column ref to stream
+// os. The rows have ids, names, and weights as indicated by the
+// arguments. If add is present, write them as additional columns in
+// the table. The name arguments are used in the header.
+void output_eval(std::ostream &os,
+                 std::vector<int> id,std::vector<std::string> name, std::vector<double> w,
+                 std::vector<double> approx, const std::string &approxname,
+                 std::vector<double> ref, const std::string &refname,
+                 std::vector<std::vector<double> > add={}, const std::vector<std::string> addname={});
+
+#endif
+

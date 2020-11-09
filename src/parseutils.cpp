@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <filesystem>
@@ -272,3 +273,27 @@ void deblank(std::string &str){
   str.erase(str.find_last_not_of(blanks)+1);
   str.erase(0,str.find_first_not_of(blanks));
 }
+
+// Read data from a file. The data must be:
+//   string  double
+// This populates the map with string as key and the double as value.Skip
+// blank lines and comments (#). Ignore the third and subsequent fields.
+std::unordered_map<std::string,double> read_data_file(const std::string &file){
+  if (!fs::is_regular_file(file))
+    throw std::runtime_error("File not found: " + file);
+
+  std::unordered_map<std::string,double> res;
+  std::ifstream ifile(file,std::ios::in);
+
+  std::string line;
+  while(get_next_line(ifile,line,'#','\0')){
+    std::string str;
+    double value;
+    std::istringstream iss(line);
+    iss >> str >> value;
+    res[str] = value;
+  }
+  ifile.close();
+  return res;
+}
+

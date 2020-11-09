@@ -92,7 +92,7 @@ class sqldb {
   void write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Read data for the database
-  void read_structures(std::unordered_map<std::string,std::string> &kmap);
+  void read_structures(std::ostream &os, const std::string &file, std::unordered_map<std::string,std::string> &kmap);
 
   // Write the structures with IDs given by the keys in smap. The
   // values of smap give the types (xyz for an xyz file or

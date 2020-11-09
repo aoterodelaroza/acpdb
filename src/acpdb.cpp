@@ -191,12 +191,16 @@ int main(int argc, char *argv[]) {
         }
 
       } else if (keyw == "READ") {
+          std::string file = popstring(tokens);
+          if (file.empty())
+            throw std::runtime_error("A data file is required for READ");
+
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           acp a = kmap_to_acp(kmap);
           if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
-            ts.read_structures(kmap,a);
+            ts.read_structures(*os,file,kmap,a);
           else
-            db.read_structures(kmap);
+            db.read_structures(*os,file,kmap);
 
         //
       } else if (keyw == "ACPINFO") {

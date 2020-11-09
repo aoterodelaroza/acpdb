@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqldb.h"
 #include "trainset.h"
 #include "parseutils.h"
+#include "outputeval.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -1264,9 +1265,8 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
   if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
 
   // set
-  bool haveset = (kmap.find("SET") != kmap.end());
   int idini, idfin;
-  if (haveset){
+  if (kmap.find("SET") != kmap.end()){
     std::string setname = kmap["SET"];
     auto it = std::find(alias.begin(),alias.end(),setname);
     if (it == alias.end())
@@ -1316,8 +1316,110 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
 }
 
 // Read data for the training set structures
-void trainset::read_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
-  printf("In read_structures, trainset\n");
+void trainset::read_structures(std::ostream &os, const std::string &file, std::unordered_map<std::string,std::string> &kmap, const acp &a){
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using READ");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using READ");
+
+  // set
+  bool haveset = (kmap.find("SET") != kmap.end());
+  int idini, idfin;
+  if (kmap.find("SET") != kmap.end()){
+    std::string setname = kmap["SET"];
+    auto it = std::find(alias.begin(),alias.end(),setname);
+    if (it == alias.end())
+      throw std::runtime_error("Unknown SET in write_structures (no alias found)");
+    int sid = it - alias.begin();
+    idini = set_initial_idx[sid];
+    idfin = set_final_idx[sid]-1;
+  } else {
+    idini = 0;
+    idfin = ntot-1;
+  }
+
+  // get the data from the file
+  auto datmap = read_data_file(file);
+
+  if (kmap.find("COMPARE") != kmap.end()){
+    // verify that we have a reference method
+    std::string refm = kmap["COMPARE"];
+    if (refm.empty())
+      throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
+    int methodid = db->find_id_from_key(refm,statement::STMT_QUERY_METHOD);
+    if (!methodid)
+      throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
+    
+    // fetch the reference method values from the DB and populate vectors
+    std::vector<std::string> names_found;
+    std::vector<std::string> names_missing_fromdb;
+    std::vector<std::string> names_missing_fromdat;
+    std::vector<double> refvalues, datvalues, ws;
+    std::vector<int> ids;
+    statement stkey(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT Training_set.id, Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Training_set
+INNER JOIN Properties ON (Training_set.propid = Properties.id)
+LEFT OUTER JOIN  Evaluations ON (Evaluations.propid = Training_set.propid AND Evaluations.methodid = :METHOD)
+WHERE Training_set.id BETWEEN :INI AND :END
+ORDER BY Training_set.id;
+)SQL");
+    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":INI",idini);
+    st.bind((char *) ":END",idfin);
+    while (st.step() != SQLITE_DONE){
+      // check if the evaluation is available in the database
+      int id = sqlite3_column_int(st.ptr(),0);
+      std::string key = (char *) sqlite3_column_text(st.ptr(),1);
+      if (sqlite3_column_type(st.ptr(),2) == SQLITE_NULL){
+        names_missing_fromdb.push_back(key);
+        continue;
+      } 
+
+      // check if all the components are in the data file
+      int nstr = sqlite3_column_int(st.ptr(),3);
+      int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
+      double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
+      double value = 0;
+      bool found = true;
+      for (int i = 0; i < nstr; i++){
+        stkey.reset();
+        stkey.bind(1,istr[i]);
+        stkey.step();
+        std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+        if (datmap.find(strname) == datmap.end()){
+          found = false;
+          break;
+        }
+        value += coef[i] * datmap[strname];
+      }
+
+      if (!found){
+        names_missing_fromdat.push_back(key);
+      } else {
+        names_found.push_back(key);
+        ids.push_back(id);
+        refvalues.push_back(sqlite3_column_double(st.ptr(),2));
+        datvalues.push_back(value);
+        ws.push_back(w[id]);
+      }
+    }
+    datmap.clear();
+
+    // output the results
+    output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);
+    if (!names_missing_fromdb.empty()){
+      os << "## The following properties are missing from the DATABASE:" << std::endl;
+      for (int i = 0; i < names_missing_fromdb.size(); i++)
+        os << "## " << names_missing_fromdb[i] << std::endl;
+    }
+    if (!names_missing_fromdat.empty()){
+      os << "## The following properties are missing from the FILE:" << std::endl;
+      for (int i = 0; i < names_missing_fromdat.size(); i++)
+        os << "## " << names_missing_fromdat[i] << std::endl;
+    }
+  }
 }
 
 // Insert a subset into the Training_set table
