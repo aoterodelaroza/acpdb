@@ -410,7 +410,7 @@ EMPTYEVAL [output.s]
   Evaluate the empty for the current training set. If output.s is
   given, write the output to that file instead of the standard output
 
-* Input and structure writers
+* Structure writers and result readers
 
 WRITE
   METHOD method.s

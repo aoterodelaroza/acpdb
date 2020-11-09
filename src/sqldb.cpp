@@ -1053,17 +1053,26 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, cons
     for (auto it = smap.begin(); it != smap.end(); it++)
       write_one_structure(it->first,it->second,gmap,dir,a);
   } else {
-    int n = 0, ipack = 0;
     unsigned long div = smap.size() / (unsigned long) npack;
     if (smap.size() % npack != 0) div++;
     int slen = digits((int) div);
 
+    // build the random vector
+    int n = 0;
+    std::vector<int> srand;
+    srand.resize(smap.size());
+    for (auto it = smap.begin(); it != smap.end(); it++)
+      srand[n++] = it->first;
+    std::random_shuffle(srand.begin(),srand.end());
+
+    n = 0;
+    int ipack = 0;
     std::list<fs::path> written;
-    for (auto it = smap.begin(); it != smap.end(); it++){
-      written.push_back(fs::path(write_one_structure(it->first,it->second,gmap,dir,a)));
+    for (int i = 0; i < srand.size(); i++){
+      written.push_back(fs::path(write_one_structure(srand[i],smap[srand[i]],gmap,dir,a)));
 
       // create a new package if written has npack items or we are about to finish
-      if (++n % npack == 0 || std::next(it) == smap.end() && !written.empty()){
+      if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
         std::string tarcmd = std::to_string(++ipack);
         tarcmd.insert(0,slen-tarcmd.size(),'0');
         tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
