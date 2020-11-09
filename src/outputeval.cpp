@@ -24,7 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Write a table comparing column approx with column ref to stream
 // os. The rows have ids, names, and weights as indicated by the
 // arguments. If add is present, write them as additional columns in
-// the table. The name arguments are used in the header.
+// the table. The name arguments are used in the header.  If id is
+// empty, use integers starting at 0.
 void output_eval(std::ostream &os,
                  std::vector<int> id,std::vector<std::string> name, std::vector<double> w,
                  std::vector<double> approx, const std::string &approxname,
@@ -33,8 +34,8 @@ void output_eval(std::ostream &os,
 
   // get the digits for this column
   int maxl = 0;
-  for (int i = 0; i < id.size(); i++)
-    maxl = std::max(maxl,id[i]);
+  for (int i = 0; i < ref.size(); i++)
+    maxl = std::max(maxl,id.empty()?i:id[i]);
   int idwidth = digits(maxl);
 
   // write the header
@@ -55,8 +56,8 @@ void output_eval(std::ostream &os,
   // write the data
   std::streamsize prec = os.precision(7);
   os << std::fixed;
-  for (int i = 0; i < id.size(); i++){
-    os << std::setw(idwidth) << std::left << id[i] << " "
+  for (int i = 0; i < ref.size(); i++){
+    os << std::setw(idwidth) << std::left << (id.empty()?i:id[i]) << " "
        << std::setw(40) << std::left << name[i] << " ";
 
     if (!w.empty())

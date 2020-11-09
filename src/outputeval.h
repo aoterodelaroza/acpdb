@@ -26,7 +26,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Write a table comparing column approx with column ref to stream
 // os. The rows have ids, names, and weights as indicated by the
 // arguments. If add is present, write them as additional columns in
-// the table. The name arguments are used in the header.
+// the table. The name arguments are used in the header.  If id is
+// empty, use integers starting at 0.
 void output_eval(std::ostream &os,
                  std::vector<int> id,std::vector<std::string> name, std::vector<double> w,
                  std::vector<double> approx, const std::string &approxname,

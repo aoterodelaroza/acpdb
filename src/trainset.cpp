@@ -987,21 +987,7 @@ ORDER BY Training_set.id;
      << std::left << "  mse = " << std::right << std::setw(14) << mset
      << std::endl;
 
-  os << "Id           Name                                wei          yempty           yacp             yadd             ytotal           yref             diff" << std::endl;
-  int idwidth = digits(ntot);
-  for (int i = 0; i < ntot; i++){
-    os << std::setw(idwidth) << std::left << i << " "
-       << std::setw(40) << std::left << names[i] << " "
-       << std::setprecision(6) << std::setw(10) << std::right << w[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yempty[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yacp[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yadd[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yempty[i]+yacp[i]+yadd[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yref[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << yempty[i]+yacp[i]+yadd[i]-yref[i]
-       << std::endl;
-  }
-  os.precision(prec);
+  output_eval(os,{},names,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
 }
 
 // Save the current training set to the database
