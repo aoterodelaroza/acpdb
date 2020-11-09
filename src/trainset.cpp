@@ -952,13 +952,13 @@ ORDER BY Training_set.id;
   double rmst, maet, mset, wrmst, wrms_total_nofit = 0;
   int maxsetl = 0;
   for (int i = 0; i < setid.size(); i++){
-    calc_stats({},ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],set_initial_idx[i],set_final_idx[i]);
+    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],set_initial_idx[i],set_final_idx[i]);
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
   }
   wrms_total_nofit = std::sqrt(wrms_total_nofit);
-  calc_stats({},ytotal,yref,w,wrmst,rmst,maet,mset);
+  calc_stats(ytotal,yref,w,wrmst,rmst,maet,mset);
 
   std::streamsize prec = os.precision(7);
   os << std::fixed;
@@ -1407,7 +1407,7 @@ ORDER BY Training_set.id;
   else if (haveset){
     // calculate the statistics for the given set
     double wrms, rms, mae, mse;
-    calc_stats(ids,datvalues,refvalues,ws,wrms,rms,mae,mse);
+    calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse);
 
     os << "# " << std::left << std::setw(10) << "all"
        << std::left << "  rms = " << std::right << std::setw(12) << rms
@@ -1419,7 +1419,7 @@ ORDER BY Training_set.id;
     // calculate the statistics for all sets
     double wrms, rms, mae, mse;
     for (int i = 0; i < setid.size(); i++){
-      int n = calc_stats(ids,datvalues,refvalues,ws,wrms,rms,mae,mse,-1,-1,set_initial_idx[i],set_final_idx[i]);
+      int n = calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse,-1,-1,ids,set_initial_idx[i],set_final_idx[i]);
       if (n == 0){
         os << "# " << std::left << std::setw(10) << alias[i] << "   (no data)" << std::endl;
       } else{
