@@ -202,7 +202,8 @@ int main(int argc, char *argv[]) {
             if (kmap.find("COMPARE") != kmap.end())
               ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
           } else {
-            db.read_structures(*os,file,kmap);
+            if (kmap.find("COMPARE") != kmap.end())
+              db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
           }
 
         //

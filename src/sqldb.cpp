@@ -28,6 +28,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include "statement.h"
 #include "structure.h"
+#include "outputeval.h"
+#include "globals.h"
 
 #include "config.h"
 #ifdef BTPARSE_FOUND  
@@ -1042,9 +1044,130 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
   write_many_structures(smap,gmap,dir,npack,a);
 }
 
-// Read data for the database
-void sqldb::read_structures(std::ostream &os, const std::string &file, std::unordered_map<std::string,std::string> &kmap){
-  printf("In read_structures, sqldb\n");
+// Read data for the database or one of its subsets from a file, then
+// compare to reference method refm.
+void sqldb::read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap){
+  if (!db)
+    throw std::runtime_error("A database file must be connected before using READ");
+
+  // verify that we have a reference method
+  if (refm.empty())
+    throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
+  int methodid = find_id_from_key(refm,statement::STMT_QUERY_METHOD);
+  if (!methodid)
+    throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
+
+  // set
+  int sid = -1;
+  if (kmap.find("SET") != kmap.end())
+    sid = find_id_from_key(kmap["SET"],statement::STMT_QUERY_SET);
+
+  // get the data from the file
+  auto datmap = read_data_file(file,globals::ha_to_kcal);
+
+  // fetch the reference method values from the DB and populate vectors
+  std::vector<std::string> names_found;
+  std::vector<std::string> names_missing_fromdb;
+  std::vector<std::string> names_missing_fromdat;
+  std::vector<double> refvalues, datvalues;
+  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+  std::string sttext;
+  if (sid >= 0){
+    sttext = R"SQL(
+SELECT Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties
+LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+WHERE Properties.setid = :SET
+ORDER BY Properties.id;)SQL";
+  } else {
+    sttext = R"SQL(
+SELECT Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties
+LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+ORDER BY Properties.id;)SQL";
+  }
+  statement st(db,statement::STMT_CUSTOM,sttext);
+  if (sid >= 0)
+    st.bind((char *) ":SET",sid);
+  st.bind((char *) ":METHOD",methodid);
+  while (st.step() != SQLITE_DONE){
+    // check if the evaluation is available in the database
+    std::string key = (char *) sqlite3_column_text(st.ptr(),0);
+    if (sqlite3_column_type(st.ptr(),1) == SQLITE_NULL){
+      names_missing_fromdb.push_back(key);
+      continue;
+    } 
+
+    // check if the components are in the data file
+    int nstr = sqlite3_column_int(st.ptr(),2);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),3);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),4);
+    double value = 0;
+    bool found = true;
+    for (int i = 0; i < nstr; i++){
+      stkey.reset();
+      stkey.bind(1,istr[i]);
+      stkey.step();
+      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+      if (datmap.find(strname) == datmap.end()){
+        found = false;
+        break;
+      }
+      value += coef[i] * datmap[strname];
+    }
+
+    // populate the vectors
+    if (!found){
+      names_missing_fromdat.push_back(key);
+    } else {
+      names_found.push_back(key);
+      refvalues.push_back(sqlite3_column_double(st.ptr(),1));
+      datvalues.push_back(value);
+    }
+  }
+  datmap.clear();
+
+  // output the header and the statistics
+  os << "# Evaluation: " << file << std::endl
+     << "# Reference: " << refm << std::endl;
+  if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
+    os << "# Statistics: " << "(partial, missing: " 
+       << names_missing_fromdat.size() << " from file, "
+       << names_missing_fromdb.size() << " from database)" << std::endl;
+  else
+    os << "# Statistics: " << std::endl;
+
+  std::streamsize prec = os.precision(7);
+  os << std::fixed;
+  os.precision(8);
+  if (refvalues.empty())
+    os << "#   (not enough data for statistics)" << std::endl;
+  else{
+    // calculate the statistics for the given set
+    double wrms, rms, mae, mse;
+    calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
+
+    os << "# " << std::left << std::setw(10) << "all"
+       << std::left << "  rms = " << std::right << std::setw(12) << rms
+       << std::left << "  mae = " << std::right << std::setw(12) << mae
+       << std::left << "  mse = " << std::right << std::setw(12) << mse
+       << std::left << " wrms = " << std::right << std::setw(12) << wrms
+       << std::endl;
+  }
+  os.precision(prec);
+
+  // output the results
+  output_eval(os,{},names_found,{},datvalues,file,refvalues,refm);
+  if (!names_missing_fromdb.empty()){
+    os << "## The following properties are missing from the DATABASE:" << std::endl;
+    for (int i = 0; i < names_missing_fromdb.size(); i++)
+      os << "## " << names_missing_fromdb[i] << std::endl;
+  }
+  if (!names_missing_fromdat.empty()){
+    os << "## The following properties are missing from the FILE:" << std::endl;
+    for (int i = 0; i < names_missing_fromdat.size(); i++)
+      os << "## " << names_missing_fromdat[i] << std::endl;
+  }
 }
 
 // Write the structures with IDs given by the keys in smap. The
