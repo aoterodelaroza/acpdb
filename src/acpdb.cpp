@@ -50,6 +50,22 @@ static std::unordered_map<std::string,acp> nacp;
 static sqldb db;
 static trainset ts;
 
+// some utility functions
+static acp string_to_acp(const std::string &str){
+  acp res;
+  if (nacp.find(str) != nacp.end())
+    res = nacp[str];
+  else
+    res = acp(str,str);
+  return res;
+}
+static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
+  if (kmap.find("ACP") != kmap.end())
+    return string_to_acp(kmap.at("ACP"));
+  else
+    return acp();
+}
+
 int main(int argc, char *argv[]) {
 
   // Check command parameters
@@ -167,62 +183,49 @@ int main(int argc, char *argv[]) {
         } else {
           // WRITE environment
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          bool havemethod = (kmap.find("METHOD") != kmap.end());
-          acp a;
-          if (kmap.find("ACP") != kmap.end()){
-            std::string acpname = kmap["ACP"];
-            if (nacp.find(acpname) != nacp.end())
-              a = nacp[acpname];
-            else
-              a = acp(acpname,acpname);
-          }
-          if (kmap.find("SET") == kmap.end()){
-            if (ts.isdefined()){
-              // no set has been given, the whole training set (without repetitions)
-              ts.write_structures(kmap,a);
-            } else {
-              // no set has been given and no TS, the whole database
-              db.write_structures(kmap,a);
-            }
-          } else if (ts.isalias(kmap["SET"])){
-            // set is an alias from the training set
+          acp a = kmap_to_acp(kmap);
+          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
             ts.write_structures(kmap,a);
-          } else {
-            // write a set from the database
+          else
             db.write_structures(kmap,a);
-          }
         }
+
+      } else if (keyw == "READ") {
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          acp a = kmap_to_acp(kmap);
+          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
+            ts.read_structures(kmap,a);
+          else
+            db.read_structures(kmap);
 
         //
       } else if (keyw == "ACPINFO") {
-        std::string key = popstring(tokens);
-        if (key.empty() || nacp.find(key) == nacp.end())
-          throw std::runtime_error("Unknown ACP name: " + key);
-        nacp[key].info(*os);
+        acp a = string_to_acp(popstring(tokens));
+        if (a)
+          throw std::runtime_error("Unknown ACP: " + a.get_name());
+        else
+          a.info(*os);
 
         //
       } else if (keyw == "ACPSPLIT") {
         std::string key = popstring(tokens);
-        if (key.empty() || nacp.find(key) == nacp.end())
-          throw std::runtime_error("Unknown ACP name: " + key);
-
         std::string templ = popstring(tokens);
         if (templ.empty())
           throw std::runtime_error("Empty template string for ACPSPLIT");
 
-        nacp[key].split(templ, tokens);
+        acp a = string_to_acp(key);
+        if (a)
+          throw std::runtime_error("Unknown ACP: " + a.get_name());
+        else
+          a.split(templ, tokens);
 
         //
       } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
         acp a;
         if (keyw == "ACPEVAL"){
-          std::string key = popstring(tokens);
-          if (key.empty())
-            throw std::runtime_error("Need ACP name or file name in ACPEVAL");
-          else if (nacp.find(key) != nacp.end())
-            a = nacp[key];
-          else
-            a = acp(key,key);
+          a = string_to_acp(popstring(tokens));
+          if (a)
+            throw std::runtime_error("Unknown ACP: " + a.get_name());
         }
 
         if (!tokens.empty()){

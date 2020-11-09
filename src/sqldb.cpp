@@ -1042,6 +1042,11 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
   write_many_structures(smap,gmap,dir,npack,a);
 }
 
+// Read data for the database
+void sqldb::read_structures(std::unordered_map<std::string,std::string> &kmap){
+  printf("In read_structures, sqldb\n");
+}
+
 // Write the structures with IDs given by the keys in smap. The
 // values of smap give the types (xyz for an xyz file or
 // energy_difference, etc. for an input file).  gmap, dir, a: see

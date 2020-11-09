@@ -100,6 +100,8 @@ acp::acp(const std::string &name_, std::istream &is){
 
 // Write the ACP to output stream os (human-readable version).
 void acp::writeacp_text(std::ostream &os) const{
+  if (t.empty()) return;
+
   os << "* Terms for ACP " + name << std::endl;
 
   os << "| id | atom | l | exponent | coefficient |" << std::endl;
@@ -114,6 +116,8 @@ void acp::writeacp_text(std::ostream &os) const{
 
 // Write the ACP to an output stream (Gaussian-style version).
 void acp::writeacp_gaussian(const std::string &filename) const{
+  if (t.empty()) return;
+
   std::ofstream ofile(filename,std::ios::trunc);
   if (ofile.fail()) 
     throw std::runtime_error("Error opening ACP file for write: " + filename);
@@ -125,8 +129,7 @@ void acp::writeacp_gaussian(const std::string &filename) const{
 
 // Write the ACP to a stream (Gaussian-style version).
 void acp::writeacp_gaussian(std::ostream &os) const{
-  if (t.empty())
-    throw std::runtime_error("Cannot write an empty ACP");
+  if (t.empty()) return;
 
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
   std::map<unsigned char,unsigned char> lmax;
@@ -167,6 +170,8 @@ void acp::writeacp_gaussian(std::ostream &os) const{
 
 // Write info about the ACP to os
 void acp::info(std::ostream &os) const{
+  if (t.empty()) return;
+
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
   std::map<unsigned char,unsigned char> lmax;
   std::unordered_map<unsigned char,std::vector<int> > nterm;
@@ -214,6 +219,7 @@ void acp::info(std::ostream &os) const{
 // to files with template templ. If tokens contains the COEF
 // keyword, use that coefficient for the new ACPs.
 void acp::split(const std::string &templ, std::list<std::string> &tokens){
+  if (t.empty()) return;
 
   bool havecoef = false;
   double coef;

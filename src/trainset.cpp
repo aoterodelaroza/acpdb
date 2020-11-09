@@ -1315,6 +1315,11 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   db->write_many_structures(smap,gmap,dir,npack,a);
 }
 
+// Read data for the training set structures
+void trainset::read_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+  printf("In read_structures, trainset\n");
+}
+
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){
   db->begin_transaction();
