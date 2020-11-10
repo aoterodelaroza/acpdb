@@ -38,7 +38,6 @@ the method used in the original reference.
 
 * Packages for full functionality
 
-zlib1g-dev (zlib)
 libbtparse-dev
 libcereal-dev
 
