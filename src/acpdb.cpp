@@ -181,14 +181,20 @@ int main(int argc, char *argv[]) {
             nacp[key].writeacp_text(*os);
           else
             nacp[key].writeacp_gaussian(file);
-        } else {
+        } else if (category == "TERMS"){
+          // WRITE TERMS keyword
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          ts.write_structures(kmap,{},true);
+        } else if (category.empty()) {
           // WRITE environment
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           acp a = kmap_to_acp(kmap);
           if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
-            ts.write_structures(kmap,a);
+            ts.write_structures(kmap,a,false);
           else
             db.write_structures(kmap,a);
+        } else {
+          throw std::runtime_error("Unknown syntax in WRITE: " + category);
         }
 
       } else if (keyw == "READ") {

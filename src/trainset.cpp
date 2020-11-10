@@ -1216,8 +1216,10 @@ ORDER BY Training_set.id;
   ofile.close();
 }
 
-// Write input files for the training set structures
-void trainset::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+// Write input files or structure files for the training set
+// structures. If the ACP is present, use the ACP in the input
+// files. If terms is present, write input files for term evaluations.
+void trainset::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a, bool terms){
   if (!db || !(*db)) 
     throw std::runtime_error("A database file must be connected before using WRITE");
   if (!isdefined())
@@ -1226,7 +1228,10 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
   // unpack the gaussian keyword into a map for this method, if a method was given
   bool havemethod = (kmap.find("METHOD") != kmap.end());
   std::unordered_map<std::string,std::string> gmap = {};
-  if (havemethod) gmap = db->get_gaussian_map(kmap["METHOD"]);
+  if (havemethod) 
+    gmap = db->get_gaussian_map(kmap["METHOD"]);
+  else if (terms)
+    gmap = db->get_gaussian_map(emptyname);
 
   // directory and pack number
   std::string dir = fetch_directory(kmap);
@@ -1250,22 +1255,28 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
 
   // collect the structure indices for the training set
   std::unordered_map<int,std::string> smap;
-  if (havemethod){
-      statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  if (havemethod || terms){
+    // if method or WRITE TERMS, write input files
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 FROM Properties, Property_types, Training_set
 WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
       AND Training_set.id BETWEEN ?1 AND ?2;
 )SQL");
-      st.bind(1,idini);
-      st.bind(2,idfin);
-      while (st.step() != SQLITE_DONE){
-        int n = sqlite3_column_int(st.ptr(),1);
-        const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-        for (int i = 0; i < n; i++)
+    st.bind(1,idini);
+    st.bind(2,idfin);
+    while (st.step() != SQLITE_DONE){
+      int n = sqlite3_column_int(st.ptr(),1);
+      const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+      for (int i = 0; i < n; i++){
+        if (terms)
+          smap[str[i]] = "terms";
+        else
           smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
       }
+    }
   } else {
+    // if no method and not WRITE TERMS, write structure files
     statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT DISTINCT Properties.nstructures, Properties.structures
 FROM Properties, Training_set
@@ -1281,7 +1292,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_many_structures(smap,gmap,dir,npack,a);
+  db->write_many_structures(smap,gmap,dir,npack,a,zat,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,

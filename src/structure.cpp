@@ -108,6 +108,67 @@ int structure::writegjf(std::ostream &os, const std::string &keyw, const std::st
   return 0;
 }
 
+// Write a Gaussian input file for ACP term evaluation to output
+// stream os. keyw = method keyword. gbs = basis set file. root =
+// root of the file name. zat,l,exp = term details. Return non-zero
+// if error; 0 if correct.
+int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, 
+                              const std::vector<unsigned char> &zat, const std::vector<unsigned char> &lmax, const std::vector<double> &exp) const {
+  if (!ismol || !x || !z) return 1;
+
+  // header
+  os << "%chk=" << root << ".chk" << std::endl
+     << "%mem=" << globals::mem << "GB" << std::endl
+     << "%nproc=" << globals::ncpu << std::endl
+     << "#t " 
+     << keyw << " "
+     << "Symm=none int=(grid=ultrafine) guess=(read,tcheck)" << std::endl
+     << std::endl << "title" << std::endl << std::endl;
+  if (os.fail()) return 2;
+  
+  // coordinate block
+  int res = write_coordinate_block(os,true);
+  if (res) return res;
+  os << std::endl;
+
+  // gen basis set
+  if (!gbs.empty())
+    os << "@" << gbs << "/N" << std::endl << std::endl;
+
+  acp::term t;
+  t.coef = 0.001;
+  for (int iz = 0; iz < zat.size(); iz++){
+    t.atom = zat[iz];
+    for (int il = 0; il < lmax.size(); il++){
+      t.l = lmax[il];
+      for (int ie = 0; ie < exp.size(); ie++){
+        t.exp = exp[ie];
+
+        os << "--Link1--" << std::endl
+           << "%chk=" << root << ".chk" << std::endl
+           << "%mem=" << globals::mem << "GB" << std::endl
+           << "%nproc=" << globals::ncpu << std::endl
+           << "#t " 
+           << keyw << " "
+           << "pseudo=read iop(5/13=1,5/36=2,99/5=2) Symm=none geom=check" << std::endl
+           << "int=(grid=ultrafine) guess=(read,tcheck) scf=(maxcycle=1)" << std::endl
+           << std::endl << "title" << std::endl << std::endl
+           << charge << " " << mult << std::endl << std::endl;
+
+        if (!gbs.empty())
+          os << "@" << gbs << "/N" << std::endl << std::endl;
+
+        acp a({},t);
+        a.writeacp_gaussian(os);
+        os << std::endl;
+      }
+    }
+  }
+  if (os.fail()) return 2;
+  
+  return 0;
+}
+
 // Read the structure from a database row obtained via SELECT. Non-zero if error, 0 if correct.
 int structure::readdbrow(sqlite3_stmt *stmt){
   if (!stmt) return 1;

@@ -1240,15 +1240,20 @@ VALUES(:METHOD,:PROPID,:VALUE);
 }
 
 // Write the structures with IDs given by the keys in smap. The
-// values of smap give the types (xyz for an xyz file or
-// energy_difference, etc. for an input file).  gmap, dir, a: see
-// write_one_structure.
-void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, const std::unordered_map<std::string,std::string> gmap/*={}*/, 
-                                  const std::string &dir/*="./"*/, int npack/*=0*/, const acp &a/*={}*/){
+// values of smap give the types (xyz for an xyz file, terms for a
+// terms input file or energy_difference, etc. for a property input
+// file). gmap: writer-dependent options for the structures. dir:
+// output directory. npack = package and compress in packets of
+// npack files (0 = no packing). a: ACP to use in the inputs.
+// zat, l, exp: details for term inputs.
+void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap/*={}*/, 
+                                  const std::string &dir/*="./"*/, int npack/*=0*/, 
+                                  const acp &a/*={}*/,
+                                  const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
 
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(it->first,it->second,gmap,dir,a);
+      write_one_structure(it->first,it->second,gmap,dir,a,zat,lmax,exp);
   } else {
     unsigned long div = smap.size() / (unsigned long) npack;
     if (smap.size() % npack != 0) div++;
@@ -1266,7 +1271,7 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, cons
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(srand[i],smap[srand[i]],gmap,dir,a)));
+      written.push_back(fs::path(write_one_structure(srand[i],smap[srand[i]],gmap,dir,a,zat,lmax,exp)));
 
       // create a new package if written has npack items or we are about to finish
       if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
@@ -1287,8 +1292,12 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> smap, cons
 }
 
 // Write the structure id in the database. Options have the same
-// meaning as in write_many_structures. Returns the written filename. 
-std::string sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/, const std::string &dir/*="./"*/, const acp &a/*={}*/){
+// meaning as in write_many_structures. Returns filename of the
+// written file.
+std::string sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/,
+                                       const std::string &dir/*="./"*/, 
+                                       const acp &a/*={}*/,
+                                       const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
 
   // get the structure and build the file name
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -1302,6 +1311,7 @@ FROM Structures WHERE id = ?1;
   name += fileroot;
   bool ismolecule = sqlite3_column_int(st.ptr(), 3);
   bool isxyz = equali_strings(type,"xyz");
+  bool isterms = equali_strings(type,"terms");
 
   // build the molecule/crystal structure
   structure s;
@@ -1323,14 +1333,20 @@ FROM Structures WHERE id = ?1;
   // write the input file
   if (isxyz && ismolecule) {
     s.writexyz(ofile);
-  } else if (equali_strings(type,"energy_difference") && ismolecule){
+  } else if ((isterms || equali_strings(type,"energy_difference")) && ismolecule){
     if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
     std::string methodk = gmap.at("METHOD");
     std::string gbsk = "";
     if (gmap.find("GBS") != gmap.end()) gbsk = gmap.at("GBS");
 
-    if (s.writegjf(ofile,methodk,gbsk,fileroot,a))
-      throw std::runtime_error("Error writing input file: " + name);
+    if (isterms){
+      if (s.writegjf_terms(ofile,methodk,gbsk,fileroot,zat,lmax,exp))
+        throw std::runtime_error("Error writing input file: " + name);
+    } else {
+      if (s.writegjf(ofile,methodk,gbsk,fileroot,a))
+        throw std::runtime_error("Error writing input file: " + name);
+    }
+
   } else {
     throw std::runtime_error("Unknown combination of structure and property type");
   }

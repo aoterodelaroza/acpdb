@@ -67,6 +67,13 @@ class structure {
   // ACP used. Return non-zero if error; 0 if correct.
   int writegjf(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, const acp &a) const;
 
+  // Write a Gaussian input file for ACP term evaluation to output
+  // stream os. keyw = method keyword. gbs = basis set file. root =
+  // root of the file name. zat,l,exp = term details. Return non-zero
+  // if error; 0 if correct.
+  int writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, 
+                     const std::vector<unsigned char> &zat, const std::vector<unsigned char> &lmax, const std::vector<double> &exp) const;
+
   // Read the structure from a database row obtained via
   // SELECT. Non-zero if error, 0 if correct. The SELECT order is:
   // (id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
