@@ -1328,11 +1328,11 @@ FROM Structures WHERE id = ?1;
     throw std::runtime_error("Cannot do crystals yet");
   }
   name += ext;
-  std::ofstream ofile(name,std::ios::trunc);
 
-  // write the input file
+  // write the input file to a memory stream for efficiency
+  std::stringstream oss;
   if (isxyz && ismolecule) {
-    s.writexyz(ofile);
+    s.writexyz(oss);
   } else if ((isterms || equali_strings(type,"energy_difference")) && ismolecule){
     if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
     std::string methodk = gmap.at("METHOD");
@@ -1340,10 +1340,10 @@ FROM Structures WHERE id = ?1;
     if (gmap.find("GBS") != gmap.end()) gbsk = gmap.at("GBS");
 
     if (isterms){
-      if (s.writegjf_terms(ofile,methodk,gbsk,fileroot,zat,lmax,exp))
+      if (s.writegjf_terms(oss,methodk,gbsk,fileroot,zat,lmax,exp))
         throw std::runtime_error("Error writing input file: " + name);
     } else {
-      if (s.writegjf(ofile,methodk,gbsk,fileroot,a))
+      if (s.writegjf(oss,methodk,gbsk,fileroot,a))
         throw std::runtime_error("Error writing input file: " + name);
     }
 
@@ -1351,7 +1351,9 @@ FROM Structures WHERE id = ?1;
     throw std::runtime_error("Unknown combination of structure and property type");
   }
 
-  // clean up and exit
+  // write the actual file and exit
+  std::ofstream ofile(name,std::ios::trunc);
+  ofile << oss.rdbuf();
   ofile.close();
   return (fileroot + ext);
 }

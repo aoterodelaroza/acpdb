@@ -139,8 +139,8 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
   t.coef = 0.001;
   for (int iz = 0; iz < zat.size(); iz++){
     t.atom = zat[iz];
-    for (int il = 0; il < lmax.size(); il++){
-      t.l = lmax[il];
+    for (unsigned char l = 0; l <= lmax[iz]; l++){
+      t.l = l;
       for (int ie = 0; ie < exp.size(); ie++){
         t.exp = exp[ie];
 
