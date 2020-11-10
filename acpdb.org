@@ -473,6 +473,27 @@ END
   is present, insert the calculated properties into the database as
   evaluations of method method.s (SET is not used by INSERT).
 
+WRITE TERMS
+  METHOD method.s
+  SET set.s
+  DIRECTORY dir.s
+  PACK ipack.i
+END
+
+  Write the structures in the given set to input files for the
+  calculation of the ACP terms in the training set. If no METHOD is
+  given, use the training set empty.
+  
+  If SET is not present, write all the structures in the training
+  set. If SET is present, write the training set structures under that
+  alias.
+
+  The files are written to directory dir.s (default: ./). If PACK is
+  present, create tar.xz compressed archives with at most ipack.i
+  structures each (only if the number of structures is greater than
+  ipack.i). The PACK keyword invokes the tar utility through a
+  system() call.
+
 * High-level operations
 
 INSERT DAT
