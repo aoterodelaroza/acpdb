@@ -472,7 +472,7 @@ END
   If COMPARE is present, compare the data in file.s against method
   method.s, which is taken as reference for the comparison. If INSERT
   is present, insert the calculated properties into the database as
-  the evaluation of method method.s.
+  evaluations of method method.s (SET is not used by INSERT).
 
 * High-level operations
 

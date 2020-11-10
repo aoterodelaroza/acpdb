@@ -95,6 +95,9 @@ class sqldb {
   // compare to reference method refm.
   void read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap);
 
+  // Read data from a file, then insert as evaluation of the argument method.
+  void read_and_insert(const std::string &file, const std::string &method);
+
   // Write the structures with IDs given by the keys in smap. The
   // values of smap give the types (xyz for an xyz file or
   // energy_difference, etc. for an input file). gmap:

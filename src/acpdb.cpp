@@ -198,13 +198,16 @@ int main(int argc, char *argv[]) {
 
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           acp a = kmap_to_acp(kmap);
-          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
-            if (kmap.find("COMPARE") != kmap.end())
+          if (kmap.find("COMPARE") != kmap.end()){
+            if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
               ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
-          } else {
-            if (kmap.find("COMPARE") != kmap.end())
-              db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+            } else {
+              if (kmap.find("COMPARE") != kmap.end())
+                db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+            }
           }
+          if (kmap.find("INSERT") != kmap.end())
+            db.read_and_insert(file,kmap["INSERT"]);
 
         //
       } else if (keyw == "ACPINFO") {

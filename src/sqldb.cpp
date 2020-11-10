@@ -1170,6 +1170,75 @@ ORDER BY Properties.id;)SQL";
   }
 }
 
+// Read data from a file, then insert as evaluation of the argument method.
+void sqldb::read_and_insert(const std::string &file, const std::string &method){
+  if (!db)
+    throw std::runtime_error("A database file must be connected before using READ");
+
+  // verify that we have a reference method
+  if (method.empty())
+    throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
+  int methodid = find_id_from_key(method,statement::STMT_QUERY_METHOD);
+  if (!methodid)
+    throw std::runtime_error("Unknown method in READ/COMPARE: " + method);
+
+  // get the data from the file
+  auto datmap = read_data_file(file,globals::ha_to_kcal);
+
+  // build the property map
+  std::unordered_map<int,double> propmap;
+  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT Properties.id, Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties
+ORDER BY Properties.id;)SQL");
+  while (st.step() != SQLITE_DONE){
+    int propid = sqlite3_column_int(st.ptr(),0);
+    int nstr = sqlite3_column_int(st.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
+    double value = 0;
+    bool found = true;
+    for (int i = 0; i < nstr; i++){
+      stkey.reset();
+      stkey.bind(1,istr[i]);
+      stkey.step();
+      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+      if (datmap.find(strname) == datmap.end()){
+        found = false;
+        break;
+      }
+      value += coef[i] * datmap[strname];
+    }
+    if (found)
+      propmap[propid] = value;
+  }
+  datmap.clear();
+
+  // begin the transaction
+  begin_transaction();
+
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Evaluations (methodid,propid,value)
+VALUES(:METHOD,:PROPID,:VALUE);
+)SQL");
+  for (auto it = propmap.begin(); it != propmap.end(); it++){
+    st.reset();
+    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":PROPID",it->first);
+    st.bind((char *) ":VALUE",it->second);
+    if (st.step() != SQLITE_DONE){
+      std::cout << "method = " << method << " (" << methodid << ")" << std::endl;
+      std::cout << "propid = " << it->first << std::endl;
+      std::cout << "value = " << it->second << std::endl;
+      throw std::runtime_error("Failed inserting data in the database (READ INSERT)");
+    }
+  }
+
+  // commit the transaction
+  commit_transaction();
+}
+
 // Write the structures with IDs given by the keys in smap. The
 // values of smap give the types (xyz for an xyz file or
 // energy_difference, etc. for an input file).  gmap, dir, a: see
