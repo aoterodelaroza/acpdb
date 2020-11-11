@@ -452,9 +452,9 @@ END
     structure2.s value2.r
     ...
 
-  where structurex.s are structure idenfiers from the database and
+  where structurex.s are structure identifiers from the database and
   valuex.r are the calculated values (typically, energies) for those
-  structures. The structure names are the same as root of the file
+  structures. The structure names are the same as the root of the file
   names generated using WRITE, so this file can be easily generated
   with utilities such as grep or awk. Blank lines and comments (#) are
   ignored. Only the first two fields in each line are read; the rest
@@ -493,6 +493,29 @@ END
   structures each (only if the number of structures is greater than
   ipack.i). The PACK keyword invokes the tar utility through a
   system() call.
+
+READ TERMS file.s
+  METHOD method.s
+END
+
+  Read calculated ACP terms from file.s for method method.s. If no
+  method is given, the empty method for the current training set is
+  used. The file must have lines of the form:
+
+    structure1.s value1.r
+    structure2.s value2.r
+    ...
+
+  where structurex.s are structure identifiers from the database and
+  valuex.r are the calculated values (typically, energies) for those
+  structures. Several values must be given for each structure. To be
+  inserted into the terms table in the database, the number of values
+  given by the file for a structure must be the same as the number of
+  ACP terms in the training set. The structure names are the same as
+  the root of the file names generated using WRITE, so this file can
+  be easily generated with utilities such as grep or awk. Blank lines
+  and comments (#) are ignored. Only the first two fields in each line
+  are read; the rest are ignored.
 
 * High-level operations
 
