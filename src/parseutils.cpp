@@ -298,3 +298,28 @@ std::unordered_map<std::string,double> read_data_file(const std::string &file,co
   return res;
 }
 
+// Read vector data from a file. The data must be:
+//   string  double
+// This populates the map with string as key. The double is
+// accumulated into the value vector, in order of appearance.  Skip
+// blank lines and comments (#). Ignore the third and subsequent
+// fields.  Multiply the values by the conversion factor convf.
+std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const std::string &file,const double convf/*=1.0*/){
+  if (!fs::is_regular_file(file))
+    throw std::runtime_error("File not found: " + file);
+
+  std::unordered_map<std::string,std::vector<double> > res;
+  std::ifstream ifile(file,std::ios::in);
+
+  std::string line;
+  while(get_next_line(ifile,line,'#','\0')){
+    std::string str;
+    double value;
+    std::istringstream iss(line);
+    iss >> str >> value;
+    res[str].push_back(value * convf);
+  }
+  ifile.close();
+  return res;
+}
+

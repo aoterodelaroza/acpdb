@@ -377,8 +377,10 @@ void trainset::describe(std::ostream &os) const {
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
   if (!isdefined()){
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
+    if (lmax.empty()) os << "--- No angular momenta found (LMAX) ---" << std::endl;
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
     if (setid.empty()) os << "--- No subsets found (SUBSET) ---" << std::endl;
+    if (w.empty()) os << "--- No weights found (W) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
     if (refname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
     throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
@@ -1014,7 +1016,7 @@ INSERT INTO Training_set_repo (key,size,training_set) VALUES(:KEY,:SIZE,:TRAININ
  st.bind((char *) ":SIZE",nsize);
  st.bind((char *) ":TRAINING_SET",(void *) ss.str().data(),true,nsize);
  if (st.step() != SQLITE_DONE)
-   throw std::runtime_error("Failed inserting training set in the database (TRAINING SAVE)");
+   throw std::runtime_error("Failed inserting training set into the database (TRAINING SAVE)");
 #else
   throw std::runtime_error("Cannot use TRAINING SAVE: not compiled with cereal support");
 #endif
@@ -1073,7 +1075,7 @@ DELETE FROM Training_set_repo WHERE key = ?1;
     st.bind(1,name);
   }
  if (st.step() != SQLITE_DONE)
-   throw std::runtime_error("Failed deleting training set in the database (TRAINING DELETE)");
+   throw std::runtime_error("Failed deleting training set into the database (TRAINING DELETE)");
 }
 
 // List training sets from the database
@@ -1446,6 +1448,101 @@ ORDER BY Training_set.id;
       os << "## " << names_missing_fromdat[i] << std::endl;
   }
 }
+
+// Read data for the training set or one of its subsets from a file,
+// then compare to reference method refm.
+void trainset::read_terms(const std::string &file, std::unordered_map<std::string,std::string> &kmap){
+  if (!db || !(*db)) 
+    throw std::runtime_error("A database file must be connected before using READ TERMS");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using READ TERMS");
+
+  // file
+  if (!fs::is_regular_file(file))
+    throw std::runtime_error("In READ TERMS, file found: " + file);
+
+  // method
+  int methodid = emptyid;
+  if (kmap.find("METHOD") != kmap.end()){
+    methodid = db->find_id_from_key(kmap["METHOD"],statement::STMT_QUERY_METHOD);
+    if (!methodid)
+      throw std::runtime_error("Unknown method in READ TERMS: " + kmap["METHOD"]);
+  }
+
+  // get the data from the file
+  auto datmap = read_data_file_vector(file,globals::ha_to_kcal);
+  
+  // erase the terms for which the number of entries is not correct
+  int nterms = 0;
+  for (int iz = 0; iz < zat.size(); iz++)
+    for (int il = 0; il <= lmax[iz]; il++)
+      for (int ie = 0; ie < exp.size(); ie++)
+        nterms++;
+
+  // build the property map
+  std::unordered_map<int,std::vector<double> > propmap;
+  statement stkey(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+SELECT DISTINCT Properties.id, Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Training_set, Properties
+WHERE Training_set.propid = Properties.id
+ORDER BY Training_set.id;)SQL");
+  while (st.step() != SQLITE_DONE){
+    int propid = sqlite3_column_int(st.ptr(),0);
+    int nstr = sqlite3_column_int(st.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
+    std::vector<double> value(nterms,0.0);
+    bool found = true;
+    for (int i = 0; i < nstr; i++){
+      stkey.reset();
+      stkey.bind(1,istr[i]);
+      stkey.step();
+      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+      if (datmap.find(strname) == datmap.end()){
+        found = false;
+        break;
+      }
+      for (int j = 0; j < nterms; j++)
+        value[j] += coef[i] * (datmap[strname][j+1] - datmap[strname][0]) / 0.001;
+    }
+    if (found){
+      propmap[propid] = value;
+    }
+  }
+  datmap.clear();
+
+  // Start inserting data
+  db->begin_transaction();
+
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Terms (methodid,atom,l,exponent,propid,value) 
+       VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);
+)SQL");
+  for (auto it = propmap.begin(); it != propmap.end(); it++){
+    if (it->second.size() != nterms) continue;
+    int n = 0;
+    for (int iz = 0; iz < zat.size(); iz++){
+      for (int il = 0; il <= lmax[iz]; il++){
+        for (int ie = 0; ie < exp.size(); ie++){
+          st.reset();
+          st.bind((char *) ":METHOD",methodid);
+          st.bind((char *) ":ATOM",(int) zat[iz]);
+          st.bind((char *) ":L",il);
+          st.bind((char *) ":EXP",exp[ie]);
+          st.bind((char *) ":PROPID",it->first);
+          st.bind((char *) ":VALUE",it->second[n++]);
+          if (st.step() != SQLITE_DONE)
+            throw std::runtime_error("Failed inserting training set into the database (READ TERMS)");
+        }
+      }
+    }
+  }
+
+  // Commit the transaction
+  db->commit_transaction();
+}
+
 
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){

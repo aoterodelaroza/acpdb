@@ -199,21 +199,25 @@ int main(int argc, char *argv[]) {
 
       } else if (keyw == "READ") {
           std::string file = popstring(tokens);
-          if (file.empty())
-            throw std::runtime_error("A data file is required for READ");
-
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          acp a = kmap_to_acp(kmap);
-          if (kmap.find("COMPARE") != kmap.end()){
-            if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
-              ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
-            } else {
-              if (kmap.find("COMPARE") != kmap.end())
-                db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+          if (equali_strings(file,"TERMS")){
+            file = popstring(tokens);
+            ts.read_terms(file,kmap);
+          } else {
+            if (file.empty())
+              throw std::runtime_error("A data file is required for READ");
+            acp a = kmap_to_acp(kmap);
+            if (kmap.find("COMPARE") != kmap.end()){
+              if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
+                ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+              } else {
+                if (kmap.find("COMPARE") != kmap.end())
+                  db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+              }
             }
+            if (kmap.find("INSERT") != kmap.end())
+              db.read_and_insert(file,kmap["INSERT"]);
           }
-          if (kmap.find("INSERT") != kmap.end())
-            db.read_and_insert(file,kmap["INSERT"]);
 
         //
       } else if (keyw == "ACPINFO") {

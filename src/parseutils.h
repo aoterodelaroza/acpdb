@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <list>
 #include <string>
+#include <vector>
 
 // Utility routines for parsing the input file.
 
@@ -92,6 +93,14 @@ void deblank(std::string &str);
 // blank lines and comments (#). Ignore the third and subsequent fields.
 // Multiply the values by the conversion factor convf.
 std::unordered_map<std::string,double> read_data_file(const std::string &file,const double convf=1.0);
+
+// Read vector data from a file. The data must be:
+//   string  double
+// This populates the map with string as key. The double is
+// accumulated into the value vector, in order of appearance.  Skip
+// blank lines and comments (#). Ignore the third and subsequent
+// fields.  Multiply the values by the conversion factor convf.
+std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const std::string &file,const double convf=1.0);
 
 // Count the number of digits required to represent an integer
 inline int digits(int n_){

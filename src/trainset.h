@@ -112,6 +112,9 @@ class trainset {
   // then compare to reference method refm.
   void read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap);
 
+  // Read data for the training set terms from a file.
+  void read_terms(const std::string &file, std::unordered_map<std::string,std::string> &kmap);
+
   // Returns true if the argument is a known set alias
   inline bool isalias(const std::string &str) const{
     return (std::find(alias.begin(),alias.end(),str) != alias.end());
