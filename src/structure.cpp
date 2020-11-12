@@ -108,6 +108,53 @@ int structure::writegjf(std::ostream &os, const std::string &keyw, const std::st
   return 0;
 }
 
+// Write a psi4 input file to output stream os. keyw = method
+// keyword. root = root of the file name. Return non-zero if error;
+// 0 if correct.
+int structure::writepsi4(std::ostream &os, const std::string &method, const std::string &basis, const std::string &root) const{
+  if (!ismol || !x || !z) return 1;
+
+  // header
+  os << "import os" << std::endl
+     << "import psi4" << std::endl
+     << "import psi4.core" << std::endl << std::endl
+     << "memory " << globals::mem << "GB" << std::endl
+     << "set_num_threads(" << globals::ncpu << ")" << std::endl << std::endl
+     << "molecule mol {" << std::endl;
+  if (os.fail()) return 2;
+  
+  // coordinate block
+  int res = write_coordinate_block(os,true);
+  if (res) return res;
+
+  // end of molecule and options
+  os << "units angstrom" << std::endl
+     << "no_reorient" << std::endl
+     << "}" << std::endl << std::endl
+     << "psi4_io.set_specific_path(180, './')" << std::endl
+     << "psi4_io.set_specific_retention(180, True)" << std::endl
+     << "filename = core.get_writer_file_prefix(\"mol\") + '.180.npy'" << std::endl << std::endl
+     << "set {" << std::endl
+     << "  basis " << basis << std::endl
+     << "  scf_type df " << std::endl
+     << "  dft_spherical_points 590" << std::endl
+     << "  dft_radial_points 99" << std::endl;
+
+  // reference
+  if (mult == 1)
+    os << "  reference rks" << std::endl;
+  else
+    os << "  reference uks" << std::endl;
+  os << "}" << std::endl << std::endl;
+
+  // energy line and wavefunction file
+  os << "E, wfn = energy(\"" << method << "\", return_wfn=True)" << std::endl;
+  os << "molden(wfn, \"" << root << ".molden\", dovirtual=False)" << std::endl;
+  if (os.fail()) return 2;
+  
+  return 0;
+}
+
 // Write a Gaussian input file for ACP term evaluation to output
 // stream os. keyw = method keyword. gbs = basis set file. root =
 // root of the file name. zat,l,exp = term details. Return non-zero

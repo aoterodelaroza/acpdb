@@ -67,6 +67,11 @@ class structure {
   // ACP used. Return non-zero if error; 0 if correct.
   int writegjf(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, const acp &a) const;
 
+  // Write a psi4 input file to output stream os. keyw = method
+  // keyword. root = root of the file name. Return non-zero if error;
+  // 0 if correct.
+  int writepsi4(std::ostream &os, const std::string &method, const std::string &basis, const std::string &root) const;
+
   // Write a Gaussian input file for ACP term evaluation to output
   // stream os. keyw = method keyword. gbs = basis set file. root =
   // root of the file name. zat,l,exp = term details. Return non-zero

@@ -153,13 +153,15 @@ LIST SET
 
 INSERT METHOD name.s
   GAUSSIAN_KEYWORD ...
+  PSI4_KEYWORD ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
   DESCRIPTION ...
 END    
 
-  Insert a computational method with name name.s in the database. To
-  run in Gaussian, use the keywords GAUSSIAN_KEYWORD. LITREFS:
-  literature references. DESCRIPTION: a description of the method.
+  Insert a computational method with name name.s in the
+  database. Details for Gaussian runs in GAUSSIAN_KEYWORD. Details for
+  psi4 runs in PSI4_KEYWORD. LITREFS: literature
+  references. DESCRIPTION: a description of the method.
 
 DELETE METHOD [method.s|method.i]
 
@@ -640,6 +642,7 @@ END
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
   key              TEXT UNIQUE NOT NULL,
   gaussian_keyword TEXT,
+  psi4_keyword     TEXT,
   litrefs          TEXT,
   description      TEXT
 

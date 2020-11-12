@@ -1227,13 +1227,18 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using WRITE");
 
+  // program
+  std::string program = "gaussian";
+  if (kmap.find("PROGRAM") != kmap.end())
+    program = kmap["PROGRAM"];
+
   // unpack the gaussian keyword into a map for this method, if a method was given
   bool havemethod = (kmap.find("METHOD") != kmap.end());
   std::unordered_map<std::string,std::string> gmap = {};
   if (havemethod) 
-    gmap = db->get_gaussian_map(kmap["METHOD"]);
+    gmap = db->get_program_map(kmap["METHOD"],program);
   else if (terms)
-    gmap = db->get_gaussian_map(emptyname);
+    gmap = db->get_program_map(emptyname,program);
 
   // directory and pack number
   std::string dir = fetch_directory(kmap);

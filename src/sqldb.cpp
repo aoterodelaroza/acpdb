@@ -56,14 +56,26 @@ int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
 }
 
 // Get the Gaussian map from the method key
-std::unordered_map<std::string,std::string> sqldb::get_gaussian_map(const std::string &methodkey){
-  statement st(db,statement::STMT_CUSTOM,"SELECT gaussian_keyword FROM Methods WHERE key=?1;");
+std::unordered_map<std::string,std::string> sqldb::get_program_map(const std::string &methodkey, const std::string &program){
+  std::string text;
+  if (equali_strings(program,"gaussian"))
+    text = "SELECT gaussian_keyword FROM Methods WHERE key=?1;";
+  else if (equali_strings(program,"psi4"))
+    text = "SELECT psi4_keyword FROM Methods WHERE key=?1;";
+  else
+    throw std::runtime_error("Unknown program: " + program);
+
+  statement st(db,statement::STMT_CUSTOM,text);
   st.bind(1,methodkey);
   st.step();
   if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL)
-    throw std::runtime_error("METHOD is unknown or has no associated Gaussian keyword: " + methodkey);
+    throw std::runtime_error("METHOD is unknown or has no associated " + program + " keyword: " + methodkey);
   std::string gkeyw = (char *) sqlite3_column_text(st.ptr(), 0);
   std::unordered_map<std::string,std::string> gmap = map_keyword_pairs(gkeyw,';',true);
+
+  gmap["PROGRAM"] = program;
+  uppercase(gmap["PROGRAM"]);
+
   return gmap;
 }
 
@@ -219,7 +231,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
 
     // bind
     stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
-    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","LITREFS","DESCRIPTION"};
+    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
       im = kmap.find(*it);
       if (im != kmap.end())
@@ -730,9 +742,9 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     cols    = {    0,    1,              2,        3,            4};
     type = statement::STMT_LIST_SET;
   } else if (category == "METHOD"){
-    headers = { "id","key","gaussian_keyword","litrefs","description"};
-    types   = {t_int,t_str,             t_str,    t_str,        t_str};
-    cols    = {    0,    1,                 2,        3,            4};
+    headers = { "id","key","gaussian_keyword","psi4_keyword","litrefs","description"};
+    types   = {t_int,t_str,             t_str,         t_str,    t_str,        t_str};
+    cols    = {    0,    1,                 2,             3,        3,            4};
     type = statement::STMT_LIST_METHOD;
   } else if (category == "STRUCTURE"){
     headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
@@ -972,10 +984,15 @@ void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, 
   if (!db) 
     throw std::runtime_error("Error reading connected database");
   
+  // program
+  std::string program = "gaussian";
+  if (kmap.find("PROGRAM") != kmap.end())
+      program = kmap["PROGRAM"];
+
   // unpack the gaussian keyword into a map for this method
   bool havemethod = (kmap.find("METHOD") != kmap.end());
   std::unordered_map<std::string,std::string> gmap = {};
-  if (havemethod) gmap = get_gaussian_map(kmap["METHOD"]);
+  if (havemethod) gmap = get_program_map(kmap["METHOD"],program);
 
   // set
   bool haveset = (kmap.find("SET") != kmap.end());
@@ -1310,8 +1327,14 @@ FROM Structures WHERE id = ?1;
   std::string name = dir + "/";
   name += fileroot;
   bool ismolecule = sqlite3_column_int(st.ptr(), 3);
+
+  // decisions, decisions
   bool isxyz = equali_strings(type,"xyz");
   bool isterms = equali_strings(type,"terms");
+  bool isgaussian = ismolecule && (isterms || equali_strings(type,"energy_difference") && gmap.at("PROGRAM") == "GAUSSIAN");
+  bool ispsi4 = ismolecule && !isterms && (equali_strings(type,"energy_difference") && gmap.at("PROGRAM") == "PSI4");
+  if ((!isgaussian && !ispsi4) || (isgaussian && ispsi4))
+    throw std::runtime_error("Unknown combination of property, structure, and program");
 
   // build the molecule/crystal structure
   structure s;
@@ -1333,8 +1356,8 @@ FROM Structures WHERE id = ?1;
   std::stringstream oss;
   if (isxyz && ismolecule) {
     s.writexyz(oss);
-  } else if ((isterms || equali_strings(type,"energy_difference")) && ismolecule){
-    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method doesn ot have an associated Gaussian method keyword");
+  } else if (isgaussian) {
+    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method does not have an associated Gaussian method keyword");
     std::string methodk = gmap.at("METHOD");
     std::string gbsk = "";
     if (gmap.find("GBS") != gmap.end()) gbsk = gmap.at("GBS");
@@ -1346,9 +1369,16 @@ FROM Structures WHERE id = ?1;
       if (s.writegjf(oss,methodk,gbsk,fileroot,a))
         throw std::runtime_error("Error writing input file: " + name);
     }
-
+  } else if (ispsi4) {
+    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method does not have an associated psi4 method keyword");
+    if (a) throw std::runtime_error("Cannot write psi4 inputs with ACPs");
+    std::string method = gmap.at("METHOD");
+    std::string basis = gmap.at("BASIS");
+    if (s.writepsi4(oss,method,basis,fileroot))
+      throw std::runtime_error("Error writing input file: " + name);
+    
   } else {
-    throw std::runtime_error("Unknown combination of structure and property type");
+    throw std::runtime_error("Unknown combination of structure, property type, and program");
   }
 
   // write the actual file and exit

@@ -122,7 +122,7 @@ class sqldb {
   int find_id_from_key(const std::string &key,statement::stmttype type);
 
   // Get the Gaussian map from the method key
-  std::unordered_map<std::string,std::string> get_gaussian_map(const std::string &methodkey);
+  std::unordered_map<std::string,std::string> get_program_map(const std::string &methodkey, const std::string &program);
 
   // Begin a transaction
   void begin_transaction(){ stmt[statement::STMT_BEGIN_TRANSACTION]->execute(); }
