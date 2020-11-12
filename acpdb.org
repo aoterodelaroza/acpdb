@@ -163,6 +163,23 @@ END
   psi4 runs in PSI4_KEYWORD. LITREFS: literature
   references. DESCRIPTION: a description of the method.
 
+  The field in GAUSSIAN_KEYWORD and PSI4_KEYWORD should be a string of
+  fields separated by ;. Each field has a=b, where a is the key and b
+  is the value. The interpreted fields are as follows. For
+  GAUSSIAN_KEYWORD:
+ 
+  - method: the method and basis set combination (e.g. b3lyp/6-31G*)
+
+  - gbs: the gbs file for general basis set input.
+
+  For PSI4_KEYWORD:
+
+  - method: the method keyword passed to energy().
+
+  - basis: the basis set.
+
+  For example: method=b3lyp/gen;gbs=minis.gbs
+
 DELETE METHOD [method.s|method.i]
 
   Delete a method (Table 4).
@@ -419,6 +436,7 @@ WRITE
   SET set.s
   DIRECTORY dir.s
   PACK ipack.i
+  PROGRAM {gaussian|psi4}
 END
 
   Write the structures in the given set to input or structure
@@ -440,6 +458,10 @@ END
   structures each (only if the number of structures is greater than
   ipack.i). The PACK keyword invokes the tar utility through a
   system() call.
+
+  The PROGRAM keyword selects the program for which the inputs are
+  written. Only Gaussian and psi4 are available for now. psi4 cannot
+  be used with ACPs.
 
 READ file.s
   SET set.s
@@ -495,6 +517,8 @@ END
   structures each (only if the number of structures is greater than
   ipack.i). The PACK keyword invokes the tar utility through a
   system() call.
+
+  For now, terms can be written only as Gaussian inputs.
 
 READ TERMS file.s
   METHOD method.s
