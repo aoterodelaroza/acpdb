@@ -1345,8 +1345,10 @@ FROM Structures WHERE id = ?1;
   if (ismolecule) {
     if (isxyz)
       ext = ".xyz";
-    else
+    else if (isgaussian)
       ext = ".gjf";
+    else if (ispsi4)
+      ext = ".inp";
   } else {
     throw std::runtime_error("Cannot do crystals yet");
   }
