@@ -1,6 +1,9 @@
 # private design files
 db-design.org
 
+# databases from tests
+*.db
+
 # object, module, library files
 *.o
 *.a
