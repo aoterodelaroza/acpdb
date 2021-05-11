@@ -1,9 +1,9 @@
 * SYSTEM: rm -f 002_verify.db
 
 * CONNECT 
-  Disconnecting previous database (if connected) 
-  Connecting database file 002_verify.db
-  Creating skeleton database 
+Disconnecting previous database (if connected) 
+Connecting database file 002_verify.db
+Creating skeleton database 
 
 * VERIFY: verify the consistency of the database 
 

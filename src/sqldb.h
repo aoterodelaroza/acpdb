@@ -83,7 +83,7 @@ class sqldb {
   void list(std::ostream &os, const std::string &category, bool dobib);
 
   // Print a summary of the contents of the database
-  void printsummary(std::ostream &os);
+  void printsummary(std::ostream &os, bool full);
 
   // List sets of properties in the database (din format)
   void list_din(std::unordered_map<std::string,std::string> &kmap);

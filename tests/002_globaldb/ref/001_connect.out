@@ -3,14 +3,14 @@
 * DISCONNECT: disconnect the current database 
 
 * CONNECT 
-  Disconnecting previous database (if connected) 
-  Connecting database file 001_connect.db
-  Creating skeleton database 
+Disconnecting previous database (if connected) 
+Connecting database file 001_connect.db
+Creating skeleton database 
 
 * DISCONNECT: disconnect the current database 
 
 * CONNECT 
-  Disconnecting previous database (if connected) 
-  Connecting database file 001_connect.db
-  Connected database is sane
+Disconnecting previous database (if connected) 
+Connecting database file 001_connect.db
+Connected database is sane
 

@@ -97,8 +97,12 @@ database. Specifically, check that the unhandled BLOBs and TEXTs refer
 to keys that exist.
 
 ~~~
-PRINT
+PRINT [FULL]
 ~~~
-Write a summary of the contents of the current database to the
-output. May take a while.
+Write a summary of the contents of the current database and training
+set to the  output. If the FULL keyword is used, include information
+about the number of evaluations and terms available for each
+combination of method and set, and about the completeness of the
+training set (may be slow).
+
 

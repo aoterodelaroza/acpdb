@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         *os << "* CONNECT " << std::endl;
 
         // disconnect first
-        *os << "  Disconnecting previous database (if connected) " << std::endl;
+        *os << "Disconnecting previous database (if connected) " << std::endl;
         db.close();
         ts.setdb(nullptr);
 
@@ -190,16 +190,16 @@ int main(int argc, char *argv[]) {
           // connect to the database file
           if (!fs::is_regular_file(file))
             throw std::runtime_error("Object " + file + " exists but is not a file");
-          *os << "  Connecting database file " << file << std::endl;
+          *os << "Connecting database file " << file << std::endl;
           db.connect(file);
           if (!db.checksane(true))
             throw std::runtime_error("Database in file " + file + " is not sane");
-          *os << "  Connected database is sane" << std::endl;
+          *os << "Connected database is sane" << std::endl;
         } else {
           // create the database file and connect to it
-          *os << "  Connecting database file " << file << std::endl;
+          *os << "Connecting database file " << file << std::endl;
           db.connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-          *os << "  Creating skeleton database " << std::endl;
+          *os << "Creating skeleton database " << std::endl;
           db.create();
         }
         ts.setdb(&db);
@@ -217,12 +217,21 @@ int main(int argc, char *argv[]) {
         db.verify(*os);
 
         // PRINT
-      } else if (keyw == "PRINT" && tokens.empty()){
-        *os << "* PRINT: print the contents of the database " << std::endl;
-        db.printsummary(*os);
-        *os << "# Table of saved training sets" << std::endl;
-        ts.listdb(*os);
-        *os << std::endl;
+      } else if (keyw == "PRINT"){
+        if (!db)
+          throw std::runtime_error("The database needs to be defined before using PRINT");
+        if (db.checksane(true)){
+          bool dofull = !tokens.empty() && equali_strings(tokens.front(),"FULL");
+          *os << "* PRINT: print the contents of the database " << std::endl;
+          *os << "+ DATABASE information" << std::endl;
+          db.printsummary(*os,dofull);
+          *os << "+ TRAINING SET information" << std::endl;
+          *os << "## Table of saved training sets in the database" << std::endl;
+          ts.listdb(*os);
+          *os << "## Description of the training set" << std::endl;
+          ts.describe(*os,false,dofull);
+          *os << std::endl;
+        }
 
         ///////////////////////////////////////////////////
 
@@ -356,7 +365,7 @@ int main(int argc, char *argv[]) {
 
         //
       } else if (keyw == "DESCRIBE") {
-        ts.describe(*os);
+        ts.describe(*os,false,true);
 
         //
       } else if (keyw == "INSERT") {

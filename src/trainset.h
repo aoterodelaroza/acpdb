@@ -66,7 +66,7 @@ class trainset {
   void addadditional(const std::list<std::string> &tokens);
 
   // Describe the current training set
-  void describe(std::ostream &os) const;
+  void describe(std::ostream &os, bool except_on_undefined, bool full) const;
 
   // Insert data in bulk into the database using data files from
   // previous ACP development programs using this training set as

@@ -807,8 +807,9 @@ void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
   os << std::endl;
 }
 
-// Print a summary of the contents of the database
-void sqldb::printsummary(std::ostream &os){
+// Print a summary of the contents of the database. If full, print
+// info about the evaluations and terms available.
+void sqldb::printsummary(std::ostream &os, bool full){
   // property types
   statement st(db,statement::STMT_CUSTOM,"SELECT id, key, description FROM Property_types;");
   os << "# Table of property types" << std::endl;
@@ -856,8 +857,9 @@ order by Sets.id;
   os << std::endl;
 
   // evaluations and terms
-  os << "# Evaluations and terms for each combination of set & method (only non-zero entries shown)" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  if (full){
+    os << "# Evaluations and terms for each combination of set & method (only non-zero entries shown)" << std::endl;
+    st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Sets.id, Sets.key, Methods.id, Methods.key, eva.cnt, trm.cnt
 FROM Methods, Sets
 LEFT OUTER JOIN(
@@ -872,18 +874,19 @@ WHERE Properties.id = Terms.propid AND Properties.setid = Sets.id
 GROUP BY Terms.methodid, Sets.id) AS trm ON Methods.id = trm.mid AND Sets.id = trm.sid
 ORDER BY Sets.id, Methods.id;
 )SQL");
-  os << "| set-id | set-key | method-id | method-key | #evaluations | #terms |" << std::endl;
-  while (st.step() != SQLITE_DONE){
-    int sid = sqlite3_column_int(st.ptr(),0);
-    std::string skey = (char *) sqlite3_column_text(st.ptr(),1);
-    int mid = sqlite3_column_int(st.ptr(),2);
-    std::string mkey = (char *) sqlite3_column_text(st.ptr(),3);
-    long int ecnt = sqlite3_column_int(st.ptr(),4);
-    long int tcnt = sqlite3_column_int(st.ptr(),5);
-    if (tcnt > 0 && ecnt > 0)
-      os << "| " << sid << " | " << skey << " | " << mid << " | " << mkey << " |" << ecnt << " | " << tcnt << " |" << std::endl;
+    os << "| set-id | set-key | method-id | method-key | #evaluations | #terms |" << std::endl;
+    while (st.step() != SQLITE_DONE){
+      int sid = sqlite3_column_int(st.ptr(),0);
+      std::string skey = (char *) sqlite3_column_text(st.ptr(),1);
+      int mid = sqlite3_column_int(st.ptr(),2);
+      std::string mkey = (char *) sqlite3_column_text(st.ptr(),3);
+      long int ecnt = sqlite3_column_int(st.ptr(),4);
+      long int tcnt = sqlite3_column_int(st.ptr(),5);
+      if (tcnt > 0 && ecnt > 0)
+        os << "| " << sid << " | " << skey << " | " << mid << " | " << mkey << " |" << ecnt << " | " << tcnt << " |" << std::endl;
+    }
+    os << std::endl;
   }
-  os << std::endl;
 }
 
 // List sets of properties in the database (din format)
