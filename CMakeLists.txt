@@ -31,6 +31,10 @@ include(utils)
 option(USE_BTPARSE "Use the btparse bibtex file parser for bibtex support." ON)
 option(USE_CEREAL "Use the cereal library for training set serialization." ON)
 
+## testing
+option(BUILD_TESTING "Enable the regression tests for the acpdb build." OFF)
+include(CTest)
+
 ## sqlite3
 find_package(SQLite3 REQUIRED)
 
@@ -46,4 +50,8 @@ endif()
 
 ## process subdirectories
 add_subdirectory(src)
+if (BUILD_TESTING)
+  message(STATUS "here!!")
+  add_subdirectory(tests)
+endif()
 
