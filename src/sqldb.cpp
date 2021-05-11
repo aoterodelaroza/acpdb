@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "globals.h"
 
 #include "config.h"
-#ifdef BTPARSE_FOUND  
+#ifdef BTPARSE_FOUND
 #include "btparse.h"
 #endif
 
@@ -83,7 +83,7 @@ std::unordered_map<std::string,std::string> sqldb::get_program_map(const std::st
 // raise exception on empty. Always raise excepton on error. Return
 // 1 if sane, 0 if empty.
 int sqldb::checksane(bool except_on_empty /*=false*/){
-  if (!db) 
+  if (!db)
     throw std::runtime_error("Error reading connected database");
 
   // query the database
@@ -104,14 +104,14 @@ int sqldb::checksane(bool except_on_empty /*=false*/){
   return 1;
 }
 
-// Open a database file for use. 
+// Open a database file for use.
 void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRITE*/){
   // close the previous db if open
   close();
 
   // check if the string is empty
   if (filename.empty())
-    throw std::runtime_error("Need a database file name in connect");
+    throw std::runtime_error("Need a database file name to connect");
 
   // open the new one
   if (sqlite3_open_v2(filename.c_str(), &db, flags, NULL)) {
@@ -136,7 +136,7 @@ void sqldb::create(){
   // skip if not open
   if (!db) throw std::runtime_error("A database file must be connected before using CREATE");
 
-  // Create the table 
+  // Create the table
   stmt[statement::STMT_CREATE_DATABASE]->execute();
 }
 
@@ -151,7 +151,7 @@ void sqldb::close(){
   }
 
   // close the database
-  if (sqlite3_close_v2(db)) 
+  if (sqlite3_close_v2(db))
     throw std::runtime_error("Can't close database file " + dbfilename + " (" + sqlite3_errmsg(db) + ")");
   db = nullptr;
   dbfilename = "";
@@ -171,7 +171,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     if (key.empty())
       throw std::runtime_error("Empty key in INSERT " + category);
 
-    // bind 
+    // bind
     stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
     std::forward_list<std::string> vlist = {"AUTHORS","TITLE","JOURNAL","VOLUME","PAGE","YEAR","DOI","DESCRIPTION"};
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
@@ -183,7 +183,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     // submit
     stmt[statement::STMT_INSERT_LITREF]->step();
   } else if (category == "SET") {
-    //// Sets (SET) ////  
+    //// Sets (SET) ////
 
     // check
     if (key.empty())
@@ -349,13 +349,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     if ((im = kmap.find("METHOD")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",std::stoi(im->second));
-      else 
+      else
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
     }
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",std::stoi(im->second));
-      else 
+      else
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
     }
     if ((im = kmap.find("VALUE")) != kmap.end())
@@ -370,13 +370,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     if ((im = kmap.find("METHOD")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",std::stoi(im->second));
-      else 
+      else
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
     }
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",std::stoi(im->second));
-      else 
+      else
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
     }
     if ((im = kmap.find("ATOM")) != kmap.end())
@@ -399,7 +399,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
 void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
-#ifdef BTPARSE_FOUND  
+#ifdef BTPARSE_FOUND
   // check if the file name is empty
   if (tokens.empty())
     throw std::runtime_error("Need a bibtex file name in INSERT");
@@ -423,7 +423,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
       if (equali_strings(type,"article")){
         // bind the key
         stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
-        
+
         // bind the rest of the fields
         char *fname = NULL;
         AST *field = NULL;
@@ -455,7 +455,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
         if (field) bt_free_ast(field);
       }
     }
-    
+
     // free the entry
     if (entry) bt_free_ast(entry);
   }
@@ -479,7 +479,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
   std::list<std::string> tokens(list_all_words(kmap["XYZ"]));
   if (tokens.empty())
     throw std::runtime_error("Need arguments after XYZ");
-  
+
   // prepare
   std::string skey;
   std::unordered_map<std::string,std::string> smap;
@@ -504,7 +504,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
       std::string filename = file.path().filename();
       if (std::regex_match(filename.begin(),filename.end(),rgx)){
         skey = key + "." + std::string(file.path().stem());
-        
+
         smap.clear();
         smap["XYZ"] = file.path().string();
         smap["SET"] = key;
@@ -518,7 +518,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (fs::is_regular_file(*it)){
         skey = key + "." + std::string(fs::path(*it).stem());
-        
+
         smap.clear();
         smap["XYZ"] = *it;
         smap["SET"] = key;
@@ -550,15 +550,15 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 
   // open the din file
   std::ifstream ifile(din,std::ios::in);
-  if (ifile.fail()) 
+  if (ifile.fail())
     throw std::runtime_error("Error reading din file " + din);
 
   // read the din file header
   int fieldasrxn = 0;
   bool havefield = false;
-  std::string str, saux, line; 
+  std::string str, saux, line;
   while (std::getline(ifile,line)){
-    if (ifile.fail()) 
+    if (ifile.fail())
       throw std::runtime_error("Error reading din file " + din);
     std::istringstream iss(line);
     iss >> str;
@@ -569,7 +569,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
         havefield = true;
         iss >> fieldasrxn;
       }
-    } else if (str[0] == '#' || str.empty()) 
+    } else if (str[0] == '#' || str.empty())
       continue;
     else
       break;
@@ -717,7 +717,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
       }
     }
   }
-}  
+}
 
 // List items from the database
 void sqldb::list(std::ostream &os, const std::string &category, std::list<std::string> &tokens){
@@ -766,7 +766,7 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
     cols    = {         0,       1,      2,     3,         4,       5,        6};
     type = statement::STMT_LIST_TERM;
-  } else { 
+  } else {
     throw std::runtime_error("Unknown LIST category: " + category);
   }
 
@@ -872,7 +872,7 @@ ORDER BY Properties.orderid;
     std::string sttext = R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
 FROM Properties
-WHERE Properties.setid = :SET 
+WHERE Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL";
     st.recycle(statement::STMT_CUSTOM,sttext);
@@ -887,14 +887,14 @@ SELECT key FROM Structures WHERE id = ?1;
     // open and write the din header
     std::string fname = dir + "/" + nameset[i] + ".din";
     std::ofstream ofile(fname,std::ios::trunc);
-    if (ofile.fail()) 
+    if (ofile.fail())
       throw std::runtime_error("Error writing din file " + fname);
     std::streamsize prec = ofile.precision(10);
     ofile << "# din file crated by acpdb" << std::endl;
     ofile << "# setid = " << idset[i] << std::endl;
     ofile << "# setname = " << nameset[i] << std::endl;
     ofile << "# reference id = " << methodid << std::endl;
-  
+
     // step over the components of this set
     st.bind((char *) ":SET",idset[i]);
     while (st.step() != SQLITE_DONE){
@@ -911,7 +911,7 @@ SELECT key FROM Structures WHERE id = ?1;
         stname.reset();
       }
       ofile << "0" << std::endl;
-      
+
       if (methodid > 0){
         double value = sqlite3_column_double(st.ptr(),3);
         ofile << value << std::endl;
@@ -976,14 +976,14 @@ SELECT id FROM Structures WHERE id = ?1;
         os << "STRUCTURES (" + std::to_string(str[i]) + ") in Properties (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 0)) + ") not found" << std::endl;
       stcheck.reset();
     }
-  }  
+  }
 }
 
 // Write input files for a database set
 void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
-  if (!db) 
+  if (!db)
     throw std::runtime_error("Error reading connected database");
-  
+
   // program
   std::string program = "gaussian";
   if (kmap.find("PROGRAM") != kmap.end())
@@ -1056,7 +1056,7 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
         smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
     }
   }
-  
+
   // write the inputs
   write_many_structures(smap,gmap,dir,npack,a);
 }
@@ -1113,7 +1113,7 @@ ORDER BY Properties.id;)SQL";
     if (sqlite3_column_type(st.ptr(),1) == SQLITE_NULL){
       names_missing_fromdb.push_back(key);
       continue;
-    } 
+    }
 
     // check if the components are in the data file
     int nstr = sqlite3_column_int(st.ptr(),2);
@@ -1148,7 +1148,7 @@ ORDER BY Properties.id;)SQL";
   os << "# Evaluation: " << file << std::endl
      << "# Reference: " << refm << std::endl;
   if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
-    os << "# Statistics: " << "(partial, missing: " 
+    os << "# Statistics: " << "(partial, missing: "
        << names_missing_fromdat.size() << " from file, "
        << names_missing_fromdb.size() << " from database)" << std::endl;
   else
@@ -1263,8 +1263,8 @@ VALUES(:METHOD,:PROPID,:VALUE);
 // output directory. npack = package and compress in packets of
 // npack files (0 = no packing). a: ACP to use in the inputs.
 // zat, l, exp: details for term inputs.
-void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap/*={}*/, 
-                                  const std::string &dir/*="./"*/, int npack/*=0*/, 
+void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap/*={}*/,
+                                  const std::string &dir/*="./"*/, int npack/*=0*/,
                                   const acp &a/*={}*/,
                                   const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
 
@@ -1312,7 +1312,7 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, con
 // meaning as in write_many_structures. Returns filename of the
 // written file.
 std::string sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/,
-                                       const std::string &dir/*="./"*/, 
+                                       const std::string &dir/*="./"*/,
                                        const acp &a/*={}*/,
                                        const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
 
@@ -1378,7 +1378,7 @@ FROM Structures WHERE id = ?1;
     std::string basis = gmap.at("BASIS");
     if (s.writepsi4(oss,method,basis,fileroot))
       throw std::runtime_error("Error writing input file: " + name);
-    
+
   } else {
     throw std::runtime_error("Unknown combination of structure, property type, and program");
   }
@@ -1389,4 +1389,3 @@ FROM Structures WHERE id = ?1;
   ofile.close();
   return (fileroot + ext);
 }
-

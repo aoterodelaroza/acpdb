@@ -1,0 +1,18 @@
+## check: 001_connect.out -a1e-10
+## delete: 001_connect.db
+## labels: regression quick nodata
+
+## clean up
+system rm -f 001_connect.db
+
+## create
+disconnect
+connect 001_connect.db
+
+## disconnect
+disconnect
+
+## connect
+connect 001_connect.db
+
+

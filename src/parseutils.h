@@ -54,6 +54,10 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(const std::string 
 // return a zero-length string.
 std::string popstring(std::list<std::string> &list, bool toupper = false);
 
+// Return a string containing the concatenation of the tokens in list,
+// with separating spaces.
+std::string mergetokens(std::list<std::string> &list);
+
 // Compare two strings for equality regardless of case.
 bool equali_strings(const std::string& a, const std::string& b);
 

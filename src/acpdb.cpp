@@ -147,23 +147,77 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
-      //
+
+      //// Set global variables ////
+
+        // NCPU ncpu.i
       if (keyw == "NCPU") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("NCPU must be an integer greater than zero");
         globals::ncpu = std::stoi(tokens.front());
         if (globals::ncpu <= 0)
           throw std::runtime_error("NCPU must be an integer greater than zero");
-        std::cout << "* NCPU set to " << globals::ncpu << std::endl << std::endl;
+        *os << "* NCPU set to " << globals::ncpu << std::endl << std::endl;
 
-        //
+        // MEM mem.i
       } else if (keyw == "MEM") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("MEM must be an integer greater than zero");
         globals::mem = std::stoi(tokens.front());
         if (globals::mem <= 0)
           throw std::runtime_error("MEM must be an integer greater than zero");
-        std::cout << "* MEM set to " << globals::mem << "GB" << std::endl << std::endl;
+        *os << "* MEM set to " << globals::mem << "GB" << std::endl << std::endl;
+
+        // SYSTEM command.s
+      } else if (keyw == "SYSTEM") {
+        std::string cmd = mergetokens(tokens);
+        *os << "* SYSTEM: " << cmd << std::endl << std::endl;
+        system(cmd.c_str());
+
+      //// Global database operations ////
+
+        // CONNECT file.s
+      } else if (keyw == "CONNECT") {
+        *os << "* CONNECT " << std::endl;
+
+        // disconnect first
+        *os << "  Disconnecting previous database (if connected) " << std::endl;
+        db.close();
+        ts.setdb(nullptr);
+
+        std::string file = popstring(tokens);
+        if (fs::exists(file)){
+          // connect to the database file
+          if (!fs::is_regular_file(file))
+            throw std::runtime_error("Object " + file + " exists but is not a file");
+          *os << "  Connecting database file " << file << std::endl;
+          db.connect(file);
+          if (!db.checksane(true))
+            throw std::runtime_error("Database in file " + file + " is not sane");
+          *os << "  Connected database is sane" << std::endl;
+        } else {
+          // create the database file and connect to it
+          *os << "  Connecting database file " << file << std::endl;
+          db.connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+          *os << "  Creating skeleton database " << std::endl;
+          db.create();
+        }
+        ts.setdb(&db);
+        *os << std::endl;
+
+        // DISCONNECT file.s
+      } else if (keyw == "DISCONNECT") {
+        *os << "* DISCONNECT: disconnect the current database " << std::endl << std::endl;
+        db.close();
+        ts.setdb(nullptr);
+
+        // VERIFY
+      } else if (keyw == "VERIFY") {
+        *os << "* VERIFY: verify the consistency of the database " << std::endl << std::endl;
+        db.verify(*os);
+
+        // PRINT
+      } else if (keyw == "PRINT" && tokens.empty()){
 
         //
       } else if (keyw == "ACP") {
@@ -298,23 +352,6 @@ int main(int argc, char *argv[]) {
         ts.describe(*os);
 
         //
-      } else if (keyw == "CREATE") {
-        db.connect(popstring(tokens), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-        db.create();
-        ts.setdb(&db);
-
-        //
-      } else if (keyw == "CONNECT") {
-        db.connect(popstring(tokens));
-        db.checksane(true);
-        ts.setdb(&db);
-
-        //
-      } else if (keyw == "DISCONNECT") {
-        db.close();
-        ts.setdb(nullptr);
-
-        //
       } else if (keyw == "INSERT") {
         std::string category = popstring(tokens,true);
         std::string key = popstring(tokens);
@@ -345,10 +382,6 @@ int main(int argc, char *argv[]) {
           db.list_din(kmap);
         } else
           db.list(*os,category,tokens);
-
-        //
-      } else if (keyw == "VERIFY") {
-        db.verify(*os);
 
         //
       } else if (keyw == "TRAINING") {

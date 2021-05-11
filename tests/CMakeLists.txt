@@ -3,6 +3,7 @@
 ## list of test bundles
 set(TESTDIRS
   001_simple        ## simple inputs and outputs
+  002_globaldb      ## global database operations
   )
 
 ## define the macro that will run the tests

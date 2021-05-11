@@ -134,6 +134,17 @@ std::string popstring(std::list<std::string> &list, bool toupper){
   return result;
 }
 
+// Return a string containing the concatenation of the tokens in list,
+// with separating spaces.
+std::string mergetokens(std::list<std::string> &list){
+  std::string result = "";
+  for (auto it = list.begin(); it != list.end(); ++it){
+    if (it != list.begin()) result += " ";
+    result += *it;
+  }
+  return result;
+}
+
 // Compare two strings for equality regardless of case. Adapted from:
 // https://stackoverflow.com/questions/12568338/c-check-case-insensitive-equality-of-two-strings
 bool equali_strings(const std::string& a, const std::string& b)

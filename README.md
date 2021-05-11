@@ -3,7 +3,7 @@
 ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
-## Command-line syntax
+## Command-Line Syntax
 
 apcdb -h [inputfile [outputfile]]
 
@@ -56,7 +56,7 @@ coresponding functionalities.
 
 ## Syntax
 
-### Global variables
+### Global Variables and Commands
 
 These variables control the global behavior of ACPDB.
 
@@ -69,4 +69,37 @@ Set the number of processors in all the input writers.
 MEM mem.i
 ~~~
 Set the amount of available memory (in GB) in all the input writers.
+
+~~~
+SYSTEM cmd.s
+~~~
+Run the OS command `cmd.s`.
+
+### Global Database Operations (Connect, Disconnect, Verify, Print)
+
+~~~
+CONNECT file.s
+~~~
+Connect to database file `file.s`. If `file.s`, create a skeleton
+database with no data in that file. If a previous database was
+connected, disconnects that database first.
+
+~~~
+DISCONNECT
+~~~
+Disconnect the database.
+
+~~~
+VERIFY
+~~~
+Check the sanity and consistency of the current
+database. Specifically, check that the unhandled BLOBs and TEXTs refer
+to keys that exist.
+
+~~~
+PRINT
+~~~
+Write a summary of the contents of the current database to the
+output.
+
 

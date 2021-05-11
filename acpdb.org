@@ -2,18 +2,6 @@
 
 * Keywords (database build)
 
-CREATE acpdb_file.s
-
-  Creates an empty database in file acpdb_file.s.
-
-CONNECT acpdb_file.s
-
-  Connects to the database file acpdb_file.s.
-
-DISCONNECT
-
-  Disconnect the current database.
-
 INSERT LITREF ref.s
   AUTHORS ... 
   TITLE ...
@@ -217,11 +205,6 @@ DELETE TERM
 LIST TERM
 
   List the known terms.
-
-VERIFY
-
-  Check the consistency of the database. Specifically, check that the
-  unhandled BLOBs and TEXTs refer to keys that exist.
 
 LIST DIN
  [DIRECTORY directory.s]

@@ -43,7 +43,8 @@ void trainset::setdb(sqldb *db_){
   db = db_;
 
   // Drop the Training_set table if it exists, then create it
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  if (db){
+    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 CREATE TABLE IF NOT EXISTS Training_set (
   id INTEGER PRIMARY KEY,
   propid INTEGER NOT NULL,
@@ -53,7 +54,8 @@ CREATE TABLE IF NOT EXISTS Training_set (
 DELETE FROM Training_set;
 CREATE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid,isfit);
 )SQL");
-  st.execute();
+    st.execute();
+  }
 }
 
 // Add atoms and max. angular momentum
