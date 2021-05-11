@@ -720,7 +720,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 }
 
 // List items from the database
-void sqldb::list(std::ostream &os, const std::string &category, std::list<std::string> &tokens){
+void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
   enum entrytype { t_str, t_int, t_double };
@@ -728,13 +728,13 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   std::vector<entrytype> types;
   std::vector<std::string> headers;
   std::vector<int> cols;
-  bool dobib = false;
+  bool dobib_ = false;
   statement::stmttype type;
   if (category == "LITREF"){
     headers = {"id", "key","authors","title","journal","volume","page","year","doi","description"};
     types   = {t_int,t_str,    t_str,  t_str,    t_str,   t_str, t_str, t_str,t_str,        t_str};
     cols    = {    0,    1,        2,      3,        4,       5,     6,     7,    8,            9};
-    dobib = (!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
+    dobib_ = dobib;
     type = statement::STMT_LIST_LITREF;
   } else if (category == "SET"){
     headers = {"id", "key","property_type","litrefs","description"};
@@ -744,7 +744,7 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
   } else if (category == "METHOD"){
     headers = { "id","key","gaussian_keyword","psi4_keyword","litrefs","description"};
     types   = {t_int,t_str,             t_str,         t_str,    t_str,        t_str};
-    cols    = {    0,    1,                 2,             3,        3,            4};
+    cols    = {    0,    1,                 2,             3,        4,            5};
     type = statement::STMT_LIST_METHOD;
   } else if (category == "STRUCTURE"){
     headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
@@ -772,7 +772,7 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
 
   // print table header
   int n = headers.size();
-  if (!dobib){
+  if (!dobib_){
     for (int i = 0; i < n; i++)
       os << "| " << headers[i];
     os << "|" << std::endl;
@@ -784,7 +784,7 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
     for (int i = 0; i < n; i++){
       if (types[i] == t_str){
         const unsigned char *field = sqlite3_column_text(stmt[type]->ptr(), cols[i]);
-        if (!dobib)
+        if (!dobib_)
           os << "| " << (field?field:(const unsigned char*) "");
         else{
           if (headers[i] == "key")
@@ -792,18 +792,98 @@ void sqldb::list(std::ostream &os, const std::string &category, std::list<std::s
           else if (field)
             os << " " << headers[i] << "={" << field << "}," << std::endl;
         }
-      } else if (types[i] == t_int && !dobib){
+      } else if (types[i] == t_int && !dobib_){
         os << "| " << sqlite3_column_int(stmt[type]->ptr(), cols[i]);
-      } else if (types[i] == t_double && !dobib){
+      } else if (types[i] == t_double && !dobib_){
         os << "| " << sqlite3_column_double(stmt[type]->ptr(), cols[i]);
       }
     }
-    if (!dobib)
+    if (!dobib_)
       os << "|" << std::endl;
     else
       os << "}" << std::endl;
   }
   os.precision(prec);
+  os << std::endl;
+}
+
+// Print a summary of the contents of the database
+void sqldb::printsummary(std::ostream &os){
+  // property types
+  statement st(db,statement::STMT_CUSTOM,"SELECT id, key, description FROM Property_types;");
+  os << "# Table of property types" << std::endl;
+  os << "| id | key | description |" << std::endl;
+  while (st.step() != SQLITE_DONE){
+    int id = sqlite3_column_int(st.ptr(),0);
+    std::string key = (char *) sqlite3_column_text(st.ptr(),1);
+    std::string desc = (char *) sqlite3_column_text(st.ptr(),2);
+    os << "| " << id << " | " << key << " | " << desc << " |" << std::endl;
+  }
+  os << std::endl;
+
+  // literature references
+  st.recycle(statement::STMT_CUSTOM,"SELECT COUNT(id) FROM Literature_refs;");
+  st.step();
+  int num = sqlite3_column_int(st.ptr(),0);
+  os << "# Number of literature references: " << num << std::endl;
+  os << std::endl;
+
+  // methods
+  os << "# Table of methods" << std::endl;
+  list(os,"METHOD",false);
+
+  // sets
+  os << "# Table of sets" << std::endl;
+  list(os,"SET",false);
+
+  // properties and structures in each set
+  os << "# Number of properties and structures in each set" << std::endl;
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+select Sets.id, Sets.key, prdx.cnt, srdx.cnt
+from Sets
+inner join (select setid, count(id) as cnt from Properties group by setid) as prdx on prdx.setid = Sets.id
+inner join (select setid, count(id) as cnt from structures group by setid) as srdx on srdx.setid = Sets.id
+order by Sets.id;
+)SQL");
+  os << "| id | key | properties | structures |" << std::endl;
+  while (st.step() != SQLITE_DONE){
+    int id = sqlite3_column_int(st.ptr(),0);
+    std::string key = (char *) sqlite3_column_text(st.ptr(),1);
+    long int pcnt = sqlite3_column_int(st.ptr(),2);
+    long int scnt = sqlite3_column_int(st.ptr(),3);
+    os << "| " << id << " | " << key << " | " << pcnt << " | " << scnt << " |" << std::endl;
+  }
+  os << std::endl;
+
+  // evaluations and terms
+  os << "# Evaluations and terms for each combination of set & method (only non-zero entries shown)" << std::endl;
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Sets.id, Sets.key, Methods.id, Methods.key, eva.cnt, trm.cnt
+FROM Methods, Sets
+LEFT OUTER JOIN(
+SELECT Evaluations.methodid AS mid, Sets.id AS sid, COUNT(Evaluations.value) AS cnt
+FROM Evaluations, Properties, Sets
+WHERE Evaluations.propid = Properties.id AND Properties.setid = Sets.id
+GROUP BY Evaluations.methodid, Sets.id) AS eva ON Methods.id = eva.mid AND Sets.id = eva.sid
+LEFT OUTER JOIN(
+SELECT Terms.methodid AS mid, Sets.id AS sid, COUNT(Terms.value) AS cnt
+FROM Terms, Properties, Sets
+WHERE Properties.id = Terms.propid AND Properties.setid = Sets.id
+GROUP BY Terms.methodid, Sets.id) AS trm ON Methods.id = trm.mid AND Sets.id = trm.sid
+ORDER BY Sets.id, Methods.id;
+)SQL");
+  os << "| set-id | set-key | method-id | method-key | #evaluations | #terms |" << std::endl;
+  while (st.step() != SQLITE_DONE){
+    int sid = sqlite3_column_int(st.ptr(),0);
+    std::string skey = (char *) sqlite3_column_text(st.ptr(),1);
+    int mid = sqlite3_column_int(st.ptr(),2);
+    std::string mkey = (char *) sqlite3_column_text(st.ptr(),3);
+    long int ecnt = sqlite3_column_int(st.ptr(),4);
+    long int tcnt = sqlite3_column_int(st.ptr(),5);
+    if (tcnt > 0 && ecnt > 0)
+      os << "| " << sid << " | " << skey << " | " << mid << " | " << mkey << " |" << ecnt << " | " << tcnt << " |" << std::endl;
+  }
+  os << std::endl;
 }
 
 // List sets of properties in the database (din format)

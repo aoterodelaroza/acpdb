@@ -100,6 +100,5 @@ to keys that exist.
 PRINT
 ~~~
 Write a summary of the contents of the current database to the
-output.
-
+output. May take a while.
 

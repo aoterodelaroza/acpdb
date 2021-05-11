@@ -218,6 +218,13 @@ int main(int argc, char *argv[]) {
 
         // PRINT
       } else if (keyw == "PRINT" && tokens.empty()){
+        *os << "* PRINT: print the contents of the database " << std::endl;
+        db.printsummary(*os);
+        *os << "# Table of saved training sets" << std::endl;
+        ts.listdb(*os);
+        *os << std::endl;
+
+        ///////////////////////////////////////////////////
 
         //
       } else if (keyw == "ACP") {
@@ -381,8 +388,7 @@ int main(int argc, char *argv[]) {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           db.list_din(kmap);
         } else
-          db.list(*os,category,tokens);
-
+          db.list(*os,category,!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
         //
       } else if (keyw == "TRAINING") {
         std::string key = popstring(tokens,true);
