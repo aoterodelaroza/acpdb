@@ -1,3 +1,6 @@
+## check: 001_io_globals.out -a1e-10
+## labels: regression quick nodata
+
 # this is a comment
 ncpu \
   4
