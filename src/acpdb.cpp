@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include "globals.h"
 
-#ifdef BTPARSE_FOUND  
+#ifdef BTPARSE_FOUND
 #include "btparse.h"
 #endif
 
@@ -69,6 +69,10 @@ static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
 
 int main(int argc, char *argv[]) {
 
+  // Initial banner
+  std::cout << "** ACPDB: database interface for ACP development **"<< std::endl;
+  print_timestamp();
+
   // Check command parameters
   if (argc > 3 || (argc >= 2 && strcmp(argv[1],"-h") == 0) || (argc >= 3 && strcmp(argv[2],"-h") == 0)){
     std::cout << "Usage: " + std::string(argv[0]) + " [inputfile [outputfile]]" << std::endl;
@@ -87,7 +91,7 @@ int main(int argc, char *argv[]) {
     os = ofile.get();
   } else {
     os = &std::cout;
-  }    
+  }
 
   // Connect the input files; build the stack
   std::stack<std::istream *> istack;
@@ -104,14 +108,14 @@ int main(int argc, char *argv[]) {
   } else {
     is = &std::cin;
     icwd.push(fs::current_path());
-  }    
+  }
   istack.push(is);
 
   // Initialize the btparse library, if present
-#ifdef BTPARSE_FOUND  
+#ifdef BTPARSE_FOUND
   bt_initialize();
   bt_set_stringopts(BTE_REGULAR, BTO_CONVERT | BTO_EXPAND | BTO_PASTE | BTO_COLLAPSE);
-#endif  
+#endif
 
   // Parse the input file
   while(!istack.empty()){
@@ -130,7 +134,7 @@ int main(int argc, char *argv[]) {
     // fetch a line
     std::string line;
     get_next_line(*is,line);
-    if (line.empty() && is->eof()) 
+    if (line.empty() && is->eof())
       continue;
     if (is->fail())
       throw std::runtime_error("Error reading input");
@@ -143,13 +147,14 @@ int main(int argc, char *argv[]) {
 
     // Interpret the keywords and call the appropriate routines
     try {
-      // 
+      //
       if (keyw == "NCPU") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("NCPU must be an integer greater than zero");
         globals::ncpu = std::stoi(tokens.front());
         if (globals::ncpu <= 0)
           throw std::runtime_error("NCPU must be an integer greater than zero");
+        std::cout << "* NCPU set to " << globals::ncpu << std::endl << std::endl;
 
         //
       } else if (keyw == "MEM") {
@@ -158,6 +163,7 @@ int main(int argc, char *argv[]) {
         globals::mem = std::stoi(tokens.front());
         if (globals::mem <= 0)
           throw std::runtime_error("MEM must be an integer greater than zero");
+        std::cout << "* MEM set to " << globals::mem << "GB" << std::endl << std::endl;
 
         //
       } else if (keyw == "ACP") {
@@ -370,7 +376,7 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "SOURCE") {
         std::string filename = popstring(tokens);
         std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));
-        if (afile->fail()) 
+        if (afile->fail())
           throw std::runtime_error("Error opening file " + filename);
         ifile.push(afile);
         istack.push(ifile.top().get());
@@ -389,7 +395,7 @@ int main(int argc, char *argv[]) {
         //
       } else {
         throw std::runtime_error("Unknown keyword: " + keyw);
-      }        
+      }
     } catch (const std::runtime_error &e) {
       std::cout << "Error: " << e.what() << std::endl;
       return 1;
@@ -397,12 +403,16 @@ int main(int argc, char *argv[]) {
   }
 
   // Close the btparse library, if present
-#ifdef BTPARSE_FOUND  
+#ifdef BTPARSE_FOUND
   bt_cleanup();
-#endif  
+#endif
 
   // Clean up
   db.close();
+
+  // Final message
+  std::cout << "ACPDB ended successfully" << std::endl;
+  print_timestamp();
 
   return 0;
 }

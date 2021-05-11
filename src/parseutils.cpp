@@ -23,6 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sstream>
 #include <algorithm>
 #include <filesystem>
+#include <ctime>
 
 namespace fs = std::filesystem;
 
@@ -36,6 +37,12 @@ void uppercase(std::string &s){
 // Transform a string to lowercase
 void lowercase(std::string &s){
   transform(s.begin(), s.end(), s.begin(), ::tolower);
+}
+
+// Print a timestamp
+void print_timestamp(){
+  std::time_t tt = std::time(nullptr);
+  std::cout << "Date: " << std::asctime(std::localtime(&tt)) << std::endl;
 }
 
 // List the words in an input line. Skip the rest of the line if a

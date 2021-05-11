@@ -32,8 +32,8 @@ void uppercase(std::string &s);
 // Transform a string to lowercase
 void lowercase(std::string &s);
 
-// Print error and usage messages
-void print_error_usage(const char *prog = 0, const char *errmsg = 0);
+// Print a timestamp
+void print_timestamp();
 
 // Build a list from all words in a line. Skip the rest of the line if
 // a comment character (#) is found as the first character in a token.
