@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 
       //// Set global variables ////
 
-        // NCPU ncpu.i
+        //// NCPU ncpu.i
       if (keyw == "NCPU") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("NCPU must be an integer greater than zero");
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("NCPU must be an integer greater than zero");
         *os << "* NCPU set to " << globals::ncpu << std::endl << std::endl;
 
-        // MEM mem.i
+        //// MEM mem.i
       } else if (keyw == "MEM") {
         if (!isinteger(tokens.front()))
           throw std::runtime_error("MEM must be an integer greater than zero");
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
           throw std::runtime_error("MEM must be an integer greater than zero");
         *os << "* MEM set to " << globals::mem << "GB" << std::endl << std::endl;
 
-        // SYSTEM command.s
+        //// SYSTEM command.s
       } else if (keyw == "SYSTEM") {
         std::string cmd = mergetokens(tokens);
         *os << "* SYSTEM: " << cmd << std::endl << std::endl;
@@ -176,7 +176,7 @@ int main(int argc, char *argv[]) {
 
       //// Global database operations ////
 
-        // CONNECT file.s
+        //// CONNECT file.s
       } else if (keyw == "CONNECT") {
         *os << "* CONNECT " << std::endl << std::endl;
 
@@ -205,18 +205,18 @@ int main(int argc, char *argv[]) {
         ts.setdb(&db);
         *os << std::endl;
 
-        // DISCONNECT file.s
+        //// DISCONNECT file.s
       } else if (keyw == "DISCONNECT") {
         *os << "* DISCONNECT: disconnect the current database " << std::endl << std::endl;
         db.close();
         ts.setdb(nullptr);
 
-        // VERIFY
+        //// VERIFY
       } else if (keyw == "VERIFY") {
         *os << "* VERIFY: verify the consistency of the database " << std::endl << std::endl;
         db.verify(*os);
 
-        // PRINT
+        //// PRINT
       } else if (keyw == "PRINT"){
         if (!db)
           throw std::runtime_error("The database needs to be defined before using PRINT");
@@ -245,6 +245,29 @@ int main(int argc, char *argv[]) {
         //   db.list_din(kmap);
         // } else
         //
+
+        //// INSERT
+      } else if (keyw == "INSERT") {
+        std::string category = popstring(tokens,true);
+        std::string key = popstring(tokens);
+        *os << "* INSERT: insert data into the database (" << category << ")" << std::endl;
+
+        if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
+          db.insert_litref_bibtex(tokens);
+        // } else if (category == "OLDDAT"){
+        //   ts.insert_olddat(key,tokens);
+        } else {
+          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+          if (category == "LITREF")
+            db.insert_litref(key,kmap);
+          else if (category == "SET")
+            db.insert_set(key,kmap);
+          // else if (category == "DAT")
+          //   ts.insert_dat(kmap);
+          else
+            db.insert(category,key,kmap);
+        }
+        *os << std::endl;
 
         ///////////////////////////////////////////////////
 
@@ -379,24 +402,6 @@ int main(int argc, char *argv[]) {
         //
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os,false,true);
-
-        //
-      } else if (keyw == "INSERT") {
-        std::string category = popstring(tokens,true);
-        std::string key = popstring(tokens);
-        if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
-          db.insert_litref_bibtex(tokens);
-        } else if (category == "OLDDAT"){
-          ts.insert_olddat(key,tokens);
-        } else {
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          if (category == "LITREF")
-            db.insert_litref(key,kmap);
-          else if (category == "DAT")
-            ts.insert_dat(kmap);
-          else
-            db.insert(category,key,kmap);
-        }
 
         //
       } else if (keyw == "DELETE") {

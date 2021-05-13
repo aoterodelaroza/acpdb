@@ -161,6 +161,65 @@ Insert the literature references contained in bibtex file
 repeated keys, only the last entry will be inserted. Requires
 compiling with the btparse library.
 
+#### Sets
+
+~~~
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+END
+~~~
+Insert a set with name `name.s` in the database with the given
+description. The set calculates property `prop.s` (alternatively, it
+can be given by its ID from Property_types, `prop.i`). One or more
+literature references associated with the set can be given by either
+their key or numerical id.
+
+------
+
+~~~
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+  XYZ xyz1.s xyz2.s xyz3.s ...
+  ... or ...
+  XYZ directory.s regexp.s
+END
+~~~
+
+Add the set with name name.s in the same way as above. In addition,
+belonging to this set, add structures corresponding to XYZ files
+xyz1.s, etc. Alternatively, add all files in directory directory.s
+that match the regular expression regexp.s (awk style). If regexp.s is
+not given, add all xyz files.
+
+Note: there is no facility for inserting db files because din files
+are more efficient. In DB files, structures may be repeated in the
+database.
+
+------
+
+INSERT SET name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  DESCRIPTION ...
+  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+
+  DIN file.s
+  [METHOD method.s]
+  [DIRECTORY directory.s]
+END
+
+Add the set with name name.s in the same way as above. In addition,
+belonging to this set, add the structures indicated in the din
+file. The xyz files are found in directory directory.s. If no
+directory is given, use the current directory. Also, add the
+corresponding properties and the corresponding evaluations with method
+method.s. If no METHOD is given, the evaluations are not inserted.
+
+
+
 ### Deleting Data
 
 #### Literature References

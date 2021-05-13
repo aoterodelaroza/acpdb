@@ -98,7 +98,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 
   // identify the set; add the name and the set index
   std::string name = kmap["SET"];
-  int idx = db->find_id_from_key(name,statement::STMT_QUERY_SET);
+  int idx = db->find_id_from_key(name,"Sets");
   int sid = setid.size();
   if (idx == 0)
     throw std::runtime_error("SET identifier not found in database: " + name);
@@ -333,7 +333,7 @@ void trainset::setreference(const std::list<std::string> &tokens){
   // check if the method is known
   auto it = tokens.begin();
   refname = *it;
-  refid = db->find_id_from_key(refname,statement::STMT_QUERY_METHOD);
+  refid = db->find_id_from_key(refname,"Methods");
   if (refid == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + refname);
 }
@@ -346,7 +346,7 @@ void trainset::setempty(const std::list<std::string> &tokens){
     throw std::runtime_error("Invalid EMPTY command");
 
   std::string name = tokens.front();
-  int idx = db->find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  int idx = db->find_id_from_key(name,"Methods");
   if (idx == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + name);
 
@@ -364,7 +364,7 @@ void trainset::addadditional(const std::list<std::string> &tokens){
   auto it = tokens.begin();
 
   std::string name = *it;
-  int idx = db->find_id_from_key(name,statement::STMT_QUERY_METHOD);
+  int idx = db->find_id_from_key(name,"Methods");
   if (idx == 0)
     throw std::runtime_error("METHOD identifier not found in database: " + name);
 
@@ -775,7 +775,7 @@ void trainset::insert_dat(std::unordered_map<std::string,std::string> &kmap){
 
   if (kmap.find("METHOD") == kmap.end() || kmap["METHOD"].empty())
     throw std::runtime_error("INSERT DAT requires a method (use the METHOD keyword)");
-  int methodid = db->find_id_from_key(kmap["METHOD"],statement::STMT_QUERY_METHOD);
+  int methodid = db->find_id_from_key(kmap["METHOD"],"Methods");
   if (!methodid)
     throw std::runtime_error("Unknown method in INSERT DAT: " + kmap["METHOD"]);
 
@@ -1325,7 +1325,7 @@ void trainset::read_and_compare(std::ostream &os, const std::string &file, const
   // verify that we have a reference method
   if (refm.empty())
     throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = db->find_id_from_key(refm,statement::STMT_QUERY_METHOD);
+  int methodid = db->find_id_from_key(refm,"Methods");
   if (!methodid)
     throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
 
@@ -1481,7 +1481,7 @@ void trainset::read_terms(const std::string &file, std::unordered_map<std::strin
   // method
   int methodid = emptyid;
   if (kmap.find("METHOD") != kmap.end()){
-    methodid = db->find_id_from_key(kmap["METHOD"],statement::STMT_QUERY_METHOD);
+    methodid = db->find_id_from_key(kmap["METHOD"],"Methods");
     if (!methodid)
       throw std::runtime_error("Unknown method in READ TERMS: " + kmap["METHOD"]);
   }

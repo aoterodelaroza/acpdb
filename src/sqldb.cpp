@@ -47,11 +47,12 @@ struct propinfo {
 namespace fs = std::filesystem;
 
 // Find the id from a key from an sql table
-int sqldb::find_id_from_key(const std::string &key,statement::stmttype type){
-  stmt[type]->bind(1,key);
-  stmt[type]->step();
-  int rc = sqlite3_column_int(stmt[type]->ptr(),0);
-  stmt[type]->reset();
+int sqldb::find_id_from_key(const std::string &key,const std::string &table){
+  statement st(db,statement::STMT_CUSTOM,"SELECT id FROM " + table + " WHERE key = ?1;");
+  st.bind(1,key);
+  st.step();
+  int rc = sqlite3_column_int(st.ptr(),0);
+  st.reset();
   return rc;
 }
 
@@ -164,47 +165,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  if (category == "SET") {
-    //// Sets (SET) ////
-
-    // check
-    if (key.empty())
-      throw std::runtime_error("Empty key in INSERT " + category);
-
-    // bind
-    stmt[statement::STMT_INSERT_SET]->bind((char *) ":KEY",key);
-    if ((im = kmap.find("DESCRIPTION")) != kmap.end())
-      stmt[statement::STMT_INSERT_SET]->bind((char *) ":DESCRIPTION",im->second);
-    if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_SET]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
-    }
-    if ((im = kmap.find("LITREFS")) != kmap.end()){
-      std::list<std::string> tokens = list_all_words(im->second);
-      std::string str = "";
-      for (auto it = tokens.begin(); it != tokens.end(); it++){
-        int idx = find_id_from_key(*it,statement::STMT_QUERY_LITREF);
-        if (!idx)
-          throw std::runtime_error("Litref not found: " + *it);
-        str = str + *it + " ";
-      }
-      stmt[statement::STMT_INSERT_SET]->bind((char *) ":LITREFS",str);
-    }
-
-    // submit
-    stmt[statement::STMT_INSERT_SET]->step();
-
-    // interpret the xyz keyword
-    if (kmap.find("XYZ") != kmap.end())
-      insert_set_xyz(key, kmap);
-
-    // interpret the din/directory/method keyword combination
-    if (kmap.find("DIN") != kmap.end())
-      insert_set_din(key, kmap);
-
-  } else if (category == "METHOD") {
+  if (category == "METHOD") {
     //// Methods (METHOD) ////
 
     // check
@@ -250,7 +211,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",find_id_from_key(im->second,statement::STMT_QUERY_SET));
+        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
     }
     if (!s.ismolecule())
       stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
@@ -272,13 +233,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,statement::STMT_QUERY_PROPTYPE));
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
     }
     if ((im = kmap.find("SET")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,statement::STMT_QUERY_SET));
+        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
     }
     if ((im = kmap.find("ORDERID")) != kmap.end())
       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":ORDERID",std::stoi(im->second));
@@ -300,7 +261,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
         if (isinteger(*it))
           idx = std::stoi(*it);
         else
-          idx = find_id_from_key(*it,statement::STMT_QUERY_STRUCTURE);
+          idx = find_id_from_key(*it,"Structures");
 
         if (!idx)
           throw std::runtime_error("Structure not found: " + *it);
@@ -332,13 +293,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
     }
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
+        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
     }
     if ((im = kmap.find("VALUE")) != kmap.end())
       stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":VALUE",std::stod(im->second));
@@ -353,13 +314,13 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,statement::STMT_QUERY_METHOD));
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
     }
     if ((im = kmap.find("PROPERTY")) != kmap.end()){
       if (isinteger(im->second))
         stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",std::stoi(im->second));
       else
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,statement::STMT_QUERY_PROPERTY));
+        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
     }
     if ((im = kmap.find("ATOM")) != kmap.end())
       stmt[statement::STMT_INSERT_TERM]->bind((char *) ":ATOM",std::stoi(im->second));
@@ -401,6 +362,55 @@ INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,ye
 
   // submit
   st.step();
+}
+
+// Insert a set by manually giving the data
+void sqldb::insert_set(const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
+  if (key.empty())
+    throw std::runtime_error("Empty key in INSERT SET");
+  if (kmap.find("XYZ") != kmap.end() && kmap.find("DIN") != kmap.end())
+    throw std::runtime_error("XYZ and SET options in SET are incompatible");
+
+  // statement
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Sets (key,property_type,litrefs,description)
+       VALUES(:KEY,:PROPERTY_TYPE,:LITREFS,:DESCRIPTION);
+)SQL");
+
+  // bind
+  st.bind((char *) ":KEY",key);
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  if ((im = kmap.find("DESCRIPTION")) != kmap.end())
+    st.bind((char *) ":DESCRIPTION",im->second);
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
+    else
+      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
+  }
+  if ((im = kmap.find("LITREFS")) != kmap.end()){
+    std::list<std::string> tokens = list_all_words(im->second);
+    std::string str = "";
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      int idx = find_id_from_key(*it,"Literature_refs");
+      if (!idx)
+        throw std::runtime_error("Litref not found: " + *it);
+      str = str + *it + " ";
+    }
+    st.bind((char *) ":LITREFS",str);
+  }
+
+  // submit
+  st.step();
+
+  // interpret the xyz keyword
+  if (kmap.find("XYZ") != kmap.end())
+    insert_set_xyz(key, kmap);
+
+  // interpret the din/directory/method keyword combination
+  if (kmap.find("DIN") != kmap.end())
+    insert_set_din(key, kmap);
 }
 
 // Insert literature references into the database from a bibtex file
@@ -971,7 +981,7 @@ void sqldb::list_din(std::unordered_map<std::string,std::string> &kmap){
       if (isinteger(*it))
         idset.push_back(std::stoi(*it));
       else
-        idset.push_back(find_id_from_key(*it,statement::STMT_QUERY_SET));
+        idset.push_back(find_id_from_key(*it,"Sets"));
     }
   } else {
     statement *st = stmt[statement::STMT_LIST_SET];
@@ -1003,7 +1013,7 @@ SELECT key FROM Sets WHERE id = ?1;
     if (isinteger(im->second))
       methodid = std::stoi(im->second);
     else
-      methodid = find_id_from_key(im->second,statement::STMT_QUERY_METHOD);
+      methodid = find_id_from_key(im->second,"Methods");
 
     // prepare the statement text
     std::string sttext = R"SQL(
@@ -1087,7 +1097,7 @@ SELECT litrefs,key FROM Sets;
     std::string field = std::string(field_s);
     std::list<std::string> tokens = list_all_words(field);
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+      if (!find_id_from_key(*it,"Literature_refs"))
         os << "LITREF (" + *it + ") in SET (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 1)) + ") not found" << std::endl;
     }
   }
@@ -1104,7 +1114,7 @@ SELECT litrefs,key FROM Methods;
     std::string field = std::string(field_s);
     std::list<std::string> tokens = list_all_words(field);
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      if (!find_id_from_key(*it,statement::STMT_QUERY_LITREF))
+      if (!find_id_from_key(*it,"Literature_refs"))
         os << "LITREF (" + *it + ") in METHODS (" + std::string((char *) sqlite3_column_text(stmt.ptr(), 1)) + ") not found" << std::endl;
     }
   }
@@ -1153,7 +1163,7 @@ void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, 
   int setid = 0;
   if (haveset){
     std::string setname = kmap["SET"];
-    setid = find_id_from_key(setname,statement::STMT_QUERY_SET);
+    setid = find_id_from_key(setname,"Sets");
     if (setid == 0)
       throw std::runtime_error("Unknown SET in write_structures");
   }
@@ -1224,14 +1234,14 @@ void sqldb::read_and_compare(std::ostream &os, const std::string &file, const st
   // verify that we have a reference method
   if (refm.empty())
     throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = find_id_from_key(refm,statement::STMT_QUERY_METHOD);
+  int methodid = find_id_from_key(refm,"Methods");
   if (!methodid)
     throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
 
   // set
   int sid = -1;
   if (kmap.find("SET") != kmap.end())
-    sid = find_id_from_key(kmap["SET"],statement::STMT_QUERY_SET);
+    sid = find_id_from_key(kmap["SET"],"Sets");
 
   // get the data from the file
   auto datmap = read_data_file(file,globals::ha_to_kcal);
@@ -1349,7 +1359,7 @@ void sqldb::read_and_insert(const std::string &file, const std::string &method){
   // verify that we have a reference method
   if (method.empty())
     throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = find_id_from_key(method,statement::STMT_QUERY_METHOD);
+  int methodid = find_id_from_key(method,"Methods");
   if (!methodid)
     throw std::runtime_error("Unknown method in READ/COMPARE: " + method);
 

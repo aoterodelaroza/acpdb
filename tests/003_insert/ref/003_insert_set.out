@@ -1,0 +1,12 @@
+* SYSTEM: rm -f 003_insert_set.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 003_insert_set.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (LITREF)
+
+* INSERT: insert data into the database (SET)
+

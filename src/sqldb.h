@@ -64,9 +64,10 @@ class sqldb {
   // Close a database connection if open and reset the pointer to NULL
   void close();
 
-  // Insert an item into the database
+  // Insert items into the database manually
   void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_litref(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_set(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::list<std::string> &tokens);
@@ -123,7 +124,7 @@ class sqldb {
                                   const std::vector<unsigned char> &zat = {}, const std::vector<unsigned char> &lmax = {}, const std::vector<double> &exp = {});
 
   // Find the property type ID corresponding to the key 
-  int find_id_from_key(const std::string &key,statement::stmttype type);
+  int find_id_from_key(const std::string &key,const std::string &table);
 
   // Get the Gaussian map from the method key
   std::unordered_map<std::string,std::string> get_program_map(const std::string &methodkey, const std::string &program);

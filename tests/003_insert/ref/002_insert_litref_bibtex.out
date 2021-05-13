@@ -6,6 +6,8 @@ Disconnecting previous database (if connected)
 Connecting database file 002_insert_litref_bibtex.db
 Creating skeleton database 
 
+* INSERT: insert data into the database (LITREF)
+
 * PRINT: print the contents of the database 
 
 # Table of property types
