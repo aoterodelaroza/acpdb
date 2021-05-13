@@ -1,0 +1,56 @@
+## check: 001_insert_litref.out -a1e-10
+## delete: 001_insert_litref.db
+## labels: regression quick
+
+## connect
+system rm -f 001_insert_litref.db
+connect 001_insert_litref.db
+
+insert litref example
+  authors A. author, O. guy
+  title This is the title
+  journal J. Journals
+  volume 11
+  page 223840
+  year 1990
+  doi example.com/1234
+  description An example reference.
+end
+insert litref example2
+  authors x2 A. author, O. guy
+  title x2 This is the title
+  journal x2 J. Journals
+  volume x2 11
+  page x2 223840
+  year x2 1990
+  doi x2 example.com/1234
+  description x2 An example reference.
+end
+insert litref example3
+  authors x3 A. author, O. guy
+  title x3 This is the title
+  journal x3 J. Journals
+  volume x3 11
+  page x3 223840
+  year x3 1990
+  doi x3 example.com/1234
+  description x3 An example reference.
+end
+insert litref example4
+  authors x4 A. author, O. guy
+  title x4 This is the title
+  journal x4 J. Journals
+  volume x4 11
+  page x4 223840
+  year x4 1990
+  doi x4 example.com/1234
+  description x4 An example reference.
+end
+
+print
+
+delete litref 1 example2
+delete litref
+
+print
+

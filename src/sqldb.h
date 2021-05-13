@@ -66,6 +66,7 @@ class sqldb {
 
   // Insert an item into the database
   void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_litref(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::list<std::string> &tokens);

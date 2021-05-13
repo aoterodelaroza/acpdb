@@ -164,25 +164,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  if (category == "LITREF") {
-    //// Literature references (LITREF) ////
-
-    // check
-    if (key.empty())
-      throw std::runtime_error("Empty key in INSERT " + category);
-
-    // bind
-    stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
-    std::forward_list<std::string> vlist = {"AUTHORS","TITLE","JOURNAL","VOLUME","PAGE","YEAR","DOI","DESCRIPTION"};
-    for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      im = kmap.find(*it);
-      if (im != kmap.end())
-        stmt[statement::STMT_INSERT_LITREF]->bind(":" + *it,im->second);
-    }
-
-    // submit
-    stmt[statement::STMT_INSERT_LITREF]->step();
-  } else if (category == "SET") {
+  if (category == "SET") {
     //// Sets (SET) ////
 
     // check
@@ -393,6 +375,32 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
     // submit
     stmt[statement::STMT_INSERT_TERM]->step();
   }
+}
+
+// Insert a literature reference by manually giving the data
+void sqldb::insert_litref(const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT LITREF");
+  if (key.empty())
+    throw std::runtime_error("Empty key in INSERT LITREF");
+
+  // statement
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
+                  VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
+)SQL");
+
+  // bind
+  st.bind((char *) ":KEY",key,false);
+  std::forward_list<std::string> vlist = {"AUTHORS","TITLE","JOURNAL","VOLUME","PAGE","YEAR","DOI","DESCRIPTION"};
+
+  for (auto it = vlist.begin(); it != vlist.end(); ++it){
+    auto im = kmap.find(*it);
+    if (im != kmap.end())
+      st.bind(":" + *it,im->second);
+  }
+
+  // submit
+  st.step();
 }
 
 // Insert literature references into the database from a bibtex file
@@ -671,12 +679,34 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
 void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
+  // pick the table
+  std::string table;
+  if (category == "LITREF")
+    table = "Literature_refs";
+  else
+    throw std::runtime_error("Unknown keyword in DELETE");
+
+  // execute
+  if (tokens.empty()){
+    statement st(db,statement::STMT_CUSTOM,"DELETE FROM " + table + ";");
+    st.execute();
+  } else {
+    statement st_id(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE id = ?1;");
+    statement st_key(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE key = ?1;");
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      if (isinteger(*it)){
+        st_id.bind(1,*it);
+        st_id.step();
+      } else {
+        st_key.bind(1,*it);
+        st_key.step();
+      }
+    }
+  }
+
+/*
   // pick the statment
   statement::stmttype all, id, key;
-  if (category == "LITREF") {
-    all = statement::STMT_DELETE_LITREF_ALL;
-    id  = statement::STMT_DELETE_LITREF_WITH_ID;
-    key = statement::STMT_DELETE_LITREF_WITH_KEY;
   } else if (category == "SET") {
     all = statement::STMT_DELETE_SET_ALL;
     id  = statement::STMT_DELETE_SET_WITH_ID;
@@ -717,6 +747,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
       }
     }
   }
+*/
 }
 
 // List items from the database

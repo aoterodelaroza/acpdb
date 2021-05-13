@@ -4,6 +4,7 @@
 set(TESTDIRS
   001_simple        ## simple inputs and outputs
   002_globaldb      ## global database operations
+  003_insert        ## insert database operations
   )
 
 ## define the macro that will run the tests

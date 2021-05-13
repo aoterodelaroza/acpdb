@@ -375,12 +375,14 @@ int main(int argc, char *argv[]) {
           db.insert_litref_bibtex(tokens);
         } else if (category == "OLDDAT"){
           ts.insert_olddat(key,tokens);
-        } else if (category == "DAT"){
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          ts.insert_dat(kmap);
         } else {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          db.insert(category,key,kmap);
+          if (category == "LITREF")
+            db.insert_litref(key,kmap);
+          else if (category == "DAT")
+            ts.insert_dat(kmap);
+          else
+            db.insert(category,key,kmap);
         }
 
         //

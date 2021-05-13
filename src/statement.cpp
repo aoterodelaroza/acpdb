@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 //// List of SQL statements ////
 static const char *statement_text[statement::number_stmt_types] = {
-[statement::STMT_CREATE_DATABASE] = 
+[statement::STMT_CREATE_DATABASE] =
 R"SQL(
 CREATE TABLE Literature_refs (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -110,8 +110,8 @@ INSERT INTO Property_types (key,description)
               ('energy','The total energy of a molecule or crystal');
 )SQL",
 
-[statement::STMT_INIT_DATABASE] = 
-"PRAGMA foreign_keys = ON;", 
+[statement::STMT_INIT_DATABASE] =
+"PRAGMA foreign_keys = ON;",
 
 [statement::STMT_BEGIN_TRANSACTION] =
 "BEGIN TRANSACTION;",
@@ -122,31 +122,31 @@ INSERT INTO Property_types (key,description)
 [statement::STMT_ROLLBACK_TRANSACTION] =
 "ROLLBACK TRANSACTION;",
 
-[statement::STMT_CHECK_DATABASE] = 
+[statement::STMT_CHECK_DATABASE] =
 R"SQL(
 SELECT COUNT(type)
 FROM sqlite_master
 WHERE type='table' AND name='Literature_refs';
 )SQL",
 
-[statement::STMT_QUERY_PROPTYPE] = 
+[statement::STMT_QUERY_PROPTYPE] =
 R"SQL(
 SELECT id
 FROM Property_types
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_LITREF] = 
+[statement::STMT_LIST_LITREF] =
 R"SQL(
 SELECT id,key,authors,title,journal,volume,page,year,doi,description
 FROM Literature_refs
 ORDER BY id;
 )SQL",
 
-[statement::STMT_DELETE_LITREF_ALL] = 
+[statement::STMT_DELETE_LITREF_ALL] =
 "DELETE FROM Literature_refs;",
 
-[statement::STMT_DELETE_LITREF_WITH_KEY] = 
+[statement::STMT_DELETE_LITREF_WITH_KEY] =
 R"SQL(
 DELETE FROM Literature_refs
 WHERE key = ?1;
@@ -164,24 +164,24 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
        VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL",
 
-[statement::STMT_QUERY_LITREF] = 
+[statement::STMT_QUERY_LITREF] =
 R"SQL(
 SELECT id
 FROM Literature_refs
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_SET] = 
+[statement::STMT_LIST_SET] =
 R"SQL(
 SELECT id,key,property_type,litrefs,description
 FROM Sets
 ORDER BY id;
 )SQL",
 
-[statement::STMT_DELETE_SET_ALL] = 
+[statement::STMT_DELETE_SET_ALL] =
 "DELETE FROM Sets;",
 
-[statement::STMT_DELETE_SET_WITH_KEY] = 
+[statement::STMT_DELETE_SET_WITH_KEY] =
 R"SQL(
 DELETE FROM Sets
 WHERE key = ?1;
@@ -199,24 +199,24 @@ INSERT INTO Sets (key,property_type,litrefs,description)
        VALUES(:KEY,:PROPERTY_TYPE,:LITREFS,:DESCRIPTION);
 )SQL",
 
-[statement::STMT_QUERY_SET] = 
+[statement::STMT_QUERY_SET] =
 R"SQL(
 SELECT id
 FROM Sets
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_METHOD] = 
+[statement::STMT_LIST_METHOD] =
 R"SQL(
 SELECT id,key,gaussian_keyword,psi4_keyword,litrefs,description
 FROM Methods
 ORDER BY id;
 )SQL",
 
-[statement::STMT_DELETE_METHOD_ALL] = 
+[statement::STMT_DELETE_METHOD_ALL] =
 "DELETE FROM Methods;",
 
-[statement::STMT_DELETE_METHOD_WITH_KEY] = 
+[statement::STMT_DELETE_METHOD_WITH_KEY] =
 R"SQL(
 DELETE FROM Methods
 WHERE key = ?1;
@@ -234,24 +234,24 @@ INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
        VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
 )SQL",
 
-[statement::STMT_QUERY_METHOD] = 
+[statement::STMT_QUERY_METHOD] =
 R"SQL(
 SELECT id
 FROM Methods
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_STRUCTURE] = 
+[statement::STMT_LIST_STRUCTURE] =
 R"SQL(
 SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
 FROM Structures
 ORDER BY id;
 )SQL",
 
-[statement::STMT_DELETE_STRUCTURE_ALL] = 
+[statement::STMT_DELETE_STRUCTURE_ALL] =
 "DELETE FROM Structures;",
 
-[statement::STMT_DELETE_STRUCTURE_WITH_KEY] = 
+[statement::STMT_DELETE_STRUCTURE_WITH_KEY] =
 R"SQL(
 DELETE FROM Structures
 WHERE key = ?1;
@@ -269,24 +269,24 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
        VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL",
 
-[statement::STMT_QUERY_STRUCTURE] = 
+[statement::STMT_QUERY_STRUCTURE] =
 R"SQL(
 SELECT id
 FROM Structures
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_PROPERTY] = 
+[statement::STMT_LIST_PROPERTY] =
 R"SQL(
 SELECT id,key,property_type,setid,nstructures,structures,coefficients
 FROM Properties
 ORDER BY id;
 )SQL",
 
-[statement::STMT_DELETE_PROPERTY_ALL] = 
+[statement::STMT_DELETE_PROPERTY_ALL] =
 "DELETE FROM Properties;",
 
-[statement::STMT_DELETE_PROPERTY_WITH_KEY] = 
+[statement::STMT_DELETE_PROPERTY_WITH_KEY] =
 R"SQL(
 DELETE FROM Properties
 WHERE key = ?1;
@@ -304,20 +304,20 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL",
 
-[statement::STMT_QUERY_PROPERTY] = 
+[statement::STMT_QUERY_PROPERTY] =
 R"SQL(
 SELECT id
 FROM Properties
 WHERE key = ?1;
 )SQL",
 
-[statement::STMT_LIST_EVALUATION] = 
+[statement::STMT_LIST_EVALUATION] =
 R"SQL(
 SELECT methodid,propid,value
 FROM Evaluations;
 )SQL",
 
-[statement::STMT_DELETE_EVALUATION_ALL] = 
+[statement::STMT_DELETE_EVALUATION_ALL] =
 "DELETE FROM Evaluations;",
 
 [statement::STMT_INSERT_EVALUATION] =
@@ -326,13 +326,13 @@ INSERT INTO Evaluations (methodid,propid,value)
        VALUES(:METHODID,:PROPID,:VALUE)
 )SQL",
 
-[statement::STMT_LIST_TERM] = 
+[statement::STMT_LIST_TERM] =
 R"SQL(
 SELECT methodid,propid,atom,l,exponent,value,maxcoef
 FROM Terms;
 )SQL",
 
-[statement::STMT_DELETE_TERM_ALL] = 
+[statement::STMT_DELETE_TERM_ALL] =
 "DELETE FROM Terms;",
 
 [statement::STMT_INSERT_TERM] =
@@ -353,7 +353,7 @@ static void throw_exception(sqlite3 *db_){
 statement::statement(sqlite3 *db_/*= nullptr*/, const stmttype type_/*= STMT_CUSTOM*/, std::string text_/*= ""*/):
   prepared(false), db(db_), type(type_), stmt(nullptr), text(text_), has_bind(false) {
 
-  if (type_ != STMT_CUSTOM) 
+  if (type_ != STMT_CUSTOM)
     text = statement_text[type_];
 }
 
@@ -361,7 +361,7 @@ statement::statement(sqlite3 *db_/*= nullptr*/, const stmttype type_/*= STMT_CUS
 void statement::recycle(const stmttype type_/*= STMT_CUSTOM*/, std::string text_/* = ""*/){
   finalize();
   type = type_;
-  if (type_ != STMT_CUSTOM) 
+  if (type_ != STMT_CUSTOM)
     text = statement_text[type_];
   else
     text = text_;
@@ -392,13 +392,13 @@ int statement::execute(){
 int statement::step(){
   if (!db)
     throw std::runtime_error("A database file must be connected before stepping a statement");
-  
+
   if (!prepared)
     prepare();
 
   int rc = sqlite3_step(stmt);
 
-  if (rc == SQLITE_DONE) 
+  if (rc == SQLITE_DONE)
     reset();
   else if (rc != SQLITE_ROW)
     throw_exception(db);
@@ -409,7 +409,7 @@ int statement::step(){
 // Finalize the statement
 void statement::finalize(){
   if (db && stmt){
-    if (prepared && sqlite3_finalize(stmt)) 
+    if (prepared && sqlite3_finalize(stmt))
       throw_exception(db);
   }
   prepared = false;
@@ -445,4 +445,3 @@ void statement::prepare(){
 
   prepared = true;
 }
-

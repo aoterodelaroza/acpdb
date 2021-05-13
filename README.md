@@ -71,9 +71,25 @@ MEM mem.i
 Set the amount of available memory (in GB) in all the input writers.
 
 ~~~
+SOURCE file.s
+~~~
+Read and execute the commands in `file.s`. The current working
+directory is changed to the location of the file.
+
+~~~
 SYSTEM cmd.s
 ~~~
 Run the OS command `cmd.s`.
+
+~~~
+ECHO message.s
+~~~
+Write the message `message.s` to the output.
+
+~~~
+END
+~~~
+Terminate the run.
 
 ### Global Database Operations (Connect, Disconnect, Verify, Print)
 
@@ -105,4 +121,29 @@ about the number of evaluations and terms available for each
 combination of method and set, and about the completeness of the
 training set (may be slow).
 
+### Inserting and Deleting Data in the Database
 
+#### Literature References
+
+~~~
+INSERT LITREF ref.s
+  AUTHORS ...
+  TITLE ...
+  JOURNAL ...
+  VOLUME ...
+  PAGE ...
+  YEAR ...
+  DOI ...
+  DESCRIPTION ...
+END
+~~~
+Insert a new literature reference, with key `ref.s`. If a litref with
+the same key already exists in the database, replace it.
+
+~~~
+DELETE LITREF [key.s|key.id] [key.s|key.id] ...
+~~~
+Delete one or more literature references. If one or more references
+are given, delete only those references. The references can be given
+by their key or by their numerical ID. If no references are given,
+delete all the data in the table.

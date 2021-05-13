@@ -2,29 +2,10 @@
 
 * Keywords (database build)
 
-INSERT LITREF ref.s
-  AUTHORS ...
-  TITLE ...
-  JOURNAL ...
-  VOLUME ...
-  PAGE ...
-  YEAR ...
-  DOI ...
-  DESCRIPTION ...
-END
-
-  Insert a new literature reference into the database (table 1), with
-  key ref.s. The key and the DOI must be unique.
-
 INSERT LITREF BIBTEX bibfile.s
 
   Insert the literature references contained in bibtex file
   bibfile.s. Only entries of type article are inserted.
-
-DELETE LITREF [key.s|key.i]
-
-  Delete a literature reference using the reference key or id
-  number. If no key is given, delete all literature references.
 
 LIST LITREF [BIBTEX]
 
@@ -549,19 +530,6 @@ TRAINING LIST
 TRAINING CLEAR
 
   Clear the current training set.
-
-SOURCE file.s
-
-  Read and execute the commands in file.s . The current working
-  directory is changed to the location of the file.
-
-ECHO message.s
-
-  Echo the message.
-
-END
-
-  Terminate the run.
 
 * Database schema
 
