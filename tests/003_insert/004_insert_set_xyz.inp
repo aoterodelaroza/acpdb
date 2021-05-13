@@ -1,0 +1,15 @@
+## check: 004_insert_set_xyz.out -a1e-10
+## delete: 004_insert_set_xyz.db
+## labels: regression quick
+
+system rm -f 004_insert_set_xyz.db
+connect 004_insert_set_xyz.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+ xyz ../zz_source/s22_xyz/ch4_ch4.xyz ../zz_source/s22_xyz/ch4_ch4_1.xyz \
+     ../zz_source/s22_xyz/ch4_ch4_2.xyz
+end

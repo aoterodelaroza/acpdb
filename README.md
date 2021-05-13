@@ -176,8 +176,6 @@ can be given by its ID from Property_types, `prop.i`). One or more
 literature references associated with the set can be given by either
 their key or numerical id.
 
-------
-
 ~~~
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
@@ -185,19 +183,15 @@ INSERT SET name.s
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
   XYZ xyz1.s xyz2.s xyz3.s ...
   ... or ...
-  XYZ directory.s regexp.s
+  XYZ directory.s [regexp.s]
 END
 ~~~
-
-Add the set with name name.s in the same way as above. In addition,
+Add the set with name `name.s` in the same way as above. In addition,
 belonging to this set, add structures corresponding to XYZ files
-xyz1.s, etc. Alternatively, add all files in directory directory.s
-that match the regular expression regexp.s (awk style). If regexp.s is
-not given, add all xyz files.
-
-Note: there is no facility for inserting db files because din files
-are more efficient. In DB files, structures may be repeated in the
-database.
+`xyz1.s`, etc. Alternatively, add all files in directory `directory.s`
+that match the regular expression `regexp.s` (awk style). If
+`regexp.s` is not given, add all files in the directory with xyz
+extension.
 
 ------
 

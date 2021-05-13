@@ -183,43 +183,6 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
 
     // submit
     stmt[statement::STMT_INSERT_METHOD]->step();
-  } else if (category == "STRUCTURE") {
-    //// Structures (STRUCTURE) ////
-
-    // check
-    if (key.empty())
-      throw std::runtime_error("Empty key in INSERT " + category);
-
-    // read the molecular structure
-    structure s;
-    std::unordered_map<std::string,std::string>::const_iterator im;
-    if ((im = kmap.find("XYZ")) != kmap.end()){
-      if (s.readxyz(im->second))
-        throw std::runtime_error("Error reading xyz file: " + im->second);
-    } else {
-      throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
-    }
-
-    // bind
-    int nat = s.get_nat();
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":KEY",key,false);
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":NAT",nat,false);
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CHARGE",s.get_charge(),false);
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":MULTIPLICITY",s.get_mult(),false);
-    if ((im = kmap.find("SET")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
-    }
-    if (!s.ismolecule())
-      stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-    stmt[statement::STMT_INSERT_STRUCTURE]->bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-
-    // submit
-    stmt[statement::STMT_INSERT_STRUCTURE]->step();
   } else if (category == "PROPERTY") {
     //// Properties (PROPERTY) ////
 
@@ -413,6 +376,49 @@ INSERT INTO Sets (key,property_type,litrefs,description)
     insert_set_din(key, kmap);
 }
 
+// Insert a structure by manually giving the data
+void sqldb::insert_structure(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
+  if (key.empty())
+    throw std::runtime_error("Empty key in INSERT STRUCTURE");
+
+  // read the molecular structure
+  structure s;
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  if ((im = kmap.find("XYZ")) != kmap.end()){
+    if (s.readxyz(im->second))
+      throw std::runtime_error("Error reading xyz file: " + im->second);
+  } else {
+    throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
+  }
+
+  // bind
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+)SQL");
+
+  int nat = s.get_nat();
+  st.bind((char *) ":KEY",key,false);
+  st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
+  st.bind((char *) ":NAT",nat,false);
+  st.bind((char *) ":CHARGE",s.get_charge(),false);
+  st.bind((char *) ":MULTIPLICITY",s.get_mult(),false);
+  if ((im = kmap.find("SET")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":SETID",std::stoi(im->second));
+    else
+      st.bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
+  }
+  if (!s.ismolecule())
+    st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+  st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+
+  // submit
+  st.step();
+}
+
 // Insert literature references into the database from a bibtex file
 void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
@@ -532,7 +538,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
         smap.clear();
         smap["XYZ"] = file.path().string();
         smap["SET"] = key;
-        insert("STRUCTURE",skey,smap);
+        insert_structure(skey,smap);
       }
     }
 
@@ -546,7 +552,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
         smap.clear();
         smap["XYZ"] = *it;
         smap["SET"] = key;
-        insert("STRUCTURE",skey,smap);
+        insert_structure(skey,smap);
       } else {
         throw std::runtime_error("File or directory not found: " + *it);
       }
@@ -651,7 +657,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
           throw std::runtime_error("xyz file not found (" + filename + ") processing din file " + din);
         smap["XYZ"] = filename;
         smap["SET"] = key;
-        insert("STRUCTURE",skey,smap);
+        insert_structure(skey,smap);
         used[info[k].names[i]] = true;
       }
     }
