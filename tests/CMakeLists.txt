@@ -21,6 +21,11 @@ macro (runtests)
     endif()
     string(REGEX REPLACE "^ *#.*labels *:" "" label_list "${label_list}")
 
+    ## skip tests if we have no package unless they are self-contained
+    if (NOT "${TEST_PACKAGE_FOUND}" AND NOT ${label_list} MATCHES nodata)
+      continue()
+    endif()
+
     ## copy over the test to the build directory
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${test}.inp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
@@ -106,6 +111,12 @@ macro (runtests)
     endif()
   endforeach()
 endmacro()
+
+## create symlink for the test data (build)
+if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/zz_source/")
+  message(STATUS "Creating symlink for tests in ${CMAKE_CURRENT_BINARY_DIR}/")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_SOURCE_DIR}/zz_source" "${CMAKE_CURRENT_BINARY_DIR}/zz_source")
+endif()
 
 ## create symlink for the test data (build)
 if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dat/")

@@ -15,4 +15,6 @@ disconnect
 ## connect
 connect 001_connect.db
 
+## connect after connect
+connect ../zz_source/bsip2-small/bsip2.db
 

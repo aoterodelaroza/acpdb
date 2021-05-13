@@ -3,14 +3,14 @@
 * Keywords (database build)
 
 INSERT LITREF ref.s
-  AUTHORS ... 
+  AUTHORS ...
   TITLE ...
-  JOURNAL ... 
+  JOURNAL ...
   VOLUME ...
   PAGE ...
   YEAR ...
-  DOI ... 
-  DESCRIPTION ... 
+  DOI ...
+  DESCRIPTION ...
 END
 
   Insert a new literature reference into the database (table 1), with
@@ -48,7 +48,7 @@ INSERT SET name.s
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
 
-  XYZ xyz1.s xyz2.s xyz3.s ...  
+  XYZ xyz1.s xyz2.s xyz3.s ...
   ... or ...
   XYZ directory.s regexp.s
 END
@@ -68,7 +68,7 @@ INSERT SET name.s
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
 
-  DIN file.s 
+  DIN file.s
   [METHOD method.s]
   [DIRECTORY directory.s]
 END
@@ -93,7 +93,7 @@ INSERT METHOD name.s
   PSI4_KEYWORD ...
   LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
   DESCRIPTION ...
-END    
+END
 
   Insert a computational method with name name.s in the
   database. Details for Gaussian runs in GAUSSIAN_KEYWORD. Details for
@@ -104,7 +104,7 @@ END
   fields separated by ;. Each field has a=b, where a is the key and b
   is the value. The interpreted fields are as follows. For
   GAUSSIAN_KEYWORD:
- 
+
   - method: the method and basis set combination (e.g. b3lyp/6-31G*)
 
   - gbs: the gbs file for general basis set input.
@@ -198,7 +198,7 @@ END
   (energies in kcal/mol). If available, the
   maximum coefficient for this term can also be given (maxcoef.r).
 
-DELETE TERM 
+DELETE TERM
 
   Delete all terms.
 
@@ -227,7 +227,7 @@ ATOM|ATOMS [at1.s l1.i at2.s l2.i ... ]
   angular momentum channel for each. If no atoms are given, clear
   the atom list.
 
-EXP|EXPONENT|EXPONENTS exp1.r exp2.r ... 
+EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
 
   List of exponents.
 
@@ -283,7 +283,7 @@ END
     value of each set.
 
   - NORM_NITEM: divide all weights by the number of items in each
-    set. 
+    set.
 
   - NORM_NITEMSQRT: divide all weights by the square root of the
     number of items in each set.
@@ -325,7 +325,7 @@ ACP name.s
  atom.s l.s exp.r coef.r
  ...
 END
-  
+
   Define a named ACP from file file.acp (in Gaussian-style
   format). Alternatively, give all ACP terms one by one.
 
@@ -337,7 +337,7 @@ WRITE ACP name.s [file.s]
 ACPINFO name.s
 
   Print information about the given ACP, such as the 1-norm, 2-norm,
-  etc. 
+  etc.
 
 ACPSPLIT name.s template.s [COEF value.r]
 
@@ -375,7 +375,7 @@ END
   files. If no METHOD is given, write structure files (xyz format for
   molecules). Otherwise, write input files appropriate for evaluating
   that method according to the database. If ACP is present, use the
-  ACP in the input files (no effect if writing structure files). 
+  ACP in the input files (no effect if writing structure files).
 
   If SET is not present, write all the structures in the training
   set. If no SET is present and the training set has not been defined,
@@ -439,7 +439,7 @@ END
   Write the structures in the given set to input files for the
   calculation of the ACP terms in the training set. If no METHOD is
   given, use the training set empty.
-  
+
   If SET is not present, write all the structures in the training
   set. If SET is present, write the training set structures under that
   alias.
@@ -662,4 +662,3 @@ END
   key TEXT PRIMARY KEY,
   size INTEGER NOT NULL,
   training_set BLOB NOT NULL
-
