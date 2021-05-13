@@ -1,0 +1,23 @@
+* SYSTEM: rm -f 002_set.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 002_set.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (LITREF)
+
+* INSERT: insert data into the database (SET)
+
+* PRINT: print the contents of the database 
+
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| bsip1 boys1970 | A description.|
+
+* DELETE: delete data from the database (SET)
+
+* PRINT: print the contents of the database 
+
+| id| key| property_type| litrefs| description|
+

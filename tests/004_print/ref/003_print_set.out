@@ -1,0 +1,46 @@
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file ../zz_source/bsip2-small/bsip2.db
+Connected database is sane
+
+* PRINT: print the contents of the database 
+
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| s22 s225 | Non-covalent binding energies, small dimers, 5 intermolecular distances.|
+| 2| s66x8| 1| s66 s668 s668b | Non-covalent binding energies, small dimers, 8 intermolecular distances.|
+| 3| nci-f-set| 1| bsip2 | Non-covalent binding energies, small dimers with F, 8 intermolecular distances.|
+| 4| nci-p-set| 1| bsip2 | Non-covalent binding energies, small dimers with P, 8 intermolecular distances.|
+| 5| nci-s-set| 1| bsip2 | Non-covalent binding energies, small dimers with S, 8 intermolecular distances.|
+| 6| nci-cl-set| 1| bsip2 | Non-covalent binding energies, small dimers with Cl, 8 intermolecular distances.|
+| 7| kb49| 1| kb49a kb49b | Non-covalent binding energies, small dimers.|
+| 8| water| 1| water | Binding energies of water clusters.|
+| 9| a24| 1| a24 | Non-covalent binding energies, small dimers.|
+| 10| p26| 1| p26 | Conformational energies of dipeptides and tripeptides with aromatic side-chains.|
+| 11| hsg| 1| hsg0 s22b | Interaction energies of small dimers from the active site of the HIV-II protease/indinavir complex. Some dimers are charged.|
+| 12| ionichb| 1| ionichb | Binding energies of small hydrogen-bonded dimers, at least one of which is charged.|
+| 13| adim6| 1| adim6 gmtkn30 | Binding energies of n-alkane dimers, with monomers up to C7H16.|
+| 14| sconf| 1| sconf gmtkn30 | Conformational energies of carbohydrates.|
+| 15| x40x10| 1| x40 | Interaction energies of 40 halogenated dimers; 10 intermolecular distances per dimer.|
+| 16| sulfur_x8| 1| s8 | Interaction energies of 14 S-containing dimers; 8 intermolecular distances per dimer.|
+| 17| aconf| 1| aconf gmtkn30 | Conformational energies of alkanes.|
+| 18| bhperi| 1| bhperi1 bhperi2 bhperi3 bhperi4 gmtkn30 | Barrier heights of pericyclic reactions.|
+| 19| bsr36| 1| bsr36 gmtkn30 | Separation energies of alkanes.|
+| 20| darc| 1| darc gmtkn30 | Diels-Alder reaction energies.|
+| 21| bbi| 1| burns2017 | Binding energies of small dimers from protein backbones.|
+| 22| ssi| 1| burns2017 | Binding energies of small dimers from protein sidechains. Some dimers are charged.|
+| 23| achc| 1| parker2015 smith2016 | Binding energies of adenine/cytosine nucleobase dimers.|
+| 24| hbc6| 1| thanthiriwatte2010 marshall2011 smith2016 | Interaction energies of 6 double-hydrogen-bonded dimers; ~20 intermolecular distances per dimer.|
+| 25| nbc10ext| 1| marshall2011 burns2011 smith2016 | Interaction energies of 10 dispersion-bound dimers; ~20 intermolecular distances per dimer.|
+| 26| bauza| 1| bauza2013 halogen | Halogen-bonded dimers. Some dimers are charged.|
+| 27| bde03| 1| johnson2003 | Bond dissociation energies.|
+| 28| nci-b-set| 1| bsip2 | Non-covalent binding energies, small dimers with B, 8 intermolecular distances.|
+| 29| nci-si-set| 1| bsip2 | Non-covalent binding energies, small dimers with Si, 8 intermolecular distances.|
+| 30| bconf| 1| kozuch2013 | Conformational energies in 1,4-butanediol.|
+| 31| cyconf| 1| wilke2009 gmtkn30 | Conformational energies of cysteine.|
+| 32| bh76| 1| zhao2005 zhao2005b gmtkn30 gmtkn55 | Barrier heights of reactions between small molecules.|
+| 33| iso34| 1| grimme2007 gmtkn30 | Isomerization energies of organic molecules.|
+| 34| pa26| 1| parthiban2001 gmtkn55 | Proton affinities.|
+| 35| w4-11| 1| karton2011 gmtkn55 | Atomization energies.|
+| 36| bsip2-moldef| 1| bsip2 | Molecular deformation energies.|
+

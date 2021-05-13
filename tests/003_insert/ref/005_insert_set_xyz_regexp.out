@@ -1,0 +1,12 @@
+* SYSTEM: rm -f 005_insert_set_xyz_regexp.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 005_insert_set_xyz_regexp.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (LITREF)
+
+* INSERT: insert data into the database (SET)
+

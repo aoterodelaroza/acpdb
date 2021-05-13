@@ -271,6 +271,12 @@ int main(int argc, char *argv[]) {
         }
         *os << std::endl;
 
+        //// DELETE
+      } else if (keyw == "DELETE") {
+        std::string category = popstring(tokens,true);
+        *os << "* DELETE: delete data from the database (" << category << ")" << std::endl << std::endl;
+        db.erase(category,tokens);
+
         ///////////////////////////////////////////////////
 
         //
@@ -404,11 +410,6 @@ int main(int argc, char *argv[]) {
         //
       } else if (keyw == "DESCRIBE") {
         ts.describe(*os,false,true);
-
-        //
-      } else if (keyw == "DELETE") {
-        std::string category = popstring(tokens,true);
-        db.erase(category,tokens);
 
         //
       } else if (keyw == "TRAINING") {

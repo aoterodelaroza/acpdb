@@ -1,0 +1,14 @@
+* SYSTEM: rm -f 006_insert_din.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 006_insert_din.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (METHOD)
+
+* INSERT: insert data into the database (LITREF)
+
+* INSERT: insert data into the database (SET)
+

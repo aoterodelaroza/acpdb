@@ -1,0 +1,12 @@
+## check: 001_litref.out -a1e-10
+## delete: 001_litref.db
+## labels: regression quick
+
+system rm -f 001_litref.db
+connect 001_litref.db
+insert litref bibtex ../zz_source/bsip2.bib
+delete litref goerigk2013 galano2006
+print litref
+delete litref
+print litref
+

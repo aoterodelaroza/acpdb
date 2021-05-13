@@ -125,14 +125,15 @@ about the number of evaluations and terms available for each
 combination of method and set, and about the completeness of the
 training set (may be slow).
 
-#### Literature References
+#### Individual Tables
 
 ~~~
 PRINT LITREF [BIBTEX]
+PRINT SET
 ~~~
-Print the literature references in the database. If the BIBTEX
-keyword is used, write the list of literature references in bibtex
-format.
+Print the individual tables in the database. In the case of the
+literature references (LITREF), if the BIBTEX keyword is used, write
+the list of literature references in bibtex format.
 
 ### Inserting Data
 
@@ -167,7 +168,7 @@ compiling with the btparse library.
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
-  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
+  LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
 END
 ~~~
 Insert a set with name `name.s` in the database with the given
@@ -180,8 +181,8 @@ their key or numerical id.
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
-  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
-  XYZ xyz1.s xyz2.s xyz3.s ...
+  LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
+  XYZ xyz1.s [xyz2.s] [xyz3.s] ...
   ... or ...
   XYZ directory.s [regexp.s]
 END
@@ -193,36 +194,30 @@ that match the regular expression `regexp.s` (awk style). If
 `regexp.s` is not given, add all files in the directory with xyz
 extension.
 
-------
-
+~~~
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
-  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
-
+  LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
   DIN file.s
   [METHOD method.s]
   [DIRECTORY directory.s]
 END
-
-Add the set with name name.s in the same way as above. In addition,
+~~~
+Add the set with name `name.s` in the same way as above. In addition,
 belonging to this set, add the structures indicated in the din
-file. The xyz files are found in directory directory.s. If no
+file. The xyz files are found in directory `directory.s`. If no
 directory is given, use the current directory. Also, add the
 corresponding properties and the corresponding evaluations with method
-method.s. If no METHOD is given, the evaluations are not inserted.
-
-
+`method.s`. If no METHOD is given, the evaluations are not inserted.
 
 ### Deleting Data
 
-#### Literature References
-
 ~~~
 DELETE LITREF [key.s|key.id] [key.s|key.id] ...
+DELETE SET [set.s|set.i]
 ~~~
-Delete one or more literature references. If one or more references
-are given, delete only those references. The references can be given
-by their key or by their numerical ID. If no references are given,
-delete all the data in the table.
-
+Delete one or more entries from the database tables. In the case of
+literature references (LITREF), more than one entry can be given, and
+you can delete all the references by omitting the key. The entries
+references can be given by their key or by their numerical ID.

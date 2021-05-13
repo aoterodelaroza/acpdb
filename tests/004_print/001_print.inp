@@ -1,5 +1,4 @@
 ## check: 001_print.out -a1e-10
-## delete: 001_print.db
 ## labels: regression
 
 connect ../zz_source/bsip2-small/bsip2.db

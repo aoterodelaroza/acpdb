@@ -1,0 +1,19 @@
+## check: 006_insert_din.out -a1e-10
+## delete: 006_insert_din.db
+## labels: regression quick
+
+system rm -f 006_insert_din.db
+connect 006_insert_din.db
+
+INSERT METHOD test
+END
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end

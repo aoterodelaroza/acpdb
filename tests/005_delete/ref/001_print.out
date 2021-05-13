@@ -1,0 +1,299 @@
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file ../zz_source/bsip2-small/bsip2.db
+Connected database is sane
+
+* PRINT: print the contents of the database 
+
+# Table of property types
+| id | key | description |
+| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | energy | The total energy of a molecule or crystal |
+
+# Number of literature references: 234
+
+# Table of methods
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+| 1| B3LYP/aug-cc-pVQZ| method=B3LYP/aug-cc-pVQZ| | b3 lyp| B3LYP with an almost-complete basis set for molecular calculations. Used in the BSIP2 project.|
+| 2| reference| | | | Something to aspire to.|
+| 3| B3LYP/631g| method=B3LYP/6-31G| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+| 4| B3LYP/minis| method=B3LYP gen;gbs=minis.gbs| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+
+# Table of sets
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| s22 s225 | Non-covalent binding energies, small dimers, 5 intermolecular distances.|
+| 2| s66x8| 1| s66 s668 s668b | Non-covalent binding energies, small dimers, 8 intermolecular distances.|
+| 3| nci-f-set| 1| bsip2 | Non-covalent binding energies, small dimers with F, 8 intermolecular distances.|
+| 4| nci-p-set| 1| bsip2 | Non-covalent binding energies, small dimers with P, 8 intermolecular distances.|
+| 5| nci-s-set| 1| bsip2 | Non-covalent binding energies, small dimers with S, 8 intermolecular distances.|
+| 6| nci-cl-set| 1| bsip2 | Non-covalent binding energies, small dimers with Cl, 8 intermolecular distances.|
+| 7| kb49| 1| kb49a kb49b | Non-covalent binding energies, small dimers.|
+| 8| water| 1| water | Binding energies of water clusters.|
+| 9| a24| 1| a24 | Non-covalent binding energies, small dimers.|
+| 10| p26| 1| p26 | Conformational energies of dipeptides and tripeptides with aromatic side-chains.|
+| 11| hsg| 1| hsg0 s22b | Interaction energies of small dimers from the active site of the HIV-II protease/indinavir complex. Some dimers are charged.|
+| 12| ionichb| 1| ionichb | Binding energies of small hydrogen-bonded dimers, at least one of which is charged.|
+| 13| adim6| 1| adim6 gmtkn30 | Binding energies of n-alkane dimers, with monomers up to C7H16.|
+| 14| sconf| 1| sconf gmtkn30 | Conformational energies of carbohydrates.|
+| 15| x40x10| 1| x40 | Interaction energies of 40 halogenated dimers; 10 intermolecular distances per dimer.|
+| 16| sulfur_x8| 1| s8 | Interaction energies of 14 S-containing dimers; 8 intermolecular distances per dimer.|
+| 17| aconf| 1| aconf gmtkn30 | Conformational energies of alkanes.|
+| 18| bhperi| 1| bhperi1 bhperi2 bhperi3 bhperi4 gmtkn30 | Barrier heights of pericyclic reactions.|
+| 19| bsr36| 1| bsr36 gmtkn30 | Separation energies of alkanes.|
+| 20| darc| 1| darc gmtkn30 | Diels-Alder reaction energies.|
+| 21| bbi| 1| burns2017 | Binding energies of small dimers from protein backbones.|
+| 22| ssi| 1| burns2017 | Binding energies of small dimers from protein sidechains. Some dimers are charged.|
+| 23| achc| 1| parker2015 smith2016 | Binding energies of adenine/cytosine nucleobase dimers.|
+| 24| hbc6| 1| thanthiriwatte2010 marshall2011 smith2016 | Interaction energies of 6 double-hydrogen-bonded dimers; ~20 intermolecular distances per dimer.|
+| 25| nbc10ext| 1| marshall2011 burns2011 smith2016 | Interaction energies of 10 dispersion-bound dimers; ~20 intermolecular distances per dimer.|
+| 26| bauza| 1| bauza2013 halogen | Halogen-bonded dimers. Some dimers are charged.|
+| 27| bde03| 1| johnson2003 | Bond dissociation energies.|
+| 28| nci-b-set| 1| bsip2 | Non-covalent binding energies, small dimers with B, 8 intermolecular distances.|
+| 29| nci-si-set| 1| bsip2 | Non-covalent binding energies, small dimers with Si, 8 intermolecular distances.|
+| 30| bconf| 1| kozuch2013 | Conformational energies in 1,4-butanediol.|
+| 31| cyconf| 1| wilke2009 gmtkn30 | Conformational energies of cysteine.|
+| 32| bh76| 1| zhao2005 zhao2005b gmtkn30 gmtkn55 | Barrier heights of reactions between small molecules.|
+| 33| iso34| 1| grimme2007 gmtkn30 | Isomerization energies of organic molecules.|
+| 34| pa26| 1| parthiban2001 gmtkn55 | Proton affinities.|
+| 35| w4-11| 1| karton2011 gmtkn55 | Atomization energies.|
+| 36| bsip2-moldef| 1| bsip2 | Molecular deformation energies.|
+
+# Number of properties and structures in each set
+| id | key | properties | structures |
+| 1 | s22x5 | 110 | 154 |
+| 2 | s66x8 | 528 | 660 |
+| 3 | nci-f-set | 160 | 200 |
+| 4 | nci-p-set | 120 | 150 |
+| 5 | nci-s-set | 144 | 180 |
+| 6 | nci-cl-set | 160 | 200 |
+| 7 | kb49 | 49 | 147 |
+| 8 | water | 38 | 39 |
+| 9 | a24 | 24 | 72 |
+| 10 | p26 | 69 | 74 |
+| 11 | hsg | 21 | 63 |
+| 12 | ionichb | 120 | 150 |
+| 13 | adim6 | 6 | 12 |
+| 14 | sconf | 17 | 19 |
+| 15 | x40x10 | 400 | 1200 |
+| 16 | sulfur_x8 | 112 | 139 |
+| 17 | aconf | 15 | 18 |
+| 18 | bhperi | 26 | 52 |
+| 19 | bsr36 | 36 | 38 |
+| 20 | darc | 14 | 22 |
+| 21 | bbi | 100 | 300 |
+| 22 | ssi | 3380 | 10140 |
+| 23 | achc | 54 | 162 |
+| 24 | hbc6 | 118 | 354 |
+| 25 | nbc10ext | 195 | 585 |
+| 26 | bauza | 30 | 90 |
+| 27 | bde03 | 76 | 107 |
+| 28 | nci-b-set | 160 | 200 |
+| 29 | nci-si-set | 152 | 190 |
+| 30 | bconf | 64 | 65 |
+| 31 | cyconf | 10 | 11 |
+| 32 | bh76 | 72 | 79 |
+| 33 | iso34 | 34 | 63 |
+| 34 | pa26 | 26 | 52 |
+| 35 | w4-11 | 140 | 152 |
+| 36 | bsip2-moldef | 9372 | 10934 |
+
+## Description of the training set
+# The TRAINING SET is NOT DEFINED
+--- No atoms found (ATOM) ---
+--- No angular momenta found (LMAX) ---
+--- No exponents found (EXP) ---
+--- No subsets found (SUBSET) ---
+--- No weights found (W) ---
+--- No empty method found (EMPTY) ---
+--- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
+| BSIP2/631g |
+| BSIP2/minis |
+
+* PRINT: print the contents of the database 
+
+# Table of property types
+| id | key | description |
+| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | energy | The total energy of a molecule or crystal |
+
+# Number of literature references: 234
+
+# Table of methods
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+| 1| B3LYP/aug-cc-pVQZ| method=B3LYP/aug-cc-pVQZ| | b3 lyp| B3LYP with an almost-complete basis set for molecular calculations. Used in the BSIP2 project.|
+| 2| reference| | | | Something to aspire to.|
+| 3| B3LYP/631g| method=B3LYP/6-31G| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+| 4| B3LYP/minis| method=B3LYP gen;gbs=minis.gbs| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+
+# Table of sets
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| s22 s225 | Non-covalent binding energies, small dimers, 5 intermolecular distances.|
+| 2| s66x8| 1| s66 s668 s668b | Non-covalent binding energies, small dimers, 8 intermolecular distances.|
+| 3| nci-f-set| 1| bsip2 | Non-covalent binding energies, small dimers with F, 8 intermolecular distances.|
+| 4| nci-p-set| 1| bsip2 | Non-covalent binding energies, small dimers with P, 8 intermolecular distances.|
+| 5| nci-s-set| 1| bsip2 | Non-covalent binding energies, small dimers with S, 8 intermolecular distances.|
+| 6| nci-cl-set| 1| bsip2 | Non-covalent binding energies, small dimers with Cl, 8 intermolecular distances.|
+| 7| kb49| 1| kb49a kb49b | Non-covalent binding energies, small dimers.|
+| 8| water| 1| water | Binding energies of water clusters.|
+| 9| a24| 1| a24 | Non-covalent binding energies, small dimers.|
+| 10| p26| 1| p26 | Conformational energies of dipeptides and tripeptides with aromatic side-chains.|
+| 11| hsg| 1| hsg0 s22b | Interaction energies of small dimers from the active site of the HIV-II protease/indinavir complex. Some dimers are charged.|
+| 12| ionichb| 1| ionichb | Binding energies of small hydrogen-bonded dimers, at least one of which is charged.|
+| 13| adim6| 1| adim6 gmtkn30 | Binding energies of n-alkane dimers, with monomers up to C7H16.|
+| 14| sconf| 1| sconf gmtkn30 | Conformational energies of carbohydrates.|
+| 15| x40x10| 1| x40 | Interaction energies of 40 halogenated dimers; 10 intermolecular distances per dimer.|
+| 16| sulfur_x8| 1| s8 | Interaction energies of 14 S-containing dimers; 8 intermolecular distances per dimer.|
+| 17| aconf| 1| aconf gmtkn30 | Conformational energies of alkanes.|
+| 18| bhperi| 1| bhperi1 bhperi2 bhperi3 bhperi4 gmtkn30 | Barrier heights of pericyclic reactions.|
+| 19| bsr36| 1| bsr36 gmtkn30 | Separation energies of alkanes.|
+| 20| darc| 1| darc gmtkn30 | Diels-Alder reaction energies.|
+| 21| bbi| 1| burns2017 | Binding energies of small dimers from protein backbones.|
+| 22| ssi| 1| burns2017 | Binding energies of small dimers from protein sidechains. Some dimers are charged.|
+| 23| achc| 1| parker2015 smith2016 | Binding energies of adenine/cytosine nucleobase dimers.|
+| 24| hbc6| 1| thanthiriwatte2010 marshall2011 smith2016 | Interaction energies of 6 double-hydrogen-bonded dimers; ~20 intermolecular distances per dimer.|
+| 25| nbc10ext| 1| marshall2011 burns2011 smith2016 | Interaction energies of 10 dispersion-bound dimers; ~20 intermolecular distances per dimer.|
+| 26| bauza| 1| bauza2013 halogen | Halogen-bonded dimers. Some dimers are charged.|
+| 27| bde03| 1| johnson2003 | Bond dissociation energies.|
+| 28| nci-b-set| 1| bsip2 | Non-covalent binding energies, small dimers with B, 8 intermolecular distances.|
+| 29| nci-si-set| 1| bsip2 | Non-covalent binding energies, small dimers with Si, 8 intermolecular distances.|
+| 30| bconf| 1| kozuch2013 | Conformational energies in 1,4-butanediol.|
+| 31| cyconf| 1| wilke2009 gmtkn30 | Conformational energies of cysteine.|
+| 32| bh76| 1| zhao2005 zhao2005b gmtkn30 gmtkn55 | Barrier heights of reactions between small molecules.|
+| 33| iso34| 1| grimme2007 gmtkn30 | Isomerization energies of organic molecules.|
+| 34| pa26| 1| parthiban2001 gmtkn55 | Proton affinities.|
+| 35| w4-11| 1| karton2011 gmtkn55 | Atomization energies.|
+| 36| bsip2-moldef| 1| bsip2 | Molecular deformation energies.|
+
+# Number of properties and structures in each set
+| id | key | properties | structures |
+| 1 | s22x5 | 110 | 154 |
+| 2 | s66x8 | 528 | 660 |
+| 3 | nci-f-set | 160 | 200 |
+| 4 | nci-p-set | 120 | 150 |
+| 5 | nci-s-set | 144 | 180 |
+| 6 | nci-cl-set | 160 | 200 |
+| 7 | kb49 | 49 | 147 |
+| 8 | water | 38 | 39 |
+| 9 | a24 | 24 | 72 |
+| 10 | p26 | 69 | 74 |
+| 11 | hsg | 21 | 63 |
+| 12 | ionichb | 120 | 150 |
+| 13 | adim6 | 6 | 12 |
+| 14 | sconf | 17 | 19 |
+| 15 | x40x10 | 400 | 1200 |
+| 16 | sulfur_x8 | 112 | 139 |
+| 17 | aconf | 15 | 18 |
+| 18 | bhperi | 26 | 52 |
+| 19 | bsr36 | 36 | 38 |
+| 20 | darc | 14 | 22 |
+| 21 | bbi | 100 | 300 |
+| 22 | ssi | 3380 | 10140 |
+| 23 | achc | 54 | 162 |
+| 24 | hbc6 | 118 | 354 |
+| 25 | nbc10ext | 195 | 585 |
+| 26 | bauza | 30 | 90 |
+| 27 | bde03 | 76 | 107 |
+| 28 | nci-b-set | 160 | 200 |
+| 29 | nci-si-set | 152 | 190 |
+| 30 | bconf | 64 | 65 |
+| 31 | cyconf | 10 | 11 |
+| 32 | bh76 | 72 | 79 |
+| 33 | iso34 | 34 | 63 |
+| 34 | pa26 | 26 | 52 |
+| 35 | w4-11 | 140 | 152 |
+| 36 | bsip2-moldef | 9372 | 10934 |
+
+# Evaluations and terms for each combination of set & method (only non-zero entries shown)
+| set-id | set-key | method-id | method-key | #evaluations | #terms |
+| 1 | s22x5 | 3 | B3LYP/631g |110 | 82940 |
+| 1 | s22x5 | 4 | B3LYP/minis |110 | 82940 |
+| 2 | s66x8 | 3 | B3LYP/631g |528 | 398112 |
+| 2 | s66x8 | 4 | B3LYP/minis |528 | 398112 |
+| 3 | nci-f-set | 3 | B3LYP/631g |160 | 120640 |
+| 3 | nci-f-set | 4 | B3LYP/minis |160 | 120640 |
+| 4 | nci-p-set | 3 | B3LYP/631g |120 | 90480 |
+| 4 | nci-p-set | 4 | B3LYP/minis |120 | 90480 |
+| 5 | nci-s-set | 3 | B3LYP/631g |144 | 108576 |
+| 5 | nci-s-set | 4 | B3LYP/minis |144 | 108576 |
+| 6 | nci-cl-set | 3 | B3LYP/631g |160 | 120640 |
+| 6 | nci-cl-set | 4 | B3LYP/minis |160 | 120640 |
+| 7 | kb49 | 3 | B3LYP/631g |49 | 36946 |
+| 7 | kb49 | 4 | B3LYP/minis |49 | 36946 |
+| 8 | water | 3 | B3LYP/631g |38 | 28652 |
+| 8 | water | 4 | B3LYP/minis |38 | 28652 |
+| 9 | a24 | 3 | B3LYP/631g |22 | 16588 |
+| 9 | a24 | 4 | B3LYP/minis |22 | 16588 |
+| 10 | p26 | 3 | B3LYP/631g |69 | 52026 |
+| 10 | p26 | 4 | B3LYP/minis |69 | 52026 |
+| 11 | hsg | 3 | B3LYP/631g |21 | 15834 |
+| 11 | hsg | 4 | B3LYP/minis |21 | 15834 |
+| 12 | ionichb | 3 | B3LYP/631g |120 | 90480 |
+| 12 | ionichb | 4 | B3LYP/minis |120 | 90480 |
+| 13 | adim6 | 3 | B3LYP/631g |6 | 4524 |
+| 13 | adim6 | 4 | B3LYP/minis |6 | 4524 |
+| 14 | sconf | 3 | B3LYP/631g |17 | 12818 |
+| 14 | sconf | 4 | B3LYP/minis |17 | 12818 |
+| 15 | x40x10 | 3 | B3LYP/631g |220 | 165880 |
+| 15 | x40x10 | 4 | B3LYP/minis |220 | 165880 |
+| 16 | sulfur_x8 | 3 | B3LYP/631g |112 | 84448 |
+| 16 | sulfur_x8 | 4 | B3LYP/minis |112 | 84448 |
+| 17 | aconf | 3 | B3LYP/631g |15 | 11310 |
+| 17 | aconf | 4 | B3LYP/minis |15 | 11310 |
+| 18 | bhperi | 3 | B3LYP/631g |26 | 19604 |
+| 18 | bhperi | 4 | B3LYP/minis |26 | 19604 |
+| 19 | bsr36 | 3 | B3LYP/631g |36 | 27144 |
+| 19 | bsr36 | 4 | B3LYP/minis |36 | 27144 |
+| 20 | darc | 3 | B3LYP/631g |14 | 10556 |
+| 20 | darc | 4 | B3LYP/minis |14 | 10556 |
+| 21 | bbi | 3 | B3LYP/631g |100 | 75400 |
+| 21 | bbi | 4 | B3LYP/minis |100 | 75400 |
+| 22 | ssi | 3 | B3LYP/631g |3380 | 2548520 |
+| 22 | ssi | 4 | B3LYP/minis |3380 | 2548520 |
+| 23 | achc | 3 | B3LYP/631g |54 | 40716 |
+| 23 | achc | 4 | B3LYP/minis |54 | 40716 |
+| 24 | hbc6 | 3 | B3LYP/631g |118 | 88972 |
+| 24 | hbc6 | 4 | B3LYP/minis |118 | 88972 |
+| 25 | nbc10ext | 3 | B3LYP/631g |195 | 147030 |
+| 25 | nbc10ext | 4 | B3LYP/minis |195 | 147030 |
+| 26 | bauza | 3 | B3LYP/631g |10 | 7540 |
+| 26 | bauza | 4 | B3LYP/minis |10 | 7540 |
+| 27 | bde03 | 3 | B3LYP/631g |73 | 55042 |
+| 27 | bde03 | 4 | B3LYP/minis |73 | 55042 |
+| 28 | nci-b-set | 3 | B3LYP/631g |160 | 120640 |
+| 28 | nci-b-set | 4 | B3LYP/minis |160 | 120640 |
+| 29 | nci-si-set | 3 | B3LYP/631g |152 | 114608 |
+| 29 | nci-si-set | 4 | B3LYP/minis |152 | 114608 |
+| 30 | bconf | 3 | B3LYP/631g |64 | 48256 |
+| 30 | bconf | 4 | B3LYP/minis |64 | 48256 |
+| 31 | cyconf | 3 | B3LYP/631g |10 | 7540 |
+| 31 | cyconf | 4 | B3LYP/minis |10 | 7540 |
+| 32 | bh76 | 3 | B3LYP/631g |72 | 54288 |
+| 32 | bh76 | 4 | B3LYP/minis |72 | 54288 |
+| 33 | iso34 | 3 | B3LYP/631g |34 | 25636 |
+| 33 | iso34 | 4 | B3LYP/minis |34 | 25636 |
+| 34 | pa26 | 3 | B3LYP/631g |26 | 19604 |
+| 34 | pa26 | 4 | B3LYP/minis |26 | 19604 |
+| 35 | w4-11 | 3 | B3LYP/631g |131 | 98774 |
+| 35 | w4-11 | 4 | B3LYP/minis |131 | 98774 |
+| 36 | bsip2-moldef | 3 | B3LYP/631g |9372 | 7066488 |
+| 36 | bsip2-moldef | 4 | B3LYP/minis |9372 | 7066488 |
+
+## Description of the training set
+# The TRAINING SET is NOT DEFINED
+--- No atoms found (ATOM) ---
+--- No angular momenta found (LMAX) ---
+--- No exponents found (EXP) ---
+--- No subsets found (SUBSET) ---
+--- No weights found (W) ---
+--- No empty method found (EMPTY) ---
+--- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
+| BSIP2/631g |
+| BSIP2/minis |
+

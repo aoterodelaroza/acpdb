@@ -1,0 +1,2176 @@
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file ../zz_source/bsip2-small/bsip2.db
+Connected database is sane
+
+* PRINT: print the contents of the database 
+
+| id| key| authors| title| journal| volume| page| year| doi| description|
+| 1| bsip1| Otero-De-La-Roza, A and DiLabio, Gino A| Transferable atom-centered potentials for the correction of basis set incompleteness errors in density-functional theory| J. Chem. Theory Comput.| 13| 3505--3524| 2017| | |
+| 2| boys1970| Boys, S F and Bernardi, F| The calculation of small molecular interactions by the differences of separate total energies. Some procedures with reduced errors| Mol. Phys.| 19| 553--566| 1970| | |
+| 3| s30l| Sure, Rebecca and Grimme, Stefan| Comprehensive benchmark of association (free) energies of realistic host--guest complexes| J. Chem. Theory Comput.| 11| 3785--3801| 2015| | |
+| 4| s12lb| Ambrosetti, Alberto and Alf\`{e}, Dario and DiStasio Jr, Robert A and Tkatchenko, Alexandre| Hard Numbers for Large Molecules: Toward Exact Energetics for Supramolecular Systems| J. Phys. Chem. Lett.| 5| 849--855| 2014| | |
+| 5| s12la| Grimme, S.| Supramolecular binding thermodynamics by dispersion-corrected density functional theory| Chem. Eur. J.| 18| 9955--9964| 2012| | |
+| 6| risthaus2013| Risthaus, Tobias and Grimme, Stefan| Benchmarking of London dispersion-accounting density functional theory methods on very large molecular complexes| J. Chem. Theory Comput.| 9| 1580--1591| 2013| | |
+| 7| xdmlarge| {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Predicting energetics of supramolecular systems using the XDM dispersion model| J. Chem. Theory Comput.| 11| 4033--4040| 2015| 10.1021/acs.jctc.5b00044| |
+| 8| johnson2009| Johnson, E. R. and Mackie, I. D. and DiLabio, G. A.| {Dispersion Interactions in Density-Functional Theory}| J. Phys. Org. Chem.| 22| 1127| 2009| | |
+| 9| burns2017| Burns, Lori A and Faver, John C and Zheng, Zheng and Marshall, Michael S and Smith, Daniel GA and Vanommeslaeghe, Kenno and MacKerell Jr, Alexander D and Merz Jr, Kenneth M and Sherrill, C David| The BioFragment Database (BFDb): An open-data platform for computational chemistry analysis of noncovalent interactions| J. Chem. Phys.| 147| 161727| 2017| | |
+| 10| parker2015| Parker, Trent M and Sherrill, C David| Assessment of empirical models versus high-accuracy ab initio methods for nucleobase stacking: Evaluating the importance of charge penetration| J. Chem. Theory Comput.| 11| 4197--4204| 2015| | |
+| 11| smith2016| Smith, Daniel GA and Burns, Lori A and Patkowski, Konrad and Sherrill, C David| Revised damping parameters for the D3 dispersion correction to density functional theory| J. Phys. Chem. Lett.| 7| 2197--2203| 2016| | |
+| 12| thanthiriwatte2010| Thanthiriwatte, Kanchana S and Hohenstein, Edward G and Burns, Lori A and Sherrill, C David| Assessment of the performance of DFT and DFT-D methods for describing distance dependence of hydrogen-bonded interactions| J. Chem. Theory Comput.| 7| 88--96| 2010| | |
+| 13| marshall2011| Marshall, Michael S and Burns, Lori A and Sherrill, C David| Basis set convergence of the coupled-cluster correction, $\delta$ MP2 CCSD (T): Best practices for benchmarking non-covalent interactions and the attendant revision of the S22, NBC10, HBC6, and HSG databases| J. Chem. Phys.| 135| 194102| 2011| | |
+| 14| burns2011| Burns, Lori A and Mayagoitia, {\'A}lvaro V{\'a}zquez- and Sumpter, Bobby G and Sherrill, C David| Density-functional approaches to noncovalent interactions: A comparison of dispersion corrections (DFT-D), exchange-hole dipole moment (XDM) theory, and specialized functionals| J. Chem. Phys.| 134| 084107| 2011| | |
+| 15| bauza2013| Bauza, Antonio and Alkorta, Ibon and Frontera, Antonio and Elguero, Jose| On the reliability of pure and hybrid DFT methods for the evaluation of halogen, chalcogen, and pnicogen bonds involving anionic and neutral electron donors| J. Chem. Theory Comput.| 9| 5201--5210| 2013| | |
+| 16| johnson2003| Johnson, Erin R. and Clarkin, Owen J. and DiLabio, Gino A.| Density Functional Theory Based Model Calculations for Accurate Bond Dissociation Enthalpies. 3. A Single Approach for X-H, X-X, and X-Y (X, Y = C, N, O, S, Halogen) Bonds| J. Phys. Chem. A| 107| 9953--9963| 2003| | |
+| 17| wilke2009| Wilke, Jeremiah J and Lind, Maria C and Schaefer III, Henry F and Cs{\'a}sz{\'a}r, Attila G and Allen, Wesley D| Conformers of gaseous cysteine| J. Chem. Theory Comput.| 5| 1511--1523| 2009| | |
+| 18| zhao2005| Zhao, Yan and Lynch, Benjamin J and Truhlar, Donald G| Multi-coefficient extrapolated density functional theory for thermochemistry and thermochemical kinetics| Phys. Chem. Chem. Phys.| 7| 43--52| 2005| | |
+| 19| zhao2005b| Zhao, Yan and Gonz{\'a}lez-Garc{\'\i}a, N{\'u}ria and Truhlar, Donald G| Benchmark database of barrier heights for heavy atom transfer, nucleophilic substitution, association, and unimolecular reactions and its use to test theoretical methods| J. Phys. Chem. A| 109| 2012--2018| 2005| | |
+| 20| grimme2007| Grimme, Stefan and Steinmetz, Marc and Korth, Martin| How to compute isomerization energies of organic molecules with quantum chemical methods| J. Org. Chem.| 72| 2118--2126| 2007| | |
+| 21| parthiban2001| Parthiban, Srinivasan and Martin, Jan ML| Assessment of W1 and W2 theories for the computation of electron affinities, ionization potentials, heats of formation, and proton affinities| J. Chem. Phys.| 114| 6014--6029| 2001| | |
+| 22| karton2011| Karton, Amir and Daon, Shauli and Martin, Jan ML| W4-11: A high-confidence benchmark dataset for computational thermochemistry derived from first-principles W4 data| Chem. Phys. Lett.| 510| 165--178| 2011| | |
+| 23| kozuch2013| Kozuch, Sebastian and Bachrach, Steven M and Martin, Jan ML| Conformational equilibria in butane-1, 4-diol: a benchmark of a prototypical system with strong intramolecular H-bonds| J. Phys. Chem. A| 118| 293--303| 2013| | |
+| 24| binkley1980| Binkley, J Stephen and Pople, John A and Hehre, Warren J| Self-consistent molecular orbital methods. 21. Small split-valence basis sets for first-row elements| J. Am. Chem. Soc.| 102| 939--947| 1980| | |
+| 25| gordon1982| Gordon, Mark S and Binkley, J Stephen and Pople, John A and Pietro, William J and Hehre, Warren J| Self-consistent molecular-orbital methods. 22. Small split-valence basis sets for second-row elements| J. Am. Chem. Soc.| 104| 2797--2803| 1982| | |
+| 26| pietro1982| Pietro, William J and Francl, Michelle M and Hehre, Warren J and DeFrees, Douglas J and Pople, John A and Binkley, J Stephen| Self-consistent molecular orbital methods. 24. Supplemented small split-valence basis sets for second-row elements| J. Am. Chem. Soc.| 104| 5039--5048| 1982| | |
+| 27| dobbs1987a| Dobbs, KD and Hehre, WJ| Molecular orbital theory of the properties of inorganic and organometallic compounds 5. Extended basis sets for first-row transition metals| J. Comput. Chem.| 8| 861--879| 1987| | |
+| 28| dobbs1987b| Dobbs, KD and Hehre, WJ| Molecular orbital theory of the properties of inorganic and organometallic compounds. 6. Extended basis sets for second-row transition metals| J. Comput. Chem.| 8| 880--893| 1987| | |
+| 29| dithcfield1971| Dithcfield, R and Hehre, W and Pople, J| Self-consistent molecular-orbital methods. 9. Extended Gaussian-type basis for molecular-orbital studies of organic molecules| J. Chem. Phys.| 54| 2921--2923| 1971| | |
+| 30| hehre1972| Hehre, Warren J and Ditchfield, Robert and Pople, John A| Self—consistent molecular orbital methods. XII. Further extensions of Gaussian—type basis sets for use in molecular orbital studies of organic molecules| J. Chem. Phys.| 56| 2257--2261| 1972| | |
+| 31| hariharan1973| Hariharan, Praveen C and Pople, John A| The influence of polarization functions on molecular orbital hydrogenation energies| Theor. Chim. Acta| 28| 213--222| 1973| | |
+| 32| hariharan1974| Hariharan, PC and Pople, J\_A\_| Accuracy of AH n equilibrium geometries by single determinant molecular orbital theory| Mol. Phys.| 27| 209--214| 1974| | |
+| 33| gordon1980| Gordon, Mark S| The isomers of silacyclopropane| Chem. Phys. Lett.| 76| 163--168| 1980| | |
+| 34| francl1982| Francl, Michelle M and Pietro, William J and Hehre, Warren J and Binkley, J Stephen and Gordon, Mark S and DeFrees, Douglas J and Pople, John A| Self-consistent molecular orbital methods. XXIII. A polarization-type basis set for second-row elements| J. Chem. Phys.| 77| 3654--3665| 1982| | |
+| 35| weigend2005| Weigend, Florian and Ahlrichs, Reinhart| Balanced basis sets of split valence, triple zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy| Phys. Chem. Chem. Phys.| 7| 3297--3305| 2005| | |
+| 36| weigend2006| Weigend, Florian| Accurate Coulomb-fitting basis sets for H to Rn| Phys. Chem. Chem. Phys.| 8| 1057--1065| 2006| | |
+| 37| sto3g| Hehre, Warren J and Stewart, Robert F and Pople, John A| self-consistent molecular-orbital methods. i. use of gaussian expansions of Slater-type atomic orbitals| J. Chem. Phys.| 51| 2657--2664| 1969| | |
+| 38| mini| Tatewaki, Hiroshi and Huzinaga, Sigeru| A systematic preparation of new contracted Gaussian-type orbital sets. III. Second-row atoms from Li through ne| J. Comput. Chem.| 1| 205--228| 1980| | |
+| 39| jensen1| Jensen, Frank| Polarization consistent basis sets: Principles| J. Chem. Phys.| 115| 9113--9125| 2001| | |
+| 40| jensen2| Jensen, Frank| Polarization consistent basis sets. II. Estimating the Kohn--Sham basis set limit| J. Chem. Phys.| 116| 7372--7379| 2002| | |
+| 41| jensen3| Jensen, Frank| Polarization consistent basis sets. III. The importance of diffuse functions| J. Chem. Phys.| 117| 9234--9240| 2002| | |
+| 42| jensen4| Jensen, Frank and Helgaker, Trygve| Polarization consistent basis sets. V. The elements Si--Cl| J. Chem. Phys.| 121| 3463--3470| 2004| | |
+| 43| b3| A. D. Becke| Density-functional thermochemistry. III. The role of exact exchange| J. Chem. Phys.| 98| 5648--5652| 1993| | |
+| 44| lyp| Lee, Chengteh and Yang, Weitao and Parr, Robert G| Development of the Colle-Salvetti correlation-energy formula into a functional of the electron density| Phys. Rev. B| 37| 785| 1988| | |
+| 45| dunning1| Dunning Jr, Thom H| Gaussian basis sets for use in correlated molecular calculations. I. The atoms boron through neon and hydrogen| J. Chem. Phys.| 90| 1007--1023| 1989| | |
+| 46| dunning2| Woon, David E and Dunning Jr, Thom H| Gaussian basis sets for use in correlated molecular calculations. III. The atoms aluminum through argon| J. Chem. Phys.| 98| 1358--1371| 1993| | |
+| 47| grimme2010| Grimme, Stefan and Antony, Jens and Ehrlich, Stephan and Krieg, Helge| A consistent and accurate ab initio parametrization of density functional dispersion correction (DFT-D) for the 94 elements H-Pu| J. Chem. Phys.| 132| 154104| 2010| | |
+| 48| xdmbasis| {Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Dale}, S. G. and {DiLabio}, G. A.| Efficient basis sets for non-covalent interactions in density-functional theory| J. Chem. Phys.| 139| 214109| 2013| 10.1063/1.4832325| |
+| 49| witte2016| Witte, Jonathon and Neaton, Jeffrey B and Head-Gordon, Martin| Push it to the limit: Characterizing the convergence of common sequences of basis sets for intermolecular interactions as described by density functional theory| J. Chem. Phys.| 144| 194306| 2016| | |
+| 50| davidson1986| Davidson, Ernest R and Feller, David| Basis set selection for molecular calculations| Chem. Rev| 86| 681--696| 1986| | |
+| 51| andzelm1984| Andzelm, Jan and K{\l}obukowski, Mariusz and Radzio-Andzelm, El{\.z}bieta| Compact contracted Gaussian-type basis sets for halogen atoms. Basis-set superposition effects on molecular properties| J. Comput. Chem.| 5| 146--161| 1984| | |
+| 52| kruse2012| Kruse, Holger and Grimme, Stefan| A geometrical correction for the inter-and intra-molecular basis set superposition error in Hartree-Fock and density functional theory calculations for large systems| J. Chem. Phys.| 136| 04B613| 2012| | |
+| 53| hbs66| {DiLabio}, G. A. and {Johnson}, E. R. and {Otero-de-la-Roza}, A.| Performance of conventional and dispersion-corrected density-functional theory methods for hydrogen bonding interaction energies| Phys. Chem. Chem. Phys.| 15| 12821--12828| 2013| 10.1039/C3CP51559A| |
+| 54| halogen| {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {DiLabio}, G. A.| Halogen bonding from dispersion-corrected density-functional theory: the role of delocalization error| J. Chem. Theory Comput.| 10| 5436--5447| 2014| 10.1021/ct500899h| |
+| 55| dcacp| Von Lilienfeld, O Anatole and Tavernelli, Ivano and Rothlisberger, Ursula and Sebastiani, Daniel| Optimization of effective atom centered potentials for London dispersion forces in density functional theory| Phys. Rev. Lett.| 93| 153004| 2004| | |
+| 56| qcp| DiLabio, Gino A and Hurley, Margaret M and Christiansen, Phillip A| Simple one-electron quantum capping potentials for use in hybrid QM/MM studies of biological molecules| J. Chem. Phys.| 116| 9578--9584| 2002| | |
+| 57| hfacp| Prasad, Viki Kumar and Otero-de-la-Roza, Alberto and DiLabio, Gino A| Atom-centered potentials with dispersion-corrected minimal-basis-set Hartree--Fock: an efficient and accurate computational approach for large molecular systems| J. Chem. Theory Comput.| 14| 726--738| 2018| | |
+| 58| lasso| Tibshirani, Robert| Regression shrinkage and selection via the lasso| J. R. Statist. Soc. B| 58| 267--288| 1996| | |
+| 59| osborne2000| Osborne, Michael R and Presnell, Brett and Turlach, Berwin A| A new approach to variable selection in least squares problems| IMA J. Num. Anal.| 20| 389--403| 2000| | |
+| 60| wb97xd1| Chai, Jeng-Da and Head-Gordon, Martin| Systematic optimization of long-range corrected hybrid density functionals| J. Chem. Phys.| 128| 084106| 2008| | |
+| 61| wb97xd2| Chai, Jeng-Da and Head-Gordon, Martin| Long-range corrected hybrid density functionals with damped atom--atom dispersion corrections| Phys. Chem. Chem. Phys.| 10| 6615--6620| 2008| | |
+| 62| pepconf| Prasad, Viki Kumar and Otero-de-La-Roza, Alberto and DiLabio, Gino A| PEPCONF, a diverse data set of peptide conformational energies| Sci. Data| 6| 180310| 2019| | |
+| 63| xdmhybrid| Otero-de-la-Roza, A and Johnson, E R| Non-Covalent Interactions and Thermochemistry using XDM-Corrected Hybrid and Range-Separated Hybrid Density Functionals| J. Chem. Phys.| 138| 204109| 2013| | |
+| 64| xdm| Becke, A. D. and Johnson, E. R.| Exchange-hole dipole moment and the dispersion interaction revisited| J. Chem. Phys.| 127| 154108| 2007| | |
+| 65| lcwpbe1| Oleg A. Vydrov and Gustavo E. Scuseria| Assessment of a long-range corrected hybrid functional| J. Chem. Phys.| 125| 234109| 2006| | |
+| 66| lcwpbe2| Oleg A. Vydrov and Jochen Heyd and Aliaksandr V. Krukau and Gustavo E. Scuseria| Importance of short-range versus long-range Hartree-Fock exchange for the performance of hybrid density functionals| J. Chem. Phys.| 125| 074106| 2006| | |
+| 67| kalescky2014| Kalescky, Robert and Kraka, Elfi and Cremer, Dieter| Accurate determination of the binding energy of the formic acid dimer: The importance of geometry relaxation| J. Chem. Phys.| 140| 084315| 2014| | |
+| 68| nbody1| {Otero-de-la-Roza}, A. and {DiLabio}, G. A. and {Johnson}, E. R.| Exchange-correlation effects for non-covalent interactions in density-functional theory| J. Chem. Theory Comput.| 12| 3160--3175| 2016| 10.1021/acs.jctc.6b00298| |
+| 69| wateracp| Holmes, Jake D and Otero-de-la-Roza, Alberto and DiLabio, Gino A| Accurate Modeling of Water Clusters with Density-Functional Theory Using Atom-Centered Potentials| J. Chem. Theory Comput.| 13| 4205--4215| 2017| | |
+| 70| hf-3c| Sure, Rebecca and Grimme, Stefan| Corrected small basis set Hartree-Fock method for large systems| J. Comput. Chem.| 34| 1672--1685| 2013| | |
+| 71| kulik2016| Kulik, Heather J and Seelam, Natasha and Mar, Brendan D and Mart{\'\i}nez, Todd J| Adapting DFT+U for the chemically motivated correction of minimal basis set incompleteness| J. Phys. Chem. A| 120| 5939--5949| 2016| | |
+| 72| sure2015| Sure, Rebecca and Brandenburg, Jan Gerit and Grimme, Stefan| Small Atomic Orbital Basis Set First-Principles Quantum Chemical Methods for Large Molecular and Periodic Systems: A Critical Analysis of Error Sources| ChemistryOpen| 5| 94| 2015| | |
+| 73| goerigk2013| Goerigk, Lars and Reimers, Jeffrey R| Efficient methods for the quantum chemical treatment of protein structures: the effects of london-dispersion and basis-set incompleteness on peptide and water-cluster geometries| J. Chem. Theory Comput.| 9| 3240--3251| 2013| | |
+| 74| galano2006| Galano, Annia and Alvarez--Idaboy, J Ra{\'u}l| A new approach to counterpoise correction to BSSE| J. Comput. Chem.| 27| 1203--1210| 2006| | |
+| 75| jensen2010| Jensen, Frank| An atomic counterpoise method for estimating inter-and intramolecular basis set superposition errors| J. Chem. Theory Comput.| 6| 100--106| 2010| | |
+| 76| hehre1970| Hehre, Warren J and Ditchfield, R and Radom, L and Pople, John A| Molecular orbital theory of the electronic structure of organic compounds. V. Molecular theory of bond separation| J. Am. Chem. Soc.| 92| 4796--4801| 1970| | |
+| 77| curtiss1999| Curtiss, Larry A and Redfern, Paul C and Raghavachari, Krishnan and Rassolov, Vitaly and Pople, John A| Gaussian-3 theory using reduced Mo/ller-Plesset order| J. Chem. Phys.| 110| 4703--4709| 1999| | |
+| 78| dill1975| Dill, James D and Pople, John A| Self-consistent molecular orbital methods. XV. Extended Gaussian-type basis sets for lithium, beryllium, and boron| J. Chem. Phys.| 62| 2921--2923| 1975| | |
+| 79| clark1983| Clark, Timothy and Chandrasekhar, Jayaraman and Spitznagel, G{\"u}nther W and Schleyer, Paul Von Ragu{\'e}| Efficient diffuse function-augmented basis sets for anion calculations. III. The 3-21+ G basis set for first-row elements, Li--F| J. Comput. Chem.| 4| 294--301| 1983| | |
+| 80| frisch1984| Frisch, Michael J and Pople, John A and Binkley, J Stephen| Self-consistent molecular orbital methods 25. Supplementary functions for Gaussian basis sets| J. Chem. Phys.| 80| 3265--3269| 1984| | |
+| 81| rassolov1998| Rassolov, Vitaly A and Pople, John A and Ratner, Mark A and Windus, Theresa L| 6-31G* basis set for atoms K through Zn| J. Chem. Phys.| 109| 1223--1229| 1998| | |
+| 82| mackie2011| Mackie, Iain D and DiLabio, Gino A| Approximations to complete basis set-extrapolated, highly correlated non-covalent interaction energies| J. Chem. Phys.| 135| 134318| 2011| | |
+| 83| burns2013| Burns, Lori A and Marshall, Michael S and Sherrill, C David| Comparing counterpoise-corrected, uncorrected, and averaged binding energies for benchmarking noncovalent interactions| J. Chem. Theory Comput.| 10| 49--57| 2014| | |
+| 84| rezac2011| {\v{R}}ez{\'a}{\v{c}}, Jan and Riley, Kevin E and Hobza, Pavel| S66: A well-balanced database of benchmark interaction energies relevant to biomolecular structures| J. Chem. Theory Comput.| 7| 2427--2438| 2011| | |
+| 85| dilabio2008| DiLabio, Gino A| Accurate treatment of van der Waals interactions using standard density functional theory methods with effective core-type potentials: Application to carbon-containing dimers| Chem. Phys. Lett.| 455| 348--353| 2008| | |
+| 86| mackie2008| Mackie, Iain D and DiLabio, Gino A| Interactions in large, polyaromatic hydrocarbon dimers: application of density functional theory with dispersion corrections| J. Phys. Chem. A| 112| 10968--10976| 2008| | |
+| 87| mackie2010| Mackie, Iain D and DiLabio, Gino A| Accurate dispersion interactions from standard density-functional theory methods with small basis sets| Phys. Chem. Chem. Phys.| 12| 6092--6098| 2010| | |
+| 88| torres2012| Torres, Edmanuel and DiLabio, Gino A| A (nearly) universally applicable method for modeling noncovalent interactions using B3LYP| J. Phys. Chem. Lett.| 3| 1738--1744| 2012| | |
+| 89| dilabio2014| DiLabio, Gino A and Koleini, Mohammad| Dispersion-correcting potentials can significantly improve the bond dissociation enthalpies and noncovalent binding energies predicted by density-functional theory| J. Chem. Phys.| 140| 18A542| 2014| | |
+| 90| vansanten2015| Van Santen, Jeffrey A and DiLabio, Gino A| Dispersion Corrections Improve the Accuracy of Both Noncovalent and Covalent Interactions Energies Predicted by a Density-Functional Theory Approximation| J. Phys. Chem. A| 119| 6703--6713| 2015| | |
+| 91| goerigk2011| Goerigk, Lars and Kruse, Holger and Grimme, Stefan| Benchmarking Density Functional Methods against the S66 and S66x8 Datasets for Non-Covalent Interactions| ChemPhysChem| 12| 3421--3433| 2011| | |
+| 92| aorss3| {Christian}, M. S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Adsorption of graphene to nickel (111) using the exchange-hole dipole moment model| Carbon| | | 2017| | |
+| 93| aorss1| {Ooi}, K. K. and {Yeo}, C. I. and {Ang}, K.-P. and {Akim}, A. M. and {Cheah}, Y.-K. and {Otero-de-la-Roza}, A. and {Seng}, H.-L. and {Tiekink}, E. R. T.| G2/M cell cycle arrest on {HT}-29 cancer cells and toxicity assessment of triphenylphosphanegold({I}) carbonimidothioates, {Ph$_3$PAu[SC(OR) = NPh]}, {R = Me, Et and {}$^i$Pr}, during zebrafish development| J. Inorg. Biol.| | | 2016| | |
+| 94| aspirin| {LeBlanc}, L. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Evaluation of shear-slip transitions in crystalline aspirin by density-functional theory| Cryst. Growth Des.| 16| 6867--6873| 2016| 10.1021/acs.cgd.6b01038| |
+| 95| clathrates| {Izquierdo-Ruiz}, F. and {Otero-de-la-Roza}, A. and {Contreras-Garc\'{i}a}, J. and {Prieto-Ballesteros}, O. and {Recio}, J. M.| Effects of the CO$_2$ guest molecule on the sI clathrate hydrate structure| Materials| 9| 777| 2016| 10.3390/ma9090777| |
+| 96| aupi2| {Yeo}, C. I. and {Tan}, S. L. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.| A conformational polymorph of Ph$_3$PAu[SC(OEt)=NPh] featuring an intramolecular Au...$\pi$ interaction| Z. Kristallogr.| 231| 653--661| 2016| 10.1515/zkri-2016-1988| |
+| 97| pyricarbamate| {Vellasco}, W. T. and {Gomes}, C. R. B. and {Vasconcelos}, T. R. A. and {Wardell}, J. L. and {Otero-de-la-Roza}, A. and {Jotani}, M. M. and {Tiekink}, E. R. T.| Crystallographic and computational study of t-butyl N-[3-hydroxy-1-phenyl-4-(pyridin-2-ylsulfanyl)butan-2-yl]carbamate and its pyrimidin-2-yl analogue| Z. Kristallogr.| 231| 663--672| 2016| 10.1515/zkri-2016-1990| |
+| 98| tmcomplex| {Ben Hassan}, D. and {Rekik}, W. and {Otero-de-la-Roza}, A. and {Ben Mefteh}, F. and {Roisnel}, T. and {Bataille}, T. and {Na\"{i}li}, H.| Non-covalently generated 3D supramolecular crystal structure in a new family of hybrid nitrates: thermal behavior and in vitro antimicrobial potential| Polyhedron| 119| 238--247| 2016| 10.1016/j.poly.2016.08.043| |
+| 99| wallach| {Otero-de-la-Roza}, A. and {Hein}, J. E. and {Johnson}, E. R.| Reevaluating the stability and prevalence of conglomerates: implications for preferential crystallization| Cryst. Growth Des.| 16| 6055--6059| 2016| 10.1021/acs.cgd.6b01088| |
+| 100| junctions| {Gibbs}, J. and {Otero-de-la-Roza}, A. and {Bergren}, A. J. and {DiLabio}, G. A.| Interpretation of molecular device transport calculation| Can. J. Chem.| 94| 1022--1027| 2016| 10.1139/cjc-2016-0279| |
+| 101| hb-piperidine| {Suresh}, T. and {Vijayakumar}, V. and {Jyothish Kumar}, L. and {Sarveswari}, S. and {Jotani}, M. M. and {Otero-de-la-Roza}, A. and {Tan}, Y. S. and {Tiekink}, E. R. T.| Hydrogen bonding in 2,6-bis(4-fluorophenyl)-3,5-dimethylpiperidin-4-one methanol solvate| Z. Kristallogr.| 231| 365--374| 2016| 10.1515/zkri-2015-1915| |
+| 102| 2nitrile| {Shamsudin}, N and {Tan}, Y. S. and {Young}, D. J. and {Jotani}, M. M. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.| 4-[(1-Benzyl-1H-1,2,3-triazol-4-yl)methoxy]benzene-1,2-dicarbonitrile: crystal structure, Hirshfeld surface analysis and energy-minimization calculations| Acta Cryst. E| 72| 563--569| 2016| 10.1107/S2056989016004722| |
+| 103| chpi-pdxanthate| {Tan}, Y. S. and {Nadiah Abdul Halim}, S. and {Molloy}, K. C. and {Sudlow}, A. L. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.| Persistence of C-H...$\pi$(chelate ring) interactions in the crystal structures of palladium bis(O-alkyl\-dithiocarbonate)s, Pd(S$_2$COR)$_2$. The utility of Pd(S$_2$COR)$_2$ as precursors for palladium sulphide materials| CrystEngComm| 18| 1105--1117| 2016| 10.1039/c5ce02126j| |
+| 104| digold| {Yeo}, C. I. and {Khoo}, C.-H. and {Chu}, W.-C. and {Chen}, B.-J. and {Chu}, P.-L. and {Sim}, J.-H. and {Cheah}, Y.-K. and {Ahmad}, J. and {Nadiah Abdul Halim}, S. and {Seng}, H.-L. and {Ng}, S. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.| The importance of Au...$\pi$(aryl) interactions in the formation of spherical aggregates in binuclear phosphane gold(I) complexes of a bipodal thiocarbamate dianion: A combined crystallographic and computational study, and anti-microbial activity| RSC Advances| 5| 41401--41411| 2015| 10.1039/c5ra05604g| |
+| 105| abo3| {Gao}, H. and {Otero-de-la-Roza}, A. and {Gu}, J. and {Stone}, D. and {Aouadi}, S. and {Johnson}, E. R. and {Martini}, A.| (Ag,Cu)-Ta-O ternaries as high temperature solid lubricants| ACS Appl. Mater. Inter.| 7| 15422--15429| 2015| 10.1021/acsami.5b03543| |
+| 106| bipodal-carbamate| {Al Muna Mohd Nor}, N. and {Ahmad}, J. and {Abdullah}, Z. and {Nadiah Abdul Halim}, S. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.| Bipodal benzoylthiocarbamic acid esters: crystal and molecular structures of R=Et (a polymorph), and of a binuclear Cu(I) complex, R=iPr| Z. Kristallogr.| 230| 397--405| 2015| 10.1515/zkri-2014-1820| |
+| 107| oscil-friction| {Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.| Oscillatory motion in layered materials: graphene, boron nitride, and molybdenum disulfide| Nanotechnology| 26| 165701| 2015| 10.1088/0957-4484/26/16/165701| |
+| 108| tibond| {Christian}, M. S. and {Whittleton}, S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Chemical bonding and surface interactions in Bi$_2$Se$_3$ and Bi$_4$Se$_3$| Comput. Theor. Chem.| 1053| 238--244| 2015| 10.1016/j.comptc.2014.09.023| |
+| 109| clathrate-hpr| {Izquierdo-Ruiz}, F. and {Otero-de-la-Roza}, A. and {Contreras-Garc\'{i}a}, J. and {Men\'{e}ndez}, J. M. and {Prieto-Ballesteros}, O. and {Recio}, J. M.| Guest-host interactions in gas clathrate hydrates under pressure| High Pressure Res.| 35| 49--56| 2015| 10.1080/08957959.2014.996560| |
+| 110| epxars-fepxas| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V. and {Tiekink}, E. R. T. and {Zukerman-Schpector}, J.| Unraveling interactions in molecular crystals using dispersion corrected density functional theory: the case of the epoxydihydroarsanthrene molecules| J. Chem. Theory Comput.| 10| 5010--5019| 2014| 10.1021/ct500832g| |
+| 111| graphitestress-theo| {Abbasi-P\'{e}rez}, D. and {Marqu\'{e}s}, M. and {Men\'{e}ndez}, J. M. and {Recio}, J. M. and {Otero-de-la-Roza}, A. and {del Corro}, E. and {Taravillo}, M. and {Baonza}, V. G.| Modeling graphite under stress: equations of state, vibrational modes, and interlayer friction| Phys. Rev. B| 90| 054105| 2014| 10.1103/PhysRevB.90.054105| |
+| 112| agtao3surf| {Gao}, H. and {Otero-de-la-Roza}, A. and {Aouadi}, S. and {Martini}, A. and {Johnson}, E. R.| Chemical basis of the tribological properties of AgTaO$_3$ crystal surfaces| J. Phys. Chem. C| 118| 17577--17584| 2014| 10.1021/jp503673k| |
+| 113| xdmchiral| {Otero-de-la-Roza}, A. and {Cao}, B. H. and {Price}, I. K. and {Hein}, J. E. and {Johnson}, E. R.| Predicting the Relative Solubilities of Racemic and Enantiopure Crystals by Density-Functional Theory| Angew. Chem. Int. Ed.| 53| 7879--7882| 2014| 10.1002/anie.201403541| |
+| 114| graphenemesa| {Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.| The role of roughness-induced damping in the oscillatory motion of bilayer graphene| Nanotechnology| 25| 425703| 2014| 10.1088/0957-4484/25/42/425703| |
+| 115| anales| {Contreras-Garc\'{i}a}, J. and {Otero-de-la-Roza}, A. and {Recio}, J. M.| El enlace qu\'{i}mico y su supervivencia en la Qu\'{i}mica Cu\'{a}ntica| An. R. Soc. Esp. Qu\'{i}m.| 110| 113--120| 2014| | |
+| 116| electrides| {Dale}, S. G. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Density-functional description of electrides| Phys. Chem. Chem. Phys.| 16| 14548--14593| 2014| 10.1039/C3CP55533J| |
+| 117| xdmgold| {Otero-de-la-Roza}, A. and {Mallory}, J. D. and {Johnson}, E. R.| Metallophilic interactions from dispersion-corrected density-functional theory| J. Chem. Phys.| 140| 18A504| 2014| 10.1063/1.4862896| |
+| 118| kevan| {Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Dale}, S. G.| Extreme density-driven delocalization error for a model solvated-electron system| J. Chem. Phys.| 139| 184116| 2013| 10.1063/1.4829642| |
+| 119| burrito| {Isborn}, C. and {Tang}, C. and {Martini}, A. and {Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Tung}, V.| Carbon nanotube chirality determines efficiency of electron transfer to fullerene in all-carbon photovoltaics| J. Phys. Chem. Lett.| 4| 2914--2918| 2013| 10.1021/jz401369s| |
+| 120| step| {Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.| Effect of tip shape on atomic-friction at graphite step edges| Appl. Phys. Lett.| 103| 081601| 2013| 10.1063/1.4818258| |
+| 121| agtao3| {Gao}, H. and {Otero-de-la-Roza}, A. and {Aouadi}, S. and {Johnson}, E. R. and {Martini}, A.| An empirical model for silver tantalate| Modelling Simul. Mater. Sci. Eng.| 21| 055002| 2013| 10.1088/0965-0393/21/5/055002| |
+| 122| xdmc9| {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Many-body dispersion interactions from the exchange-hole dipole moment model| J. Chem. Phys.| 138| 054103| 2013| 10.1063/1.4789421| |
+| 123| kaolin| {Johnson}, E. R. and {Otero-de-la-Roza}, A.| Adsorption of organic molecules on kaolinite from the exchange-hole dipole moment dispersion model| J. Chem. Theory Comput.| 8| 5124--5131| 2012| 10.1021/ct3006375| |
+| 124| xdmbench| {Otero-de-la-Roza}, A. and {Johnson}, E. R.| A benchmark for non-covalent interactions in solids| J. Chem. Phys.| 137| 054103| 2012| 10.1063/1.4738961| |
+| 125| ncisolids| {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Contreras-Garc\'{i}a}, J.| Revealing non-covalent interactions in solids: {NCI} plots revisited| Phys. Chem. Chem. Phys.| 14| 12165--12172| 2012| 10.1039/C2CP41395G| |
+| 126| graphitestress| {del Corro}, E. and {Otero-de-la-Roza}, A. and {Taravillo}, M. and {Baonza}, V. G.| Raman modes and Gr\"{u}neisen parameters of graphite under compressive biaxial stress| Carbon| 50| 4600--4606| 2012| 10.1016/j.carbon.2012.05.046| |
+| 127| xdmsolids| {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Van der {W}aals interactions in solids using the exchange-hole dipole moment| J. Chem. Phys.| 136| 174109| 2012| 10.1063/1.4705760| |
+| 128| energy-correction| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Equations of state and thermodynamics of solids using empirical corrections in the quasiharmonic approximation| Phys. Rev. B| 84| 184103| 2011| 10.1103/PhysRevB.84.184103| |
+| 129| cij-partition| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Topological partition of the elastic constants of crystals| J. Phys. Chem. A| 115| 12953--12961| 2011| 10.1021/jp2041718| |
+| 130| supramolecular| {Tiekink}, E. R. T. and {Zukerman-Schpector}, J. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Supramolecular architectures based on {As}(lone pair)...$\pi$ interactions| Chem. Comm.| 47| 7608--7610| 2011| 10.1039/C1CC11412C| |
+| 131| qhamgo| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Treatment of first-principles data for predictive quasiharmonic thermodynamics of solids: the case of {MgO}| Phys. Rev. B| 84| 024109| 2011| 10.1103/PhysRevB.84.024109| |
+| 132| ctc-gibbs| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Equations of state in solids. {F}itting theoretical data, possibly including noise and jumps| Comput. Theor. Chem.| 975| 111--115| 2011| 10.1016/j.comptc.2011.03.050| |
+| 133| gibbs2b| {Otero-de-la-Roza}, A. and {Abbasi-P\'{e}rez}, D. and {Lua\~{n}a}, V.| {G}ibbs2: a new version of the quasi-harmonic model code. {II}. {M}odels for solid-state thermodynamics, features and implementation| Comput. Phys. Commun.| 182| 2232--2248| 2011| 10.1016/j.cpc.2011.05.009| |
+| 134| gibbs2a| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| {G}ibbs2: a new version of the quasi-harmonic model code. {I}. {R}obust treatment of the static data| Comput. Phys. Commun.| 182| 1708--1720| 2011| 10.1016/j.cpc.2011.04.016| |
+| 135| sbasga2| {Reshak}, A. H. and {Ouahrani}, T. and {Khenata}, R. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V. and {Baltache}, H.| Density functional calculation for the first and second harmonic generation of the chalcopyrite {Ga$_2$AsSb}| Comput. Mater. Sci.| 50| 886--892| 2011| 10.1016/j.commatsci.2010.10.026| |
+| 136| sbasga2-sbpga2| {Ouahrani}, T. and {Otero-de-la-Roza}, A. and {Khenata}, R. and {Lua\~{n}a}, V. and {Amrani}, B.| Structural and thermodynamic properties of {SbAsGa$_2$} and {SbPGa$_2$} chalcopyrites| Comput. Mater. Sci.| 47| 655--659| 2010| j.commatsci.2009.10.001| |
+| 137| aggase2| {Ouahrani}, T. and {Otero-de-la-Roza}, A. and {Reshak}, A. H. and {Khenata}, R. and {Faraoun}, H. I. and {Amrani}, B. and {Mebrouki}, M. and {Lua\~{n}a}, V.| Elastic properties and bonding of {AgGaSe$_{2}$} chalcopyrite| Physica B: Condens. Matter| 405| 3658--3664| 2010| 10.1016/j.physb.2010.05.061| |
+| 138| cdal2se4| {Ouahrani}, T. and {Reshak}, A. H. and {Khenata}, R. and {Amrani}, B. and {Mebrouki}, M. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Ab-initio study of the structural, linear and nonlinear optical properties of {CdAl$_2$Se$_4$} defect-chalcopyrite| J. Solid State Chem.| 183| 46--51| 2010| 10.1016/j.jssc.2009.09.034| |
+| 139| lapla| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| Topological characterization of the electron density {Laplacian} in crystals. The case of the group {IV} elements| J. Chem. Theory Comput.| 6| 3761--3779| 2010| 10.1021/ct100269e| |
+| 140| qtree| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| A fast and accurate algorithm for {QTAIM} integration in solids| J. Comput. Chem.| 32| 291--305| 2010| 10.1002/jcc.21620| |
+| 141| variational| {Lua\~{n}a}, V. and {Blanco}, M. A. and {Otero-de-la-Roza}, A. and {Recio}, J. M.| A linear variational exercise with a simple non-orthogonal basis for the particle-in-the-box problem| Eur. J. Phys.| 31| 101--104| 2010| 10.1088/0143-0807/31/1/010| |
+| 142| sbpga2| {Ouahrani}, T. and {Reshak}, A. H. and {Otero-de-la-Roza}, A. and {Mebrouki}, M. and {Lua\~{n}a}, V. and {Khenata}, R. and {Amrani}, B.| First-principles study of structural, electronic, linear and nonlinear optical properties of {Ga$_{2}$PSb} ternary chalcopyrite| Eur. Phys. J. B| 72| 361--366| 2009| 10.1140/epjb/e2009-00345-6| |
+| 143| critic| {Otero-de-la-Roza}, A. and {Blanco}, M. A. and {Mart\'{i}n Pend\'{a}s}, A. and {Lua\~{n}a}, V.| {C}ritic: a new program for the topological analysis of solid-state electron densities| Comput. Phys. Commun.| 180| 157--166| 2009| 10.1016/j.cpc.2008.07.018| |
+| 144| runwien| {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.| {R}unwien.awk: a text-based interface for the WIEN package| Comput. Phys. Commun.| 180| 800--812| 2009| 10.1016/j.cpc.2008.11.024| |
+| 145| b88| Becke, Axel D| Density-functional exchange-energy approximation with correct asymptotic behavior| Phys. Rev. A| 38| 3098| 1988| | |
+| 146| s225| Gr{\'a}fov{\'a}, L. and Pito\v{n}{\'a}k, M. and \v{R}ez{\'a}\v{c}, J. and Hobza, P.| Comparative Study of Selected Wave Function and Density Functional Methods for Noncovalent Interaction Energy Calculations Using the Extended S22 Data Set| J. Chem. Theory Comput.| 6| 2365--2376| 2010| | |
+| 147| s22| Jure{\v{c}}ka, P. and {\v{S}}poner, J. and {\v{C}}ern{\`y}, J. and Hobza, P.| Benchmark database of accurate (MP2 and CCSD (T) complete basis set limit) interaction energies of small model complexes, DNA base pairs, and amino acid pairs| Phys. Chem. Chem. Phys.| 8| 1985--1993| 2006| | |
+| 148| s66| {\v{R}}ez{\'a}{\v{c}}, J. and Riley, Kevin E. and Hobza, P.| S66: A Well-balanced Database of Benchmark Interaction Energies Relevant to Biomolecular Structures| J. Chem. Theory Comput.| 7| 2427--2438| 2011| | |
+| 149| s668| {\v{R}}ez{\'a}{\v{c}}, J. and Riley, Kevin E. and Hobza, P.| Extensions of the {S66} Data Set: More Accurate Interaction Energies and Angular-Displaced Nonequilibrium Geometries| J. Chem. Theory Comput.| 7| 3466--3470| 2011| | |
+| 150| g3| Larry A. Curtiss and Krishnan Raghavachari and Paul C. Redfern and John A. Pople| Assessment of Gaussian-3 and density functional theories for a larger experimental test set| J. Chem. Phys.| 112| 7374--7383| 2000| | |
+| 151| s22b| Michael S. Marshall and Lori A. Burns and C. David Sherrill| Basis set convergence of the coupled-cluster correction, delta[sub MP2][sup CCSD(T)]: Best practices for benchmarking non-covalent interactions and the attendant revision of the S22, NBC10, HBC6, and HSG databases| J. Chem. Phys.| 135| 194102| 2011| | |
+| 152| s66b| DiLabio, G. A. and Johnson, E. R. and Otero-de-la-Roza, A.| Performance of conventional and dispersion-corrected density-functional theory methods for hydrogen bonding interaction energies| Phys. Chem. Chem. Phys.| 15| 12821| 2013| | |
+| 153| kb49b| Kannemann, F. O. and Becke, A. D.| van der Waals Interactions in Density-Functional Theory: Intermolecular Complexes| J. Chem. Theory Comput.| 6| 1081--1088| 2010| | |
+| 154| kb49a| Kannemann, F. O. and Becke, A. D.| Van der waals interactions in density-functional theory: Rare-gas diatomics| J. Chem. Theory Comput.| 5| 719--727| 2009| | |
+| 155| p26| Valdes, Haydee and Pluh{\'a}{\v{c}}kov{\'a}, Krist{\`y}na and Piton{\'a}k, Michal and {\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel| Benchmark database on isolated small peptides containing an aromatic side chain: comparison between wave function and density functional theory methods and empirical force field| Phys. Chem. Chem. Phys.| 10| 2747--2757| 2008| | |
+| 156| l7| Sedlak, Robert and Janowski, Tomasz and Pito\v{n}{\'a}k, Michal and {\v{R}}ez{\'a}{\v{c}}, Jan and Pulay, Peter and Hobza, Pavel| Accuracy of quantum chemical methods for large noncovalent complexes| J. Chem. Theory Comput.| 9| 3364--3374| 2013| | |
+| 157| hsg0| Faver, John C and Benson, Mark L and He, Xiao and Roberts, Benjamin P and Wang, Bing and Marshall, Michael S and Kennedy, Matthew R and Sherrill, C David and Merz Jr, Kenneth M| Formal estimation of errors in computed absolute interaction energies of protein-ligand complexes| J. Chem. Theory Comput.| 7| 790--797| 2011| | |
+| 158| ionichb| {\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel| Advanced corrections of hydrogen bonding and dispersion for semiempirical quantum mechanical methods| J. Chem. Theory Comput.| 8| 141--151| 2011| | |
+| 159| gmtkn55| Goerigk, Lars and Hansen, Andreas and Bauer, Christoph and Ehrlich, Stephan and Najibi, Asim and Grimme, Stefan| A look at the density functional theory zoo with the advanced GMTKN55 database for general main group thermochemistry, kinetics and noncovalent interactions| Phys. Chem. Chem. Phys.| 19| 32184--32215| 2017| | |
+| 160| gmtkn30| Goerigk, Lars and Grimme, Stefan| A thorough benchmark of density functional methods for general main group thermochemistry, kinetics, and noncovalent interactions| Phys. Chem. Chem. Phys.| 13| 6670--6688| 2011| | |
+| 161| bsr36| Krieg, Helge and Grimme, Stefan| Thermochemical benchmarking of hydrocarbon bond separation reaction energies: Jacob's ladder is not reversed!| Mol. Phys.| 108| 2655--2666| 2010| | |
+| 162| pconf| {\v{R}}eha, D and Valdes, H and Vondr{\'a}{\v{s}}ek, J and Hobza, P and Abu-Riziq, Ali and Crews, Bridgit and de Vries, Mattanjah S| Structure and IR Spectrum of Phenylalanyl--Glycyl--Glycine Tripetide in the Gas-Phase: IR/UV Experiments, Ab Initio Quantum Chemical Calculations, and Molecular Dynamic Simulations| Chem. Eur. J.| 11| 6803--6817| 2005| | |
+| 163| sconf| Csonka, G{\'a}bor I and French, Alfred D and Johnson, Glenn P and Stortz, Carlos A| Evaluation of density functionals and basis sets for carbohydrates| J. Chem. Theory Comput.| 5| 679--692| 2009| | |
+| 164| water| Temelso, B. and Archer, K. A. and Shields, G. C.| Benchmark structures and binding energies of small water clusters with anharmonicity corrections| J. Phys. Chem. A| 115| 12034--12046| 2011| | |
+| 165| x40| {\v{R}}ez{\'a}{\v{c}}, Jan and Riley, Kevin E and Hobza, Pavel| Benchmark calculations of noncovalent interactions of halogenated molecules| J. Chem. Theory Comput.| 8| 4285--4292| 2012| | |
+| 166| s8| Mintz, Benjamin J and Parks, Jerry M| Benchmark interaction energies for biologically relevant noncovalent complexes containing divalent sulfur| J. Phys. Chem. A| 116| 1086--1092| 2012| | |
+| 167| bde03| Johnson, Erin R and Clarkin, Owen J and DiLabio, Gino A| Density functional theory based model calculations for accurate bond dissociation enthalpies. 3. A single approach for XH, XX, and XY (X, Y= C, N, O, S, halogen) bonds| J. Phys. Chem. A| 107| 9953--9963| 2003| | |
+| 168| aconf| Gruzman, David and Karton, Amir and Martin, Jan ML| Performance of Ab Initio and Density Functional Methods for Conformational Equilibria of CnH2n+ 2 Alkane Isomers (n= 4- 8)| J. Phys. Chem. A| 113| 11974--11983| 2009| | |
+| 169| bhperi1| Karton, Amir and Tarnopolsky, Alex and Lamere, Jean-Fran{\c{c}}ois and Schatz, George C and Martin, Jan ML| Highly accurate first-principles benchmark data sets for the parametrization and validation of density functional and other approximate methods. Derivation of a robust, generally applicable, double-hybrid functional for thermochemistry and thermochemical kinetics| J. Phys. Chem. A| 112| 12868--12886| 2008| | |
+| 170| bhperi2| Guner, Vildan and Khuong, Kelli S and Leach, Andrew G and Lee, Patrick S and Bartberger, Michael D and Houk, KN| A standard set of pericyclic reactions of hydrocarbons for the benchmarking of computational methods: the performance of ab initio, density functional, CASSCF, CASPT2, and CBS-QB3 methods for the prediction of activation barriers, reaction energetics, and transition state geometries| J. Phys. Chem. A| 107| 11445--11459| 2003| | |
+| 171| bhperi3| Ess, Daniel H and Houk, KN| Activation energies of pericyclic reactions: Performance of DFT, MP2, and CBS-QB3 methods for the prediction of activation barriers and reaction energetics of 1, 3-dipolar cycloadditions, and revised activation enthalpies for a standard set of hydrocarbon pericyclic reactions| J. Phys. Chem. A| 109| 9542--9553| 2005| | |
+| 172| bhperi4| Dinadayalane, TC and Vijaya, R and Smitha, A and Sastry, G Narahari| Diels- Alder Reactivity of Butadiene and Cyclic Five-Membered Dienes ((CH) 4X, X= CH2, SiH2, O, NH, PH, and S) with Ethylene: A Benchmark Study| J. Phys. Chem. A| 106| 1627--1633| 2002| | |
+| 173| darc| Johnson, Erin R and Mori-S{\'a}nchez, Paula and Cohen, Aron J and Yang, Weitao| Delocalization errors in density functionals and implications for main-group thermochemistry| J. Chem. Phys.| 129| 204112| 2008| | |
+| 174| idisp| Goerigk, Lars and Grimme, Stefan| A General Database for Main Group Thermochemistry, Kinetics, and Noncovalent Interactions- Assessment of Common and Reparameterized (meta-) GGA Density Functionals| J. Chem. Theory Comput.| 6| 107--126| 2009| | |
+| 175| s668b| Brauer, Brina and Kesharwani, Manoj K and Kozuch, Sebastian and Martin, Jan ML| The S66x8 benchmark for noncovalent interactions revisited: explicitly correlated ab initio methods and density functional theory| Phys. Chem. Chem. Phys.| 18| 20905--20925| 2016| | |
+| 176| adim6| Tsuzuki, Seiji and Honda, Kazumasa and Uchimaru, Tadafumi and Mikami, Masuhiro| Estimated MP2 and CCSD (T) interaction energies of n-alkane dimers at the basis set limit: Comparison of the methods of Helgaker et al. and Feller| J. Chem. Phys.| 124| 114304| 2006| | |
+| 177| a24| {\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel| Describing noncovalent interactions beyond the common approximations: How accurate is the “gold standard,” CCSD (T) at the complete basis set limit?| J. Chem. Theory Comput.| 9| 2151--2155| 2013| | |
+| 178| karlsruhe1| Rappoport, Dmitrij and Furche, Filipp| Property-optimized Gaussian basis sets for molecular response calculations| J. Chem. Phys.| 133| 134105| 2010| | |
+| 179| karlsruhe2| Weigend, Florian and Ahlrichs, Reinhart| Balanced basis sets of split valence, triple zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy| Phys. Chem. Chem. Phys.| 7| 3297--3305| 2005| | |
+| 180| pople1| Ditchfield, RHWJ and Hehre, W J\_ and Pople, John A| Self-consistent molecular-orbital methods. IX. An extended Gaussian-type basis for molecular-orbital studies of organic molecules| J. Chem. Phys.| 54| 724--728| 1971| | |
+| 181| pople2| Hehre, Warren J and Ditchfield, Robert and Pople, John A| Self—consistent molecular orbital methods. XII. Further extensions of Gaussian—type basis sets for use in molecular orbital studies of organic molecules| J. Chem. Phys.| 56| 2257--2261| 1972| | |
+| 182| pople3| Hariharan, Praveen C and Pople, John A| The influence of polarization functions on molecular orbital hydrogenation energies| Theor. Chem. Acc.| 28| 213--222| 1973| | |
+| 183| pople4| Hariharan, PC and Pople, J\_A\_| Accuracy of AH n equilibrium geometries by single determinant molecular orbital theory| Mol. Phys.| 27| 209--214| 1974| | |
+| 184| pople5| Krishnan, RBJS and Binkley, J Stephen and Seeger, Rolf and Pople, John A| Self-consistent molecular orbital methods. XX. A basis set for correlated wave functions| J. Chem. Phys.| 72| 650--654| 1980| | |
+| 185| pople6| Francl, Michelle M and Pietro, William J and Hehre, Warren J and Binkley, J Stephen and Gordon, Mark S and DeFrees, Douglas J and Pople, John A| Self-consistent molecular orbital methods. XXIII. A polarization-type basis set for second-row elements| J. Chem. Phys.| 77| 3654--3665| 1982| | |
+| 186| pople7| Clark, Timothy and Chandrasekhar, Jayaraman and Spitznagel, G{\"u}nther W and Schleyer, Paul Von Ragu{\'e}| Efficient diffuse function-augmented basis sets for anion calculations. III. The 3-21+ G basis set for first-row elements, Li--F| J. Comput. Chem.| 4| 294--301| 1983| | |
+| 187| pople8| Frisch, Michael J and Pople, John A and Binkley, J Stephen| Self-consistent molecular orbital methods 25. Supplementary functions for Gaussian basis sets| J. Chem. Phys.| 80| 3265--3269| 1984| | |
+| 188| bonifacic1974| Bonifacic, V and Huzinaga, S| Atomic and molecular calculations with the model potential method. I| J. Chem. Phys.| 60| 2779--2786| 1974| | |
+| 189| brauer2014| Brauer, Brina and Kesharwani, Manoj K and Martin, Jan ML| Some observations on counterpoise corrections for explicitly correlated calculations on noncovalent interactions| J. Chem. Theory Comput.| 10| 3791--3799| 2014| | |
+| 190| clementi1982| Clementi, E and Corongiu, G| Geometrical basis set for molecular computations| Chem. Phys. Lett.| 90| 359--363| 1982| | |
+| 191| stevens1984| Stevens, Walter J and Basch, Harold and Krauss, Morris| Compact effective potentials and efficient shared-exponent basis sets for the first-and second-row atoms| J. Chem. Phys.| 81| 6026--6033| 1984| | |
+| 192| topiol1980| Topiol, Sid and Osman, Roman| On the use of minimal valence basis sets with the coreless Hartree--Fock effective potential| J. Chem. Phys.| 73| 5191--5196| 1980| | |
+| 193| topiol1981| Topiol, Sid and Osman, Roman and Weinstein, Harel| Effective potential methods for use in electronic structure calculations of large molecules| Ann. N. Y. Acad. Sci.| 367| 17--34| 1981| | |
+| 194| duijneveldt1994| {van Duijneveldt}, F B and {van Duijneveldt-van de Rijdt}, J G C M and {van Lenthe}, J H| State-of-the-Art in Counterpoise Theory| Chem. Rev.| 94| 1873--1885| 1994| | |
+| 195| davidson1994| Davidson, Ernest R and Chakravorty, Subhas J| A possible definition of basis set superposition error| Chem. Phys. Lett.| 217| 48--54| 1994| | |
+| 196| xdmpoly| {Whittleton}, S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Molecular crystal polymorphism using the exchange-hole dipole moment dispersion model| J. Chem. Theory Comput.| 13| 441-450| 2016| 10.1021/acs.jctc.6b00679| |
+| 197| critic2| {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Lua\~{n}a}, V.| {C}ritic2: a program for real-space analysis of quantum chemical interactions in solids| Comput. Phys. Commun.| 185| 1007--1018| 2014| 10.1016/j.cpc.2013.10.026| |
+| 198| kahn1972| Kahn, Luis R and Goddard III, William A| Ab initio effective potentials for use in molecular calculations| J. Chem. Phys.| 56| 2685--2701| 1972| | |
+| 199| kahn1976| Kahn, Luis R and Baybutt, Paul and Truhlar, Donald G| A binitio effective core potentials: Reduction of all-electron molecular structure calculations to calculations involving only valence electrons| J. Chem. Phys.| 65| 3826--3853| 1976| | |
+| 200| haynes2006| Haynes, PD and Skylaris, C-K and Mostofi, AA and Payne, MC| Elimination of basis set superposition error in linear-scaling density-functional calculations with local orbitals optimised in situ| Chem. Phys. Lett.| 422| 345--349| 2006| | |
+| 201| faver2011| Faver, John C and Zheng, Zheng and Merz Jr, Kenneth M| Model for the fast estimation of basis set superposition error in biomolecular systems| J. Chem. Phys.| 135| 144110| 2011| | |
+| 202| faver2012| Faver, John C and Zheng, Zheng and Merz, Kenneth M| Statistics-based model for basis set superposition error correction in large biomolecules| Phys. Chem. Chem. Phys.| 14| 7795--7799| 2012| | |
+| 203| jensen2013| Jensen, Frank| Atomic orbital basis sets| WIREs: Comput. Mol. Sci.| 3| 273--295| 2013| | |
+| 204| goerigk2014| Goerigk, Lars and Collyer, Charles A and Reimers, Jeffrey R| Recommending Hartree--Fock Theory with London-Dispersion and Basis-Set-Superposition Corrections for the Optimization or Quantum Refinement of Protein Structures| J. Phys. Chem. B| 118| 14612--14626| 2014| | |
+| 205| cao2011| Cao, Xiaoyan and Dolg, Michael| Pseudopotentials and modelpotentials| WIREs: Comput. Mol. Sci.| 1| 200--210| 2011| | |
+| 206| dolg2011| Dolg, Michael and Cao, Xiaoyan| Relativistic pseudopotentials: their development and scope of applications| Chem. Rev.| 112| 403--480| 2011| | |
+| 207| kulik2016b| Kulik, Heather J and Zhang, Jianyu and Klinman, Judith P and Martinez, Todd J| How large should the QM region be in QM/MM calculations? The case of catechol O-methyltransferase| J. Phys. Chem. B| 120| 11381--11394| 2016| | |
+| 208| mentel2013| Mentel, {\L}M and Baerends, EJ| Can the counterpoise correction for basis set superposition effect be justified?| J. Chem. Theory Comput.| 10| 252--267| 2013| | |
+| 209| mao2016| Mao, Yuezhi and Horn, Paul R and Mardirossian, Narbe and Head-Gordon, Teresa and Skylaris, Chris-Kriton and Head-Gordon, Martin| Approaching the basis set limit for DFT calculations using an environment-adapted minimal basis with perturbation theory: Formulation, proof of concept, and a pilot implementation| J. Chem. Phys.| 145| 044109| 2016| | |
+| 210| deng2011| Deng, J and Gilbert, AT and Gill, PM| Communication: efficient counterpoise corrections by a perturbative approach.| J. Chem. Phys.| 135| 081105| 2011| | |
+| 211| gutowski1993| Gutowski, Maciej and Chal/asi{\'n}ski, Grzegorz| Critical evaluation of some computational approaches to the problem of basis set superposition error| J. Chem. Phys.| 98| 5540--5554| 1993| | |
+| 212| xdmsurface| {Christian}, M. S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.| Surface adsorption from the exchange-hole dipole moment dispersion model| J. Chem. Theory Comput.| 12| 3305--3315| 2016| 10.1021/acs.jctc.6b00222| |
+| 213| carter2014| Carter, Damien J and Rohl, Andrew L| Benchmarking calculated lattice parameters and energies of molecular crystals using van der Waals density functionals| J. Chem. Theory Comput.| 10| 3423--3437| 2014| | |
+| 214| linear1| Guerra, C Fonseca and Snijders, JG and Te Velde, G and Baerends, EJ| Towards an order-N DFT method| Theor. Chem. Acc.| 99| 391--403| 1998| | |
+| 215| linear2| Challacombe, Matt and Schwegler, Eric| Linear scaling computation of the Fock matrix| J. Chem. Phys.| 106| 5526--5536| 1997| | |
+| 216| linear3| Artacho, E and S{\'a}nchez-Portal, D and Ordej{\'o}n, P and Garc{\'\i}a, A and Soler, JM| Linear-Scaling ab-initio Calculations for Large and Complex Systems| Phys. Status Solidi (b)| 215| 809--817| 1999| | |
+| 217| spackman2001| Spackman, Mark A and Mitchell, Anthony S| Basis set choice and basis set superposition error (BSSE) in periodic Hartree--Fock calculations on molecular crystals| Phys. Chem. Chem. Phys.| 3| 1518--1523| 2001| | |
+| 218| linear4| Junquera, Javier and Paz, {\'O}scar and S{\'a}nchez-Portal, Daniel and Artacho, Emilio| Numerical atomic orbitals for linear-scaling calculations| Phys. Rev. B| 64| 235111| 2001| | |
+| 219| whitten1973| J. L. Whitten| Coulombic Potential-Energy Integrals and Approximations| J. Chem. Phys.| 58| 4496-4501| 1973| 10.1063/1.1679012| |
+| 220| dunlap1979| B. I. Dunlap and J. W. D. Connolly and J. R. Sabin| On Some Approximations in Applications of {$X\alpha$} Theory| J. Chem. Phys.| 71| 3396-3402| 1979| 10.1063/1.438728| |
+| 221| feyereisen1993| M. Feyereisen and G. Fitzgerald and A. Komornicki| Use of Approximate Integrals in Ab Initio Theory. An Application in MP2 Calculations| Chem. Phys. Lett.| 208| 359-363| 1993| | |
+| 222| vahtras1993| O. Vahtras and J. Alml{\"o}f and M. W. Feyereisen| Integral Approximations for LCAO-SCF Calculations| Chem. Phys. Lett.| 213| 514-518| 1993| | |
+| 223| weigend2002| F. Weigend and A. K{\"o}hn and C. H{\"a}ttig| Efficient Use of the Correlation Consistent Basis Sets In Resolution of the Identity MP2 Calculations| J. Chem. Phys.| 116| 3175-3183| 2002| | |
+| 224| sodt2006| A. Sodt and J. E. Subotnik and M. Head-Gordon| Linear Scaling Density Fitting| J. Chem. Phys.| 125| 194109| 2006| 10.1063/1.2370949| |
+| 225| gpu1| Ufimtsev, Ivan S and Martinez, Todd J| Quantum chemistry on graphical processing units. 1. Strategies for two-electron integral evaluation| J. Chem. Theory Comput.| 4| 222--231| 2008| | |
+| 226| gpu2| Ufimtsev, Ivan S and Martinez, Todd J| Quantum chemistry on graphical processing units. 2. Direct self-consistent-field implementation| J. Chem. Theory Comput.| 5| 1004--1015| 2009| | |
+| 227| gpu3| Ufimtsev, Ivan S and Martinez, Todd J| Quantum chemistry on graphical processing units. 3. Analytical energy gradients, geometry optimization, and first principles molecular dynamics| J. Chem. Theory Comput.| 5| 2619--2628| 2009| | |
+| 228| liechtenstein1995| Liechtenstein, AI and Anisimov, VI and Zaanen, J| Density-functional theory and strong interactions: Orbital ordering in Mott-Hubbard insulators| Phys. Rev. B| 52| R5467| 1995| | |
+| 229| dudarev1998| Dudarev, SL and Botton, GA and Savrasov, SY and Humphreys, CJ and Sutton, AP| Electron-energy-loss spectra and the structural stability of nickel oxide: An LSDA+ U study| Phys. Rev. B| 57| 1505| 1998| | |
+| 230| kabsch1976| Kabsch, Wolfgang| A solution for the best rotation to relate two sets of vectors| Acta Crystallographica Section A: Crystal Physics, Diffraction, Theoretical and General Crystallography| 32| 922--923| 1976| | |
+| 231| kaminsky2007| Kaminsk{\`y}, Jakub and Jensen, Frank| Force field modeling of amino acid conformational energies| J. Chem. Theory Comput.| 3| 1774--1788| 2007| | |
+| 232| maier2015| Maier, James A and Martinez, Carmenza and Kasavajhala, Koushik and Wickstrom, Lauren and Hauser, Kevin E and Simmerling, Carlos| ff14SB: improving the accuracy of protein side chain and backbone parameters from ff99SB| J. Chem. Theory Comput.| 11| 3696--3713| 2015| | |
+| 233| hornak2006| Hornak, Viktor and Abel, Robert and Okur, Asim and Strockbine, Bentley and Roitberg, Adrian and Simmerling, Carlos| Comparison of multiple Amber force fields and development of improved protein backbone parameters| Proteins: Struct., Funct., Bioinf.| 65| 712--725| 2006| | |
+| 234| bsip2| {Otero-de-la-Roza}, Alberto and DiLabio, Gino A| Improved Basis-Set Incompleteness Potentials for Accurate Density-Functional Theory Calculations in Large Systems| J. Chem. Theory Comput.| 16| 4176--4191| 2020| | |
+
+* PRINT: print the contents of the database 
+
+@article{bsip1
+ authors={Otero-De-La-Roza, A and DiLabio, Gino A},
+ title={Transferable atom-centered potentials for the correction of basis set incompleteness errors in density-functional theory},
+ journal={J. Chem. Theory Comput.},
+ volume={13},
+ page={3505--3524},
+ year={2017},
+}
+@article{boys1970
+ authors={Boys, S F and Bernardi, F},
+ title={The calculation of small molecular interactions by the differences of separate total energies. Some procedures with reduced errors},
+ journal={Mol. Phys.},
+ volume={19},
+ page={553--566},
+ year={1970},
+}
+@article{s30l
+ authors={Sure, Rebecca and Grimme, Stefan},
+ title={Comprehensive benchmark of association (free) energies of realistic host--guest complexes},
+ journal={J. Chem. Theory Comput.},
+ volume={11},
+ page={3785--3801},
+ year={2015},
+}
+@article{s12lb
+ authors={Ambrosetti, Alberto and Alf\`{e}, Dario and DiStasio Jr, Robert A and Tkatchenko, Alexandre},
+ title={Hard Numbers for Large Molecules: Toward Exact Energetics for Supramolecular Systems},
+ journal={J. Phys. Chem. Lett.},
+ volume={5},
+ page={849--855},
+ year={2014},
+}
+@article{s12la
+ authors={Grimme, S.},
+ title={Supramolecular binding thermodynamics by dispersion-corrected density functional theory},
+ journal={Chem. Eur. J.},
+ volume={18},
+ page={9955--9964},
+ year={2012},
+}
+@article{risthaus2013
+ authors={Risthaus, Tobias and Grimme, Stefan},
+ title={Benchmarking of London dispersion-accounting density functional theory methods on very large molecular complexes},
+ journal={J. Chem. Theory Comput.},
+ volume={9},
+ page={1580--1591},
+ year={2013},
+}
+@article{xdmlarge
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Predicting energetics of supramolecular systems using the XDM dispersion model},
+ journal={J. Chem. Theory Comput.},
+ volume={11},
+ page={4033--4040},
+ year={2015},
+ doi={10.1021/acs.jctc.5b00044},
+}
+@article{johnson2009
+ authors={Johnson, E. R. and Mackie, I. D. and DiLabio, G. A.},
+ title={{Dispersion Interactions in Density-Functional Theory}},
+ journal={J. Phys. Org. Chem.},
+ volume={22},
+ page={1127},
+ year={2009},
+}
+@article{burns2017
+ authors={Burns, Lori A and Faver, John C and Zheng, Zheng and Marshall, Michael S and Smith, Daniel GA and Vanommeslaeghe, Kenno and MacKerell Jr, Alexander D and Merz Jr, Kenneth M and Sherrill, C David},
+ title={The BioFragment Database (BFDb): An open-data platform for computational chemistry analysis of noncovalent interactions},
+ journal={J. Chem. Phys.},
+ volume={147},
+ page={161727},
+ year={2017},
+}
+@article{parker2015
+ authors={Parker, Trent M and Sherrill, C David},
+ title={Assessment of empirical models versus high-accuracy ab initio methods for nucleobase stacking: Evaluating the importance of charge penetration},
+ journal={J. Chem. Theory Comput.},
+ volume={11},
+ page={4197--4204},
+ year={2015},
+}
+@article{smith2016
+ authors={Smith, Daniel GA and Burns, Lori A and Patkowski, Konrad and Sherrill, C David},
+ title={Revised damping parameters for the D3 dispersion correction to density functional theory},
+ journal={J. Phys. Chem. Lett.},
+ volume={7},
+ page={2197--2203},
+ year={2016},
+}
+@article{thanthiriwatte2010
+ authors={Thanthiriwatte, Kanchana S and Hohenstein, Edward G and Burns, Lori A and Sherrill, C David},
+ title={Assessment of the performance of DFT and DFT-D methods for describing distance dependence of hydrogen-bonded interactions},
+ journal={J. Chem. Theory Comput.},
+ volume={7},
+ page={88--96},
+ year={2010},
+}
+@article{marshall2011
+ authors={Marshall, Michael S and Burns, Lori A and Sherrill, C David},
+ title={Basis set convergence of the coupled-cluster correction, $\delta$ MP2 CCSD (T): Best practices for benchmarking non-covalent interactions and the attendant revision of the S22, NBC10, HBC6, and HSG databases},
+ journal={J. Chem. Phys.},
+ volume={135},
+ page={194102},
+ year={2011},
+}
+@article{burns2011
+ authors={Burns, Lori A and Mayagoitia, {\'A}lvaro V{\'a}zquez- and Sumpter, Bobby G and Sherrill, C David},
+ title={Density-functional approaches to noncovalent interactions: A comparison of dispersion corrections (DFT-D), exchange-hole dipole moment (XDM) theory, and specialized functionals},
+ journal={J. Chem. Phys.},
+ volume={134},
+ page={084107},
+ year={2011},
+}
+@article{bauza2013
+ authors={Bauza, Antonio and Alkorta, Ibon and Frontera, Antonio and Elguero, Jose},
+ title={On the reliability of pure and hybrid DFT methods for the evaluation of halogen, chalcogen, and pnicogen bonds involving anionic and neutral electron donors},
+ journal={J. Chem. Theory Comput.},
+ volume={9},
+ page={5201--5210},
+ year={2013},
+}
+@article{johnson2003
+ authors={Johnson, Erin R. and Clarkin, Owen J. and DiLabio, Gino A.},
+ title={Density Functional Theory Based Model Calculations for Accurate Bond Dissociation Enthalpies. 3. A Single Approach for X-H, X-X, and X-Y (X, Y = C, N, O, S, Halogen) Bonds},
+ journal={J. Phys. Chem. A},
+ volume={107},
+ page={9953--9963},
+ year={2003},
+}
+@article{wilke2009
+ authors={Wilke, Jeremiah J and Lind, Maria C and Schaefer III, Henry F and Cs{\'a}sz{\'a}r, Attila G and Allen, Wesley D},
+ title={Conformers of gaseous cysteine},
+ journal={J. Chem. Theory Comput.},
+ volume={5},
+ page={1511--1523},
+ year={2009},
+}
+@article{zhao2005
+ authors={Zhao, Yan and Lynch, Benjamin J and Truhlar, Donald G},
+ title={Multi-coefficient extrapolated density functional theory for thermochemistry and thermochemical kinetics},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={7},
+ page={43--52},
+ year={2005},
+}
+@article{zhao2005b
+ authors={Zhao, Yan and Gonz{\'a}lez-Garc{\'\i}a, N{\'u}ria and Truhlar, Donald G},
+ title={Benchmark database of barrier heights for heavy atom transfer, nucleophilic substitution, association, and unimolecular reactions and its use to test theoretical methods},
+ journal={J. Phys. Chem. A},
+ volume={109},
+ page={2012--2018},
+ year={2005},
+}
+@article{grimme2007
+ authors={Grimme, Stefan and Steinmetz, Marc and Korth, Martin},
+ title={How to compute isomerization energies of organic molecules with quantum chemical methods},
+ journal={J. Org. Chem.},
+ volume={72},
+ page={2118--2126},
+ year={2007},
+}
+@article{parthiban2001
+ authors={Parthiban, Srinivasan and Martin, Jan ML},
+ title={Assessment of W1 and W2 theories for the computation of electron affinities, ionization potentials, heats of formation, and proton affinities},
+ journal={J. Chem. Phys.},
+ volume={114},
+ page={6014--6029},
+ year={2001},
+}
+@article{karton2011
+ authors={Karton, Amir and Daon, Shauli and Martin, Jan ML},
+ title={W4-11: A high-confidence benchmark dataset for computational thermochemistry derived from first-principles W4 data},
+ journal={Chem. Phys. Lett.},
+ volume={510},
+ page={165--178},
+ year={2011},
+}
+@article{kozuch2013
+ authors={Kozuch, Sebastian and Bachrach, Steven M and Martin, Jan ML},
+ title={Conformational equilibria in butane-1, 4-diol: a benchmark of a prototypical system with strong intramolecular H-bonds},
+ journal={J. Phys. Chem. A},
+ volume={118},
+ page={293--303},
+ year={2013},
+}
+@article{binkley1980
+ authors={Binkley, J Stephen and Pople, John A and Hehre, Warren J},
+ title={Self-consistent molecular orbital methods. 21. Small split-valence basis sets for first-row elements},
+ journal={J. Am. Chem. Soc.},
+ volume={102},
+ page={939--947},
+ year={1980},
+}
+@article{gordon1982
+ authors={Gordon, Mark S and Binkley, J Stephen and Pople, John A and Pietro, William J and Hehre, Warren J},
+ title={Self-consistent molecular-orbital methods. 22. Small split-valence basis sets for second-row elements},
+ journal={J. Am. Chem. Soc.},
+ volume={104},
+ page={2797--2803},
+ year={1982},
+}
+@article{pietro1982
+ authors={Pietro, William J and Francl, Michelle M and Hehre, Warren J and DeFrees, Douglas J and Pople, John A and Binkley, J Stephen},
+ title={Self-consistent molecular orbital methods. 24. Supplemented small split-valence basis sets for second-row elements},
+ journal={J. Am. Chem. Soc.},
+ volume={104},
+ page={5039--5048},
+ year={1982},
+}
+@article{dobbs1987a
+ authors={Dobbs, KD and Hehre, WJ},
+ title={Molecular orbital theory of the properties of inorganic and organometallic compounds 5. Extended basis sets for first-row transition metals},
+ journal={J. Comput. Chem.},
+ volume={8},
+ page={861--879},
+ year={1987},
+}
+@article{dobbs1987b
+ authors={Dobbs, KD and Hehre, WJ},
+ title={Molecular orbital theory of the properties of inorganic and organometallic compounds. 6. Extended basis sets for second-row transition metals},
+ journal={J. Comput. Chem.},
+ volume={8},
+ page={880--893},
+ year={1987},
+}
+@article{dithcfield1971
+ authors={Dithcfield, R and Hehre, W and Pople, J},
+ title={Self-consistent molecular-orbital methods. 9. Extended Gaussian-type basis for molecular-orbital studies of organic molecules},
+ journal={J. Chem. Phys.},
+ volume={54},
+ page={2921--2923},
+ year={1971},
+}
+@article{hehre1972
+ authors={Hehre, Warren J and Ditchfield, Robert and Pople, John A},
+ title={Self—consistent molecular orbital methods. XII. Further extensions of Gaussian—type basis sets for use in molecular orbital studies of organic molecules},
+ journal={J. Chem. Phys.},
+ volume={56},
+ page={2257--2261},
+ year={1972},
+}
+@article{hariharan1973
+ authors={Hariharan, Praveen C and Pople, John A},
+ title={The influence of polarization functions on molecular orbital hydrogenation energies},
+ journal={Theor. Chim. Acta},
+ volume={28},
+ page={213--222},
+ year={1973},
+}
+@article{hariharan1974
+ authors={Hariharan, PC and Pople, J\_A\_},
+ title={Accuracy of AH n equilibrium geometries by single determinant molecular orbital theory},
+ journal={Mol. Phys.},
+ volume={27},
+ page={209--214},
+ year={1974},
+}
+@article{gordon1980
+ authors={Gordon, Mark S},
+ title={The isomers of silacyclopropane},
+ journal={Chem. Phys. Lett.},
+ volume={76},
+ page={163--168},
+ year={1980},
+}
+@article{francl1982
+ authors={Francl, Michelle M and Pietro, William J and Hehre, Warren J and Binkley, J Stephen and Gordon, Mark S and DeFrees, Douglas J and Pople, John A},
+ title={Self-consistent molecular orbital methods. XXIII. A polarization-type basis set for second-row elements},
+ journal={J. Chem. Phys.},
+ volume={77},
+ page={3654--3665},
+ year={1982},
+}
+@article{weigend2005
+ authors={Weigend, Florian and Ahlrichs, Reinhart},
+ title={Balanced basis sets of split valence, triple zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={7},
+ page={3297--3305},
+ year={2005},
+}
+@article{weigend2006
+ authors={Weigend, Florian},
+ title={Accurate Coulomb-fitting basis sets for H to Rn},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={8},
+ page={1057--1065},
+ year={2006},
+}
+@article{sto3g
+ authors={Hehre, Warren J and Stewart, Robert F and Pople, John A},
+ title={self-consistent molecular-orbital methods. i. use of gaussian expansions of Slater-type atomic orbitals},
+ journal={J. Chem. Phys.},
+ volume={51},
+ page={2657--2664},
+ year={1969},
+}
+@article{mini
+ authors={Tatewaki, Hiroshi and Huzinaga, Sigeru},
+ title={A systematic preparation of new contracted Gaussian-type orbital sets. III. Second-row atoms from Li through ne},
+ journal={J. Comput. Chem.},
+ volume={1},
+ page={205--228},
+ year={1980},
+}
+@article{jensen1
+ authors={Jensen, Frank},
+ title={Polarization consistent basis sets: Principles},
+ journal={J. Chem. Phys.},
+ volume={115},
+ page={9113--9125},
+ year={2001},
+}
+@article{jensen2
+ authors={Jensen, Frank},
+ title={Polarization consistent basis sets. II. Estimating the Kohn--Sham basis set limit},
+ journal={J. Chem. Phys.},
+ volume={116},
+ page={7372--7379},
+ year={2002},
+}
+@article{jensen3
+ authors={Jensen, Frank},
+ title={Polarization consistent basis sets. III. The importance of diffuse functions},
+ journal={J. Chem. Phys.},
+ volume={117},
+ page={9234--9240},
+ year={2002},
+}
+@article{jensen4
+ authors={Jensen, Frank and Helgaker, Trygve},
+ title={Polarization consistent basis sets. V. The elements Si--Cl},
+ journal={J. Chem. Phys.},
+ volume={121},
+ page={3463--3470},
+ year={2004},
+}
+@article{b3
+ authors={A. D. Becke},
+ title={Density-functional thermochemistry. III. The role of exact exchange},
+ journal={J. Chem. Phys.},
+ volume={98},
+ page={5648--5652},
+ year={1993},
+}
+@article{lyp
+ authors={Lee, Chengteh and Yang, Weitao and Parr, Robert G},
+ title={Development of the Colle-Salvetti correlation-energy formula into a functional of the electron density},
+ journal={Phys. Rev. B},
+ volume={37},
+ page={785},
+ year={1988},
+}
+@article{dunning1
+ authors={Dunning Jr, Thom H},
+ title={Gaussian basis sets for use in correlated molecular calculations. I. The atoms boron through neon and hydrogen},
+ journal={J. Chem. Phys.},
+ volume={90},
+ page={1007--1023},
+ year={1989},
+}
+@article{dunning2
+ authors={Woon, David E and Dunning Jr, Thom H},
+ title={Gaussian basis sets for use in correlated molecular calculations. III. The atoms aluminum through argon},
+ journal={J. Chem. Phys.},
+ volume={98},
+ page={1358--1371},
+ year={1993},
+}
+@article{grimme2010
+ authors={Grimme, Stefan and Antony, Jens and Ehrlich, Stephan and Krieg, Helge},
+ title={A consistent and accurate ab initio parametrization of density functional dispersion correction (DFT-D) for the 94 elements H-Pu},
+ journal={J. Chem. Phys.},
+ volume={132},
+ page={154104},
+ year={2010},
+}
+@article{xdmbasis
+ authors={{Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Dale}, S. G. and {DiLabio}, G. A.},
+ title={Efficient basis sets for non-covalent interactions in density-functional theory},
+ journal={J. Chem. Phys.},
+ volume={139},
+ page={214109},
+ year={2013},
+ doi={10.1063/1.4832325},
+}
+@article{witte2016
+ authors={Witte, Jonathon and Neaton, Jeffrey B and Head-Gordon, Martin},
+ title={Push it to the limit: Characterizing the convergence of common sequences of basis sets for intermolecular interactions as described by density functional theory},
+ journal={J. Chem. Phys.},
+ volume={144},
+ page={194306},
+ year={2016},
+}
+@article{davidson1986
+ authors={Davidson, Ernest R and Feller, David},
+ title={Basis set selection for molecular calculations},
+ journal={Chem. Rev},
+ volume={86},
+ page={681--696},
+ year={1986},
+}
+@article{andzelm1984
+ authors={Andzelm, Jan and K{\l}obukowski, Mariusz and Radzio-Andzelm, El{\.z}bieta},
+ title={Compact contracted Gaussian-type basis sets for halogen atoms. Basis-set superposition effects on molecular properties},
+ journal={J. Comput. Chem.},
+ volume={5},
+ page={146--161},
+ year={1984},
+}
+@article{kruse2012
+ authors={Kruse, Holger and Grimme, Stefan},
+ title={A geometrical correction for the inter-and intra-molecular basis set superposition error in Hartree-Fock and density functional theory calculations for large systems},
+ journal={J. Chem. Phys.},
+ volume={136},
+ page={04B613},
+ year={2012},
+}
+@article{hbs66
+ authors={{DiLabio}, G. A. and {Johnson}, E. R. and {Otero-de-la-Roza}, A.},
+ title={Performance of conventional and dispersion-corrected density-functional theory methods for hydrogen bonding interaction energies},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={15},
+ page={12821--12828},
+ year={2013},
+ doi={10.1039/C3CP51559A},
+}
+@article{halogen
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R. and {DiLabio}, G. A.},
+ title={Halogen bonding from dispersion-corrected density-functional theory: the role of delocalization error},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={5436--5447},
+ year={2014},
+ doi={10.1021/ct500899h},
+}
+@article{dcacp
+ authors={Von Lilienfeld, O Anatole and Tavernelli, Ivano and Rothlisberger, Ursula and Sebastiani, Daniel},
+ title={Optimization of effective atom centered potentials for London dispersion forces in density functional theory},
+ journal={Phys. Rev. Lett.},
+ volume={93},
+ page={153004},
+ year={2004},
+}
+@article{qcp
+ authors={DiLabio, Gino A and Hurley, Margaret M and Christiansen, Phillip A},
+ title={Simple one-electron quantum capping potentials for use in hybrid QM/MM studies of biological molecules},
+ journal={J. Chem. Phys.},
+ volume={116},
+ page={9578--9584},
+ year={2002},
+}
+@article{hfacp
+ authors={Prasad, Viki Kumar and Otero-de-la-Roza, Alberto and DiLabio, Gino A},
+ title={Atom-centered potentials with dispersion-corrected minimal-basis-set Hartree--Fock: an efficient and accurate computational approach for large molecular systems},
+ journal={J. Chem. Theory Comput.},
+ volume={14},
+ page={726--738},
+ year={2018},
+}
+@article{lasso
+ authors={Tibshirani, Robert},
+ title={Regression shrinkage and selection via the lasso},
+ journal={J. R. Statist. Soc. B},
+ volume={58},
+ page={267--288},
+ year={1996},
+}
+@article{osborne2000
+ authors={Osborne, Michael R and Presnell, Brett and Turlach, Berwin A},
+ title={A new approach to variable selection in least squares problems},
+ journal={IMA J. Num. Anal.},
+ volume={20},
+ page={389--403},
+ year={2000},
+}
+@article{wb97xd1
+ authors={Chai, Jeng-Da and Head-Gordon, Martin},
+ title={Systematic optimization of long-range corrected hybrid density functionals},
+ journal={J. Chem. Phys.},
+ volume={128},
+ page={084106},
+ year={2008},
+}
+@article{wb97xd2
+ authors={Chai, Jeng-Da and Head-Gordon, Martin},
+ title={Long-range corrected hybrid density functionals with damped atom--atom dispersion corrections},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={10},
+ page={6615--6620},
+ year={2008},
+}
+@article{pepconf
+ authors={Prasad, Viki Kumar and Otero-de-La-Roza, Alberto and DiLabio, Gino A},
+ title={PEPCONF, a diverse data set of peptide conformational energies},
+ journal={Sci. Data},
+ volume={6},
+ page={180310},
+ year={2019},
+}
+@article{xdmhybrid
+ authors={Otero-de-la-Roza, A and Johnson, E R},
+ title={Non-Covalent Interactions and Thermochemistry using XDM-Corrected Hybrid and Range-Separated Hybrid Density Functionals},
+ journal={J. Chem. Phys.},
+ volume={138},
+ page={204109},
+ year={2013},
+}
+@article{xdm
+ authors={Becke, A. D. and Johnson, E. R.},
+ title={Exchange-hole dipole moment and the dispersion interaction revisited},
+ journal={J. Chem. Phys.},
+ volume={127},
+ page={154108},
+ year={2007},
+}
+@article{lcwpbe1
+ authors={Oleg A. Vydrov and Gustavo E. Scuseria},
+ title={Assessment of a long-range corrected hybrid functional},
+ journal={J. Chem. Phys.},
+ volume={125},
+ page={234109},
+ year={2006},
+}
+@article{lcwpbe2
+ authors={Oleg A. Vydrov and Jochen Heyd and Aliaksandr V. Krukau and Gustavo E. Scuseria},
+ title={Importance of short-range versus long-range Hartree-Fock exchange for the performance of hybrid density functionals},
+ journal={J. Chem. Phys.},
+ volume={125},
+ page={074106},
+ year={2006},
+}
+@article{kalescky2014
+ authors={Kalescky, Robert and Kraka, Elfi and Cremer, Dieter},
+ title={Accurate determination of the binding energy of the formic acid dimer: The importance of geometry relaxation},
+ journal={J. Chem. Phys.},
+ volume={140},
+ page={084315},
+ year={2014},
+}
+@article{nbody1
+ authors={{Otero-de-la-Roza}, A. and {DiLabio}, G. A. and {Johnson}, E. R.},
+ title={Exchange-correlation effects for non-covalent interactions in density-functional theory},
+ journal={J. Chem. Theory Comput.},
+ volume={12},
+ page={3160--3175},
+ year={2016},
+ doi={10.1021/acs.jctc.6b00298},
+}
+@article{wateracp
+ authors={Holmes, Jake D and Otero-de-la-Roza, Alberto and DiLabio, Gino A},
+ title={Accurate Modeling of Water Clusters with Density-Functional Theory Using Atom-Centered Potentials},
+ journal={J. Chem. Theory Comput.},
+ volume={13},
+ page={4205--4215},
+ year={2017},
+}
+@article{hf-3c
+ authors={Sure, Rebecca and Grimme, Stefan},
+ title={Corrected small basis set Hartree-Fock method for large systems},
+ journal={J. Comput. Chem.},
+ volume={34},
+ page={1672--1685},
+ year={2013},
+}
+@article{kulik2016
+ authors={Kulik, Heather J and Seelam, Natasha and Mar, Brendan D and Mart{\'\i}nez, Todd J},
+ title={Adapting DFT+U for the chemically motivated correction of minimal basis set incompleteness},
+ journal={J. Phys. Chem. A},
+ volume={120},
+ page={5939--5949},
+ year={2016},
+}
+@article{sure2015
+ authors={Sure, Rebecca and Brandenburg, Jan Gerit and Grimme, Stefan},
+ title={Small Atomic Orbital Basis Set First-Principles Quantum Chemical Methods for Large Molecular and Periodic Systems: A Critical Analysis of Error Sources},
+ journal={ChemistryOpen},
+ volume={5},
+ page={94},
+ year={2015},
+}
+@article{goerigk2013
+ authors={Goerigk, Lars and Reimers, Jeffrey R},
+ title={Efficient methods for the quantum chemical treatment of protein structures: the effects of london-dispersion and basis-set incompleteness on peptide and water-cluster geometries},
+ journal={J. Chem. Theory Comput.},
+ volume={9},
+ page={3240--3251},
+ year={2013},
+}
+@article{galano2006
+ authors={Galano, Annia and Alvarez--Idaboy, J Ra{\'u}l},
+ title={A new approach to counterpoise correction to BSSE},
+ journal={J. Comput. Chem.},
+ volume={27},
+ page={1203--1210},
+ year={2006},
+}
+@article{jensen2010
+ authors={Jensen, Frank},
+ title={An atomic counterpoise method for estimating inter-and intramolecular basis set superposition errors},
+ journal={J. Chem. Theory Comput.},
+ volume={6},
+ page={100--106},
+ year={2010},
+}
+@article{hehre1970
+ authors={Hehre, Warren J and Ditchfield, R and Radom, L and Pople, John A},
+ title={Molecular orbital theory of the electronic structure of organic compounds. V. Molecular theory of bond separation},
+ journal={J. Am. Chem. Soc.},
+ volume={92},
+ page={4796--4801},
+ year={1970},
+}
+@article{curtiss1999
+ authors={Curtiss, Larry A and Redfern, Paul C and Raghavachari, Krishnan and Rassolov, Vitaly and Pople, John A},
+ title={Gaussian-3 theory using reduced Mo/ller-Plesset order},
+ journal={J. Chem. Phys.},
+ volume={110},
+ page={4703--4709},
+ year={1999},
+}
+@article{dill1975
+ authors={Dill, James D and Pople, John A},
+ title={Self-consistent molecular orbital methods. XV. Extended Gaussian-type basis sets for lithium, beryllium, and boron},
+ journal={J. Chem. Phys.},
+ volume={62},
+ page={2921--2923},
+ year={1975},
+}
+@article{clark1983
+ authors={Clark, Timothy and Chandrasekhar, Jayaraman and Spitznagel, G{\"u}nther W and Schleyer, Paul Von Ragu{\'e}},
+ title={Efficient diffuse function-augmented basis sets for anion calculations. III. The 3-21+ G basis set for first-row elements, Li--F},
+ journal={J. Comput. Chem.},
+ volume={4},
+ page={294--301},
+ year={1983},
+}
+@article{frisch1984
+ authors={Frisch, Michael J and Pople, John A and Binkley, J Stephen},
+ title={Self-consistent molecular orbital methods 25. Supplementary functions for Gaussian basis sets},
+ journal={J. Chem. Phys.},
+ volume={80},
+ page={3265--3269},
+ year={1984},
+}
+@article{rassolov1998
+ authors={Rassolov, Vitaly A and Pople, John A and Ratner, Mark A and Windus, Theresa L},
+ title={6-31G* basis set for atoms K through Zn},
+ journal={J. Chem. Phys.},
+ volume={109},
+ page={1223--1229},
+ year={1998},
+}
+@article{mackie2011
+ authors={Mackie, Iain D and DiLabio, Gino A},
+ title={Approximations to complete basis set-extrapolated, highly correlated non-covalent interaction energies},
+ journal={J. Chem. Phys.},
+ volume={135},
+ page={134318},
+ year={2011},
+}
+@article{burns2013
+ authors={Burns, Lori A and Marshall, Michael S and Sherrill, C David},
+ title={Comparing counterpoise-corrected, uncorrected, and averaged binding energies for benchmarking noncovalent interactions},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={49--57},
+ year={2014},
+}
+@article{rezac2011
+ authors={{\v{R}}ez{\'a}{\v{c}}, Jan and Riley, Kevin E and Hobza, Pavel},
+ title={S66: A well-balanced database of benchmark interaction energies relevant to biomolecular structures},
+ journal={J. Chem. Theory Comput.},
+ volume={7},
+ page={2427--2438},
+ year={2011},
+}
+@article{dilabio2008
+ authors={DiLabio, Gino A},
+ title={Accurate treatment of van der Waals interactions using standard density functional theory methods with effective core-type potentials: Application to carbon-containing dimers},
+ journal={Chem. Phys. Lett.},
+ volume={455},
+ page={348--353},
+ year={2008},
+}
+@article{mackie2008
+ authors={Mackie, Iain D and DiLabio, Gino A},
+ title={Interactions in large, polyaromatic hydrocarbon dimers: application of density functional theory with dispersion corrections},
+ journal={J. Phys. Chem. A},
+ volume={112},
+ page={10968--10976},
+ year={2008},
+}
+@article{mackie2010
+ authors={Mackie, Iain D and DiLabio, Gino A},
+ title={Accurate dispersion interactions from standard density-functional theory methods with small basis sets},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={12},
+ page={6092--6098},
+ year={2010},
+}
+@article{torres2012
+ authors={Torres, Edmanuel and DiLabio, Gino A},
+ title={A (nearly) universally applicable method for modeling noncovalent interactions using B3LYP},
+ journal={J. Phys. Chem. Lett.},
+ volume={3},
+ page={1738--1744},
+ year={2012},
+}
+@article{dilabio2014
+ authors={DiLabio, Gino A and Koleini, Mohammad},
+ title={Dispersion-correcting potentials can significantly improve the bond dissociation enthalpies and noncovalent binding energies predicted by density-functional theory},
+ journal={J. Chem. Phys.},
+ volume={140},
+ page={18A542},
+ year={2014},
+}
+@article{vansanten2015
+ authors={Van Santen, Jeffrey A and DiLabio, Gino A},
+ title={Dispersion Corrections Improve the Accuracy of Both Noncovalent and Covalent Interactions Energies Predicted by a Density-Functional Theory Approximation},
+ journal={J. Phys. Chem. A},
+ volume={119},
+ page={6703--6713},
+ year={2015},
+}
+@article{goerigk2011
+ authors={Goerigk, Lars and Kruse, Holger and Grimme, Stefan},
+ title={Benchmarking Density Functional Methods against the S66 and S66x8 Datasets for Non-Covalent Interactions},
+ journal={ChemPhysChem},
+ volume={12},
+ page={3421--3433},
+ year={2011},
+}
+@article{aorss3
+ authors={{Christian}, M. S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Adsorption of graphene to nickel (111) using the exchange-hole dipole moment model},
+ journal={Carbon},
+ year={2017},
+}
+@article{aorss1
+ authors={{Ooi}, K. K. and {Yeo}, C. I. and {Ang}, K.-P. and {Akim}, A. M. and {Cheah}, Y.-K. and {Otero-de-la-Roza}, A. and {Seng}, H.-L. and {Tiekink}, E. R. T.},
+ title={G2/M cell cycle arrest on {HT}-29 cancer cells and toxicity assessment of triphenylphosphanegold({I}) carbonimidothioates, {Ph$_3$PAu[SC(OR) = NPh]}, {R = Me, Et and {}$^i$Pr}, during zebrafish development},
+ journal={J. Inorg. Biol.},
+ year={2016},
+}
+@article{aspirin
+ authors={{LeBlanc}, L. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Evaluation of shear-slip transitions in crystalline aspirin by density-functional theory},
+ journal={Cryst. Growth Des.},
+ volume={16},
+ page={6867--6873},
+ year={2016},
+ doi={10.1021/acs.cgd.6b01038},
+}
+@article{clathrates
+ authors={{Izquierdo-Ruiz}, F. and {Otero-de-la-Roza}, A. and {Contreras-Garc\'{i}a}, J. and {Prieto-Ballesteros}, O. and {Recio}, J. M.},
+ title={Effects of the CO$_2$ guest molecule on the sI clathrate hydrate structure},
+ journal={Materials},
+ volume={9},
+ page={777},
+ year={2016},
+ doi={10.3390/ma9090777},
+}
+@article{aupi2
+ authors={{Yeo}, C. I. and {Tan}, S. L. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.},
+ title={A conformational polymorph of Ph$_3$PAu[SC(OEt)=NPh] featuring an intramolecular Au...$\pi$ interaction},
+ journal={Z. Kristallogr.},
+ volume={231},
+ page={653--661},
+ year={2016},
+ doi={10.1515/zkri-2016-1988},
+}
+@article{pyricarbamate
+ authors={{Vellasco}, W. T. and {Gomes}, C. R. B. and {Vasconcelos}, T. R. A. and {Wardell}, J. L. and {Otero-de-la-Roza}, A. and {Jotani}, M. M. and {Tiekink}, E. R. T.},
+ title={Crystallographic and computational study of t-butyl N-[3-hydroxy-1-phenyl-4-(pyridin-2-ylsulfanyl)butan-2-yl]carbamate and its pyrimidin-2-yl analogue},
+ journal={Z. Kristallogr.},
+ volume={231},
+ page={663--672},
+ year={2016},
+ doi={10.1515/zkri-2016-1990},
+}
+@article{tmcomplex
+ authors={{Ben Hassan}, D. and {Rekik}, W. and {Otero-de-la-Roza}, A. and {Ben Mefteh}, F. and {Roisnel}, T. and {Bataille}, T. and {Na\"{i}li}, H.},
+ title={Non-covalently generated 3D supramolecular crystal structure in a new family of hybrid nitrates: thermal behavior and in vitro antimicrobial potential},
+ journal={Polyhedron},
+ volume={119},
+ page={238--247},
+ year={2016},
+ doi={10.1016/j.poly.2016.08.043},
+}
+@article{wallach
+ authors={{Otero-de-la-Roza}, A. and {Hein}, J. E. and {Johnson}, E. R.},
+ title={Reevaluating the stability and prevalence of conglomerates: implications for preferential crystallization},
+ journal={Cryst. Growth Des.},
+ volume={16},
+ page={6055--6059},
+ year={2016},
+ doi={10.1021/acs.cgd.6b01088},
+}
+@article{junctions
+ authors={{Gibbs}, J. and {Otero-de-la-Roza}, A. and {Bergren}, A. J. and {DiLabio}, G. A.},
+ title={Interpretation of molecular device transport calculation},
+ journal={Can. J. Chem.},
+ volume={94},
+ page={1022--1027},
+ year={2016},
+ doi={10.1139/cjc-2016-0279},
+}
+@article{hb-piperidine
+ authors={{Suresh}, T. and {Vijayakumar}, V. and {Jyothish Kumar}, L. and {Sarveswari}, S. and {Jotani}, M. M. and {Otero-de-la-Roza}, A. and {Tan}, Y. S. and {Tiekink}, E. R. T.},
+ title={Hydrogen bonding in 2,6-bis(4-fluorophenyl)-3,5-dimethylpiperidin-4-one methanol solvate},
+ journal={Z. Kristallogr.},
+ volume={231},
+ page={365--374},
+ year={2016},
+ doi={10.1515/zkri-2015-1915},
+}
+@article{2nitrile
+ authors={{Shamsudin}, N and {Tan}, Y. S. and {Young}, D. J. and {Jotani}, M. M. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.},
+ title={4-[(1-Benzyl-1H-1,2,3-triazol-4-yl)methoxy]benzene-1,2-dicarbonitrile: crystal structure, Hirshfeld surface analysis and energy-minimization calculations},
+ journal={Acta Cryst. E},
+ volume={72},
+ page={563--569},
+ year={2016},
+ doi={10.1107/S2056989016004722},
+}
+@article{chpi-pdxanthate
+ authors={{Tan}, Y. S. and {Nadiah Abdul Halim}, S. and {Molloy}, K. C. and {Sudlow}, A. L. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.},
+ title={Persistence of C-H...$\pi$(chelate ring) interactions in the crystal structures of palladium bis(O-alkyl\-dithiocarbonate)s, Pd(S$_2$COR)$_2$. The utility of Pd(S$_2$COR)$_2$ as precursors for palladium sulphide materials},
+ journal={CrystEngComm},
+ volume={18},
+ page={1105--1117},
+ year={2016},
+ doi={10.1039/c5ce02126j},
+}
+@article{digold
+ authors={{Yeo}, C. I. and {Khoo}, C.-H. and {Chu}, W.-C. and {Chen}, B.-J. and {Chu}, P.-L. and {Sim}, J.-H. and {Cheah}, Y.-K. and {Ahmad}, J. and {Nadiah Abdul Halim}, S. and {Seng}, H.-L. and {Ng}, S. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.},
+ title={The importance of Au...$\pi$(aryl) interactions in the formation of spherical aggregates in binuclear phosphane gold(I) complexes of a bipodal thiocarbamate dianion: A combined crystallographic and computational study, and anti-microbial activity},
+ journal={RSC Advances},
+ volume={5},
+ page={41401--41411},
+ year={2015},
+ doi={10.1039/c5ra05604g},
+}
+@article{abo3
+ authors={{Gao}, H. and {Otero-de-la-Roza}, A. and {Gu}, J. and {Stone}, D. and {Aouadi}, S. and {Johnson}, E. R. and {Martini}, A.},
+ title={(Ag,Cu)-Ta-O ternaries as high temperature solid lubricants},
+ journal={ACS Appl. Mater. Inter.},
+ volume={7},
+ page={15422--15429},
+ year={2015},
+ doi={10.1021/acsami.5b03543},
+}
+@article{bipodal-carbamate
+ authors={{Al Muna Mohd Nor}, N. and {Ahmad}, J. and {Abdullah}, Z. and {Nadiah Abdul Halim}, S. and {Otero-de-la-Roza}, A. and {Tiekink}, E. R. T.},
+ title={Bipodal benzoylthiocarbamic acid esters: crystal and molecular structures of R=Et (a polymorph), and of a binuclear Cu(I) complex, R=iPr},
+ journal={Z. Kristallogr.},
+ volume={230},
+ page={397--405},
+ year={2015},
+ doi={10.1515/zkri-2014-1820},
+}
+@article{oscil-friction
+ authors={{Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.},
+ title={Oscillatory motion in layered materials: graphene, boron nitride, and molybdenum disulfide},
+ journal={Nanotechnology},
+ volume={26},
+ page={165701},
+ year={2015},
+ doi={10.1088/0957-4484/26/16/165701},
+}
+@article{tibond
+ authors={{Christian}, M. S. and {Whittleton}, S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Chemical bonding and surface interactions in Bi$_2$Se$_3$ and Bi$_4$Se$_3$},
+ journal={Comput. Theor. Chem.},
+ volume={1053},
+ page={238--244},
+ year={2015},
+ doi={10.1016/j.comptc.2014.09.023},
+}
+@article{clathrate-hpr
+ authors={{Izquierdo-Ruiz}, F. and {Otero-de-la-Roza}, A. and {Contreras-Garc\'{i}a}, J. and {Men\'{e}ndez}, J. M. and {Prieto-Ballesteros}, O. and {Recio}, J. M.},
+ title={Guest-host interactions in gas clathrate hydrates under pressure},
+ journal={High Pressure Res.},
+ volume={35},
+ page={49--56},
+ year={2015},
+ doi={10.1080/08957959.2014.996560},
+}
+@article{epxars-fepxas
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V. and {Tiekink}, E. R. T. and {Zukerman-Schpector}, J.},
+ title={Unraveling interactions in molecular crystals using dispersion corrected density functional theory: the case of the epoxydihydroarsanthrene molecules},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={5010--5019},
+ year={2014},
+ doi={10.1021/ct500832g},
+}
+@article{graphitestress-theo
+ authors={{Abbasi-P\'{e}rez}, D. and {Marqu\'{e}s}, M. and {Men\'{e}ndez}, J. M. and {Recio}, J. M. and {Otero-de-la-Roza}, A. and {del Corro}, E. and {Taravillo}, M. and {Baonza}, V. G.},
+ title={Modeling graphite under stress: equations of state, vibrational modes, and interlayer friction},
+ journal={Phys. Rev. B},
+ volume={90},
+ page={054105},
+ year={2014},
+ doi={10.1103/PhysRevB.90.054105},
+}
+@article{agtao3surf
+ authors={{Gao}, H. and {Otero-de-la-Roza}, A. and {Aouadi}, S. and {Martini}, A. and {Johnson}, E. R.},
+ title={Chemical basis of the tribological properties of AgTaO$_3$ crystal surfaces},
+ journal={J. Phys. Chem. C},
+ volume={118},
+ page={17577--17584},
+ year={2014},
+ doi={10.1021/jp503673k},
+}
+@article{xdmchiral
+ authors={{Otero-de-la-Roza}, A. and {Cao}, B. H. and {Price}, I. K. and {Hein}, J. E. and {Johnson}, E. R.},
+ title={Predicting the Relative Solubilities of Racemic and Enantiopure Crystals by Density-Functional Theory},
+ journal={Angew. Chem. Int. Ed.},
+ volume={53},
+ page={7879--7882},
+ year={2014},
+ doi={10.1002/anie.201403541},
+}
+@article{graphenemesa
+ authors={{Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.},
+ title={The role of roughness-induced damping in the oscillatory motion of bilayer graphene},
+ journal={Nanotechnology},
+ volume={25},
+ page={425703},
+ year={2014},
+ doi={10.1088/0957-4484/25/42/425703},
+}
+@article{anales
+ authors={{Contreras-Garc\'{i}a}, J. and {Otero-de-la-Roza}, A. and {Recio}, J. M.},
+ title={El enlace qu\'{i}mico y su supervivencia en la Qu\'{i}mica Cu\'{a}ntica},
+ journal={An. R. Soc. Esp. Qu\'{i}m.},
+ volume={110},
+ page={113--120},
+ year={2014},
+}
+@article{electrides
+ authors={{Dale}, S. G. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Density-functional description of electrides},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={16},
+ page={14548--14593},
+ year={2014},
+ doi={10.1039/C3CP55533J},
+}
+@article{xdmgold
+ authors={{Otero-de-la-Roza}, A. and {Mallory}, J. D. and {Johnson}, E. R.},
+ title={Metallophilic interactions from dispersion-corrected density-functional theory},
+ journal={J. Chem. Phys.},
+ volume={140},
+ page={18A504},
+ year={2014},
+ doi={10.1063/1.4862896},
+}
+@article{kevan
+ authors={{Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Dale}, S. G.},
+ title={Extreme density-driven delocalization error for a model solvated-electron system},
+ journal={J. Chem. Phys.},
+ volume={139},
+ page={184116},
+ year={2013},
+ doi={10.1063/1.4829642},
+}
+@article{burrito
+ authors={{Isborn}, C. and {Tang}, C. and {Martini}, A. and {Johnson}, E. R. and {Otero-de-la-Roza}, A. and {Tung}, V.},
+ title={Carbon nanotube chirality determines efficiency of electron transfer to fullerene in all-carbon photovoltaics},
+ journal={J. Phys. Chem. Lett.},
+ volume={4},
+ page={2914--2918},
+ year={2013},
+ doi={10.1021/jz401369s},
+}
+@article{step
+ authors={{Ye}, Z. and {Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Martini}, A.},
+ title={Effect of tip shape on atomic-friction at graphite step edges},
+ journal={Appl. Phys. Lett.},
+ volume={103},
+ page={081601},
+ year={2013},
+ doi={10.1063/1.4818258},
+}
+@article{agtao3
+ authors={{Gao}, H. and {Otero-de-la-Roza}, A. and {Aouadi}, S. and {Johnson}, E. R. and {Martini}, A.},
+ title={An empirical model for silver tantalate},
+ journal={Modelling Simul. Mater. Sci. Eng.},
+ volume={21},
+ page={055002},
+ year={2013},
+ doi={10.1088/0965-0393/21/5/055002},
+}
+@article{xdmc9
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Many-body dispersion interactions from the exchange-hole dipole moment model},
+ journal={J. Chem. Phys.},
+ volume={138},
+ page={054103},
+ year={2013},
+ doi={10.1063/1.4789421},
+}
+@article{kaolin
+ authors={{Johnson}, E. R. and {Otero-de-la-Roza}, A.},
+ title={Adsorption of organic molecules on kaolinite from the exchange-hole dipole moment dispersion model},
+ journal={J. Chem. Theory Comput.},
+ volume={8},
+ page={5124--5131},
+ year={2012},
+ doi={10.1021/ct3006375},
+}
+@article{xdmbench
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={A benchmark for non-covalent interactions in solids},
+ journal={J. Chem. Phys.},
+ volume={137},
+ page={054103},
+ year={2012},
+ doi={10.1063/1.4738961},
+}
+@article{ncisolids
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Contreras-Garc\'{i}a}, J.},
+ title={Revealing non-covalent interactions in solids: {NCI} plots revisited},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={14},
+ page={12165--12172},
+ year={2012},
+ doi={10.1039/C2CP41395G},
+}
+@article{graphitestress
+ authors={{del Corro}, E. and {Otero-de-la-Roza}, A. and {Taravillo}, M. and {Baonza}, V. G.},
+ title={Raman modes and Gr\"{u}neisen parameters of graphite under compressive biaxial stress},
+ journal={Carbon},
+ volume={50},
+ page={4600--4606},
+ year={2012},
+ doi={10.1016/j.carbon.2012.05.046},
+}
+@article{xdmsolids
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Van der {W}aals interactions in solids using the exchange-hole dipole moment},
+ journal={J. Chem. Phys.},
+ volume={136},
+ page={174109},
+ year={2012},
+ doi={10.1063/1.4705760},
+}
+@article{energy-correction
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Equations of state and thermodynamics of solids using empirical corrections in the quasiharmonic approximation},
+ journal={Phys. Rev. B},
+ volume={84},
+ page={184103},
+ year={2011},
+ doi={10.1103/PhysRevB.84.184103},
+}
+@article{cij-partition
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Topological partition of the elastic constants of crystals},
+ journal={J. Phys. Chem. A},
+ volume={115},
+ page={12953--12961},
+ year={2011},
+ doi={10.1021/jp2041718},
+}
+@article{supramolecular
+ authors={{Tiekink}, E. R. T. and {Zukerman-Schpector}, J. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Supramolecular architectures based on {As}(lone pair)...$\pi$ interactions},
+ journal={Chem. Comm.},
+ volume={47},
+ page={7608--7610},
+ year={2011},
+ doi={10.1039/C1CC11412C},
+}
+@article{qhamgo
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Treatment of first-principles data for predictive quasiharmonic thermodynamics of solids: the case of {MgO}},
+ journal={Phys. Rev. B},
+ volume={84},
+ page={024109},
+ year={2011},
+ doi={10.1103/PhysRevB.84.024109},
+}
+@article{ctc-gibbs
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Equations of state in solids. {F}itting theoretical data, possibly including noise and jumps},
+ journal={Comput. Theor. Chem.},
+ volume={975},
+ page={111--115},
+ year={2011},
+ doi={10.1016/j.comptc.2011.03.050},
+}
+@article{gibbs2b
+ authors={{Otero-de-la-Roza}, A. and {Abbasi-P\'{e}rez}, D. and {Lua\~{n}a}, V.},
+ title={{G}ibbs2: a new version of the quasi-harmonic model code. {II}. {M}odels for solid-state thermodynamics, features and implementation},
+ journal={Comput. Phys. Commun.},
+ volume={182},
+ page={2232--2248},
+ year={2011},
+ doi={10.1016/j.cpc.2011.05.009},
+}
+@article{gibbs2a
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={{G}ibbs2: a new version of the quasi-harmonic model code. {I}. {R}obust treatment of the static data},
+ journal={Comput. Phys. Commun.},
+ volume={182},
+ page={1708--1720},
+ year={2011},
+ doi={10.1016/j.cpc.2011.04.016},
+}
+@article{sbasga2
+ authors={{Reshak}, A. H. and {Ouahrani}, T. and {Khenata}, R. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V. and {Baltache}, H.},
+ title={Density functional calculation for the first and second harmonic generation of the chalcopyrite {Ga$_2$AsSb}},
+ journal={Comput. Mater. Sci.},
+ volume={50},
+ page={886--892},
+ year={2011},
+ doi={10.1016/j.commatsci.2010.10.026},
+}
+@article{sbasga2-sbpga2
+ authors={{Ouahrani}, T. and {Otero-de-la-Roza}, A. and {Khenata}, R. and {Lua\~{n}a}, V. and {Amrani}, B.},
+ title={Structural and thermodynamic properties of {SbAsGa$_2$} and {SbPGa$_2$} chalcopyrites},
+ journal={Comput. Mater. Sci.},
+ volume={47},
+ page={655--659},
+ year={2010},
+ doi={j.commatsci.2009.10.001},
+}
+@article{aggase2
+ authors={{Ouahrani}, T. and {Otero-de-la-Roza}, A. and {Reshak}, A. H. and {Khenata}, R. and {Faraoun}, H. I. and {Amrani}, B. and {Mebrouki}, M. and {Lua\~{n}a}, V.},
+ title={Elastic properties and bonding of {AgGaSe$_{2}$} chalcopyrite},
+ journal={Physica B: Condens. Matter},
+ volume={405},
+ page={3658--3664},
+ year={2010},
+ doi={10.1016/j.physb.2010.05.061},
+}
+@article{cdal2se4
+ authors={{Ouahrani}, T. and {Reshak}, A. H. and {Khenata}, R. and {Amrani}, B. and {Mebrouki}, M. and {Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Ab-initio study of the structural, linear and nonlinear optical properties of {CdAl$_2$Se$_4$} defect-chalcopyrite},
+ journal={J. Solid State Chem.},
+ volume={183},
+ page={46--51},
+ year={2010},
+ doi={10.1016/j.jssc.2009.09.034},
+}
+@article{lapla
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={Topological characterization of the electron density {Laplacian} in crystals. The case of the group {IV} elements},
+ journal={J. Chem. Theory Comput.},
+ volume={6},
+ page={3761--3779},
+ year={2010},
+ doi={10.1021/ct100269e},
+}
+@article{qtree
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={A fast and accurate algorithm for {QTAIM} integration in solids},
+ journal={J. Comput. Chem.},
+ volume={32},
+ page={291--305},
+ year={2010},
+ doi={10.1002/jcc.21620},
+}
+@article{variational
+ authors={{Lua\~{n}a}, V. and {Blanco}, M. A. and {Otero-de-la-Roza}, A. and {Recio}, J. M.},
+ title={A linear variational exercise with a simple non-orthogonal basis for the particle-in-the-box problem},
+ journal={Eur. J. Phys.},
+ volume={31},
+ page={101--104},
+ year={2010},
+ doi={10.1088/0143-0807/31/1/010},
+}
+@article{sbpga2
+ authors={{Ouahrani}, T. and {Reshak}, A. H. and {Otero-de-la-Roza}, A. and {Mebrouki}, M. and {Lua\~{n}a}, V. and {Khenata}, R. and {Amrani}, B.},
+ title={First-principles study of structural, electronic, linear and nonlinear optical properties of {Ga$_{2}$PSb} ternary chalcopyrite},
+ journal={Eur. Phys. J. B},
+ volume={72},
+ page={361--366},
+ year={2009},
+ doi={10.1140/epjb/e2009-00345-6},
+}
+@article{critic
+ authors={{Otero-de-la-Roza}, A. and {Blanco}, M. A. and {Mart\'{i}n Pend\'{a}s}, A. and {Lua\~{n}a}, V.},
+ title={{C}ritic: a new program for the topological analysis of solid-state electron densities},
+ journal={Comput. Phys. Commun.},
+ volume={180},
+ page={157--166},
+ year={2009},
+ doi={10.1016/j.cpc.2008.07.018},
+}
+@article{runwien
+ authors={{Otero-de-la-Roza}, A. and {Lua\~{n}a}, V.},
+ title={{R}unwien.awk: a text-based interface for the WIEN package},
+ journal={Comput. Phys. Commun.},
+ volume={180},
+ page={800--812},
+ year={2009},
+ doi={10.1016/j.cpc.2008.11.024},
+}
+@article{b88
+ authors={Becke, Axel D},
+ title={Density-functional exchange-energy approximation with correct asymptotic behavior},
+ journal={Phys. Rev. A},
+ volume={38},
+ page={3098},
+ year={1988},
+}
+@article{s225
+ authors={Gr{\'a}fov{\'a}, L. and Pito\v{n}{\'a}k, M. and \v{R}ez{\'a}\v{c}, J. and Hobza, P.},
+ title={Comparative Study of Selected Wave Function and Density Functional Methods for Noncovalent Interaction Energy Calculations Using the Extended S22 Data Set},
+ journal={J. Chem. Theory Comput.},
+ volume={6},
+ page={2365--2376},
+ year={2010},
+}
+@article{s22
+ authors={Jure{\v{c}}ka, P. and {\v{S}}poner, J. and {\v{C}}ern{\`y}, J. and Hobza, P.},
+ title={Benchmark database of accurate (MP2 and CCSD (T) complete basis set limit) interaction energies of small model complexes, DNA base pairs, and amino acid pairs},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={8},
+ page={1985--1993},
+ year={2006},
+}
+@article{s66
+ authors={{\v{R}}ez{\'a}{\v{c}}, J. and Riley, Kevin E. and Hobza, P.},
+ title={S66: A Well-balanced Database of Benchmark Interaction Energies Relevant to Biomolecular Structures},
+ journal={J. Chem. Theory Comput.},
+ volume={7},
+ page={2427--2438},
+ year={2011},
+}
+@article{s668
+ authors={{\v{R}}ez{\'a}{\v{c}}, J. and Riley, Kevin E. and Hobza, P.},
+ title={Extensions of the {S66} Data Set: More Accurate Interaction Energies and Angular-Displaced Nonequilibrium Geometries},
+ journal={J. Chem. Theory Comput.},
+ volume={7},
+ page={3466--3470},
+ year={2011},
+}
+@article{g3
+ authors={Larry A. Curtiss and Krishnan Raghavachari and Paul C. Redfern and John A. Pople},
+ title={Assessment of Gaussian-3 and density functional theories for a larger experimental test set},
+ journal={J. Chem. Phys.},
+ volume={112},
+ page={7374--7383},
+ year={2000},
+}
+@article{s22b
+ authors={Michael S. Marshall and Lori A. Burns and C. David Sherrill},
+ title={Basis set convergence of the coupled-cluster correction, delta[sub MP2][sup CCSD(T)]: Best practices for benchmarking non-covalent interactions and the attendant revision of the S22, NBC10, HBC6, and HSG databases},
+ journal={J. Chem. Phys.},
+ volume={135},
+ page={194102},
+ year={2011},
+}
+@article{s66b
+ authors={DiLabio, G. A. and Johnson, E. R. and Otero-de-la-Roza, A.},
+ title={Performance of conventional and dispersion-corrected density-functional theory methods for hydrogen bonding interaction energies},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={15},
+ page={12821},
+ year={2013},
+}
+@article{kb49b
+ authors={Kannemann, F. O. and Becke, A. D.},
+ title={van der Waals Interactions in Density-Functional Theory: Intermolecular Complexes},
+ journal={J. Chem. Theory Comput.},
+ volume={6},
+ page={1081--1088},
+ year={2010},
+}
+@article{kb49a
+ authors={Kannemann, F. O. and Becke, A. D.},
+ title={Van der waals interactions in density-functional theory: Rare-gas diatomics},
+ journal={J. Chem. Theory Comput.},
+ volume={5},
+ page={719--727},
+ year={2009},
+}
+@article{p26
+ authors={Valdes, Haydee and Pluh{\'a}{\v{c}}kov{\'a}, Krist{\`y}na and Piton{\'a}k, Michal and {\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel},
+ title={Benchmark database on isolated small peptides containing an aromatic side chain: comparison between wave function and density functional theory methods and empirical force field},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={10},
+ page={2747--2757},
+ year={2008},
+}
+@article{l7
+ authors={Sedlak, Robert and Janowski, Tomasz and Pito\v{n}{\'a}k, Michal and {\v{R}}ez{\'a}{\v{c}}, Jan and Pulay, Peter and Hobza, Pavel},
+ title={Accuracy of quantum chemical methods for large noncovalent complexes},
+ journal={J. Chem. Theory Comput.},
+ volume={9},
+ page={3364--3374},
+ year={2013},
+}
+@article{hsg0
+ authors={Faver, John C and Benson, Mark L and He, Xiao and Roberts, Benjamin P and Wang, Bing and Marshall, Michael S and Kennedy, Matthew R and Sherrill, C David and Merz Jr, Kenneth M},
+ title={Formal estimation of errors in computed absolute interaction energies of protein-ligand complexes},
+ journal={J. Chem. Theory Comput.},
+ volume={7},
+ page={790--797},
+ year={2011},
+}
+@article{ionichb
+ authors={{\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel},
+ title={Advanced corrections of hydrogen bonding and dispersion for semiempirical quantum mechanical methods},
+ journal={J. Chem. Theory Comput.},
+ volume={8},
+ page={141--151},
+ year={2011},
+}
+@article{gmtkn55
+ authors={Goerigk, Lars and Hansen, Andreas and Bauer, Christoph and Ehrlich, Stephan and Najibi, Asim and Grimme, Stefan},
+ title={A look at the density functional theory zoo with the advanced GMTKN55 database for general main group thermochemistry, kinetics and noncovalent interactions},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={19},
+ page={32184--32215},
+ year={2017},
+}
+@article{gmtkn30
+ authors={Goerigk, Lars and Grimme, Stefan},
+ title={A thorough benchmark of density functional methods for general main group thermochemistry, kinetics, and noncovalent interactions},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={13},
+ page={6670--6688},
+ year={2011},
+}
+@article{bsr36
+ authors={Krieg, Helge and Grimme, Stefan},
+ title={Thermochemical benchmarking of hydrocarbon bond separation reaction energies: Jacob's ladder is not reversed!},
+ journal={Mol. Phys.},
+ volume={108},
+ page={2655--2666},
+ year={2010},
+}
+@article{pconf
+ authors={{\v{R}}eha, D and Valdes, H and Vondr{\'a}{\v{s}}ek, J and Hobza, P and Abu-Riziq, Ali and Crews, Bridgit and de Vries, Mattanjah S},
+ title={Structure and IR Spectrum of Phenylalanyl--Glycyl--Glycine Tripetide in the Gas-Phase: IR/UV Experiments, Ab Initio Quantum Chemical Calculations, and Molecular Dynamic Simulations},
+ journal={Chem. Eur. J.},
+ volume={11},
+ page={6803--6817},
+ year={2005},
+}
+@article{sconf
+ authors={Csonka, G{\'a}bor I and French, Alfred D and Johnson, Glenn P and Stortz, Carlos A},
+ title={Evaluation of density functionals and basis sets for carbohydrates},
+ journal={J. Chem. Theory Comput.},
+ volume={5},
+ page={679--692},
+ year={2009},
+}
+@article{water
+ authors={Temelso, B. and Archer, K. A. and Shields, G. C.},
+ title={Benchmark structures and binding energies of small water clusters with anharmonicity corrections},
+ journal={J. Phys. Chem. A},
+ volume={115},
+ page={12034--12046},
+ year={2011},
+}
+@article{x40
+ authors={{\v{R}}ez{\'a}{\v{c}}, Jan and Riley, Kevin E and Hobza, Pavel},
+ title={Benchmark calculations of noncovalent interactions of halogenated molecules},
+ journal={J. Chem. Theory Comput.},
+ volume={8},
+ page={4285--4292},
+ year={2012},
+}
+@article{s8
+ authors={Mintz, Benjamin J and Parks, Jerry M},
+ title={Benchmark interaction energies for biologically relevant noncovalent complexes containing divalent sulfur},
+ journal={J. Phys. Chem. A},
+ volume={116},
+ page={1086--1092},
+ year={2012},
+}
+@article{bde03
+ authors={Johnson, Erin R and Clarkin, Owen J and DiLabio, Gino A},
+ title={Density functional theory based model calculations for accurate bond dissociation enthalpies. 3. A single approach for XH, XX, and XY (X, Y= C, N, O, S, halogen) bonds},
+ journal={J. Phys. Chem. A},
+ volume={107},
+ page={9953--9963},
+ year={2003},
+}
+@article{aconf
+ authors={Gruzman, David and Karton, Amir and Martin, Jan ML},
+ title={Performance of Ab Initio and Density Functional Methods for Conformational Equilibria of CnH2n+ 2 Alkane Isomers (n= 4- 8)},
+ journal={J. Phys. Chem. A},
+ volume={113},
+ page={11974--11983},
+ year={2009},
+}
+@article{bhperi1
+ authors={Karton, Amir and Tarnopolsky, Alex and Lamere, Jean-Fran{\c{c}}ois and Schatz, George C and Martin, Jan ML},
+ title={Highly accurate first-principles benchmark data sets for the parametrization and validation of density functional and other approximate methods. Derivation of a robust, generally applicable, double-hybrid functional for thermochemistry and thermochemical kinetics},
+ journal={J. Phys. Chem. A},
+ volume={112},
+ page={12868--12886},
+ year={2008},
+}
+@article{bhperi2
+ authors={Guner, Vildan and Khuong, Kelli S and Leach, Andrew G and Lee, Patrick S and Bartberger, Michael D and Houk, KN},
+ title={A standard set of pericyclic reactions of hydrocarbons for the benchmarking of computational methods: the performance of ab initio, density functional, CASSCF, CASPT2, and CBS-QB3 methods for the prediction of activation barriers, reaction energetics, and transition state geometries},
+ journal={J. Phys. Chem. A},
+ volume={107},
+ page={11445--11459},
+ year={2003},
+}
+@article{bhperi3
+ authors={Ess, Daniel H and Houk, KN},
+ title={Activation energies of pericyclic reactions: Performance of DFT, MP2, and CBS-QB3 methods for the prediction of activation barriers and reaction energetics of 1, 3-dipolar cycloadditions, and revised activation enthalpies for a standard set of hydrocarbon pericyclic reactions},
+ journal={J. Phys. Chem. A},
+ volume={109},
+ page={9542--9553},
+ year={2005},
+}
+@article{bhperi4
+ authors={Dinadayalane, TC and Vijaya, R and Smitha, A and Sastry, G Narahari},
+ title={Diels- Alder Reactivity of Butadiene and Cyclic Five-Membered Dienes ((CH) 4X, X= CH2, SiH2, O, NH, PH, and S) with Ethylene: A Benchmark Study},
+ journal={J. Phys. Chem. A},
+ volume={106},
+ page={1627--1633},
+ year={2002},
+}
+@article{darc
+ authors={Johnson, Erin R and Mori-S{\'a}nchez, Paula and Cohen, Aron J and Yang, Weitao},
+ title={Delocalization errors in density functionals and implications for main-group thermochemistry},
+ journal={J. Chem. Phys.},
+ volume={129},
+ page={204112},
+ year={2008},
+}
+@article{idisp
+ authors={Goerigk, Lars and Grimme, Stefan},
+ title={A General Database for Main Group Thermochemistry, Kinetics, and Noncovalent Interactions- Assessment of Common and Reparameterized (meta-) GGA Density Functionals},
+ journal={J. Chem. Theory Comput.},
+ volume={6},
+ page={107--126},
+ year={2009},
+}
+@article{s668b
+ authors={Brauer, Brina and Kesharwani, Manoj K and Kozuch, Sebastian and Martin, Jan ML},
+ title={The S66x8 benchmark for noncovalent interactions revisited: explicitly correlated ab initio methods and density functional theory},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={18},
+ page={20905--20925},
+ year={2016},
+}
+@article{adim6
+ authors={Tsuzuki, Seiji and Honda, Kazumasa and Uchimaru, Tadafumi and Mikami, Masuhiro},
+ title={Estimated MP2 and CCSD (T) interaction energies of n-alkane dimers at the basis set limit: Comparison of the methods of Helgaker et al. and Feller},
+ journal={J. Chem. Phys.},
+ volume={124},
+ page={114304},
+ year={2006},
+}
+@article{a24
+ authors={{\v{R}}ez{\'a}{\v{c}}, Jan and Hobza, Pavel},
+ title={Describing noncovalent interactions beyond the common approximations: How accurate is the “gold standard,” CCSD (T) at the complete basis set limit?},
+ journal={J. Chem. Theory Comput.},
+ volume={9},
+ page={2151--2155},
+ year={2013},
+}
+@article{karlsruhe1
+ authors={Rappoport, Dmitrij and Furche, Filipp},
+ title={Property-optimized Gaussian basis sets for molecular response calculations},
+ journal={J. Chem. Phys.},
+ volume={133},
+ page={134105},
+ year={2010},
+}
+@article{karlsruhe2
+ authors={Weigend, Florian and Ahlrichs, Reinhart},
+ title={Balanced basis sets of split valence, triple zeta valence and quadruple zeta valence quality for H to Rn: Design and assessment of accuracy},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={7},
+ page={3297--3305},
+ year={2005},
+}
+@article{pople1
+ authors={Ditchfield, RHWJ and Hehre, W J\_ and Pople, John A},
+ title={Self-consistent molecular-orbital methods. IX. An extended Gaussian-type basis for molecular-orbital studies of organic molecules},
+ journal={J. Chem. Phys.},
+ volume={54},
+ page={724--728},
+ year={1971},
+}
+@article{pople2
+ authors={Hehre, Warren J and Ditchfield, Robert and Pople, John A},
+ title={Self—consistent molecular orbital methods. XII. Further extensions of Gaussian—type basis sets for use in molecular orbital studies of organic molecules},
+ journal={J. Chem. Phys.},
+ volume={56},
+ page={2257--2261},
+ year={1972},
+}
+@article{pople3
+ authors={Hariharan, Praveen C and Pople, John A},
+ title={The influence of polarization functions on molecular orbital hydrogenation energies},
+ journal={Theor. Chem. Acc.},
+ volume={28},
+ page={213--222},
+ year={1973},
+}
+@article{pople4
+ authors={Hariharan, PC and Pople, J\_A\_},
+ title={Accuracy of AH n equilibrium geometries by single determinant molecular orbital theory},
+ journal={Mol. Phys.},
+ volume={27},
+ page={209--214},
+ year={1974},
+}
+@article{pople5
+ authors={Krishnan, RBJS and Binkley, J Stephen and Seeger, Rolf and Pople, John A},
+ title={Self-consistent molecular orbital methods. XX. A basis set for correlated wave functions},
+ journal={J. Chem. Phys.},
+ volume={72},
+ page={650--654},
+ year={1980},
+}
+@article{pople6
+ authors={Francl, Michelle M and Pietro, William J and Hehre, Warren J and Binkley, J Stephen and Gordon, Mark S and DeFrees, Douglas J and Pople, John A},
+ title={Self-consistent molecular orbital methods. XXIII. A polarization-type basis set for second-row elements},
+ journal={J. Chem. Phys.},
+ volume={77},
+ page={3654--3665},
+ year={1982},
+}
+@article{pople7
+ authors={Clark, Timothy and Chandrasekhar, Jayaraman and Spitznagel, G{\"u}nther W and Schleyer, Paul Von Ragu{\'e}},
+ title={Efficient diffuse function-augmented basis sets for anion calculations. III. The 3-21+ G basis set for first-row elements, Li--F},
+ journal={J. Comput. Chem.},
+ volume={4},
+ page={294--301},
+ year={1983},
+}
+@article{pople8
+ authors={Frisch, Michael J and Pople, John A and Binkley, J Stephen},
+ title={Self-consistent molecular orbital methods 25. Supplementary functions for Gaussian basis sets},
+ journal={J. Chem. Phys.},
+ volume={80},
+ page={3265--3269},
+ year={1984},
+}
+@article{bonifacic1974
+ authors={Bonifacic, V and Huzinaga, S},
+ title={Atomic and molecular calculations with the model potential method. I},
+ journal={J. Chem. Phys.},
+ volume={60},
+ page={2779--2786},
+ year={1974},
+}
+@article{brauer2014
+ authors={Brauer, Brina and Kesharwani, Manoj K and Martin, Jan ML},
+ title={Some observations on counterpoise corrections for explicitly correlated calculations on noncovalent interactions},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={3791--3799},
+ year={2014},
+}
+@article{clementi1982
+ authors={Clementi, E and Corongiu, G},
+ title={Geometrical basis set for molecular computations},
+ journal={Chem. Phys. Lett.},
+ volume={90},
+ page={359--363},
+ year={1982},
+}
+@article{stevens1984
+ authors={Stevens, Walter J and Basch, Harold and Krauss, Morris},
+ title={Compact effective potentials and efficient shared-exponent basis sets for the first-and second-row atoms},
+ journal={J. Chem. Phys.},
+ volume={81},
+ page={6026--6033},
+ year={1984},
+}
+@article{topiol1980
+ authors={Topiol, Sid and Osman, Roman},
+ title={On the use of minimal valence basis sets with the coreless Hartree--Fock effective potential},
+ journal={J. Chem. Phys.},
+ volume={73},
+ page={5191--5196},
+ year={1980},
+}
+@article{topiol1981
+ authors={Topiol, Sid and Osman, Roman and Weinstein, Harel},
+ title={Effective potential methods for use in electronic structure calculations of large molecules},
+ journal={Ann. N. Y. Acad. Sci.},
+ volume={367},
+ page={17--34},
+ year={1981},
+}
+@article{duijneveldt1994
+ authors={{van Duijneveldt}, F B and {van Duijneveldt-van de Rijdt}, J G C M and {van Lenthe}, J H},
+ title={State-of-the-Art in Counterpoise Theory},
+ journal={Chem. Rev.},
+ volume={94},
+ page={1873--1885},
+ year={1994},
+}
+@article{davidson1994
+ authors={Davidson, Ernest R and Chakravorty, Subhas J},
+ title={A possible definition of basis set superposition error},
+ journal={Chem. Phys. Lett.},
+ volume={217},
+ page={48--54},
+ year={1994},
+}
+@article{xdmpoly
+ authors={{Whittleton}, S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Molecular crystal polymorphism using the exchange-hole dipole moment dispersion model},
+ journal={J. Chem. Theory Comput.},
+ volume={13},
+ page={441-450},
+ year={2016},
+ doi={10.1021/acs.jctc.6b00679},
+}
+@article{critic2
+ authors={{Otero-de-la-Roza}, A. and {Johnson}, E. R. and {Lua\~{n}a}, V.},
+ title={{C}ritic2: a program for real-space analysis of quantum chemical interactions in solids},
+ journal={Comput. Phys. Commun.},
+ volume={185},
+ page={1007--1018},
+ year={2014},
+ doi={10.1016/j.cpc.2013.10.026},
+}
+@article{kahn1972
+ authors={Kahn, Luis R and Goddard III, William A},
+ title={Ab initio effective potentials for use in molecular calculations},
+ journal={J. Chem. Phys.},
+ volume={56},
+ page={2685--2701},
+ year={1972},
+}
+@article{kahn1976
+ authors={Kahn, Luis R and Baybutt, Paul and Truhlar, Donald G},
+ title={A binitio effective core potentials: Reduction of all-electron molecular structure calculations to calculations involving only valence electrons},
+ journal={J. Chem. Phys.},
+ volume={65},
+ page={3826--3853},
+ year={1976},
+}
+@article{haynes2006
+ authors={Haynes, PD and Skylaris, C-K and Mostofi, AA and Payne, MC},
+ title={Elimination of basis set superposition error in linear-scaling density-functional calculations with local orbitals optimised in situ},
+ journal={Chem. Phys. Lett.},
+ volume={422},
+ page={345--349},
+ year={2006},
+}
+@article{faver2011
+ authors={Faver, John C and Zheng, Zheng and Merz Jr, Kenneth M},
+ title={Model for the fast estimation of basis set superposition error in biomolecular systems},
+ journal={J. Chem. Phys.},
+ volume={135},
+ page={144110},
+ year={2011},
+}
+@article{faver2012
+ authors={Faver, John C and Zheng, Zheng and Merz, Kenneth M},
+ title={Statistics-based model for basis set superposition error correction in large biomolecules},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={14},
+ page={7795--7799},
+ year={2012},
+}
+@article{jensen2013
+ authors={Jensen, Frank},
+ title={Atomic orbital basis sets},
+ journal={WIREs: Comput. Mol. Sci.},
+ volume={3},
+ page={273--295},
+ year={2013},
+}
+@article{goerigk2014
+ authors={Goerigk, Lars and Collyer, Charles A and Reimers, Jeffrey R},
+ title={Recommending Hartree--Fock Theory with London-Dispersion and Basis-Set-Superposition Corrections for the Optimization or Quantum Refinement of Protein Structures},
+ journal={J. Phys. Chem. B},
+ volume={118},
+ page={14612--14626},
+ year={2014},
+}
+@article{cao2011
+ authors={Cao, Xiaoyan and Dolg, Michael},
+ title={Pseudopotentials and modelpotentials},
+ journal={WIREs: Comput. Mol. Sci.},
+ volume={1},
+ page={200--210},
+ year={2011},
+}
+@article{dolg2011
+ authors={Dolg, Michael and Cao, Xiaoyan},
+ title={Relativistic pseudopotentials: their development and scope of applications},
+ journal={Chem. Rev.},
+ volume={112},
+ page={403--480},
+ year={2011},
+}
+@article{kulik2016b
+ authors={Kulik, Heather J and Zhang, Jianyu and Klinman, Judith P and Martinez, Todd J},
+ title={How large should the QM region be in QM/MM calculations? The case of catechol O-methyltransferase},
+ journal={J. Phys. Chem. B},
+ volume={120},
+ page={11381--11394},
+ year={2016},
+}
+@article{mentel2013
+ authors={Mentel, {\L}M and Baerends, EJ},
+ title={Can the counterpoise correction for basis set superposition effect be justified?},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={252--267},
+ year={2013},
+}
+@article{mao2016
+ authors={Mao, Yuezhi and Horn, Paul R and Mardirossian, Narbe and Head-Gordon, Teresa and Skylaris, Chris-Kriton and Head-Gordon, Martin},
+ title={Approaching the basis set limit for DFT calculations using an environment-adapted minimal basis with perturbation theory: Formulation, proof of concept, and a pilot implementation},
+ journal={J. Chem. Phys.},
+ volume={145},
+ page={044109},
+ year={2016},
+}
+@article{deng2011
+ authors={Deng, J and Gilbert, AT and Gill, PM},
+ title={Communication: efficient counterpoise corrections by a perturbative approach.},
+ journal={J. Chem. Phys.},
+ volume={135},
+ page={081105},
+ year={2011},
+}
+@article{gutowski1993
+ authors={Gutowski, Maciej and Chal/asi{\'n}ski, Grzegorz},
+ title={Critical evaluation of some computational approaches to the problem of basis set superposition error},
+ journal={J. Chem. Phys.},
+ volume={98},
+ page={5540--5554},
+ year={1993},
+}
+@article{xdmsurface
+ authors={{Christian}, M. S. and {Otero-de-la-Roza}, A. and {Johnson}, E. R.},
+ title={Surface adsorption from the exchange-hole dipole moment dispersion model},
+ journal={J. Chem. Theory Comput.},
+ volume={12},
+ page={3305--3315},
+ year={2016},
+ doi={10.1021/acs.jctc.6b00222},
+}
+@article{carter2014
+ authors={Carter, Damien J and Rohl, Andrew L},
+ title={Benchmarking calculated lattice parameters and energies of molecular crystals using van der Waals density functionals},
+ journal={J. Chem. Theory Comput.},
+ volume={10},
+ page={3423--3437},
+ year={2014},
+}
+@article{linear1
+ authors={Guerra, C Fonseca and Snijders, JG and Te Velde, G and Baerends, EJ},
+ title={Towards an order-N DFT method},
+ journal={Theor. Chem. Acc.},
+ volume={99},
+ page={391--403},
+ year={1998},
+}
+@article{linear2
+ authors={Challacombe, Matt and Schwegler, Eric},
+ title={Linear scaling computation of the Fock matrix},
+ journal={J. Chem. Phys.},
+ volume={106},
+ page={5526--5536},
+ year={1997},
+}
+@article{linear3
+ authors={Artacho, E and S{\'a}nchez-Portal, D and Ordej{\'o}n, P and Garc{\'\i}a, A and Soler, JM},
+ title={Linear-Scaling ab-initio Calculations for Large and Complex Systems},
+ journal={Phys. Status Solidi (b)},
+ volume={215},
+ page={809--817},
+ year={1999},
+}
+@article{spackman2001
+ authors={Spackman, Mark A and Mitchell, Anthony S},
+ title={Basis set choice and basis set superposition error (BSSE) in periodic Hartree--Fock calculations on molecular crystals},
+ journal={Phys. Chem. Chem. Phys.},
+ volume={3},
+ page={1518--1523},
+ year={2001},
+}
+@article{linear4
+ authors={Junquera, Javier and Paz, {\'O}scar and S{\'a}nchez-Portal, Daniel and Artacho, Emilio},
+ title={Numerical atomic orbitals for linear-scaling calculations},
+ journal={Phys. Rev. B},
+ volume={64},
+ page={235111},
+ year={2001},
+}
+@article{whitten1973
+ authors={J. L. Whitten},
+ title={Coulombic Potential-Energy Integrals and Approximations},
+ journal={J. Chem. Phys.},
+ volume={58},
+ page={4496-4501},
+ year={1973},
+ doi={10.1063/1.1679012},
+}
+@article{dunlap1979
+ authors={B. I. Dunlap and J. W. D. Connolly and J. R. Sabin},
+ title={On Some Approximations in Applications of {$X\alpha$} Theory},
+ journal={J. Chem. Phys.},
+ volume={71},
+ page={3396-3402},
+ year={1979},
+ doi={10.1063/1.438728},
+}
+@article{feyereisen1993
+ authors={M. Feyereisen and G. Fitzgerald and A. Komornicki},
+ title={Use of Approximate Integrals in Ab Initio Theory. An Application in MP2 Calculations},
+ journal={Chem. Phys. Lett.},
+ volume={208},
+ page={359-363},
+ year={1993},
+}
+@article{vahtras1993
+ authors={O. Vahtras and J. Alml{\"o}f and M. W. Feyereisen},
+ title={Integral Approximations for LCAO-SCF Calculations},
+ journal={Chem. Phys. Lett.},
+ volume={213},
+ page={514-518},
+ year={1993},
+}
+@article{weigend2002
+ authors={F. Weigend and A. K{\"o}hn and C. H{\"a}ttig},
+ title={Efficient Use of the Correlation Consistent Basis Sets In Resolution of the Identity MP2 Calculations},
+ journal={J. Chem. Phys.},
+ volume={116},
+ page={3175-3183},
+ year={2002},
+}
+@article{sodt2006
+ authors={A. Sodt and J. E. Subotnik and M. Head-Gordon},
+ title={Linear Scaling Density Fitting},
+ journal={J. Chem. Phys.},
+ volume={125},
+ page={194109},
+ year={2006},
+ doi={10.1063/1.2370949},
+}
+@article{gpu1
+ authors={Ufimtsev, Ivan S and Martinez, Todd J},
+ title={Quantum chemistry on graphical processing units. 1. Strategies for two-electron integral evaluation},
+ journal={J. Chem. Theory Comput.},
+ volume={4},
+ page={222--231},
+ year={2008},
+}
+@article{gpu2
+ authors={Ufimtsev, Ivan S and Martinez, Todd J},
+ title={Quantum chemistry on graphical processing units. 2. Direct self-consistent-field implementation},
+ journal={J. Chem. Theory Comput.},
+ volume={5},
+ page={1004--1015},
+ year={2009},
+}
+@article{gpu3
+ authors={Ufimtsev, Ivan S and Martinez, Todd J},
+ title={Quantum chemistry on graphical processing units. 3. Analytical energy gradients, geometry optimization, and first principles molecular dynamics},
+ journal={J. Chem. Theory Comput.},
+ volume={5},
+ page={2619--2628},
+ year={2009},
+}
+@article{liechtenstein1995
+ authors={Liechtenstein, AI and Anisimov, VI and Zaanen, J},
+ title={Density-functional theory and strong interactions: Orbital ordering in Mott-Hubbard insulators},
+ journal={Phys. Rev. B},
+ volume={52},
+ page={R5467},
+ year={1995},
+}
+@article{dudarev1998
+ authors={Dudarev, SL and Botton, GA and Savrasov, SY and Humphreys, CJ and Sutton, AP},
+ title={Electron-energy-loss spectra and the structural stability of nickel oxide: An LSDA+ U study},
+ journal={Phys. Rev. B},
+ volume={57},
+ page={1505},
+ year={1998},
+}
+@article{kabsch1976
+ authors={Kabsch, Wolfgang},
+ title={A solution for the best rotation to relate two sets of vectors},
+ journal={Acta Crystallographica Section A: Crystal Physics, Diffraction, Theoretical and General Crystallography},
+ volume={32},
+ page={922--923},
+ year={1976},
+}
+@article{kaminsky2007
+ authors={Kaminsk{\`y}, Jakub and Jensen, Frank},
+ title={Force field modeling of amino acid conformational energies},
+ journal={J. Chem. Theory Comput.},
+ volume={3},
+ page={1774--1788},
+ year={2007},
+}
+@article{maier2015
+ authors={Maier, James A and Martinez, Carmenza and Kasavajhala, Koushik and Wickstrom, Lauren and Hauser, Kevin E and Simmerling, Carlos},
+ title={ff14SB: improving the accuracy of protein side chain and backbone parameters from ff99SB},
+ journal={J. Chem. Theory Comput.},
+ volume={11},
+ page={3696--3713},
+ year={2015},
+}
+@article{hornak2006
+ authors={Hornak, Viktor and Abel, Robert and Okur, Asim and Strockbine, Bentley and Roitberg, Adrian and Simmerling, Carlos},
+ title={Comparison of multiple Amber force fields and development of improved protein backbone parameters},
+ journal={Proteins: Struct., Funct., Bioinf.},
+ volume={65},
+ page={712--725},
+ year={2006},
+}
+@article{bsip2
+ authors={{Otero-de-la-Roza}, Alberto and DiLabio, Gino A},
+ title={Improved Basis-Set Incompleteness Potentials for Accurate Density-Functional Theory Calculations in Large Systems},
+ journal={J. Chem. Theory Comput.},
+ volume={16},
+ page={4176--4191},
+ year={2020},
+}
+
