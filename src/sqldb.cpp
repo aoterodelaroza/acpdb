@@ -421,6 +421,12 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
   // begin the transaction
   begin_transaction();
 
+  // prepare the statement
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
+                  VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
+)SQL");
+
   // loop over the contents of the bib file and add to the database
   boolean rc;
   while (AST *entry = bt_parse_entry(fp,filename,0,&rc)){
@@ -430,7 +436,7 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
 
       if (equali_strings(type,"article")){
         // bind the key
-        stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":KEY",key,false);
+        st.bind((char *) ":KEY",key,false);
 
         // bind the rest of the fields
         char *fname = NULL;
@@ -442,24 +448,24 @@ void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
           free(fvalue_);
 
           if (!strcmp(fname,"title")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":TITLE",fvalue);
+            st.bind((char *) ":TITLE",fvalue);
           } else if (!strcmp(fname,"author") || !strcmp(fname,"authors")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":AUTHORS",fvalue);
+            st.bind((char *) ":AUTHORS",fvalue);
           } else if (!strcmp(fname,"journal")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":JOURNAL",fvalue);
+            st.bind((char *) ":JOURNAL",fvalue);
           } else if (!strcmp(fname,"volume")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":VOLUME",fvalue);
+            st.bind((char *) ":VOLUME",fvalue);
           } else if (!strcmp(fname,"page") || !strcmp(fname,"pages")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":PAGE",fvalue);
+            st.bind((char *) ":PAGE",fvalue);
           } else if (!strcmp(fname,"year")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":YEAR",fvalue);
+            st.bind((char *) ":YEAR",fvalue);
           } else if (!strcmp(fname,"doi")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":DOI",fvalue);
+            st.bind((char *) ":DOI",fvalue);
           } else if (!strcmp(fname,"description")){
-            stmt[statement::STMT_INSERT_LITREF]->bind((char *) ":DESCRIPTION",fvalue);
+            st.bind((char *) ":DESCRIPTION",fvalue);
           }
         }
-        stmt[statement::STMT_INSERT_LITREF]->step();
+        st.step();
         if (field) bt_free_ast(field);
       }
     }

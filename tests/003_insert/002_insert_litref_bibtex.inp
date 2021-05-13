@@ -1,0 +1,9 @@
+## check: 002_insert_litref_bibtex.out -a1e-10
+## delete: 002_insert_litref_bibtex.db
+## labels: regression quick
+
+system rm -f 002_insert_litref_bibtex.db
+connect 002_insert_litref_bibtex.db
+insert litref bibtex ../zz_source/bsip2.bib
+print
+

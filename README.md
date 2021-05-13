@@ -141,6 +141,14 @@ Insert a new literature reference, with key `ref.s`. If a litref with
 the same key already exists in the database, replace it.
 
 ~~~
+INSERT LITREF BIBTEX bibfile.s
+~~~
+Insert the literature references contained in bibtex file
+`bibfile.s`. Only entries of type article are inserted. If there are
+repeated keys, only the last entry will be inserted. Requires
+compiling with the btparse library.
+
+~~~
 DELETE LITREF [key.s|key.id] [key.s|key.id] ...
 ~~~
 Delete one or more literature references. If one or more references

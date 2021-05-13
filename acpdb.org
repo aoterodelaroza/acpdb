@@ -2,11 +2,6 @@
 
 * Keywords (database build)
 
-INSERT LITREF BIBTEX bibfile.s
-
-  Insert the literature references contained in bibtex file
-  bibfile.s. Only entries of type article are inserted.
-
 LIST LITREF [BIBTEX]
 
   List the literature references in the database. If the BIBTEX
