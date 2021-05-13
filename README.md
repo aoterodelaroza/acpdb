@@ -91,7 +91,7 @@ END
 ~~~
 Terminate the run.
 
-### Global Database Operations (Connect, Disconnect, Verify, Print)
+### Global Database Operations (Connect, Disconnect, Verify)
 
 ~~~
 CONNECT file.s
@@ -112,6 +112,10 @@ Check the sanity and consistency of the current
 database. Specifically, check that the unhandled BLOBs and TEXTs refer
 to keys that exist.
 
+### Print Database Information
+
+#### Whole Database
+
 ~~~
 PRINT [FULL]
 ~~~
@@ -121,7 +125,16 @@ about the number of evaluations and terms available for each
 combination of method and set, and about the completeness of the
 training set (may be slow).
 
-### Inserting and Deleting Data in the Database
+#### Literature References
+
+~~~
+PRINT LITREF [BIBTEX]
+~~~
+Print the literature references in the database. If the BIBTEX
+keyword is used, write the list of literature references in bibtex
+format.
+
+### Inserting Data
 
 #### Literature References
 
@@ -148,6 +161,10 @@ Insert the literature references contained in bibtex file
 repeated keys, only the last entry will be inserted. Requires
 compiling with the btparse library.
 
+### Deleting Data
+
+#### Literature References
+
 ~~~
 DELETE LITREF [key.s|key.id] [key.s|key.id] ...
 ~~~
@@ -155,3 +172,4 @@ Delete one or more literature references. If one or more references
 are given, delete only those references. The references can be given
 by their key or by their numerical ID. If no references are given,
 delete all the data in the table.
+

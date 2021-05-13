@@ -1,0 +1,39 @@
+* SYSTEM: rm -f 002_insert_litref_bibtex.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 002_insert_litref_bibtex.db
+Creating skeleton database 
+
+* PRINT: print the contents of the database 
+
+# Table of property types
+| id | key | description |
+| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | energy | The total energy of a molecule or crystal |
+
+# Number of literature references: 234
+
+# Table of methods
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+
+# Table of sets
+| id| key| property_type| litrefs| description|
+
+# Number of properties and structures in each set
+| id | key | properties | structures |
+
+## Description of the training set
+# The TRAINING SET is NOT DEFINED
+--- No atoms found (ATOM) ---
+--- No angular momenta found (LMAX) ---
+--- No exponents found (EXP) ---
+--- No subsets found (SUBSET) ---
+--- No weights found (W) ---
+--- No empty method found (EMPTY) ---
+--- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
+

@@ -377,6 +377,8 @@ void trainset::addadditional(const std::list<std::string> &tokens){
 void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) const {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
+
+  os << "## Description of the training set" << std::endl;
   if (!isdefined()){
     os << "# The TRAINING SET is NOT DEFINED" << std::endl;
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
@@ -386,6 +388,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
     if (w.empty()) os << "--- No weights found (W) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
     if (refname.empty()) os << "--- No reference method found (REFERENCE) ---" << std::endl;
+    os << std::endl;
     if (except_on_undefined)
       throw std::runtime_error("The training set must be defined completely before using DESCRIBE");
     else
@@ -542,6 +545,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
     }
     os << "# Total terms: " << ncall << "/" << ntall << (ncall==ntall?" (complete)":" (missing)") << std::endl;
   }
+  os << std::endl;
 
   // clean up
   os.precision(prec);
@@ -1093,6 +1097,7 @@ void trainset::listdb(std::ostream &os) const {
 SELECT key,size,training_set
 FROM Training_set_repo;
 )SQL");
+  os << "## Table of saved training sets in the database" << std::endl;
   os << "| Name |" << std::endl;
   while (st.step() != SQLITE_DONE){
     std::string key = (char *) sqlite3_column_text(st.ptr(), 0);

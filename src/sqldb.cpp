@@ -757,7 +757,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 }
 
 // List items from the database
-void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
+void sqldb::print(std::ostream &os, const std::string &category, bool dobib){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
   enum entrytype { t_str, t_int, t_double };
@@ -766,46 +766,75 @@ void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
   std::vector<std::string> headers;
   std::vector<int> cols;
   bool dobib_ = false;
-  statement::stmttype type;
+  std::string stmt;
   if (category == "LITREF"){
     headers = {"id", "key","authors","title","journal","volume","page","year","doi","description"};
     types   = {t_int,t_str,    t_str,  t_str,    t_str,   t_str, t_str, t_str,t_str,        t_str};
     cols    = {    0,    1,        2,      3,        4,       5,     6,     7,    8,            9};
     dobib_ = dobib;
-    type = statement::STMT_LIST_LITREF;
+    stmt = R"SQL(
+SELECT id,key,authors,title,journal,volume,page,year,doi,description
+FROM Literature_refs
+ORDER BY id;
+)SQL";
   } else if (category == "SET"){
     headers = {"id", "key","property_type","litrefs","description"};
     types   = {t_int,t_str,          t_int,    t_str,        t_str};
     cols    = {    0,    1,              2,        3,            4};
-    type = statement::STMT_LIST_SET;
+    stmt = R"SQL(
+SELECT id,key,property_type,litrefs,description
+FROM Sets
+ORDER BY id;
+)SQL";
   } else if (category == "METHOD"){
     headers = { "id","key","gaussian_keyword","psi4_keyword","litrefs","description"};
     types   = {t_int,t_str,             t_str,         t_str,    t_str,        t_str};
     cols    = {    0,    1,                 2,             3,        4,            5};
-    type = statement::STMT_LIST_METHOD;
+    stmt = R"SQL(
+SELECT id,key,gaussian_keyword,psi4_keyword,litrefs,description
+FROM Methods
+ORDER BY id;
+)SQL";
   } else if (category == "STRUCTURE"){
     headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
     types   = {t_int,t_str,t_int,       t_int,   t_int,         t_int,t_int};
     cols    = {    0,    1,     2,          3,       4,             5,    6};
-    type = statement::STMT_LIST_STRUCTURE;
+    stmt = R"SQL(
+SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
+FROM Structures
+ORDER BY id;
+)SQL";
   } else if (category == "PROPERTY"){
     headers = { "id","key","property_type","setid","orderid","nstructures"};
     types   = {t_int,t_str,          t_int,  t_int,    t_int,        t_int};
     cols    = {    0,    1,              2,      3,        4,            5};
-    type = statement::STMT_LIST_PROPERTY;
+    stmt = R"SQL(
+SELECT id,key,property_type,setid,nstructures,structures,coefficients
+FROM Properties
+ORDER BY id;
+)SQL";
   } else if (category == "EVALUATION"){
     headers = {"methodid","propid", "value"};
     types   = {     t_int,   t_int,t_double};
     cols    = {         0,       1,       2};
-    type = statement::STMT_LIST_EVALUATION;
+    stmt = R"SQL(
+SELECT methodid,propid,value
+FROM Evaluations;
+)SQL";
   } else if (category == "TERM"){
     headers = {"methodid","propid", "atom",   "l","exponent", "value","maxcoef"};
     types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
     cols    = {         0,       1,      2,     3,         4,       5,        6};
-    type = statement::STMT_LIST_TERM;
+    stmt = R"SQL(
+SELECT methodid,propid,atom,l,exponent,value,maxcoef
+FROM Terms;
+)SQL";
   } else {
     throw std::runtime_error("Unknown LIST category: " + category);
   }
+
+  // make the statement
+  statement st(db,statement::STMT_CUSTOM,stmt);
 
   // print table header
   int n = headers.size();
@@ -817,10 +846,10 @@ void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
 
   // print table body
   std::streamsize prec = os.precision(10);
-  while (stmt[type]->step() != SQLITE_DONE){
+  while (st.step() != SQLITE_DONE){
     for (int i = 0; i < n; i++){
       if (types[i] == t_str){
-        const unsigned char *field = sqlite3_column_text(stmt[type]->ptr(), cols[i]);
+        const unsigned char *field = sqlite3_column_text(st.ptr(), cols[i]);
         if (!dobib_)
           os << "| " << (field?field:(const unsigned char*) "");
         else{
@@ -830,9 +859,9 @@ void sqldb::list(std::ostream &os, const std::string &category, bool dobib){
             os << " " << headers[i] << "={" << field << "}," << std::endl;
         }
       } else if (types[i] == t_int && !dobib_){
-        os << "| " << sqlite3_column_int(stmt[type]->ptr(), cols[i]);
+        os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
       } else if (types[i] == t_double && !dobib_){
-        os << "| " << sqlite3_column_double(stmt[type]->ptr(), cols[i]);
+        os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
       }
     }
     if (!dobib_)
@@ -868,11 +897,11 @@ void sqldb::printsummary(std::ostream &os, bool full){
 
   // methods
   os << "# Table of methods" << std::endl;
-  list(os,"METHOD",false);
+  print(os,"METHOD",false);
 
   // sets
   os << "# Table of sets" << std::endl;
-  list(os,"SET",false);
+  print(os,"SET",false);
 
   // properties and structures in each set
   os << "# Number of properties and structures in each set" << std::endl;

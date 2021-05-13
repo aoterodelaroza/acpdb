@@ -2,12 +2,6 @@
 
 * Keywords (database build)
 
-LIST LITREF [BIBTEX]
-
-  List the literature references in the database. If the BIBTEX
-  keyword is used, write the list of literature referneces in bibtex
-  format.
-
 INSERT SET name.s
   PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...

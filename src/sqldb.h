@@ -80,8 +80,8 @@ class sqldb {
   // Delete items from the database
   void erase(const std::string &category, std::list<std::string> &tokens);
 
-  // List items from the database
-  void list(std::ostream &os, const std::string &category, bool dobib);
+  // Print items from the database
+  void print(std::ostream &os, const std::string &category, bool dobib);
 
   // Print a summary of the contents of the database
   void printsummary(std::ostream &os, bool full);

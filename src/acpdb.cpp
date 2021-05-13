@@ -220,18 +220,31 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "PRINT"){
         if (!db)
           throw std::runtime_error("The database needs to be defined before using PRINT");
-        if (db.checksane(true)){
-          bool dofull = !tokens.empty() && equali_strings(tokens.front(),"FULL");
-          *os << "* PRINT: print the contents of the database " << std::endl;
-          *os << "+ DATABASE information" << std::endl;
-          db.printsummary(*os,dofull);
-          *os << "+ TRAINING SET information" << std::endl;
-          *os << "## Table of saved training sets in the database" << std::endl;
+        if (!db.checksane(true))
+          throw std::runtime_error("The database is not sane");
+
+        *os << "* PRINT: print the contents of the database " << std::endl << std::endl;
+
+        std::string category = popstring(tokens,true);
+        if (category.length() == 0){
+          db.printsummary(*os,false);
+          ts.describe(*os,false,false);
           ts.listdb(*os);
-          *os << "## Description of the training set" << std::endl;
-          ts.describe(*os,false,dofull);
-          *os << std::endl;
+        } else if (category == "FULL") {
+          db.printsummary(*os,true);
+          ts.describe(*os,false,true);
+          ts.listdb(*os);
+        } else {
+          db.print(*os,category,!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
         }
+
+        // if (category == "DIN_TRAINING")
+        //   ts.write_din(tokens);
+        // else if (category == "DIN"){
+        //   std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+        //   db.list_din(kmap);
+        // } else
+        //
 
         ///////////////////////////////////////////////////
 
@@ -390,16 +403,6 @@ int main(int argc, char *argv[]) {
         std::string category = popstring(tokens,true);
         db.erase(category,tokens);
 
-        //
-      } else if (keyw == "LIST") {
-        std::string category = popstring(tokens,true);
-        if (category == "DIN_TRAINING")
-          ts.write_din(tokens);
-        else if (category == "DIN"){
-          std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-          db.list_din(kmap);
-        } else
-          db.list(*os,category,!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
         //
       } else if (keyw == "TRAINING") {
         std::string key = popstring(tokens,true);

@@ -5,7 +5,7 @@ Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane
 
 * PRINT: print the contents of the database 
-+ DATABASE information
+
 # Table of property types
 | id | key | description |
 | 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
@@ -98,12 +98,6 @@ Connected database is sane
 | 35 | w4-11 | 140 | 152 |
 | 36 | bsip2-moldef | 9372 | 10934 |
 
-+ TRAINING SET information
-## Table of saved training sets in the database
-| Name |
-| BSIP2/631g |
-| BSIP2/minis |
-
 ## Description of the training set
 # The TRAINING SET is NOT DEFINED
 --- No atoms found (ATOM) ---
@@ -114,8 +108,13 @@ Connected database is sane
 --- No empty method found (EMPTY) ---
 --- No reference method found (REFERENCE) ---
 
+## Table of saved training sets in the database
+| Name |
+| BSIP2/631g |
+| BSIP2/minis |
+
 * PRINT: print the contents of the database 
-+ DATABASE information
+
 # Table of property types
 | id | key | description |
 | 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
@@ -283,12 +282,6 @@ Connected database is sane
 | 36 | bsip2-moldef | 3 | B3LYP/631g |9372 | 7066488 |
 | 36 | bsip2-moldef | 4 | B3LYP/minis |9372 | 7066488 |
 
-+ TRAINING SET information
-## Table of saved training sets in the database
-| Name |
-| BSIP2/631g |
-| BSIP2/minis |
-
 ## Description of the training set
 # The TRAINING SET is NOT DEFINED
 --- No atoms found (ATOM) ---
@@ -298,4 +291,9 @@ Connected database is sane
 --- No weights found (W) ---
 --- No empty method found (EMPTY) ---
 --- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
+| BSIP2/631g |
+| BSIP2/minis |
 
