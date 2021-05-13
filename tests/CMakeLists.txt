@@ -21,11 +21,6 @@ macro (runtests)
     endif()
     string(REGEX REPLACE "^ *#.*labels *:" "" label_list "${label_list}")
 
-    ## skip tests if we have no package unless they are self-contained
-    if (NOT "${TEST_PACKAGE_FOUND}" AND NOT ${label_list} MATCHES nodata)
-      continue()
-    endif()
-
     ## copy over the test to the build directory
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${test}.inp DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 

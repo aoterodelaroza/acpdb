@@ -3,6 +3,7 @@
 * DISCONNECT: disconnect the current database 
 
 * CONNECT 
+
 Disconnecting previous database (if connected) 
 Connecting database file 001_connect.db
 Creating skeleton database 
@@ -10,11 +11,13 @@ Creating skeleton database
 * DISCONNECT: disconnect the current database 
 
 * CONNECT 
+
 Disconnecting previous database (if connected) 
 Connecting database file 001_connect.db
 Connected database is sane
 
 * CONNECT 
+
 Disconnecting previous database (if connected) 
 Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane

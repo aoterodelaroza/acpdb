@@ -1010,7 +1010,7 @@ void sqldb::verify(std::ostream &os){
   if (!db) throw std::runtime_error("A database file must be connected before using VERIFY");
 
   // check litrefs in sets
-  os << "  Checking the litrefs in sets are known" << std::endl;
+  os << "Checking the litrefs in sets are known" << std::endl;
   statement stmt(db,statement::STMT_CUSTOM,R"SQL(
 SELECT litrefs,key FROM Sets;
 )SQL");
@@ -1027,7 +1027,7 @@ SELECT litrefs,key FROM Sets;
   }
 
   // check litrefs in methods
-  os << "  Checking the litrefs in methods are known" << std::endl;
+  os << "Checking the litrefs in methods are known" << std::endl;
   stmt.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT litrefs,key FROM Methods;
 )SQL");
@@ -1044,7 +1044,7 @@ SELECT litrefs,key FROM Methods;
   }
 
   // check structures in properties
-  os << "  Checking the structures in properties are known" << std::endl;
+  os << "Checking the structures in properties are known" << std::endl;
   stmt.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT key,nstructures,structures FROM Properties;
 )SQL");

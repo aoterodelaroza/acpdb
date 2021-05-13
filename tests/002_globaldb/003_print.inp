@@ -1,12 +1,9 @@
 ## check: 003_print.out -a1e-10
 ## delete: 003_print.db
-## labels: regression quick nodata
+## labels: regression
 
-## clean up
-system rm -f 003_print.db
-
-## create
-connect 003_print.db
+## connect
+connect ../zz_source/bsip2-small/bsip2.db
 
 ## print
 print

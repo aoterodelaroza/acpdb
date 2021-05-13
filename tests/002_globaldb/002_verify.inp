@@ -1,12 +1,18 @@
 ## check: 002_verify.out -a1e-10
 ## delete: 002_verify.db
-## labels: regression quick nodata
+## labels: regression quick
 
 ## clean up
 system rm -f 002_verify.db
 
 ## create
 connect 002_verify.db
+
+## verify
+verify
+
+## existing database
+connect ../zz_source/bsip2-small/bsip2.db
 
 ## verify
 verify

@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
 
         // CONNECT file.s
       } else if (keyw == "CONNECT") {
-        *os << "* CONNECT " << std::endl;
+        *os << "* CONNECT " << std::endl << std::endl;
 
         // disconnect first
         *os << "Disconnecting previous database (if connected) " << std::endl;

@@ -1,6 +1,6 @@
 ## check: 001_connect.out -a1e-10
 ## delete: 001_connect.db
-## labels: regression quick nodata
+## labels: regression quick
 
 ## clean up
 system rm -f 001_connect.db
