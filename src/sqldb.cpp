@@ -714,6 +714,8 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
     table = "Literature_refs";
   else if (category == "SET")
     table = "Sets";
+  else if (category == "METHOD")
+    table = "Methods";
   else
     throw std::runtime_error("Unknown keyword in DELETE");
 
@@ -738,10 +740,6 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
 /*
   // pick the statment
   statement::stmttype all, id, key;
-  } else if (category == "METHOD") {
-    all = statement::STMT_DELETE_METHOD_ALL;
-    id  = statement::STMT_DELETE_METHOD_WITH_ID;
-    key = statement::STMT_DELETE_METHOD_WITH_KEY;
   } else if (category == "STRUCTURE") {
     all = statement::STMT_DELETE_STRUCTURE_ALL;
     id  = statement::STMT_DELETE_STRUCTURE_WITH_ID;

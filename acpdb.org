@@ -2,15 +2,6 @@
 
 * Keywords (database build)
 
--- search for other stamtents for insert_method
-
---- litrefs and others, only by key -> simplify insert
-
-
-DELETE METHOD [method.s|method.i]
-
-  Delete a method (Table 4).
-
 LIST METHOD
 
   List the known methods.

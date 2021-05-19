@@ -1,9 +1,9 @@
-## check: 007_insert_method.out -a1e-10
-## delete: 007_insert_method.db
+## check: 003_method.out -a1e-10
+## delete: 003_method.db
 ## labels: regression quick
 
-system rm -f 007_insert_method.db
-connect 007_insert_method.db
+system rm -f 003_method.db
+connect 003_method.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert method b3lyp/6-31+G*
@@ -12,4 +12,6 @@ insert method b3lyp/6-31+G*
  litrefs bsip1 boys1970
  description This is a method.
 end
+print
+delete method b3lyp/6-31+G*
 print
