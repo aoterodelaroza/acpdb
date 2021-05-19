@@ -165,25 +165,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  if (category == "METHOD") {
-    //// Methods (METHOD) ////
-
-    // check
-    if (key.empty())
-      throw std::runtime_error("Empty key in INSERT " + category);
-
-    // bind
-    stmt[statement::STMT_INSERT_METHOD]->bind((char *) ":KEY",key,false);
-    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
-    for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      im = kmap.find(*it);
-      if (im != kmap.end())
-        stmt[statement::STMT_INSERT_METHOD]->bind(":" + *it,im->second);
-    }
-
-    // submit
-    stmt[statement::STMT_INSERT_METHOD]->step();
-  } else if (category == "PROPERTY") {
+  if (category == "PROPERTY") {
     //// Properties (PROPERTY) ////
 
     // check
@@ -417,6 +399,31 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 
   // submit
   st.step();
+}
+
+// Insert a method by manually giving the data
+void sqldb::insert_method(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
+  if (key.empty())
+    throw std::runtime_error("Empty key in INSERT METHOD");
+
+    // statement
+    statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
+       VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
+)SQL");
+
+    // bind
+    st.bind((char *) ":KEY",key,false);
+    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
+    for (auto it = vlist.begin(); it != vlist.end(); ++it){
+      auto im = kmap.find(*it);
+      if (im != kmap.end())
+        st.bind(":" + *it,im->second);
+    }
+
+    // submit
+    st.step();
 }
 
 // Insert literature references into the database from a bibtex file

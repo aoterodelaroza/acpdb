@@ -2,42 +2,10 @@
 
 * Keywords (database build)
 
-DELETE SET [set.s|set.i]
+-- search for other stamtents for insert_method
 
-  Delete a set (Table 3).
+--- litrefs and others, only by key -> simplify insert
 
-LIST SET
-
-  List the known sets.
-
-INSERT METHOD name.s
-  GAUSSIAN_KEYWORD ...
-  PSI4_KEYWORD ...
-  LITREFS {ref1.s|ref1.i} {ref2.s|ref2.i} ...
-  DESCRIPTION ...
-END
-
-  Insert a computational method with name name.s in the
-  database. Details for Gaussian runs in GAUSSIAN_KEYWORD. Details for
-  psi4 runs in PSI4_KEYWORD. LITREFS: literature
-  references. DESCRIPTION: a description of the method.
-
-  The field in GAUSSIAN_KEYWORD and PSI4_KEYWORD should be a string of
-  fields separated by ;. Each field has a=b, where a is the key and b
-  is the value. The interpreted fields are as follows. For
-  GAUSSIAN_KEYWORD:
-
-  - method: the method and basis set combination (e.g. b3lyp/6-31G*)
-
-  - gbs: the gbs file for general basis set input.
-
-  For PSI4_KEYWORD:
-
-  - method: the method keyword passed to energy().
-
-  - basis: the basis set.
-
-  For example: method=b3lyp/gen;gbs=minis.gbs
 
 DELETE METHOD [method.s|method.i]
 

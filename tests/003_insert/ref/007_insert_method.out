@@ -1,0 +1,12 @@
+* SYSTEM: rm -f 007_insert_method.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 007_insert_method.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (LITREF)
+
+* INSERT: insert data into the database (METHOD)
+

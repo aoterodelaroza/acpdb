@@ -1,0 +1,14 @@
+## check: 007_insert_method.out -a1e-10
+## delete: 007_insert_method.db
+## labels: regression quick
+
+system rm -f 007_insert_method.db
+connect 007_insert_method.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end

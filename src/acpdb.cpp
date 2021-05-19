@@ -262,8 +262,10 @@ int main(int argc, char *argv[]) {
             db.insert_litref(key,kmap);
           else if (category == "SET")
             db.insert_set(key,kmap);
-          else if (category == "STRUCTURE")
-            db.insert_set(key,kmap);
+          else if (category == "METHOD")
+            db.insert_method(key,kmap);
+          // else if (category == "STRUCTURE")
+          //   db.insert_structure(key,kmap);
           // else if (category == "DAT")
           //   ts.insert_dat(kmap);
           else
