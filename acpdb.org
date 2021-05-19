@@ -2,10 +2,6 @@
 
 * Keywords (database build)
 
-LIST METHOD
-
-  List the known methods.
-
 INSERT STRUCTURE name.s
   XYZ file.s
   SET {set.s|set.i}

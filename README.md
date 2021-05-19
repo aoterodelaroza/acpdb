@@ -130,6 +130,7 @@ training set (may be slow).
 ~~~
 PRINT LITREF [BIBTEX]
 PRINT SET
+PRINT METHOD
 ~~~
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write

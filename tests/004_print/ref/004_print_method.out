@@ -1,0 +1,14 @@
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file ../zz_source/bsip2-small/bsip2.db
+Connected database is sane
+
+* PRINT: print the contents of the database 
+
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+| 1| B3LYP/aug-cc-pVQZ| method=B3LYP/aug-cc-pVQZ| | b3 lyp| B3LYP with an almost-complete basis set for molecular calculations. Used in the BSIP2 project.|
+| 2| reference| | | | Something to aspire to.|
+| 3| B3LYP/631g| method=B3LYP/6-31G| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+| 4| B3LYP/minis| method=B3LYP gen;gbs=minis.gbs| | b3 lyp binkley1980 gordon1982 pietro1982 dobbs1987a dobbs1987b| B3LYP with the scaled 3-21G basis set. Used in the BSIP2 project.|
+
