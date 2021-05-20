@@ -9,6 +9,7 @@ set(TESTS
   008_insert_structure_xyz    ## insert a molecular structure from an xyz file
   009_insert_structure_poscar ## insert a crystal structure from a POSCAR file
   010_insert_structure_file   ## insert a crystal structure from a file, detect format
+  011_insert_property         ## insert a property
   )
 
 runtests(${TESTS})

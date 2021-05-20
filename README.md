@@ -271,17 +271,17 @@ INSERT PROPERTY name.s
   PROPERTY_TYPE {prop.s|prop.i}
   SET {set.s|set.i}
   ORDER order.i
-  NSTRUCTURES nstruct.i
   STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
   COEFFICIENTS c1.r c2.r c3.r ...
 END
 ~~~
 Insert a property with key `name.s`. This property belongs in set
-with key `set.s` or ID `set.i` and involves `nstruct.i` structures,
+with key `set.s` or ID `set.i` and involves structures,
 given by their keys (`s1.s`,...) or IDs (`s1.i`,...). The recipe for
 the calculation of the property uses the energies from those
 structures multiplied by coefficients `c1.r`, etc. This property is
-number `order.i` in the set.
+number `order.i` in the set. The number of structures must be equal to
+the number of coefficients.
 
 ### Deleting Data
 

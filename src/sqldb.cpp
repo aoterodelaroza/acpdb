@@ -383,114 +383,80 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, std::unord
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT PROPERTY");
 
-  //   // check
-  //   if (key.empty())
-  //     throw std::runtime_error("Empty key in INSERT " + category);
+  os << "# INSERT PROPERTY " << key << std::endl;
 
-  //   // bind
-  //   stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
-  //   if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-  //     if (isinteger(im->second))
-  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-  //     else
-  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
-  //   }
-  //   if ((im = kmap.find("SET")) != kmap.end()){
-  //     if (isinteger(im->second))
-  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
-  //     else
-  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
-  //   }
-  //   if ((im = kmap.find("ORDERID")) != kmap.end())
-  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":ORDERID",std::stoi(im->second));
+  // some variables
+  std::unordered_map<std::string,std::string>::const_iterator im1, im2;
+  std::list<std::string> tok1, tok2;
 
-  //   // bind structures
-  //   int nstructures = 0;
-  //   if ((im = kmap.find("NSTRUCTURES")) != kmap.end()){
-  //     nstructures = std::stoi(im->second);
-  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
-  //   }
+  // bind
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
+       VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+)SQL");
+  st.bind((char *) ":KEY",key,false);
+  if ((im1 = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    if (isinteger(im1->second))
+      st.bind((char *) ":PROPERTY_TYPE",std::stoi(im1->second));
+    else
+      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im1->second,"Property_types"));
+  }
+  if ((im1 = kmap.find("SET")) != kmap.end()){
+    if (isinteger(im1->second))
+      st.bind((char *) ":SETID",std::stoi(im1->second));
+    else
+      st.bind((char *) ":SETID",find_id_from_key(im1->second,"Sets"));
+  }
+  if ((im1 = kmap.find("ORDER")) != kmap.end())
+    st.bind((char *) ":ORDERID",std::stoi(im1->second));
 
-  //   if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
-  //     std::list<std::string> tokens = list_all_words(im->second);
+  // parse structures and coefficients
+  im1 = kmap.find("STRUCTURES");
+  if (im1 == kmap.end())
+    throw std::runtime_error("No structures given in INSERT PROPERTY");
+  tok1 = list_all_words(im1->second);
+  im2 = kmap.find("COEFFICIENTS");
+  if (im2 == kmap.end())
+    throw std::runtime_error("No coefficients given in INSERT PROPERTY");
+  tok2 = list_all_words(im2->second);
 
-  //     int n = 0;
-  //     int *str = new int[nstructures];
-  //     for (auto it = tokens.begin(); it != tokens.end(); it++){
-  //       int idx = 0;
-  //       if (isinteger(*it))
-  //         idx = std::stoi(*it);
-  //       else
-  //         idx = find_id_from_key(*it,"Structures");
+  // number of structures
+  int nstructures = tok1.size();
+  if (nstructures != tok2.size())
+    throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
+  st.bind((char *) ":NSTRUCTURES",nstructures);
 
-  //       if (!idx)
-  //         throw std::runtime_error("Structure not found: " + *it);
-  //       str[n++] = idx;
-  //     }
-  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
-  //     delete str;
-  //   }
+  // bind the structures
+  {
+  int n = 0;
+  int *str = new int[nstructures];
+  for (auto it = tok1.begin(); it != tok1.end(); it++){
+    int idx = 0;
+    if (isinteger(*it))
+      idx = std::stoi(*it);
+    else
+      idx = find_id_from_key(*it,"Structures");
 
-  //   // bind coefficients
-  //   if (nstructures > 0 && (im = kmap.find("COEFFICIENTS")) != kmap.end()){
-  //     std::list<std::string> tokens = list_all_words(im->second);
+    if (!idx)
+      throw std::runtime_error("Structure not found: " + *it);
+    str[n++] = idx;
+  }
+  st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
+  delete str;
+  }
 
-  //     int n = 0;
-  //     double *str = new double[nstructures];
-  //     for (auto it = tokens.begin(); it != tokens.end(); it++)
-  //       str[n++] = std::stod(*it);
-  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
-  //     delete str;
-  //   }
+  // bind the coefficients
+  {
+  int n = 0;
+  double *str = new double[nstructures];
+  for (auto it = tok2.begin(); it != tok2.end(); it++)
+    str[n++] = std::stod(*it);
+  st.bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
+  delete str;
+  }
 
-  //   // submit
-  //   stmt[statement::STMT_INSERT_PROPERTY]->step();
-
-//   os << "# INSERT STRUCTURE " << key << std::endl;
-// 
-//   // read the molecular structure
-//   structure s;
-//   std::unordered_map<std::string,std::string>::const_iterator im;
-//   if ((im = kmap.find("FILE")) != kmap.end()){
-//     if (s.readfile(im->second))
-//       throw std::runtime_error("Error reading file: " + im->second);
-//   } else if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
-//     throw std::runtime_error("XYZ and POSCAR are both present in INSERT STRUCTURE");
-//   } else if ((im = kmap.find("XYZ")) != kmap.end()){
-//     if (s.readxyz(im->second))
-//       throw std::runtime_error("Error reading xyz file: " + im->second);
-//   } else if ((im = kmap.find("POSCAR")) != kmap.end()){
-//     if (s.readposcar(im->second))
-//       throw std::runtime_error("Error reading POSCAR file: " + im->second);
-//   } else {
-//     throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
-//   }
-// 
-//   // bind
-//   statement st(db,statement::STMT_CUSTOM,R"SQL(
-// INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
-//        VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
-// )SQL");
-// 
-//   int nat = s.get_nat();
-//   st.bind((char *) ":KEY",key,false);
-//   st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
-//   st.bind((char *) ":NAT",nat,false);
-//   st.bind((char *) ":CHARGE",s.get_charge(),false);
-//   st.bind((char *) ":MULTIPLICITY",s.get_mult(),false);
-//   if ((im = kmap.find("SET")) != kmap.end()){
-//     if (isinteger(im->second))
-//       st.bind((char *) ":SETID",std::stoi(im->second));
-//     else
-//       st.bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
-//   }
-//   if (!s.ismolecule())
-//     st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-//   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-//   st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-// 
-//   // submit
-//   st.step();
+  // submit
+  st.step();
 }
 
 // Insert literature references into the database from a bibtex file
@@ -748,7 +714,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
     smap.clear();
     smap["PROPERTY_TYPE"] = "energy_difference";
     smap["SET"] = key;
-    smap["ORDERID"] = std::to_string(k+1);
+    smap["ORDER"] = std::to_string(k+1);
     smap["NSTRUCTURES"] = std::to_string(n);
     smap["STRUCTURES"] = "";
     smap["COEFFICIENTS"] = "";
@@ -756,7 +722,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
       smap["STRUCTURES"] = smap["STRUCTURES"] + key + "." + info[k].names[i] + " ";
       smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(info[k].coefs[i]) + " ";
     }
-    insert("PROPERTY",skey,smap);
+    insert_property(os,skey,smap);
 
     // insert the evaluation
     if (havemethod){
