@@ -373,7 +373,10 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unor
   // read the molecular structure
   structure s;
   std::unordered_map<std::string,std::string>::const_iterator im;
-  if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
+  if ((im = kmap.find("FILE")) != kmap.end()){
+    if (s.readfile(im->second))
+      throw std::runtime_error("Error reading file: " + im->second);
+  } else if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
     throw std::runtime_error("XYZ and POSCAR are both present in INSERT STRUCTURE");
   } else if ((im = kmap.find("XYZ")) != kmap.end()){
     if (s.readxyz(im->second))
@@ -1545,7 +1548,7 @@ FROM Structures WHERE id = ?1;
 
   // write the input file to a memory stream for efficiency
   std::stringstream oss;
-  if (isxyz && ismolecule) {
+  if (isxyz) {
     s.writexyz(oss);
   } else if (isgaussian) {
     if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method does not have an associated Gaussian method keyword");

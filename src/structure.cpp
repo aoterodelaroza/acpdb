@@ -28,6 +28,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include "globals.h"
 
+// Detect the file format from the file (from the number of fields in the third line).
+structure::fileformat structure::detectformat(const std::string &filename){
+  std::ifstream ifile(filename,std::ios::in);
+  if (ifile.fail()) return FORMAT_FAIL;
+
+  std::string line;
+  for (int i = 0; i < 3; i++)
+    std::getline(ifile,line);
+  std::list<std::string> fields = list_all_words(line);
+
+  if (fields.size() == 3)
+    return FORMAT_POSCAR;
+  else if (fields.size() == 4)
+    return FORMAT_XYZ;
+  else
+    return FORMAT_FAIL;
+}
+
+// Detect the file format and read structure from the file. Return non-zero if error; 0 if correct.
+int structure::readfile(const std::string &filename){
+  fileformat fmt = detectformat(filename);
+  if (fmt == FORMAT_XYZ)
+    readxyz(filename);
+  else if (fmt == FORMAT_POSCAR)
+    readposcar(filename);
+  else
+    return 1;
+  return 0;
+}
+
 // Read an xyz file. Return non-zero if error; 0 if correct.
 int structure::readxyz(const std::string &filename){
 

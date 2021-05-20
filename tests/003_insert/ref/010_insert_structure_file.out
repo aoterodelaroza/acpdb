@@ -1,9 +1,9 @@
-* SYSTEM: rm -f 009_insert_structure_poscar.db
+* SYSTEM: rm -f 010_insert_structure_file.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 009_insert_structure_poscar.db
+Connecting database file 010_insert_structure_file.db
 Creating skeleton database 
 
 * INSERT: insert data into the database (LITREF)
@@ -247,4 +247,7 @@ Creating skeleton database
 
 * INSERT: insert data into the database (STRUCTURE)
 # INSERT STRUCTURE urea
+
+* INSERT: insert data into the database (STRUCTURE)
+# INSERT STRUCTURE c6h6_ch4
 

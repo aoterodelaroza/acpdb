@@ -250,15 +250,19 @@ For the PSI4\_KEYWORD, the accpetable keys are:
 
 ~~~
 INSERT STRUCTURE name.s
+  FILE file.s
   XYZ file.s
+  POSCAR file.s
   SET {set.s|set.i}
 END
 ~~~
-Insert a molecular structure with key `name.s` from xyz file
-`file.s`. This structure belongs in set given by key `set.s` or
-integer ID `set.i`.
-
-
+Insert a molecular structure with key `name.s`. The new structure
+belongs in set given by key `set.s` or integer ID `set.i`. There are
+three possible ways of passing the structure file with name
+`file.s`. If the XYZ keyword is used, read the file as a molecular xyz
+file. If POSCAR is used, read the file as a crystal POSCAR file. If
+FILE is used, let acpdb detect the format (xyz or POSCAR) and read it
+as a molecule or crystal depending on the result.
 
 ### Deleting Data
 

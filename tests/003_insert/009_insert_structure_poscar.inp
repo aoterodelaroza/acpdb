@@ -11,7 +11,7 @@ insert set s22x5
  description A description.
  litrefs bsip1 boys1970
 end
-insert structure c6h6_ch4
+insert structure urea
  poscar ../zz_source/x23_expt/urea.POSCAR
  set s22x5
 end

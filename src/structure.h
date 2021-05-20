@@ -29,6 +29,9 @@ class structure {
 
  public:
 
+  // Formats for structure files.
+  enum fileformat { FORMAT_FAIL, FORMAT_XYZ, FORMAT_POSCAR };
+
   //// Operators ////
   // constructors
   structure() : ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) {};
@@ -55,6 +58,12 @@ class structure {
   operator bool() const { return x; }
 
   //// Public methods ////
+
+  // Detect the file format from the file.
+  fileformat detectformat(const std::string &filename);
+
+  // Read structure from the file. Return non-zero if error; 0 if correct.
+  int readfile(const std::string &filename);
 
   // Read an xyz file. Return non-zero if error; 0 if correct.
   int readxyz(const std::string &filename);
