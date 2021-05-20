@@ -802,6 +802,8 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
     table = "Properties";
   else if (category == "EVALUATION")
     table = "Evaluations";
+  else if (category == "TERM")
+    table = "Terms";
   else
     throw std::runtime_error("Unknown keyword in DELETE");
 
@@ -818,6 +820,26 @@ DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1)
       st.bind(1,*it++);
       os << ";property=" << *it << ")" << std::endl;
       st.bind(2,*it);
+      st.step();
+    }
+  } else if (category == "TERM") {
+    statement st(db,statement::STMT_CUSTOM,R"SQL(
+DELETE FROM Terms WHERE
+  methodid = (SELECT id FROM Methods WHERE key = ?1) AND
+  propid = (SELECT id FROM Properties WHERE key = ?2) AND
+  atom = ?3 AND l = ?4 AND exponent = ?5;
+)SQL");
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      os << "# DELETE " << category << " (method=" << *it;
+      st.bind(1,*it++);
+      os << ";property=" << *it;
+      st.bind(2,*it++);
+      os << ";atom=" << *it;
+      st.bind(3,std::stoi(*it++));
+      os << ";l=" << *it;
+      st.bind(4,std::stoi(*it++));
+      os << ";exp=" << *it << ")" << std::endl;
+      st.bind(5,std::stod(*it));
       st.step();
     }
   } else {

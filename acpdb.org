@@ -2,10 +2,6 @@
 
 * Keywords (database build)
 
-DELETE TERM
-
-  Delete all terms.
-
 LIST TERM
 
   List the known terms.
