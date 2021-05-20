@@ -6,6 +6,7 @@ set(TESTS
   005_print_structure  ## print structure
   006_print_property   ## print property
   007_print_evaluation ## print evaluation
+  008_print_term       ## print term
   )
 
 runtests(${TESTS})

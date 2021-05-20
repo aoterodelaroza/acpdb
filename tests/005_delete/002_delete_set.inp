@@ -1,9 +1,9 @@
-## check: 002_set.out -a1e-10
-## delete: 002_set.db
+## check: 002_delete_set.out -a1e-10
+## delete: 002_delete_set.db
 ## labels: regression quick
 
-system rm -f 002_set.db
-connect 002_set.db
+system rm -f 002_delete_set.db
+connect 002_delete_set.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert set s22x5

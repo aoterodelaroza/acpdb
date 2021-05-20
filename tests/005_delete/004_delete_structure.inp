@@ -1,9 +1,9 @@
-## check: 004_structure.out -a1e-10
-## delete: 004_structure.db
+## check: 004_delete_structure.out -a1e-10
+## delete: 004_delete_structure.db
 ## labels: regression quick
 
-system rm -f 004_structure.db
-connect 004_structure.db
+system rm -f 004_delete_structure.db
+connect 004_delete_structure.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert set s22x5

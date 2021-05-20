@@ -1,9 +1,9 @@
-## check: 003_method.out -a1e-10
-## delete: 003_method.db
+## check: 003_delete_method.out -a1e-10
+## delete: 003_delete_method.db
 ## labels: regression quick
 
-system rm -f 003_method.db
-connect 003_method.db
+system rm -f 003_delete_method.db
+connect 003_delete_method.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert method b3lyp/6-31+G*

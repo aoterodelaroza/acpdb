@@ -1,9 +1,9 @@
-## check: 007_term.out -a1e-10
-## delete: 007_term.db
+## check: 007_delete_term.out -a1e-10
+## delete: 007_delete_term.db
 ## labels: regression quick
 
-system rm -f 007_term.db
-connect 007_term.db
+system rm -f 007_delete_term.db
+connect 007_delete_term.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert method b3lyp/6-31+G*

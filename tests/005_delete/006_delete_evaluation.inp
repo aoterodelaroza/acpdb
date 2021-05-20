@@ -1,9 +1,9 @@
-## check: 006_evaluation.out -a1e-10
-## delete: 006_evaluation.db
+## check: 006_delete_evaluation.out -a1e-10
+## delete: 006_delete_evaluation.db
 ## labels: regression quick
 
-system rm -f 006_evaluation.db
-connect 006_evaluation.db
+system rm -f 006_delete_evaluation.db
+connect 006_delete_evaluation.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert method b3lyp/6-31+G*

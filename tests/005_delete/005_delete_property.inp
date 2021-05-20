@@ -1,9 +1,9 @@
-## check: 005_property.out -a1e-10
-## delete: 005_property.db
+## check: 005_delete_property.out -a1e-10
+## delete: 005_delete_property.db
 ## labels: regression quick
 
-system rm -f 005_property.db
-connect 005_property.db
+system rm -f 005_delete_property.db
+connect 005_delete_property.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert set s22x5

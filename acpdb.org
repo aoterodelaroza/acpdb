@@ -2,10 +2,6 @@
 
 * Keywords (database build)
 
-LIST TERM
-
-  List the known terms.
-
 LIST DIN
  [DIRECTORY directory.s]
  [SET {set1.s|set1.i} {set2.s|set2.i} ...]
