@@ -129,9 +129,9 @@ class structure {
   int nat; // the number of atoms
   int charge; // molecular charge
   int mult; // spin multiplicity
-  double *r; // lattice vectors
+  double *r; // lattice vectors in angstrom (r[0:2] is the first vector, etc.)
   unsigned char *z; // atomic numbers
-  double *x; // coordinates
+  double *x; // coordinates (in angstrom for a molecule; fractional coordinates for a crystal)
 };
 
 #endif
