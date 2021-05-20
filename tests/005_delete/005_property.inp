@@ -1,0 +1,32 @@
+## check: 005_property.out -a1e-10
+## delete: 005_property.db
+## labels: regression quick
+
+system rm -f 005_property.db
+connect 005_property.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure urea
+ file ../zz_source/x23_expt/urea.POSCAR
+ set s22x5
+end
+insert structure c6h6_ch4
+ file ../zz_source/s22_xyz/c6h6_ch4.xyz
+ set s22x5
+end
+insert property strange
+ property_type energy_difference
+ set s22x5
+ order 1
+ structures urea c6h6_ch4
+ coefficients 1.5 -1.2
+end
+
+print
+delete property strange
+print

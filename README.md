@@ -290,6 +290,7 @@ DELETE LITREF [key.s|key.id] [key.s|key.id] ...
 DELETE SET [set.s|set.i]
 DELETE METHOD [method.s|method.i]
 DELETE STRUCTURE [struct.s|struct.i]
+DELETE PROPERTY [prop.s|prop.i]
 ~~~
 Delete one or more entries from the database tables. In the case of
 literature references (LITREF), more than one entry can be given, and

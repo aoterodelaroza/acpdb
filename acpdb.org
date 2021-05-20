@@ -2,15 +2,6 @@
 
 * Keywords (database build)
 
-INSERT PROPERTY name.s
-  PROPERTY_TYPE {prop.s|prop.i}
-  SET {set.s|set.i}
-  ORDER order.i
-  NSTRUCTURES nstruct.i
-  STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
-  COEFFICIENTS c1.r c2.r c3.r ...
-END
-
 DELETE PROPERTY [name.s|name.i]
 
   Delete a property (Table 6).

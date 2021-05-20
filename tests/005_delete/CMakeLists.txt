@@ -3,6 +3,7 @@ set(TESTS
   002_set       ## delete set
   003_method    ## delete method
   004_structure ## delete structure
+  005_property  ## delete property
   )
 
 runtests(${TESTS})
