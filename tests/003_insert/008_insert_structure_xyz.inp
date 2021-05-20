@@ -1,0 +1,17 @@
+## check: 008_insert_structure_xyz.out -a1e-10
+## delete: 008_insert_structure_xyz.db
+## labels: regression quick
+
+system rm -f 008_insert_structure_xyz.db
+connect 008_insert_structure_xyz.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure c6h6_ch4
+ xyz ../zz_source/s22_xyz/c6h6_ch4.xyz
+ set s22x5
+end

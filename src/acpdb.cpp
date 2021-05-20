@@ -261,6 +261,8 @@ int main(int argc, char *argv[]) {
           db.insert_set(*os,key,kmap);
         else if (category == "METHOD")
           db.insert_method(*os,key,kmap);
+        else if (category == "STRUCTURE")
+          db.insert_structure(*os,key,kmap);
         // else if (category == "STRUCTURE")
         //   db.insert_structure(key,kmap);
         // else if (category == "DAT")

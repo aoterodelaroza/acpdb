@@ -2,14 +2,6 @@
 
 * Keywords (database build)
 
-INSERT STRUCTURE name.s
-  XYZ file.s
-  SET {set.s|set.i}
-END
-
-  Insert structure with key name.s from xyz file file.s. This
-  structure belongs in set set.s/set.i.
-
 DELETE STRUCTURE [struct.s|struct.i]
 
   Delete a structure (Table 5).

@@ -246,6 +246,20 @@ For the PSI4\_KEYWORD, the accpetable keys are:
 
 - basis: the basis set. Example: basis=6-31G*.
 
+#### Structures
+
+~~~
+INSERT STRUCTURE name.s
+  XYZ file.s
+  SET {set.s|set.i}
+END
+~~~
+Insert a molecular structure with key `name.s` from xyz file
+`file.s`. This structure belongs in set given by key `set.s` or
+integer ID `set.i`.
+
+
+
 ### Deleting Data
 
 ~~~

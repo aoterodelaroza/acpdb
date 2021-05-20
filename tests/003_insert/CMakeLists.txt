@@ -6,6 +6,7 @@ set(TESTS
   005_insert_set_xyz_regexp ## insert a set with xyz files, use regexp
   006_insert_din            ## insert a set with a din file
   007_insert_method         ## insert a method manually
+  008_insert_structure_xyz  ## insert a molecular structure from an xyz file
   )
 
 runtests(${TESTS})
