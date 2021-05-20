@@ -252,7 +252,7 @@ int main(int argc, char *argv[]) {
       if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
         db.insert_litref_bibtex(*os,tokens);
         // } else if (category == "OLDDAT"){
-        //   ts.insert_olddat(key,tokens);
+        //   ts.insert_olddat(*os,key,tokens);
       } else {
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
         if (category == "LITREF")
@@ -270,9 +270,7 @@ int main(int argc, char *argv[]) {
         else if (category == "TERM")
           db.insert_term(*os,key,kmap);
         // else if (category == "DAT")
-        //   ts.insert_dat(kmap);
-        else
-          db.insert(category,key,kmap);
+        //   ts.insert_dat(*os,kmap);
       }
       *os << std::endl;
 

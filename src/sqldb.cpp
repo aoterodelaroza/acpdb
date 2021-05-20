@@ -158,19 +158,6 @@ void sqldb::close(){
   dbfilename = "";
 }
 
-// Insert an item into the database
-void sqldb::insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
-  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
-
-  // declare the map const_iterator for key searches
-  std::unordered_map<std::string,std::string>::const_iterator im;
-
-  if (category == "TERM") {
-    //// Terms (TERM) ////
-
-  }
-}
-
 // Insert a literature reference by manually giving the data
 void sqldb::insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT LITREF");

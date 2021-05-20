@@ -71,10 +71,10 @@ class trainset {
   // Insert data in bulk into the database using data files from
   // previous ACP development programs using this training set as
   // template
-  void insert_olddat(const std::string &directory, std::list<std::string> &tokens);
+  void insert_olddat(std::ostream &os, const std::string &directory, std::list<std::string> &tokens);
 
   // Insert data from a dat file into the database
-  void insert_dat(std::unordered_map<std::string,std::string> &kmap);
+  void insert_dat(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
 
   // Is the training set defined?
   inline bool isdefined() const{

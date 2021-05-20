@@ -65,7 +65,6 @@ class sqldb {
   void close();
 
   // Insert items into the database manually
-  void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_set(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
