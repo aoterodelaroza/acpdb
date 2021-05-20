@@ -14,11 +14,15 @@ stdout are used. If the output file is not present, stdout is used.
 
 ## Definitions
 
+- Property type: a type of calculated property. At present, only total
+  energies and energy differences are allowed property types.
+
 - Structure: the structural information about a molecule or crystal
   (atomic positions, unit cell, charge, multiplicity, etc.).
 
-- Property: a quantity calculable by running a few molecular or
-  crystal calculations and that is linear in the total energies.
+- Property: a specific instance of a property type calculable by
+  running a few molecular or crystal calculations and that is linear
+  in the total energies.
 
 - Method: a method for the calculation of a property. Can be a
   "reference method" (expensive and/or from the literature), an
@@ -53,6 +57,17 @@ are required:
 
 ACPDB can work without these libraries, but it will be missing the
 coresponding functionalities.
+
+## Property types
+
+The following are the supported property types, and their units:
+
+- `energy_difference`: Differences in energy between two or more
+  structures. Can be non-covalent binding energies, reaction energies,
+  barrier heights, etc. Units are kcal/mol.
+
+- `energy`: The total energy of a molecule or crystal. Units are
+  Hartree.
 
 ## Syntax
 
@@ -301,15 +316,16 @@ given by key `prop.s` or ID `prop.i` with method key `method.s` or ID
 
 ~~~
 DELETE LITREF [key.s|key.id] [key.s|key.id] ...
-DELETE SET [set.s|set.i]
-DELETE METHOD [method.s|method.i]
-DELETE STRUCTURE [struct.s|struct.i]
-DELETE PROPERTY [prop.s|prop.i]
-DELETE EVALUATION method.s prop.s
+DELETE SET [set.s|set.i] [set.s|set.i] ...
+DELETE METHOD [method.s|method.i] [method.s|method.i] ...
+DELETE STRUCTURE [struct.s|struct.i] [struct.s|struct.i] ...
+DELETE PROPERTY [prop.s|prop.i] [prop.s|prop.i] ...
+DELETE EVALUATION [method.s prop.s] [method.s prop.s] ...
 ~~~
-Delete one or more entries from the database tables. In the case of
-literature references (LITREF), more than one entry can be given, and
-you can delete all the references by omitting the key. The entries
-references can be given by their key (if available) or by their
+Delete one or more entries from the database tables. Most entries
+can be given by their key (if available) or by their
 numerical ID. When deleting evaluations, the method and the property
 must both be given by key.
+
+In all cases, multiple entries can be deleted with the same DELETE
+keyword. If no entries are passed to DELETE, all entries are deleted.
