@@ -1,0 +1,5 @@
+## check: 007_print_evaluation.out -a1e-10
+## labels: regression quick
+
+connect ../zz_source/bsip2-small/bsip2.db
+print evaluation

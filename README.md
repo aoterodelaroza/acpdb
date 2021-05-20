@@ -133,6 +133,7 @@ PRINT SET
 PRINT METHOD
 PRINT STRUCTURE
 PRINT PROPERTY
+PRINT EVALUATION
 ~~~
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write

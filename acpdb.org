@@ -2,14 +2,6 @@
 
 * Keywords (database build)
 
-DELETE EVALUATION id.i
-
-  Delete an evaluation by ID (Table 7).
-
-LIST EVALUATION
-
-  List the known evaluations.
-
 INSERT TERM
   METHOD {method.s|method.i}
   PROPERTY {prop.s|prop.i}
