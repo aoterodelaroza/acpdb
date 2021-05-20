@@ -714,7 +714,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
 }
 
 // Delete items from the database
-void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
+void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
   // pick the table
@@ -736,6 +736,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
     statement st_id(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE id = ?1;");
     statement st_key(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE key = ?1;");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
+      os << "# DELETE " << category << " " << *it << std::endl;
       if (isinteger(*it)){
         st_id.bind(1,*it);
         st_id.step();
@@ -745,6 +746,7 @@ void sqldb::erase(const std::string &category, std::list<std::string> &tokens) {
       }
     }
   }
+  os << std::endl;
 
 /*
   // pick the statment
@@ -934,11 +936,11 @@ void sqldb::printsummary(std::ostream &os, bool full){
   // properties and structures in each set
   os << "# Number of properties and structures in each set" << std::endl;
   st.recycle(statement::STMT_CUSTOM,R"SQL(
-select Sets.id, Sets.key, prdx.cnt, srdx.cnt
-from Sets
-inner join (select setid, count(id) as cnt from Properties group by setid) as prdx on prdx.setid = Sets.id
-inner join (select setid, count(id) as cnt from structures group by setid) as srdx on srdx.setid = Sets.id
-order by Sets.id;
+SELECT Sets.id, Sets.key, prdx.cnt, srdx.cnt
+FROM Sets
+INNER JOIN (SELECT setid, count(id) AS cnt FROM Properties GROUP BY setid) AS prdx ON prdx.setid = Sets.id
+INNER JOIN (SELECT setid, count(id) AS cnt FROM Structures GROUP BY setid) AS srdx ON srdx.setid = Sets.id
+ORDER BY Sets.id;
 )SQL");
   os << "| id | key | properties | structures |" << std::endl;
   while (st.step() != SQLITE_DONE){

@@ -81,7 +81,7 @@ class sqldb {
   void insert_set_din(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Delete items from the database
-  void erase(const std::string &category, std::list<std::string> &tokens);
+  void erase(std::ostream &os, const std::string &category, std::list<std::string> &tokens);
 
   // Print items from the database
   void print(std::ostream &os, const std::string &category, bool dobib);

@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
       } else if (keyw == "DELETE") {
         std::string category = popstring(tokens,true);
         *os << "* DELETE: delete data from the database (" << category << ")" << std::endl << std::endl;
-        db.erase(category,tokens);
+        db.erase(*os,category,tokens);
 
         ///////////////////////////////////////////////////
 
