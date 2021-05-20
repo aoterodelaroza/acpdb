@@ -168,32 +168,6 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   if (category == "TERM") {
     //// Terms (TERM) ////
 
-    // bind
-    if ((im = kmap.find("METHOD")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
-    }
-    if ((im = kmap.find("PROPERTY")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_TERM]->bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
-    }
-    if ((im = kmap.find("ATOM")) != kmap.end())
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":ATOM",std::stoi(im->second));
-    if ((im = kmap.find("L")) != kmap.end())
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":L",std::stoi(im->second));
-    if ((im = kmap.find("EXPONENT")) != kmap.end())
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":EXPONENT",std::stod(im->second));
-    if ((im = kmap.find("VALUE")) != kmap.end())
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":VALUE",std::stod(im->second));
-    if ((im = kmap.find("MAXCOEF")) != kmap.end())
-      stmt[statement::STMT_INSERT_TERM]->bind((char *) ":MAXCOEF",std::stod(im->second));
-
-    // submit
-    stmt[statement::STMT_INSERT_TERM]->step();
   }
 }
 
@@ -470,6 +444,75 @@ INSERT INTO Evaluations (methodid,propid,value)
     throw std::runtime_error("A value must be given in INSERT EVALUATION");
 
   os << "# INSERT PROPERTY (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
+
+  // submit
+  st.step();
+}
+
+// Insert a term by manually giving the data
+void sqldb::insert_term(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT TERM");
+
+  const std::unordered_map<char,int> angmom = {{'s',0},{'p',1},{'d',2},{'f',3},{'g',4},{'h',5}};
+
+  // bind
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
+       VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)
+)SQL");
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":METHODID",std::stoi(im->second));
+    else
+      st.bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
+  } else {
+    throw std::runtime_error("A method must be given in INSERT TERM");
+  }
+  if ((im = kmap.find("PROPERTY")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":PROPID",std::stoi(im->second));
+    else
+      st.bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
+  } else {
+    throw std::runtime_error("A property must be given in INSERT TERM");
+  }
+  if ((im = kmap.find("ATOM")) != kmap.end())
+    if (isinteger(im->second))
+      st.bind((char *) ":ATOM",std::stoi(im->second));
+    else{
+      int iz = zatguess(im->second);
+      if (!iz)
+        throw std::runtime_error("Unknown atom in INSERT TERM");
+      st.bind((char *) ":ATOM",iz);
+    }
+  else
+    throw std::runtime_error("An atom must be given in INSERT TERM");
+  if ((im = kmap.find("L")) != kmap.end())
+    if (isinteger(im->second))
+      st.bind((char *) ":L",std::stoi(im->second));
+    else{
+      char l = std::tolower(im->second[0]);
+      if (angmom.find(l) == angmom.end())
+        throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
+      st.bind((char *) ":L",angmom.at(l));
+    }
+  else
+    throw std::runtime_error("An angular momentum (l) must be given in INSERT TERM");
+  if ((im = kmap.find("EXPONENT")) != kmap.end())
+    st.bind((char *) ":EXPONENT",std::stod(im->second));
+  else
+    throw std::runtime_error("An exponent must be given in INSERT TERM");
+  if ((im = kmap.find("VALUE")) != kmap.end())
+    st.bind((char *) ":VALUE",std::stod(im->second));
+  else
+    throw std::runtime_error("A value must be given in INSERT TERM");
+  if ((im = kmap.find("MAXCOEF")) != kmap.end())
+    st.bind((char *) ":MAXCOEF",std::stod(im->second));
+
+  os << "# INSERT TERM (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second
+     << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+     << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
 
   // submit
   st.step();

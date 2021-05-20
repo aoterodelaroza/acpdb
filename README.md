@@ -312,6 +312,27 @@ Insert an evaluation into the database. The evaluation is for property
 given by key `prop.s` or ID `prop.i` with method key `method.s` or ID
 `method.i`. The evaluation yields the value `value.r`.
 
+#### Terms
+~~~
+INSERT TERM
+  METHOD {method.s|method.i}
+  PROPERTY {prop.s|prop.i}
+  ATOM z.i
+  L l.i
+  EXPONENT exp.r
+  VALUE value.r
+  MAXCOEF maxcoef.r
+END
+~~~
+Insert a term into the database. Corresponds to the ACP term
+calculated with method `method.s` (given by key) or `method.i` (by ID)
+on property `prop.s` (by key) or `prop.i` (by ID) for atom with atomic
+number `z.i`, angular momentum channel with l = `l.i`, and exponent
+`exp.r`. The value for this term is `value.r`. The units should be
+consistent with the property type of the indicated
+property. Optionally, the maximum coefficient for this term can also
+be given (`maxcoef.r`) if available.
+
 ### Deleting Data
 
 ~~~

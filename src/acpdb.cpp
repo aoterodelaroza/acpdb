@@ -267,6 +267,8 @@ int main(int argc, char *argv[]) {
           db.insert_property(*os,key,kmap);
         else if (category == "EVALUATION")
           db.insert_evaluation(*os,key,kmap);
+        else if (category == "TERM")
+          db.insert_term(*os,key,kmap);
         // else if (category == "DAT")
         //   ts.insert_dat(kmap);
         else

@@ -2,23 +2,6 @@
 
 * Keywords (database build)
 
-INSERT TERM
-  METHOD {method.s|method.i}
-  PROPERTY {prop.s|prop.i}
-  ATOM z.i
-  L l.i
-  EXPONENT exp.r
-  VALUE value.r
-  MAXCOEF maxcoef.r
-END
-
-  Insert term into the database. Corresponds to the ACP term
-  calculated with method method.s/method.i on property
-  prop.s/prop.i for atom with atomic number z.i, angular momentum
-  channel with l = l.i, and exponent exp.r. The value is value.r
-  (energies in kcal/mol). If available, the
-  maximum coefficient for this term can also be given (maxcoef.r).
-
 DELETE TERM
 
   Delete all terms.
