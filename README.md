@@ -152,8 +152,7 @@ INSERT LITREF ref.s
   DESCRIPTION ...
 END
 ~~~
-Insert a new literature reference, with key `ref.s`. If a litref with
-the same key already exists in the database, replace it.
+Insert a new literature reference, with key `ref.s`.
 
 ~~~
 INSERT LITREF BIBTEX bibfile.s
@@ -223,8 +222,7 @@ INSERT METHOD name.s
 END
 ~~~
 Insert a computational method with name `name.s` in the
-database. If a method with that name already exists in the database,
-replace it. The method definition includes details regarding how to
+database. The method definition includes details regarding how to
 write input files for it. At the moment, only two writer interfaces
 are supported: Gaussian and psi4. The literature references (by key or
 numerical ID) for the method are given in LITREFS and a description

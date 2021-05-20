@@ -293,8 +293,8 @@ void sqldb::insert_litref(std::ostream &os, const std::string &key, std::unorder
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
-                  VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
+INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
+       VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL");
 
   // bind
@@ -417,7 +417,7 @@ void sqldb::insert_method(std::ostream &os, const std::string &key, std::unorder
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT OR REPLACE INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
+INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
        VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
 )SQL");
 
@@ -454,8 +454,8 @@ void sqldb::insert_litref_bibtex(std::ostream &os, std::list<std::string> &token
 
   // prepare the statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
-                  VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
+INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
+       VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL");
 
   // loop over the contents of the bib file and add to the database

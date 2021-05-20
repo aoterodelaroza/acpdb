@@ -96,7 +96,7 @@ CREATE TABLE Terms (
   propid        INTEGER NOT NULL,
   value         REAL NOT NULL,
   maxcoef       REAL,
-  PRIMARY KEY (methodid,atom,l,exponent,propid),
+  PRIMARY KEY(methodid,atom,l,exponent,propid),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
@@ -397,7 +397,6 @@ int statement::step(){
     prepare();
 
   int rc = sqlite3_step(stmt);
-
   if (rc == SQLITE_DONE)
     reset();
   else if (rc != SQLITE_ROW)
