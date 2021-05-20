@@ -68,8 +68,9 @@ class sqldb {
   void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_set(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_property(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::ostream &os, std::list<std::string> &tokens);

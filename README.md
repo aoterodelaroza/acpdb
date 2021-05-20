@@ -131,6 +131,7 @@ training set (may be slow).
 PRINT LITREF [BIBTEX]
 PRINT SET
 PRINT METHOD
+PRINT STRUCTURE
 ~~~
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write
@@ -263,6 +264,24 @@ three possible ways of passing the structure file with name
 file. If POSCAR is used, read the file as a crystal POSCAR file. If
 FILE is used, let acpdb detect the format (xyz or POSCAR) and read it
 as a molecule or crystal depending on the result.
+
+#### Properties
+~~~
+INSERT PROPERTY name.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  SET {set.s|set.i}
+  ORDER order.i
+  NSTRUCTURES nstruct.i
+  STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
+  COEFFICIENTS c1.r c2.r c3.r ...
+END
+~~~
+Insert a property with key `name.s`. This property belongs in set
+with key `set.s` or ID `set.i` and involves `nstruct.i` structures,
+given by their keys (`s1.s`,...) or IDs (`s1.i`,...). The recipe for
+the calculation of the property uses the energies from those
+structures multiplied by coefficients `c1.r`, etc. This property is
+number `order.i` in the set.
 
 ### Deleting Data
 

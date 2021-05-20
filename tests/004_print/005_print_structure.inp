@@ -1,0 +1,5 @@
+## check: 005_print_structure.out -a1e-10
+## labels: regression quick
+
+connect ../zz_source/bsip2-small/bsip2.db
+print structure

@@ -263,8 +263,8 @@ int main(int argc, char *argv[]) {
           db.insert_method(*os,key,kmap);
         else if (category == "STRUCTURE")
           db.insert_structure(*os,key,kmap);
-        // else if (category == "STRUCTURE")
-        //   db.insert_structure(key,kmap);
+        else if (category == "PROPERTY")
+          db.insert_property(*os,key,kmap);
         // else if (category == "DAT")
         //   ts.insert_dat(kmap);
         else

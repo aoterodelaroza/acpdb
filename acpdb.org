@@ -2,10 +2,6 @@
 
 * Keywords (database build)
 
-LIST STRUCTURE
-
-  List the known structures.
-
 INSERT PROPERTY name.s
   PROPERTY_TYPE {prop.s|prop.i}
   SET {set.s|set.i}
@@ -14,11 +10,6 @@ INSERT PROPERTY name.s
   STRUCTURES {s1.s|s1.i} {s2.s|s2.i} {s3.s|s3.i} ...
   COEFFICIENTS c1.r c2.r c3.r ...
 END
-
-  Insert property with key name.s. This property belongs in set
-  set.s/set.i and involves nstruct.i structures, given by ids
-  s1.s/s1.i, etc. The recipe for the calculation of the property uses
-  coefficients c1.r, etc. This system is number order.i in the set.
 
 DELETE PROPERTY [name.s|name.i]
 

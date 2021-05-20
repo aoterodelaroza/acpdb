@@ -165,72 +165,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  if (category == "PROPERTY") {
-    //// Properties (PROPERTY) ////
-
-    // check
-    if (key.empty())
-      throw std::runtime_error("Empty key in INSERT " + category);
-
-    // bind
-    stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
-    if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
-    }
-    if ((im = kmap.find("SET")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
-    }
-    if ((im = kmap.find("ORDERID")) != kmap.end())
-      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":ORDERID",std::stoi(im->second));
-
-    // bind structures
-    int nstructures = 0;
-    if ((im = kmap.find("NSTRUCTURES")) != kmap.end()){
-      nstructures = std::stoi(im->second);
-      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
-    }
-
-    if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
-      std::list<std::string> tokens = list_all_words(im->second);
-
-      int n = 0;
-      int *str = new int[nstructures];
-      for (auto it = tokens.begin(); it != tokens.end(); it++){
-        int idx = 0;
-        if (isinteger(*it))
-          idx = std::stoi(*it);
-        else
-          idx = find_id_from_key(*it,"Structures");
-
-        if (!idx)
-          throw std::runtime_error("Structure not found: " + *it);
-        str[n++] = idx;
-      }
-      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
-      delete str;
-    }
-
-    // bind coefficients
-    if (nstructures > 0 && (im = kmap.find("COEFFICIENTS")) != kmap.end()){
-      std::list<std::string> tokens = list_all_words(im->second);
-
-      int n = 0;
-      double *str = new double[nstructures];
-      for (auto it = tokens.begin(); it != tokens.end(); it++)
-        str[n++] = std::stod(*it);
-      stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
-      delete str;
-    }
-
-    // submit
-    stmt[statement::STMT_INSERT_PROPERTY]->step();
-  } else if (category == "EVALUATION") {
+  if (category == "EVALUATION") {
     //// Evaluations (EVALUATION) ////
 
     // bind
@@ -362,7 +297,34 @@ INSERT INTO Sets (key,property_type,litrefs,description)
     insert_set_din(os, key, kmap);
 }
 
-// Insert a structure by manually giving the data
+// Insert a method by manually giving the data
+void sqldb::insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
+  if (key.empty())
+    throw std::runtime_error("Empty key in INSERT METHOD");
+
+  os << "# INSERT METHOD " << key << std::endl;
+
+  // statement
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
+       VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
+)SQL");
+
+  // bind
+  st.bind((char *) ":KEY",key,false);
+  std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
+  for (auto it = vlist.begin(); it != vlist.end(); ++it){
+    auto im = kmap.find(*it);
+    if (im != kmap.end())
+      st.bind(":" + *it,im->second);
+  }
+
+  // submit
+  st.step();
+}
+
+// Insert a property by manually giving the data
 void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
   if (key.empty())
@@ -415,31 +377,120 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
   st.step();
 }
 
-// Insert a method by manually giving the data
-void sqldb::insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
-  if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
+// Insert a property by manually giving the data
+void sqldb::insert_property(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT PROPERTY");
   if (key.empty())
-    throw std::runtime_error("Empty key in INSERT METHOD");
+    throw std::runtime_error("Empty key in INSERT PROPERTY");
 
-  os << "# INSERT METHOD " << key << std::endl;
+  //   // check
+  //   if (key.empty())
+  //     throw std::runtime_error("Empty key in INSERT " + category);
 
-  // statement
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
-       VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
-)SQL");
+  //   // bind
+  //   stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":KEY",key,false);
+  //   if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+  //     if (isinteger(im->second))
+  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
+  //     else
+  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
+  //   }
+  //   if ((im = kmap.find("SET")) != kmap.end()){
+  //     if (isinteger(im->second))
+  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",std::stoi(im->second));
+  //     else
+  //       stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
+  //   }
+  //   if ((im = kmap.find("ORDERID")) != kmap.end())
+  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":ORDERID",std::stoi(im->second));
 
-  // bind
-  st.bind((char *) ":KEY",key,false);
-  std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
-  for (auto it = vlist.begin(); it != vlist.end(); ++it){
-    auto im = kmap.find(*it);
-    if (im != kmap.end())
-      st.bind(":" + *it,im->second);
-  }
+  //   // bind structures
+  //   int nstructures = 0;
+  //   if ((im = kmap.find("NSTRUCTURES")) != kmap.end()){
+  //     nstructures = std::stoi(im->second);
+  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":NSTRUCTURES",nstructures);
+  //   }
 
-  // submit
-  st.step();
+  //   if (nstructures > 0 && (im = kmap.find("STRUCTURES")) != kmap.end()){
+  //     std::list<std::string> tokens = list_all_words(im->second);
+
+  //     int n = 0;
+  //     int *str = new int[nstructures];
+  //     for (auto it = tokens.begin(); it != tokens.end(); it++){
+  //       int idx = 0;
+  //       if (isinteger(*it))
+  //         idx = std::stoi(*it);
+  //       else
+  //         idx = find_id_from_key(*it,"Structures");
+
+  //       if (!idx)
+  //         throw std::runtime_error("Structure not found: " + *it);
+  //       str[n++] = idx;
+  //     }
+  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
+  //     delete str;
+  //   }
+
+  //   // bind coefficients
+  //   if (nstructures > 0 && (im = kmap.find("COEFFICIENTS")) != kmap.end()){
+  //     std::list<std::string> tokens = list_all_words(im->second);
+
+  //     int n = 0;
+  //     double *str = new double[nstructures];
+  //     for (auto it = tokens.begin(); it != tokens.end(); it++)
+  //       str[n++] = std::stod(*it);
+  //     stmt[statement::STMT_INSERT_PROPERTY]->bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
+  //     delete str;
+  //   }
+
+  //   // submit
+  //   stmt[statement::STMT_INSERT_PROPERTY]->step();
+
+//   os << "# INSERT STRUCTURE " << key << std::endl;
+// 
+//   // read the molecular structure
+//   structure s;
+//   std::unordered_map<std::string,std::string>::const_iterator im;
+//   if ((im = kmap.find("FILE")) != kmap.end()){
+//     if (s.readfile(im->second))
+//       throw std::runtime_error("Error reading file: " + im->second);
+//   } else if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
+//     throw std::runtime_error("XYZ and POSCAR are both present in INSERT STRUCTURE");
+//   } else if ((im = kmap.find("XYZ")) != kmap.end()){
+//     if (s.readxyz(im->second))
+//       throw std::runtime_error("Error reading xyz file: " + im->second);
+//   } else if ((im = kmap.find("POSCAR")) != kmap.end()){
+//     if (s.readposcar(im->second))
+//       throw std::runtime_error("Error reading POSCAR file: " + im->second);
+//   } else {
+//     throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
+//   }
+// 
+//   // bind
+//   statement st(db,statement::STMT_CUSTOM,R"SQL(
+// INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+//        VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+// )SQL");
+// 
+//   int nat = s.get_nat();
+//   st.bind((char *) ":KEY",key,false);
+//   st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
+//   st.bind((char *) ":NAT",nat,false);
+//   st.bind((char *) ":CHARGE",s.get_charge(),false);
+//   st.bind((char *) ":MULTIPLICITY",s.get_mult(),false);
+//   if ((im = kmap.find("SET")) != kmap.end()){
+//     if (isinteger(im->second))
+//       st.bind((char *) ":SETID",std::stoi(im->second));
+//     else
+//       st.bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
+//   }
+//   if (!s.ismolecule())
+//     st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+//   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+//   st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+// 
+//   // submit
+//   st.step();
 }
 
 // Insert literature references into the database from a bibtex file
