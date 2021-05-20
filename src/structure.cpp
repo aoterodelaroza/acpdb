@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <algorithm>
 #include <unordered_map>
+#include <map>
 #include <vector>
 #include <cstring>
 #include "parseutils.h"
@@ -60,6 +61,14 @@ int structure::readxyz(const std::string &filename){
   ismol = true;
 
   return 0;
+}
+
+// Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
+int structure::writexyz(std::ostream &os) const {
+  if (!x || !z || !ismol) return 1;
+  os << nat << std::endl;
+  if (os.fail()) return 2;
+  return write_coordinate_block(os,true);
 }
 
 // Read an POSCAR file. Return non-zero if error; 0 if correct.
@@ -141,12 +150,45 @@ int structure::readposcar(const std::string &filename){
   return 0;
 }
 
-// Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
-int structure::writexyz(std::ostream &os) const {
-  if (!x || !z) return 1;
-  os << nat << std::endl;
+// Write a POSCAR file to output stream os. Return non-zero if error; 0 if correct.
+int structure::writeposcar(std::ostream &os) const {
+  if (!x || !z || !r || ismol) return 1;
+
+  // write the header
+  std::streamsize prec = os.precision(10);
+  os << std::fixed;
+  os << "crystal" << std::endl;
+  os << "1.0" << std::endl;
+  for (int i = 0; i < 3; i++)
+    os << r[3*i+0] << " " << r[3*i+1] << " " << r[3*i+2] << std::endl;
   if (os.fail()) return 2;
-  return write_coordinate_block(os,true);
+
+  // build the maps for the atomic orderings
+  std::map<unsigned char,int> ntyp;
+  std::map<unsigned char,std::list<int>> ityp;
+  for (int i = 0; i < nat; i++){
+    ntyp[z[i]]++;
+    ityp[z[i]].push_back(i);
+  }
+
+  // write the atom types and numbers
+  for (auto it = ntyp.begin(); it != ntyp.end(); it++)
+    os << nameguess(it->first) << (it != ntyp.end()?" ":"");
+  os << std::endl;
+  for (auto it = ntyp.begin(); it != ntyp.end(); it++)
+    os << it->second << (it != ntyp.end()?" ":"");
+  os << std::endl;
+  os << "Direct" << std::endl;
+  if (os.fail()) return 2;
+
+  // write the atomic coordinates
+  for (auto it = ityp.begin(); it != ityp.end(); it++)
+    for (auto ia = it->second.begin(); ia != it->second.end(); ia++)
+      os << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2] << std::endl;
+
+  // clean up
+  os.precision(prec);
+  return 0;
 }
 
 // Write a Gaussian input file to output stream os. keyw = method

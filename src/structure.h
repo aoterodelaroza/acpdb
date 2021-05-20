@@ -65,6 +65,9 @@ class structure {
   // Read a POSCAR file. Return non-zero if error; 0 if correct.
   int readposcar(const std::string &filename);
 
+  // Write a POSCAR file to output stream os. Return non-zero if error; 0 if correct.
+  int writeposcar(std::ostream &os) const;
+
   // Write a Gaussian input file to output stream os. keyw = method
   // keyword. gbs = basis set file. root = root of the file name. a =
   // ACP used. Return non-zero if error; 0 if correct.
