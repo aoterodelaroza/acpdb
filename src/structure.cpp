@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <cmath>
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
@@ -61,6 +62,85 @@ int structure::readxyz(const std::string &filename){
   return 0;
 }
 
+// Read an POSCAR file. Return non-zero if error; 0 if correct.
+int structure::readposcar(const std::string &filename){
+  std::ifstream ifile(filename,std::ios::in);
+  if (ifile.fail()) return 1;
+
+  // this is a crystal
+  ismol = false;
+  charge = 0;
+  mult = 1;
+
+  // read POSCAR header
+  std::string line;
+  std::getline(ifile,line);
+  if (ifile.fail()) return 2;
+
+  // read the scale factor and the lattice vectors
+  double scale, raux[9];
+  ifile >> scale;
+  if (ifile.fail()) return 2;
+  if (std::abs(scale - 1.0) > 1e-10) {
+    std::cout << "The scale factor in the POSCAR file must be one" << std::endl;
+    return 2;
+  }
+
+  // read the lattice vectors
+  for (int i=0; i<9; i++)
+    ifile >> raux[i];
+  if (ifile.fail()) return 2;
+
+  // read the atomic symbols
+  std::getline(ifile,line); // skip the remainder of the last line
+  std::getline(ifile,line);
+  std::list<std::string> attyp = list_all_words(line);
+  int ntyp = attyp.size();
+  if (ifile.fail()) return 2;
+
+  // read the number of atomic types
+  std::list<int> nis;
+  nat = 0;
+  for (int i = 0; i < ntyp; i++){
+    int iaux;
+    ifile >> iaux;
+    nis.push_back(iaux);
+    nat += iaux;
+  }
+  if (ifile.fail()) return 2;
+
+  // read the conversion string
+  std::string convstr;
+  ifile >> convstr;
+  if (ifile.fail()) return 2;
+  if (convstr[0] != 'D' && convstr[0] != 'd'){
+    std::cout << "The conversion string in the POSCAR must be Direct" << std::endl;
+    return 2;
+  }
+
+  // allocate space for atomic symbols and coordinates
+  deallocate();
+  allocate();
+
+  // read the atomic coordinates
+  auto in = nis.begin();
+  auto it = attyp.begin();
+  for (int iat = 0; it != attyp.end(); it++, in++){
+    for (int i = 0; i < *in; i++, iat++){
+      ifile >> x[3*iat+0] >> x[3*iat+1] >> x[3*iat+2];
+      z[iat] = zatguess(*it);
+      if (z[iat] == 0) return 3;
+    }
+  }
+  if (ifile.fail()) return 2;
+
+  // copy over the lattice vectors
+  for (int i=0; i<9; i++)
+    r[i] = raux[i];
+
+  return 0;
+}
+
 // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
 int structure::writexyz(std::ostream &os) const {
   if (!x || !z) return 1;
@@ -79,13 +159,13 @@ int structure::writegjf(std::ostream &os, const std::string &keyw, const std::st
   os << "%chk=" << root << ".chk" << std::endl
      << "%mem=" << globals::mem << "GB" << std::endl
      << "%nproc=" << globals::ncpu << std::endl
-     << "#t " 
+     << "#t "
      << keyw << " "
      << (a?"pseudo=read ":"")
      << "Symm=none int=(grid=ultrafine) guess=(read,tcheck) output=wfx" << std::endl
      << std::endl << "title" << std::endl << std::endl;
   if (os.fail()) return 2;
-  
+
   // coordinate block
   int res = write_coordinate_block(os,true);
   if (res) return res;
@@ -104,7 +184,7 @@ int structure::writegjf(std::ostream &os, const std::string &keyw, const std::st
   // wfx file
   os << root << ".wfx" << std::endl << std::endl;
   if (os.fail()) return 2;
-  
+
   return 0;
 }
 
@@ -122,7 +202,7 @@ int structure::writepsi4(std::ostream &os, const std::string &method, const std:
      << "set_num_threads(" << globals::ncpu << ")" << std::endl << std::endl
      << "molecule mol {" << std::endl;
   if (os.fail()) return 2;
-  
+
   // coordinate block
   int res = write_coordinate_block(os,true);
   if (res) return res;
@@ -151,7 +231,7 @@ int structure::writepsi4(std::ostream &os, const std::string &method, const std:
   os << "E, wfn = energy(\"" << method << "\", return_wfn=True)" << std::endl;
   os << "molden(wfn, \"" << root << ".molden\", dovirtual=False)" << std::endl;
   if (os.fail()) return 2;
-  
+
   return 0;
 }
 
@@ -159,7 +239,7 @@ int structure::writepsi4(std::ostream &os, const std::string &method, const std:
 // stream os. keyw = method keyword. gbs = basis set file. root =
 // root of the file name. zat,l,exp = term details. Return non-zero
 // if error; 0 if correct.
-int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, 
+int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root,
                               const std::vector<unsigned char> &zat, const std::vector<unsigned char> &lmax, const std::vector<double> &exp) const {
   if (!ismol || !x || !z) return 1;
 
@@ -167,12 +247,12 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
   os << "%chk=" << root << ".chk" << std::endl
      << "%mem=" << globals::mem << "GB" << std::endl
      << "%nproc=" << globals::ncpu << std::endl
-     << "#t " 
+     << "#t "
      << keyw << " "
      << "Symm=none int=(grid=ultrafine) guess=(read,tcheck)" << std::endl
      << std::endl << "title" << std::endl << std::endl;
   if (os.fail()) return 2;
-  
+
   // coordinate block
   int res = write_coordinate_block(os,true);
   if (res) return res;
@@ -195,7 +275,7 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
            << "%chk=" << root << ".chk" << std::endl
            << "%mem=" << globals::mem << "GB" << std::endl
            << "%nproc=" << globals::ncpu << std::endl
-           << "#t " 
+           << "#t "
            << keyw << " "
            << "pseudo=read iop(5/13=1,5/36=2,99/5=2) Symm=none geom=check" << std::endl
            << "int=(grid=ultrafine) guess=(read,tcheck) scf=(maxcycle=1)" << std::endl
@@ -212,14 +292,14 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
     }
   }
   if (os.fail()) return 2;
-  
+
   return 0;
 }
 
 // Read the structure from a database row obtained via SELECT. Non-zero if error, 0 if correct.
 int structure::readdbrow(sqlite3_stmt *stmt){
   if (!stmt) return 1;
-  
+
   ismol = sqlite3_column_int(stmt, 3);
   charge = sqlite3_column_int(stmt, 4);
   mult = sqlite3_column_int(stmt, 5);
@@ -261,4 +341,3 @@ int structure::write_coordinate_block(std::ostream &os, bool withcm/*= false*/) 
   if (os.fail()) return 2;
   return 0;
 }
-

@@ -59,7 +59,7 @@ std::list<std::string> list_all_words(const std::string &line) {
   }
 
   return result;
-}  
+}
 
 // Read lines from input stream is using comment and continuation
 // rules. Split each line into a key (first word) and content (rest of
@@ -86,7 +86,7 @@ std::unordered_map<std::string,std::string> map_keyword_pairs(std::istream &is, 
       result[keyw] = line;
   }
   throw std::runtime_error("Error scanning for END keyword");
-  
+
   return result;
 }
 
@@ -150,7 +150,7 @@ std::string mergetokens(std::list<std::string> &list){
 bool equali_strings(const std::string& a, const std::string& b)
 {
   return a.size() == b.size() &&
-    std::equal(a.begin(), a.end(), b.begin(), 
+    std::equal(a.begin(), a.end(), b.begin(),
                [](char cA, char cB) { return ::toupper(cA) == ::toupper(cB); });
 }
 
@@ -182,7 +182,7 @@ unsigned char zatguess(std::string atsym){
     {"ES", 99 }, {"FM", 100}, {"MD", 101}, {"NO", 102}, {"LR", 103}, {"RF", 104}, {"DB", 105},
     {"SG", 106}, {"BH", 107}, {"HS", 108}, {"MT", 109}, {"DS", 110}, {"RG", 111}, {"CN", 112},
     {"NH", 113}, {"FL", 114}, {"MC", 115}, {"LV", 116}, {"TS", 117}, {"OG", 118}, {"XN", 119},
-    {"XB", 120}, {"XR", 121}, {"XC", 122}, {"XZ", 123},   
+    {"XB", 120}, {"XR", 121}, {"XC", 122}, {"XZ", 123},
   };
 
   atsym = atsym.substr(0,2);
@@ -241,7 +241,7 @@ int line_get_double(std::istream &is, std::string &line, std::string &str, doubl
 }
 
 // Get the next line from stream is. Use skipchar as the comment
-// character and skip comments and blank lines. Remove leading 
+// character and skip comments and blank lines. Remove leading
 // and trailing blanks from the line.
 std::istream &get_next_line(std::istream &is, std::string &line, char skipchar/*='#'*/, char contchar/*='\\'*/){
 
@@ -340,4 +340,3 @@ std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const
   ifile.close();
   return res;
 }
-

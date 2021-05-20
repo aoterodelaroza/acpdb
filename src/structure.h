@@ -26,13 +26,13 @@
 
 // A class for molecular or crystal structures
 class structure {
-  
+
  public:
 
   //// Operators ////
   // constructors
   structure() : ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) {};
-  structure(bool ismol_, int nat_, int charge_, int mult_, const double *r_, const double *x_, const unsigned char *z_) 
+  structure(bool ismol_, int nat_, int charge_, int mult_, const double *r_, const double *x_, const unsigned char *z_)
     : ismol(ismol_), nat(nat_), charge(charge_), mult(mult_) {
     allocate();
     if (r_)
@@ -42,9 +42,9 @@ class structure {
     memcpy(x, x_, 3*nat*sizeof(double));
     memcpy(z, z_, nat*sizeof(unsigned char));
   };
-  structure(const std::string &filename) : 
-    ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) { 
-    readxyz(filename); 
+  structure(const std::string &filename) :
+    ismol(true), nat(0), charge(0), mult(1), r(nullptr), x(nullptr), z(nullptr) {
+    readxyz(filename);
   };
   structure(structure&& rhs) = delete; // move constructor (deleted)
   structure(const structure& rhs) = delete; // copy constructor (deleted)
@@ -62,6 +62,9 @@ class structure {
   // Write an xyz file to output stream os. Return non-zero if error; 0 if correct.
   int writexyz(std::ostream &os) const;
 
+  // Read a POSCAR file. Return non-zero if error; 0 if correct.
+  int readposcar(const std::string &filename);
+
   // Write a Gaussian input file to output stream os. keyw = method
   // keyword. gbs = basis set file. root = root of the file name. a =
   // ACP used. Return non-zero if error; 0 if correct.
@@ -76,7 +79,7 @@ class structure {
   // stream os. keyw = method keyword. gbs = basis set file. root =
   // root of the file name. zat,l,exp = term details. Return non-zero
   // if error; 0 if correct.
-  int writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root, 
+  int writegjf_terms(std::ostream &os, const std::string &keyw, const std::string &gbs, const std::string &root,
                      const std::vector<unsigned char> &zat, const std::vector<unsigned char> &lmax, const std::vector<double> &exp) const;
 
   // Read the structure from a database row obtained via
@@ -85,7 +88,7 @@ class structure {
   int readdbrow (sqlite3_stmt *stmt);
 
   // c++ accessor functions
-  bool ismolecule() const { return ismol; } 
+  bool ismolecule() const { return ismol; }
   int get_nat() const { return nat; }
   int get_charge() const { return charge; }
   int get_mult() const { return mult; }
@@ -129,4 +132,3 @@ class structure {
 };
 
 #endif
-

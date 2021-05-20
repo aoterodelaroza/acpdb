@@ -373,9 +373,14 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unor
   // read the molecular structure
   structure s;
   std::unordered_map<std::string,std::string>::const_iterator im;
-  if ((im = kmap.find("XYZ")) != kmap.end()){
+  if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
+    throw std::runtime_error("XYZ and POSCAR are both present in INSERT STRUCTURE");
+  } else if ((im = kmap.find("XYZ")) != kmap.end()){
     if (s.readxyz(im->second))
       throw std::runtime_error("Error reading xyz file: " + im->second);
+  } else if ((im = kmap.find("POSCAR")) != kmap.end()){
+    if (s.readposcar(im->second))
+      throw std::runtime_error("Error reading POSCAR file: " + im->second);
   } else {
     throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
   }

@@ -1,0 +1,17 @@
+## check: 009_insert_structure_poscar.out -a1e-10
+## delete: 009_insert_structure_poscar.db
+## labels: regression quick
+
+system rm -f 009_insert_structure_poscar.db
+connect 009_insert_structure_poscar.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure c6h6_ch4
+ poscar ../zz_source/x23_expt/urea.POSCAR
+ set s22x5
+end
