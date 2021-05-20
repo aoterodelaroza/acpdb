@@ -733,6 +733,8 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
     table = "Sets";
   else if (category == "METHOD")
     table = "Methods";
+  else if (category == "STRUCTURE")
+    table = "Structures";
   else
     throw std::runtime_error("Unknown keyword in DELETE");
 
@@ -759,10 +761,6 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
 /*
   // pick the statment
   statement::stmttype all, id, key;
-  } else if (category == "STRUCTURE") {
-    all = statement::STMT_DELETE_STRUCTURE_ALL;
-    id  = statement::STMT_DELETE_STRUCTURE_WITH_ID;
-    key = statement::STMT_DELETE_STRUCTURE_WITH_KEY;
   } else if (category == "PROPERTY") {
     all = statement::STMT_DELETE_PROPERTY_ALL;
     id  = statement::STMT_DELETE_PROPERTY_WITH_ID;
@@ -946,8 +944,8 @@ void sqldb::printsummary(std::ostream &os, bool full){
   st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Sets.id, Sets.key, prdx.cnt, srdx.cnt
 FROM Sets
-INNER JOIN (SELECT setid, count(id) AS cnt FROM Properties GROUP BY setid) AS prdx ON prdx.setid = Sets.id
-INNER JOIN (SELECT setid, count(id) AS cnt FROM Structures GROUP BY setid) AS srdx ON srdx.setid = Sets.id
+LEFT OUTER JOIN (SELECT setid, count(id) AS cnt FROM Properties GROUP BY setid) AS prdx ON prdx.setid = Sets.id
+LEFT OUTER JOIN (SELECT setid, count(id) AS cnt FROM Structures GROUP BY setid) AS srdx ON srdx.setid = Sets.id
 ORDER BY Sets.id;
 )SQL");
   os << "| id | key | properties | structures |" << std::endl;

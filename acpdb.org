@@ -2,10 +2,6 @@
 
 * Keywords (database build)
 
-DELETE STRUCTURE [struct.s|struct.i]
-
-  Delete a structure (Table 5).
-
 LIST STRUCTURE
 
   List the known structures.
