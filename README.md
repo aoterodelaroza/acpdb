@@ -304,10 +304,11 @@ DELETE SET [set.s|set.i]
 DELETE METHOD [method.s|method.i]
 DELETE STRUCTURE [struct.s|struct.i]
 DELETE PROPERTY [prop.s|prop.i]
-DELETE EVALUATION id.i
+DELETE EVALUATION method.s prop.s
 ~~~
 Delete one or more entries from the database tables. In the case of
 literature references (LITREF), more than one entry can be given, and
 you can delete all the references by omitting the key. The entries
 references can be given by their key (if available) or by their
-numerical ID.
+numerical ID. When deleting evaluations, the method and the property
+must both be given by key.

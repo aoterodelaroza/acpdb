@@ -779,6 +779,17 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
   if (tokens.empty()){
     statement st(db,statement::STMT_CUSTOM,"DELETE FROM " + table + ";");
     st.execute();
+  } else if (category == "EVALUATION") {
+    statement st(db,statement::STMT_CUSTOM,R"SQL(
+DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1) AND propid = (SELECT id FROM Properties WHERE key = ?2);
+)SQL");
+    for (auto it = tokens.begin(); it != tokens.end(); it++){
+      os << "# DELETE " << category << " (method=" << *it;
+      st.bind(1,*it++);
+      os << ";property=" << *it << ")" << std::endl;
+      st.bind(2,*it);
+      st.step();
+    }
   } else {
     statement st_id(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE id = ?1;");
     statement st_key(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE key = ?1;");
@@ -989,7 +1000,7 @@ ORDER BY Sets.id;
 
   // evaluations and terms
   if (full){
-    os << "# Evaluations and terms for each combination of set & method (only non-zero entries shown)" << std::endl;
+    os << "# Evaluations and terms for each combination of set & method" << std::endl;
     st.recycle(statement::STMT_CUSTOM,R"SQL(
 SELECT Sets.id, Sets.key, Methods.id, Methods.key, eva.cnt, trm.cnt
 FROM Methods, Sets
@@ -1013,8 +1024,7 @@ ORDER BY Sets.id, Methods.id;
       std::string mkey = (char *) sqlite3_column_text(st.ptr(),3);
       long int ecnt = sqlite3_column_int(st.ptr(),4);
       long int tcnt = sqlite3_column_int(st.ptr(),5);
-      if (tcnt > 0 && ecnt > 0)
-        os << "| " << sid << " | " << skey << " | " << mid << " | " << mkey << " |" << ecnt << " | " << tcnt << " |" << std::endl;
+      os << "| " << sid << " | " << skey << " | " << mid << " | " << mkey << " |" << ecnt << " | " << tcnt << " |" << std::endl;
     }
     os << std::endl;
   }

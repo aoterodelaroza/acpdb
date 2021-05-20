@@ -1,0 +1,56 @@
+## check: 006_evaluation.out -a1e-10
+## delete: 006_evaluation.db
+## labels: regression quick
+
+system rm -f 006_evaluation.db
+connect 006_evaluation.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert set s22x5
+ property_type energy_difference
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure urea
+ file ../zz_source/x23_expt/urea.POSCAR
+ set s22x5
+end
+insert structure c6h6_ch4
+ file ../zz_source/s22_xyz/c6h6_ch4.xyz
+ set s22x5
+end
+insert property strange
+ property_type energy_difference
+ set s22x5
+ order 1
+ structures urea c6h6_ch4
+ coefficients 1.5 -1.2
+end
+insert property strange2
+ property_type energy_difference
+ set s22x5
+ order 1
+ structures urea c6h6_ch4
+ coefficients 1.5 -1.3
+end
+insert evaluation
+ method b3lyp/6-31+G*
+ property strange
+ value 12.2
+end
+insert evaluation
+ method b3lyp/6-31+G*
+ property strange2
+ value 12.3
+end
+
+print full
+delete evaluation b3lyp/6-31+G* strange
+print full
+
