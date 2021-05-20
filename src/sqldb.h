@@ -66,19 +66,19 @@ class sqldb {
 
   // Insert items into the database manually
   void insert(const std::string &category, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_litref(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_set(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_structure(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_method(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_set(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
-  void insert_litref_bibtex(std::list<std::string> &tokens);
+  void insert_litref_bibtex(std::ostream &os, std::list<std::string> &tokens);
 
   // Insert additional info from an INSERT SET command (xyz keyword)
-  void insert_set_xyz(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_set_xyz(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert additional info from an INSERT SET command (din keyword)
-  void insert_set_din(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_set_din(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
   // Delete items from the database
   void erase(const std::string &category, std::list<std::string> &tokens);

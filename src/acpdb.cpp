@@ -253,17 +253,17 @@ int main(int argc, char *argv[]) {
         *os << "* INSERT: insert data into the database (" << category << ")" << std::endl;
 
         if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
-          db.insert_litref_bibtex(tokens);
+          db.insert_litref_bibtex(*os,tokens);
         // } else if (category == "OLDDAT"){
         //   ts.insert_olddat(key,tokens);
         } else {
           std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
           if (category == "LITREF")
-            db.insert_litref(key,kmap);
+            db.insert_litref(*os,key,kmap);
           else if (category == "SET")
-            db.insert_set(key,kmap);
+            db.insert_set(*os,key,kmap);
           else if (category == "METHOD")
-            db.insert_method(key,kmap);
+            db.insert_method(*os,key,kmap);
           // else if (category == "STRUCTURE")
           //   db.insert_structure(key,kmap);
           // else if (category == "DAT")

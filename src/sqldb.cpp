@@ -284,10 +284,12 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
 }
 
 // Insert a literature reference by manually giving the data
-void sqldb::insert_litref(const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT LITREF");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT LITREF");
+
+  os << "# INSERT LITREF " << key << std::endl;
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -310,12 +312,14 @@ INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,ye
 }
 
 // Insert a set by manually giving the data
-void sqldb::insert_set(const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert_set(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT SET");
   if (kmap.find("XYZ") != kmap.end() && kmap.find("DIN") != kmap.end())
     throw std::runtime_error("XYZ and SET options in SET are incompatible");
+
+  os << "# INSERT SET " << key << std::endl;
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -351,18 +355,20 @@ INSERT INTO Sets (key,property_type,litrefs,description)
 
   // interpret the xyz keyword
   if (kmap.find("XYZ") != kmap.end())
-    insert_set_xyz(key, kmap);
+    insert_set_xyz(os, key, kmap);
 
   // interpret the din/directory/method keyword combination
   if (kmap.find("DIN") != kmap.end())
-    insert_set_din(key, kmap);
+    insert_set_din(os, key, kmap);
 }
 
 // Insert a structure by manually giving the data
-void sqldb::insert_structure(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT STRUCTURE");
+
+  os << "# INSERT STRUCTURE " << key << std::endl;
 
   // read the molecular structure
   structure s;
@@ -402,32 +408,34 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 }
 
 // Insert a method by manually giving the data
-void sqldb::insert_method(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT METHOD");
 
-    // statement
-    statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
+  os << "# INSERT METHOD " << key << std::endl;
+
+  // statement
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT OR REPLACE INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
        VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
 )SQL");
 
-    // bind
-    st.bind((char *) ":KEY",key,false);
-    std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
-    for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      auto im = kmap.find(*it);
-      if (im != kmap.end())
-        st.bind(":" + *it,im->second);
-    }
+  // bind
+  st.bind((char *) ":KEY",key,false);
+  std::forward_list<std::string> vlist = {"GAUSSIAN_KEYWORD","PSI4_KEYWORD","LITREFS","DESCRIPTION"};
+  for (auto it = vlist.begin(); it != vlist.end(); ++it){
+    auto im = kmap.find(*it);
+    if (im != kmap.end())
+      st.bind(":" + *it,im->second);
+  }
 
-    // submit
-    st.step();
+  // submit
+  st.step();
 }
 
 // Insert literature references into the database from a bibtex file
-void sqldb::insert_litref_bibtex(std::list<std::string> &tokens){
+void sqldb::insert_litref_bibtex(std::ostream &os, std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
 #ifdef BTPARSE_FOUND
@@ -461,6 +469,8 @@ INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,ye
         // bind the key
         st.bind((char *) ":KEY",key,false);
 
+        os << "# INSERT LITREF " << key << std::endl;
+
         // bind the rest of the fields
         char *fname = NULL;
         AST *field = NULL;
@@ -470,23 +480,22 @@ INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,ye
           std::string fvalue(fvalue_);
           free(fvalue_);
 
-          if (!strcmp(fname,"title")){
+          if (!strcmp(fname,"title"))
             st.bind((char *) ":TITLE",fvalue);
-          } else if (!strcmp(fname,"author") || !strcmp(fname,"authors")){
+          else if (!strcmp(fname,"author") || !strcmp(fname,"authors"))
             st.bind((char *) ":AUTHORS",fvalue);
-          } else if (!strcmp(fname,"journal")){
+          else if (!strcmp(fname,"journal"))
             st.bind((char *) ":JOURNAL",fvalue);
-          } else if (!strcmp(fname,"volume")){
+          else if (!strcmp(fname,"volume"))
             st.bind((char *) ":VOLUME",fvalue);
-          } else if (!strcmp(fname,"page") || !strcmp(fname,"pages")){
+          else if (!strcmp(fname,"page") || !strcmp(fname,"pages"))
             st.bind((char *) ":PAGE",fvalue);
-          } else if (!strcmp(fname,"year")){
+          else if (!strcmp(fname,"year"))
             st.bind((char *) ":YEAR",fvalue);
-          } else if (!strcmp(fname,"doi")){
+          else if (!strcmp(fname,"doi"))
             st.bind((char *) ":DOI",fvalue);
-          } else if (!strcmp(fname,"description")){
+          else if (!strcmp(fname,"description"))
             st.bind((char *) ":DESCRIPTION",fvalue);
-          }
         }
         st.step();
         if (field) bt_free_ast(field);
@@ -509,7 +518,7 @@ INSERT OR REPLACE INTO Literature_refs (key,authors,title,journal,volume,page,ye
 }
 
 // Insert additional info from an INSERT SET command (xyz keyword)
-void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // tokenize the line following the xyz keyword
@@ -545,7 +554,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
         smap.clear();
         smap["XYZ"] = file.path().string();
         smap["SET"] = key;
-        insert_structure(skey,smap);
+        insert_structure(os,skey,smap);
       }
     }
 
@@ -559,7 +568,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
         smap.clear();
         smap["XYZ"] = *it;
         smap["SET"] = key;
-        insert_structure(skey,smap);
+        insert_structure(os,skey,smap);
       } else {
         throw std::runtime_error("File or directory not found: " + *it);
       }
@@ -573,7 +582,7 @@ void sqldb::insert_set_xyz(const std::string &key, std::unordered_map<std::strin
 }
 
 // Insert additional info from an INSERT SET command (xyz keyword)
-void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // Check sanity of the keywords
@@ -664,7 +673,7 @@ void sqldb::insert_set_din(const std::string &key, std::unordered_map<std::strin
           throw std::runtime_error("xyz file not found (" + filename + ") processing din file " + din);
         smap["XYZ"] = filename;
         smap["SET"] = key;
-        insert_structure(skey,smap);
+        insert_structure(os,skey,smap);
         used[info[k].names[i]] = true;
       }
     }
