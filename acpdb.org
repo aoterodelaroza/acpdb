@@ -373,100 +373,413 @@ TRAINING CLEAR
 
 * Database schema
 
-** Table 1: literature references (Literature_refs)
+-- copy over from the code --
 
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  key         TEXT UNIQUE NOT NULL,
-  authors     TEXT,
-  title       TEXT,
-  journal     TEXT,
-  volume      TEXT,
-  page        TEXT,
-  year        TEXT,
-  doi         TEXT UNIQUE,
-  description TEXT
+own implementation of LASSO in c++
 
-** Table 2: property types (Property_types)
+-------
 
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  key         TEXT UNIQUE NOT NULL,
-  description TEXT
+clean up prepared statements
+forces & stresses & energy derivatives
+maxcoef
+crystal inputs and outputs
+build all the databases
 
-** Table 3: sets
+-------
 
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  key           TEXT UNIQUE NOT NULL,
-  property_type INTEGER NOT NULL,
-  litrefs       TEXT,
-  description   TEXT,
-  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
+- Robust running of Gaussian and other inputs?
 
-** Table 4: methods
+2. Generate data set table for training set, with references
 
-  id               INTEGER PRIMARY KEY AUTOINCREMENT,
-  key              TEXT UNIQUE NOT NULL,
-  gaussian_keyword TEXT,
-  psi4_keyword     TEXT,
-  litrefs          TEXT,
-  description      TEXT
+----- db-design.org
 
-** Table 5: structures
+ADD [FIT] {method.s|method.i} 
 
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  key           TEXT UNIQUE NOT NULL,
-  setid         INTEGER NOT NULL,
-  ismolecule    INTEGER NOT NULL,
-  charge        INTEGER,
-  multiplicity  INTEGER,
-  nat           INTEGER NOT NULL,
-  cell          BLOB,
-  zatoms        BLOB NOT NULL,
-  coordinates   BLOB NOT NULL,
-  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
+  Define an additional constant contribution to the energy from the
+  methods in Table 5 (e.g. dispersion). If the FIT keyword follows
+  ADD, then the contribution enters the fitting procedure and is
+  treated as an additional column.
 
-** Table 6: properties
+WEIGHT set.s [GLOBAL w.r] [PATTERN w1.r w2.r w3.r w4.r...] [NORM_REF]
+             [NORM_NITEM] [NORM_NITEMSQRT] [ITEM i1.i w1.r i2.i w2.r ...]
 
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  key           TEXT UNIQUE NOT NULL,
-  property_type INTEGER NOT NULL,
-  setid         INTEGER NOT NULL,
-  orderid       INTEGER NOT NULL,
-  nstructures   INTEGER NOT NULL,
-  structures    BLOB NOT NULL,
-  coefficients  BLOB NOT NULL,
-  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE,
-  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
+  Define the weight associated with a given set. The keywords are:
 
-** Table 7: evaluations
+  - The global weight (GLOBAL) applies equally to all elements in the
+    set. Default: 1.
 
-  methodid      INTEGER NOT NULL,
-  propid        INTEGER NOT NULL,
-  value         REAL NOT NULL,
-  PRIMARY KEY(methodid,propid)
-  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
-  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+  - The PATTERN is applied to the elements of the set in sequence. For
+    instance, a pattern of 1 5 4 applies a weight of 1 to the first
+    element, 5 to the second, 4 to the third, 1 to the fourth, etc.
+    Default: 1 if this is a set named by the user, otherwise the
+    database provides a default if the set comes from the database.
 
-** Table 8: terms
+  - NORM_REF: divide all weights by the mean absolute reference
+    value.
 
-  methodid      INTEGER NOT NULL,
-  atom          INTEGER NOT NULL,
-  l             INTEGER NOT NULL,
-  exponent      REAL NOT NULL,
-  propid        INTEGER NOT NULL,
-  value         REAL NOT NULL,
-  maxcoef       REAL,
-  PRIMARY KEY (methodid,atom,l,exponent,propid),
-  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
-  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+  - NORM_NITEM: divide all weights by the number of items in the
+    set. 
 
-** Table 9: training set to property translation table (Training_set)
+  - NORM_NITEMSQRT: divide all weights by the square root of the
+    number of items in the set.
 
-  id INTEGER PRIMARY KEY,
-  propid INTEGER NOT NULL,
-  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+  - ITEM i1.i w1.r ...: give specific weights to individual items in
+    the set.
 
-** Table 10: training set repository
+  The final weight of an item is either the value given by the ITEM
+  keyword or the product of the GLOBAL weight, times the PATTERN
+  weight corresponding to the item, divided by the normalization
+  factors indicated by the corresponding keywords.
 
-  key TEXT PRIMARY KEY,
-  size INTEGER NOT NULL,
-  training_set BLOB NOT NULL
+  If set.s is missing or if it is "*", then the command applies to all
+  sets. This allows setting normalization factors to all defined sets.
+
+  When the training set is constructed, the weights are renormalized so
+  the sum of weights over the whole training set is equal to one.
+
+* Information from database queries
+
+LIST METHODS
+
+  Write the list of known methods. At least, this list must contain
+  the primary and alternate keys from Table 5.
+
+LIST SETS
+
+  Write the list of known sets. At least, the list must contain the
+  primary and alternate keys from Table 3.
+
+LIST STRUCTURES [set.s]
+
+  Write the list of known molecular and crystal structures. If set.r
+  is given, write the structures that belong to that set only.
+
+LIST PROPERTIES [set.s]
+
+  Write the list of properties from table 6. At least, the table
+  should contain the primary and alternate keys, the corresponding
+  set, and the ordinal the property occupies in the
+  set. Desirable: list of reference methods with which the properties
+  have been calculated. If set.s is given, write the properties that
+  belong to that set only.
+
+LIST DATASET [BIBTEX]
+
+  Write the current dataset. The output includes:
+
+  - A list of the atoms that are target of the ACP, including the
+    maximum angular momentum, the exponents, the target approximate
+    method, and all the additional energy contributions.
+
+  - A table of the sets in the training set. This table indicates
+    whether a set is known to the database or named by the
+    user. Includes the number of items in the set and, if available,
+    the description from table 3 and the reference from
+    table 1. Includes the glboal weight for this set, the weight
+    pattern and normalization factors, and whether specific items have
+    had their weight modified.
+
+  - Each item in the training set is listed next, including the primary
+    and alternate key from table 6, the named set it belongs to,
+    the reference method, and the associated weight.
+
+  If BIBTEX is present, generate a list of bibtex references for all
+  sets in the current training set.
+
+LIST GEOMETRIES [DATASET|set.s]
+
+  Dump all the molecular and crystal structures in the current
+  database to xyz and cif files. If set.s is given, write the
+  geometries for that set only. If DATASET is given, write the
+  geometries in the current training set only.
+
+LIST TERMS [SET set.s] [METHOD method.s]
+
+  List known ACP terms for set set.s and/or method method.s. If neither
+  SET nor METHOD is given, list all the ACP terms known in the
+  database.
+
+* Inserting and deleting database information
+
+INSERT CITATION ref.s
+  AUTHOR ... 
+  TITLE ...
+  JOURNAL ... 
+  VOLUME ...
+  PAGE ...
+  YEAR ...
+  LINK ... 
+  DESCRIPTION ... 
+END
+
+  Insert a new citation into the database (table 1).
+
+DELETE CITATION {key.s|key.i}
+
+  Delete a citation using the alternate or primary key.
+
+INSERT PROPERTY prop.s
+  NAME ... 
+  DESCRIPTION ...
+  RECIPE ... 
+END
+
+  Insert a new property into the database.
+
+DELETE PROPERTY {key.s|key.i}
+
+  Delete a property using the alternate or primary key.
+
+INSERT METHOD name.s
+ PROGRAM program.s
+ EXECUTION execution.s
+ READIN readin.s
+ CITATION {key.s|key.i}
+ ...
+ KEYWORD key1.s value1.s
+ KEYWORD key2.s value2.s
+ ...
+END
+
+  Define a new calculation method. Inserts information into tables 5,
+  5a, and 5b. This can be used for approximate, additional, or
+  reference methods.
+
+DELETE METHOD {key.s|key.i}
+
+  Delete a calculation method.
+
+INSERT SET name.s
+  PROPERTY {prop.s|prop.i}
+  DESCRIPTION ...
+  CITATION ...
+  [CITATION ...]
+  ITEM file1.s
+  ITEM file2.s
+  ...
+  ENTRY coef1.r item1.i coef2.r item2.i ... [ref1.r]
+  ENTRY coef1.r item1.i coef2.r item2.i ... [ref2.r]
+  ...
+  ENTRYDB {key.s|key.i} ref.r
+  ...
+  DIN dinfile.s
+END
+
+  Insert a new set into the database with name name.s. Either list the
+  items and entries one by one or using a din file. Reads the
+  structures from the corresponding files and inserts the items in
+  table 4 (ITEM).  Reads the calculated properties (ENTRY) and inserts
+  them into table 6. Insert the corresponding entries in Table 7 as
+  well (with reference = "*"). If name.s already exists, append the
+  new data to the existing set. ENTRYDB can be used to insert
+  reference data (with method "*") for an existing set or parts of it
+  into Table 7.
+
+DELETE SET {set.s|set.i}
+
+  Delete a set (Table 3) and all the associated structures (Table 4)
+  and entries (Table 6).
+
+DELETE STRUCTURE {stru.s|stru.i}
+
+  Delete an entry from Table 4.
+
+DELETE ENTRY {entry.s|entry.i}
+
+  Delete an entry from Table 6.  
+
+* Generate input files, read output files
+
+WRITE [METHOD method.s] [ACP acp.s] [SET set.s] [DIRECTORY dir.s] 
+
+  Write the input files corresponding to the current training set and
+  current approximate method (EMPTY). If METHOD is given, use method.s
+  instead of the empty. If SET is given, use set set.s
+  only. If ACP is given, include the ACP in the input files. If
+  DIRECTORY is given, place the input files in directory dir.s.
+
+READ [SET set.s] [COMPARE method.s] [FILE file.s] [DIRECTORY dir.s] 
+                 [INSERT method.s] [ACP acp.s]
+
+  Read the outputs corresponding to the current training set and
+  compare to the original data. If SET is given, consider only set
+  set.s. If COMPARE is given, compare to method.s instead of the
+  original reference data. If DIRECTORY is given, read them from
+  directory dir.s. If FILE is given, read them from summary file
+  file.s. If INSERT is given, enter the corresponding items into table
+  7 using method method.s. If the entries already exist, verify the
+  value is within an acceptable threshold.  If ACP is given,
+  compare the results to the linear model given by the current dataset
+  applied to ACP acp.s.
+
+  This command flags failed calculations for the user.
+
+WRITE TERMS [SET set.s] [DIRECTORY dir.s]
+
+  Write the input files corresponding to the ACP term calculations for
+  set.s using the current dataset. If SET is given, use only set.s;
+  otherwise, use the whole training set. If DIRECTORY is given, place
+  the input files in directory dir.s.
+
+READ TERMS [SET set.s] [FILE file.s] [DIRECTORY dir.s] [INSERT]
+
+  Read the ACP term outputs corresponding to the current dataset. If
+  SET is given, use set set.s instead of the whole training set. If
+  DIRECTORY is given, read them from directory dir.s. If FILE is
+  given, read them from summary file file.s. If INSERT is given, enter
+  the corresponding ACP term information into table 8. If the entries
+  already exist, verify the value is within an acceptable threshold.
+
+  This command flags failed calculations for the user.
+
+DUMP
+
+  Write the octavedump.m file for the LASSO fit corresponding to the
+  current dataset.
+
+WRITE NONLIN [SET set.s] [METHOD method.s] [DIRECTORY dir.s]
+
+  Write input files for the evaluation of non-linearity error in the
+  current dataset. If SET is given, use set set.s instead of the whole
+  tranining set. If METHOD is given, use approximate method
+  method.s. If DIRECTORY is given, write the files to directory dir.s.
+
+READ NONLIN [SET set.s] [DIRECTORY dir.s] [FILE file.s] [INSERT]
+
+  Read the output files for the evaluation of non-linearity error in
+  the current dataset. If SET is given, use set set.s instead of the
+  whole training set. If DIRECTORY is given, read the output files
+  from directory dir.s. If FILE is given, read the output data summary
+  from file file.s. The maximum coefficients for each ACP terms are
+  calculated with this command. If INSERT is present, insert the
+  maximum coefficient information into the database.
+
+  This command flags failed calculations for the user.
+
+* ACP operations
+
+ACP name.s file.acp
+ACP name.s
+ atom.s l.s exp.r value.r
+ ...
+END
+  
+  Define a named ACP from file file.acp (in Gaussian-style
+  format). Alternatively, give all ACP terms one by one.
+
+WRITE ACP name.s file.acp
+
+  Write the ACP name.s to file file.acp (Gaussian-style format).
+
+INFO ACP name1.s [name2.s ...]
+
+  Print information about the ACP name.s, such as the 1-norm, 2-norm,
+  etc. If more than one ACP is given, print information about all of
+  them as well as ACP distances.
+
+ACP SPLIT name.s nametemplate.s [COEF value.r]
+
+  Split the ACP name.s into several ACPs, with names given by
+  nametemplate.s followed by an integer. Each new ACP contains only
+  one term from the original ACP. If COEF is given, set the
+  coefficients for the new ACPs to value.r
+
+ACP EVAL acp.s [SET set.s]
+
+  Evaluate ACP acp.s using the linear model specified by the current
+  dataset. If SET is given, only for set set.s.
+
+--- Operations to implement ---
+
+* Dataset definition
+
+1. Define target atoms for the ACP
+2. Define the subsets/items of the training set
+3. Define ACP exponent values
+4. Define reference data level
+5. Define weights, perhaps with weight scheme suggestions
+6. Define approximate method that is the target for the ACP
+7. Define additional energy contributions, maybe marked as active for the fit
+
+* Subsets:
+
+1. Define named sets from items of the database and subsets of the training set
+
+* Database: entry and subset definitions
+
+9. Write xyz/cif files corresponding to an item/subset
+
+* Database: reference data
+
+1. Register a new reference calculation method
+2. Delete a reference calculation method
+3. Generate input files for reference calculations (item/subset)
+4. Read output files and calculate reference data (item/subset)
+5. Read user-formatted reference data (item/subset)
+6. Insert reference data into the database (item/subset)
+7. Verify entry in the database (item/subset)
+8. List reference data (item/subset)
+9. Validate the templates for a calculation method entry in database
+
+* Database: approximate methods & additional energy contributions
+
+1.  Register a new approximate method as target for ACP development
+2.  Register a new additional energy contribution
+3.  Delete an approximate method
+4.  Delete an additional energy contribution
+5.  Generate input files for empty calculations (item/subset)
+6.  Generate input files for additional energy contributions (item/subset)
+7.  Read output files and calculate empty stats, maybe w additional contributions (item/subset)
+8.  Read user-formatted data for empty or additoinal contributions (item/subset)
+9.  Insert empty data into the database (item/subset)
+10. Insert additional contribution data into the database (item/subset)
+11. Verify approximate method entry in the database (item/subset)
+12. Verify additional contribution entry in the database (item/subset)
+13. List empty/additional contribution data (item/subset)
+14. Validate the templates for a calculation method entry in database
+
+* Database: ACP term evaluations
+
+1. Generate input files for ACP term evaluations (item/subset)
+2. Read output files and calculate ACP terms (item/subset)
+3. Read user-formatted ACP term data (item/subset)
+4. Insert ACP term data into the database (item/subset)
+5. Verify ACP term data (item/subset)
+6. List known ACP terms (item/subset)
+
+* Database: ACP fitting
+
+1. Write the octavedump.m file for the LASSO fit
+
+* ACP operations (basic)
+
+1. Read an ACP in Gaussian-style format
+2. Read an ACP from a Gaussian/crystal input file
+3. Read an ACP from user-formatted specification
+4. Write an ACP in Gaussian-style format
+5. Calculate the 1-norm, etc. of an ACP
+6. Calculate the 1-distance, etc. of two or more ACPs
+7. Separate an ACP with n terms into n ACPS with 1 term each
+
+* ACP operations (require dataset)
+
+1. Evaluate an ACP using the linear model from the current dataset
+2. Generate input files for self-consistent evaluation of an ACP (item/subset)
+3. Read output files and calculate self-consistent ACP stats (item/subset)
+4. Compare self-consistent ACP to linear model stats (item/subset)
+5. Generate input files for non-linearity error evaluation in individual ACP terms
+6. Process output for non-linearity error evaluation and generate maxcoef file
+7. Enter maximum coefficient information into the database
+8. List maximum coefficient information in the database
+9. Delete maximum coefficient information from the database
+??10. Sensitivity analysis/cross-validation of an ACP using the linear model : reqs' lasso.m??
+
+* Miscellaneous auxiliary operations
+
+1. Process a list of calculations and flag failed calcs (item/subset)
+2. Generate data set table for training set, with references
+
+* Topics to examine
+
+- Robust running of Gaussian and other inputs
+
