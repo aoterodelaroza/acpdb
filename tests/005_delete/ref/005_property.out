@@ -1,13 +1,10 @@
-* SYSTEM: rm -f 006_insert_din.db
+* SYSTEM: rm -f 005_property.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 006_insert_din.db
+Connecting database file 005_property.db
 Creating skeleton database 
-
-* INSERT: insert data into the database (METHOD)
-# INSERT METHOD test
 
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
@@ -246,115 +243,84 @@ Creating skeleton database
 # INSERT LITREF bsip2
 
 * INSERT: insert data into the database (SET)
-# INSERT SET s22
-# INSERT STRUCTURE s22.nh3_nh3
-# INSERT STRUCTURE s22.nh3_nh3_1
-# INSERT STRUCTURE s22.nh3_nh3_2
-# INSERT PROPERTY s22.nh3_nh3
-# INSERT PROPERTY (method=test;property=s22.nh3_nh3)
-# INSERT STRUCTURE s22.h2o_h2o
-# INSERT STRUCTURE s22.h2o_h2o_1
-# INSERT STRUCTURE s22.h2o_h2o_2
-# INSERT PROPERTY s22.h2o_h2o
-# INSERT PROPERTY (method=test;property=s22.h2o_h2o)
-# INSERT STRUCTURE s22.h2co2_h2co2
-# INSERT STRUCTURE s22.h2co2_h2co2_1
-# INSERT STRUCTURE s22.h2co2_h2co2_2
-# INSERT PROPERTY s22.h2co2_h2co2
-# INSERT PROPERTY (method=test;property=s22.h2co2_h2co2)
-# INSERT STRUCTURE s22.formamide_formamide
-# INSERT STRUCTURE s22.formamide_formamide_1
-# INSERT STRUCTURE s22.formamide_formamide_2
-# INSERT PROPERTY s22.formamide_formamide
-# INSERT PROPERTY (method=test;property=s22.formamide_formamide)
-# INSERT STRUCTURE s22.uracil_uracil_hb
-# INSERT STRUCTURE s22.uracil_uracil_hb_1
-# INSERT STRUCTURE s22.uracil_uracil_hb_2
-# INSERT PROPERTY s22.uracil_uracil_hb
-# INSERT PROPERTY (method=test;property=s22.uracil_uracil_hb)
-# INSERT STRUCTURE s22.pyridoxine_aminopyridine
-# INSERT STRUCTURE s22.pyridoxine_aminopyridine_1
-# INSERT STRUCTURE s22.pyridoxine_aminopyridine_2
-# INSERT PROPERTY s22.pyridoxine_aminopyridine
-# INSERT PROPERTY (method=test;property=s22.pyridoxine_aminopyridine)
-# INSERT STRUCTURE s22.adenine_thymine_wcc1
-# INSERT STRUCTURE s22.adenine_thymine_wcc1_1
-# INSERT STRUCTURE s22.adenine_thymine_wcc1_2
-# INSERT PROPERTY s22.adenine_thymine_wcc1
-# INSERT PROPERTY (method=test;property=s22.adenine_thymine_wcc1)
-# INSERT STRUCTURE s22.ch4_ch4
-# INSERT STRUCTURE s22.ch4_ch4_1
-# INSERT STRUCTURE s22.ch4_ch4_2
-# INSERT PROPERTY s22.ch4_ch4
-# INSERT PROPERTY (method=test;property=s22.ch4_ch4)
-# INSERT STRUCTURE s22.c2h4_c2h4
-# INSERT STRUCTURE s22.c2h4_c2h4_1
-# INSERT STRUCTURE s22.c2h4_c2h4_2
-# INSERT PROPERTY s22.c2h4_c2h4
-# INSERT PROPERTY (method=test;property=s22.c2h4_c2h4)
-# INSERT STRUCTURE s22.c6h6_ch4
-# INSERT STRUCTURE s22.c6h6_ch4_1
-# INSERT STRUCTURE s22.c6h6_ch4_2
-# INSERT PROPERTY s22.c6h6_ch4
-# INSERT PROPERTY (method=test;property=s22.c6h6_ch4)
-# INSERT STRUCTURE s22.c6h6_c6h6_pd
-# INSERT STRUCTURE s22.c6h6_c6h6_pd_1
-# INSERT STRUCTURE s22.c6h6_c6h6_pd_2
-# INSERT PROPERTY s22.c6h6_c6h6_pd
-# INSERT PROPERTY (method=test;property=s22.c6h6_c6h6_pd)
-# INSERT STRUCTURE s22.pyrazine_pyrazine
-# INSERT STRUCTURE s22.pyrazine_pyrazine_1
-# INSERT STRUCTURE s22.pyrazine_pyrazine_2
-# INSERT PROPERTY s22.pyrazine_pyrazine
-# INSERT PROPERTY (method=test;property=s22.pyrazine_pyrazine)
-# INSERT STRUCTURE s22.uracil_uracil_stack
-# INSERT STRUCTURE s22.uracil_uracil_stack_1
-# INSERT STRUCTURE s22.uracil_uracil_stack_2
-# INSERT PROPERTY s22.uracil_uracil_stack
-# INSERT PROPERTY (method=test;property=s22.uracil_uracil_stack)
-# INSERT STRUCTURE s22.indole_c6h6_stack
-# INSERT STRUCTURE s22.indole_c6h6_stack_1
-# INSERT STRUCTURE s22.indole_c6h6_stack_2
-# INSERT PROPERTY s22.indole_c6h6_stack
-# INSERT PROPERTY (method=test;property=s22.indole_c6h6_stack)
-# INSERT STRUCTURE s22.adenine_thymine_stack
-# INSERT STRUCTURE s22.adenine_thymine_stack_1
-# INSERT STRUCTURE s22.adenine_thymine_stack_2
-# INSERT PROPERTY s22.adenine_thymine_stack
-# INSERT PROPERTY (method=test;property=s22.adenine_thymine_stack)
-# INSERT STRUCTURE s22.c2h4_c2h2
-# INSERT STRUCTURE s22.c2h4_c2h2_1
-# INSERT STRUCTURE s22.c2h4_c2h2_2
-# INSERT PROPERTY s22.c2h4_c2h2
-# INSERT PROPERTY (method=test;property=s22.c2h4_c2h2)
-# INSERT STRUCTURE s22.c6h6_h2o
-# INSERT STRUCTURE s22.c6h6_h2o_1
-# INSERT STRUCTURE s22.c6h6_h2o_2
-# INSERT PROPERTY s22.c6h6_h2o
-# INSERT PROPERTY (method=test;property=s22.c6h6_h2o)
-# INSERT STRUCTURE s22.c6h6_nh3
-# INSERT STRUCTURE s22.c6h6_nh3_1
-# INSERT STRUCTURE s22.c6h6_nh3_2
-# INSERT PROPERTY s22.c6h6_nh3
-# INSERT PROPERTY (method=test;property=s22.c6h6_nh3)
-# INSERT STRUCTURE s22.c6h6_hcn
-# INSERT STRUCTURE s22.c6h6_hcn_1
-# INSERT STRUCTURE s22.c6h6_hcn_2
-# INSERT PROPERTY s22.c6h6_hcn
-# INSERT PROPERTY (method=test;property=s22.c6h6_hcn)
-# INSERT STRUCTURE s22.c6h6_c6h6_t
-# INSERT STRUCTURE s22.c6h6_c6h6_t_1
-# INSERT STRUCTURE s22.c6h6_c6h6_t_2
-# INSERT PROPERTY s22.c6h6_c6h6_t
-# INSERT PROPERTY (method=test;property=s22.c6h6_c6h6_t)
-# INSERT STRUCTURE s22.indole_c6h6_t
-# INSERT STRUCTURE s22.indole_c6h6_t_1
-# INSERT STRUCTURE s22.indole_c6h6_t_2
-# INSERT PROPERTY s22.indole_c6h6_t
-# INSERT PROPERTY (method=test;property=s22.indole_c6h6_t)
-# INSERT STRUCTURE s22.phenol_phenol
-# INSERT STRUCTURE s22.phenol_phenol_1
-# INSERT STRUCTURE s22.phenol_phenol_2
-# INSERT PROPERTY s22.phenol_phenol
-# INSERT PROPERTY (method=test;property=s22.phenol_phenol)
+# INSERT SET s22x5
+
+* INSERT: insert data into the database (STRUCTURE)
+# INSERT STRUCTURE urea
+
+* INSERT: insert data into the database (STRUCTURE)
+# INSERT STRUCTURE c6h6_ch4
+
+* INSERT: insert data into the database (PROPERTY)
+# INSERT PROPERTY strange
+
+* PRINT: print the contents of the database 
+
+# Table of property types
+| id | key | description |
+| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | energy | The total energy of a molecule or crystal |
+
+# Number of literature references: 234
+
+# Table of methods
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+
+# Table of sets
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| bsip1 boys1970 | A description.|
+
+# Number of properties and structures in each set
+| id | key | properties | structures |
+| 1 | s22x5 | 1 | 2 |
+
+## Description of the training set
+# The TRAINING SET is NOT DEFINED
+--- No atoms found (ATOM) ---
+--- No angular momenta found (LMAX) ---
+--- No exponents found (EXP) ---
+--- No subsets found (SUBSET) ---
+--- No weights found (W) ---
+--- No empty method found (EMPTY) ---
+--- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
+
+* DELETE: delete data from the database (PROPERTY)
+
+# DELETE PROPERTY strange
+
+* PRINT: print the contents of the database 
+
+# Table of property types
+| id | key | description |
+| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | energy | The total energy of a molecule or crystal |
+
+# Number of literature references: 234
+
+# Table of methods
+| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
+
+# Table of sets
+| id| key| property_type| litrefs| description|
+| 1| s22x5| 1| bsip1 boys1970 | A description.|
+
+# Number of properties and structures in each set
+| id | key | properties | structures |
+| 1 | s22x5 | 0 | 2 |
+
+## Description of the training set
+# The TRAINING SET is NOT DEFINED
+--- No atoms found (ATOM) ---
+--- No angular momenta found (LMAX) ---
+--- No exponents found (EXP) ---
+--- No subsets found (SUBSET) ---
+--- No weights found (W) ---
+--- No empty method found (EMPTY) ---
+--- No reference method found (REFERENCE) ---
+
+## Table of saved training sets in the database
+| Name |
 

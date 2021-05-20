@@ -4,6 +4,7 @@ set(TESTS
   003_print_set       ## print set
   004_print_method    ## print method
   005_print_structure ## print structure
+  006_print_property  ## print property
   )
 
 runtests(${TESTS})

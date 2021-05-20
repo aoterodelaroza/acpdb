@@ -10,6 +10,7 @@ set(TESTS
   009_insert_structure_poscar ## insert a crystal structure from a POSCAR file
   010_insert_structure_file   ## insert a crystal structure from a file, detect format
   011_insert_property         ## insert a property
+  012_insert_evaluation       ## insert an evaluation
   )
 
 runtests(${TESTS})

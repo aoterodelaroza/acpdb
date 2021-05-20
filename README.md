@@ -132,6 +132,7 @@ PRINT LITREF [BIBTEX]
 PRINT SET
 PRINT METHOD
 PRINT STRUCTURE
+PRINT PROPERTY
 ~~~
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write
@@ -283,6 +284,18 @@ structures multiplied by coefficients `c1.r`, etc. This property is
 number `order.i` in the set. The number of structures must be equal to
 the number of coefficients.
 
+#### Evaluations
+~~~
+INSERT EVALUATION
+  METHOD {method.s|method.i}
+  PROPERTY {prop.s|prop.i}
+  VALUE value.r
+END
+~~~
+Insert an evaluation into the database. The evaluation is for property
+given by key `prop.s` or ID `prop.i` with method key `method.s` or ID
+`method.i`. The evaluation yields the value `value.r`.
+
 ### Deleting Data
 
 ~~~
@@ -291,8 +304,10 @@ DELETE SET [set.s|set.i]
 DELETE METHOD [method.s|method.i]
 DELETE STRUCTURE [struct.s|struct.i]
 DELETE PROPERTY [prop.s|prop.i]
+DELETE EVALUATION id.i
 ~~~
 Delete one or more entries from the database tables. In the case of
 literature references (LITREF), more than one entry can be given, and
 you can delete all the references by omitting the key. The entries
-references can be given by their key or by their numerical ID.
+references can be given by their key (if available) or by their
+numerical ID.

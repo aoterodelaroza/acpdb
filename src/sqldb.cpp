@@ -165,28 +165,7 @@ void sqldb::insert(const std::string &category, const std::string &key, std::uno
   // declare the map const_iterator for key searches
   std::unordered_map<std::string,std::string>::const_iterator im;
 
-  if (category == "EVALUATION") {
-    //// Evaluations (EVALUATION) ////
-
-    // bind
-    if ((im = kmap.find("METHOD")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
-    }
-    if ((im = kmap.find("PROPERTY")) != kmap.end()){
-      if (isinteger(im->second))
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",std::stoi(im->second));
-      else
-        stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
-    }
-    if ((im = kmap.find("VALUE")) != kmap.end())
-      stmt[statement::STMT_INSERT_EVALUATION]->bind((char *) ":VALUE",std::stod(im->second));
-
-    // submit
-    stmt[statement::STMT_INSERT_EVALUATION]->step();
-  } else if (category == "TERM") {
+  if (category == "TERM") {
     //// Terms (TERM) ////
 
     // bind
@@ -454,6 +433,43 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   st.bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
   delete str;
   }
+
+  // submit
+  st.step();
+}
+
+// Insert an evaluation by manually giving the data
+void sqldb::insert_evaluation(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT EVALUATION");
+
+  // bind
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+INSERT INTO Evaluations (methodid,propid,value)
+       VALUES(:METHODID,:PROPID,:VALUE)
+)SQL");
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":METHODID",std::stoi(im->second));
+    else
+      st.bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
+  } else {
+    throw std::runtime_error("A method must be given in INSERT EVALUATION");
+  }
+  if ((im = kmap.find("PROPERTY")) != kmap.end()){
+    if (isinteger(im->second))
+      st.bind((char *) ":PROPID",std::stoi(im->second));
+    else
+      st.bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
+  } else {
+    throw std::runtime_error("A property must be given in INSERT EVALUATION");
+  }
+  if ((im = kmap.find("VALUE")) != kmap.end())
+    st.bind((char *) ":VALUE",std::stod(im->second));
+  else
+    throw std::runtime_error("A value must be given in INSERT EVALUATION");
+
+  os << "# INSERT PROPERTY (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
 
   // submit
   st.step();
@@ -730,7 +746,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
       smap["METHOD"] = kmap["METHOD"];
       smap["PROPERTY"] = skey;
       smap["VALUE"] = to_string_precise(info[k].ref);
-      insert("EVALUATION",skey,smap);
+      insert_evaluation(os,skey,smap);
     }
   }
 
@@ -754,6 +770,8 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
     table = "Structures";
   else if (category == "PROPERTY")
     table = "Properties";
+  else if (category == "EVALUATION")
+    table = "Evaluations";
   else
     throw std::runtime_error("Unknown keyword in DELETE");
 
@@ -780,10 +798,6 @@ void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::
 /*
   // pick the statment
   statement::stmttype all, id, key;
-  } else if (category == "EVALUATION") {
-    all = statement::STMT_DELETE_EVALUATION_ALL;
-    id  = statement::STMT_DELETE_EVALUATION_ALL;
-    key = statement::STMT_CUSTOM;
   } else if (category == "TERM") {
     all = statement::STMT_DELETE_TERM_ALL;
     id  = statement::STMT_DELETE_TERM_ALL;
@@ -860,7 +874,7 @@ ORDER BY id;
     types   = {t_int,t_str,          t_int,  t_int,    t_int,        t_int};
     cols    = {    0,    1,              2,      3,        4,            5};
     stmt = R"SQL(
-SELECT id,key,property_type,setid,nstructures,structures,coefficients
+SELECT id,key,property_type,setid,orderid,nstructures
 FROM Properties
 ORDER BY id;
 )SQL";
