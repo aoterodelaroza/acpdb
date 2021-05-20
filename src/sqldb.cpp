@@ -857,31 +857,6 @@ DELETE FROM Terms WHERE
     }
   }
   os << std::endl;
-
-/*
-  // pick the statment
-  statement::stmttype all, id, key;
-  } else if (category == "TERM") {
-    all = statement::STMT_DELETE_TERM_ALL;
-    id  = statement::STMT_DELETE_TERM_ALL;
-    key = statement::STMT_CUSTOM;
-  }
-
-  // execute
-  if (tokens.empty() || category == "TERM" || category == "EVALUATION")
-    stmt[all]->execute();
-  else{
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      if (isinteger(*it)){
-        stmt[id]->bind(1,*it);
-        stmt[id]->step();
-      } else if (key != statement::STMT_CUSTOM){
-        stmt[key]->bind(1,*it);
-        stmt[key]->step();
-      }
-    }
-  }
-*/
 }
 
 // List items from the database

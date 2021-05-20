@@ -6,6 +6,7 @@ set(TESTS
   005_delete_property   ## delete property
   006_delete_evaluation ## delete evaluation
   007_delete_term       ## delete term
+  008_delete_all        ## delete all
   )
 
 runtests(${TESTS})
