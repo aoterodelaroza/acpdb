@@ -12,23 +12,41 @@ insert method b3lyp/6-31+G*
  litrefs bsip1 boys1970
  description This is a method.
 end
-insert set s22x5
+insert method test
+end
+insert set s22
  description A description.
  litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method b3lyp/6-31+G*
 end
-insert structure c6h6_ch4
- file ../zz_source/s22_xyz/c6h6_ch4.xyz
- set s22x5
-end
+
 insert property strange
- property_type energy_difference
- set s22x5
+ property_type energy
+ set s22
  order 1
- structures urea c6h6_ch4
- coefficients 1.5 -1.2
+ structures s22.c6h6_ch4
 end
 insert evaluation
  method b3lyp/6-31+G*
  property strange
- value 12.2
+ value -12.2
 end
+insert term
+ method b3lyp/6-31+G*
+ property strange
+ atom 1
+ l P
+ exponent 0.1
+ value -12.2
+ maxcoef 10.0
+end
+insert calc
+ property_type energy
+ file ../zz_source/s22.list
+ method test
+end
+print evaluation
+print term
+print full

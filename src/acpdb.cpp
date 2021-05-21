@@ -38,7 +38,9 @@ namespace fs = std::filesystem;
 // global variables and constants (globals.h)
 int globals::ncpu = 4;
 int globals::mem = 2;
-double globals::ha_to_kcal = 627.50947;
+const double globals::ha_to_kcal = 627.50947;
+const int globals::ppty_energy_difference = 1;
+const int globals::ppty_energy = 2;
 
 // variables for managing the input and output streams
 static std::istream *is;

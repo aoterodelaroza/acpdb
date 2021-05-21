@@ -35,7 +35,7 @@ CREATE TABLE Literature_refs (
   description TEXT
 );
 CREATE TABLE Property_types (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  id          INTEGER PRIMARY KEY,
   key         TEXT UNIQUE NOT NULL,
   description TEXT
 );
@@ -74,7 +74,7 @@ CREATE TABLE Properties (
   orderid       INTEGER NOT NULL,
   nstructures   INTEGER NOT NULL,
   structures    BLOB NOT NULL,
-  coefficients  BLOB NOT NULL,
+  coefficients  BLOB,
   FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE,
   FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
 );
@@ -103,9 +103,9 @@ CREATE TABLE Training_set_repo (
   size INTEGER NOT NULL,
   training_set BLOB NOT NULL
 );
-INSERT INTO Property_types (key,description)
-       VALUES ('ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
-              ('ENERGY','The total energy of a molecule or crystal');
+INSERT INTO Property_types (id,key,description)
+       VALUES (1,'ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
+              (2,'ENERGY','The total energy of a molecule or crystal');
 )SQL",
 
 [statement::STMT_INIT_DATABASE] =

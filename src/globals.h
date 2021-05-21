@@ -25,7 +25,11 @@ namespace globals {
   extern int mem;  // memory in GB
 
   // universal constants and conversion factors
-  extern double ha_to_kcal; // Hartree to kcal/mol
+  extern const double ha_to_kcal; // Hartree to kcal/mol
+
+  // property type IDs
+  extern const int ppty_energy_difference;
+  extern const int ppty_energy;
 }
 
 #endif

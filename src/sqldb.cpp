@@ -171,8 +171,6 @@ void sqldb::insert_litref(std::ostream &os, const std::string &key, std::unorder
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT LITREF");
 
-  os << "# INSERT LITREF " << key << std::endl;
-
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
@@ -189,6 +187,8 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
       st.bind(":" + *it,im->second);
   }
 
+  os << "# INSERT LITREF " << key << std::endl;
+
   // submit
   st.step();
 }
@@ -200,8 +200,6 @@ void sqldb::insert_set(std::ostream &os, const std::string &key, std::unordered_
     throw std::runtime_error("Empty key in INSERT SET");
   if (kmap.find("XYZ") != kmap.end() && kmap.find("DIN") != kmap.end())
     throw std::runtime_error("XYZ and SET options in SET are incompatible");
-
-  os << "# INSERT SET " << key << std::endl;
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -226,6 +224,8 @@ INSERT INTO Sets (key,litrefs,description)
     st.bind((char *) ":LITREFS",str);
   }
 
+  os << "# INSERT SET " << key << std::endl;
+
   // submit
   st.step();
 
@@ -244,8 +244,6 @@ void sqldb::insert_method(std::ostream &os, const std::string &key, std::unorder
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT METHOD");
 
-  os << "# INSERT METHOD " << key << std::endl;
-
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
@@ -261,6 +259,8 @@ INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
       st.bind(":" + *it,im->second);
   }
 
+  os << "# INSERT METHOD " << key << std::endl;
+
   // submit
   st.step();
 }
@@ -270,8 +270,6 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unor
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT STRUCTURE");
-
-  os << "# INSERT STRUCTURE " << key << std::endl;
 
   // read the molecular structure
   structure s;
@@ -314,6 +312,8 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
   st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
 
+  os << "# INSERT STRUCTURE " << key << std::endl;
+
   // submit
   st.step();
 }
@@ -323,8 +323,6 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, std::unord
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT PROPERTY");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT PROPERTY");
-
-  os << "# INSERT PROPERTY " << key << std::endl;
 
   // some variables
   std::unordered_map<std::string,std::string>::const_iterator im1, im2;
@@ -341,15 +339,21 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       st.bind((char *) ":PROPERTY_TYPE",std::stoi(im1->second));
     else
       st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im1->second,"Property_types",true));
+  } else {
+    throw std::runtime_error("No property_type given in INSERT PROPERTY");
   }
   if ((im1 = kmap.find("SET")) != kmap.end()){
     if (isinteger(im1->second))
       st.bind((char *) ":SETID",std::stoi(im1->second));
     else
       st.bind((char *) ":SETID",find_id_from_key(im1->second,"Sets"));
+  } else {
+    throw std::runtime_error("No set given in INSERT PROPERTY");
   }
   if ((im1 = kmap.find("ORDER")) != kmap.end())
     st.bind((char *) ":ORDERID",std::stoi(im1->second));
+  else
+    throw std::runtime_error("No order given in INSERT PROPERTY");
 
   // parse structures and coefficients
   im1 = kmap.find("STRUCTURES");
@@ -357,14 +361,11 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     throw std::runtime_error("No structures given in INSERT PROPERTY");
   tok1 = list_all_words(im1->second);
   im2 = kmap.find("COEFFICIENTS");
-  if (im2 == kmap.end())
-    throw std::runtime_error("No coefficients given in INSERT PROPERTY");
-  tok2 = list_all_words(im2->second);
+  if (im2 != kmap.end())
+    tok2 = list_all_words(im2->second);
 
   // number of structures
   int nstructures = tok1.size();
-  if (nstructures != tok2.size())
-    throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
   st.bind((char *) ":NSTRUCTURES",nstructures);
 
   // bind the structures
@@ -387,14 +388,18 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   }
 
   // bind the coefficients
-  {
-  int n = 0;
-  double *str = new double[nstructures];
-  for (auto it = tok2.begin(); it != tok2.end(); it++)
-    str[n++] = std::stod(*it);
-  st.bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
-  delete str;
+  if (!tok2.empty()) {
+    if (nstructures != tok2.size())
+      throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
+    int n = 0;
+    double *str = new double[nstructures];
+    for (auto it = tok2.begin(); it != tok2.end(); it++)
+      str[n++] = std::stod(*it);
+    st.bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
+    delete str;
   }
+
+  os << "# INSERT PROPERTY " << key << std::endl;
 
   // submit
   st.step();
@@ -552,7 +557,13 @@ void sqldb::insert_calc(std::ostream &os, std::unordered_map<std::string,std::st
     throw std::runtime_error("The FILE must be given in INSERT CALC");
 
   // get the data from the file
-  auto datmap = read_data_file(file,globals::ha_to_kcal);
+ std::unordered_map<std::string,double> datmap;
+ if (ptid == globals::ppty_energy_difference)
+   datmap = read_data_file(file,globals::ha_to_kcal);
+ else if (ptid == globals::ppty_energy)
+   datmap = read_data_file(file,1);
+ else
+    throw std::runtime_error("Unknown PROPERTY_TYPE in INSERT CALC");
 
   // build the property map
   std::unordered_map<int,double> propmap;
@@ -579,7 +590,10 @@ ORDER BY id;)SQL");
         found = false;
         break;
       }
-      value += coef[i] * datmap[strname];
+      if (coef)
+        value += coef[i] * datmap[strname];
+      else
+        value += datmap[strname];
     }
     if (found)
       propmap[propid] = value;
@@ -595,13 +609,12 @@ ORDER BY id;)SQL");
     st.bind((char *) ":METHOD",methodid);
     st.bind((char *) ":PROPID",it->first);
     st.bind((char *) ":VALUE",it->second);
+    os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first << ")" << std::endl;
     if (st.step() != SQLITE_DONE){
       std::cout << "method = " << kmap.find("METHOD")->second << std::endl;
       std::cout << "propid = " << it->first << std::endl;
       std::cout << "value = " << it->second << std::endl;
       throw std::runtime_error("Failed inserting data in the database (READ CALC)");
-    } else {
-      os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first << ")" << std::endl;
     }
   }
 
@@ -644,8 +657,6 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
         // bind the key
         st.bind((char *) ":KEY",key,false);
 
-        os << "# INSERT LITREF " << key << std::endl;
-
         // bind the rest of the fields
         char *fname = NULL;
         AST *field = NULL;
@@ -672,6 +683,9 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
           else if (!strcmp(fname,"description"))
             st.bind((char *) ":DESCRIPTION",fvalue);
         }
+
+        os << "# INSERT LITREF " << key << std::endl;
+
         st.step();
         if (field) bt_free_ast(field);
       }
