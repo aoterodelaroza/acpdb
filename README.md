@@ -3,10 +3,12 @@
 ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
+| [Global variables and commands](#global-variables-and-commands) | NCPU, MEM, SOURCE, SYSTEM, ECHO, END |
+
 ## Command-Line Syntax
-
+~~~
 apcdb -h [inputfile [outputfile]]
-
+~~~
 The input file is a keyword-driven case-insensitive text
 file. Comments start with # and continued lines end with a backslash
 symbol. If the input or the output file are not present, stdin and
