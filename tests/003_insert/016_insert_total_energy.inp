@@ -1,0 +1,35 @@
+## check: 016_insert_total_energy.out -a1e-10
+## delete: 016_insert_total_energy.db
+## labels: regression quick
+
+system rm -f 016_insert_total_energy.db
+connect 016_insert_total_energy.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert set s22x5
+ property_type energy
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure c6h6_ch4
+ file ../zz_source/s22_xyz/c6h6_ch4.xyz
+ set s22x5
+end
+insert property strange
+ property_type energy_difference
+ set s22x5
+ order 1
+ structures urea c6h6_ch4
+ coefficients 1.5 -1.2
+end
+insert evaluation
+ method b3lyp/6-31+G*
+ property strange
+ value 12.2
+end

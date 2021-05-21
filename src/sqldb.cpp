@@ -205,8 +205,8 @@ void sqldb::insert_set(std::ostream &os, const std::string &key, std::unordered_
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Sets (key,property_type,litrefs,description)
-       VALUES(:KEY,:PROPERTY_TYPE,:LITREFS,:DESCRIPTION);
+INSERT INTO Sets (key,litrefs,description)
+       VALUES(:KEY,:LITREFS,:DESCRIPTION);
 )SQL");
 
   // bind
@@ -214,12 +214,6 @@ INSERT INTO Sets (key,property_type,litrefs,description)
   std::unordered_map<std::string,std::string>::const_iterator im;
   if ((im = kmap.find("DESCRIPTION")) != kmap.end())
     st.bind((char *) ":DESCRIPTION",im->second);
-  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
-    else
-      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types",true));
-  }
   if ((im = kmap.find("LITREFS")) != kmap.end()){
     std::list<std::string> tokens = list_all_words(im->second);
     std::string str = "";
@@ -432,9 +426,9 @@ INSERT INTO Evaluations (methodid,propid,value)
   } else {
     throw std::runtime_error("A property must be given in INSERT EVALUATION");
   }
-  if ((im = kmap.find("VALUE")) != kmap.end())
+  if ((im = kmap.find("VALUE")) != kmap.end()){
     st.bind((char *) ":VALUE",std::stod(im->second));
-  else
+  } else
     throw std::runtime_error("A value must be given in INSERT EVALUATION");
 
   os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
@@ -991,11 +985,11 @@ FROM Literature_refs
 ORDER BY id;
 )SQL";
   } else if (category == "SET"){
-    headers = {"id", "key","property_type","litrefs","description"};
-    types   = {t_int,t_str,          t_int,    t_str,        t_str};
-    cols    = {    0,    1,              2,        3,            4};
+    headers = {"id", "key","litrefs","description"};
+    types   = {t_int,t_str,    t_str,        t_str};
+    cols    = {    0,    1,        2,            3};
     stmt = R"SQL(
-SELECT id,key,property_type,litrefs,description
+SELECT id,key,litrefs,description
 FROM Sets
 ORDER BY id;
 )SQL";

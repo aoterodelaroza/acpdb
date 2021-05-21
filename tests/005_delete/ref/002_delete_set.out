@@ -247,8 +247,8 @@ Creating skeleton database
 
 * PRINT: print the contents of the database 
 
-| id| key| property_type| litrefs| description|
-| 1| s22x5| 1| bsip1 boys1970 | A description.|
+| id| key| litrefs| description|
+| 1| s22x5| bsip1 boys1970 | A description.|
 
 * DELETE: delete data from the database (SET)
 
@@ -256,5 +256,5 @@ Creating skeleton database
 
 * PRINT: print the contents of the database 
 
-| id| key| property_type| litrefs| description|
+| id| key| litrefs| description|
 

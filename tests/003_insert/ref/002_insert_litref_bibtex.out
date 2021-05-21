@@ -255,7 +255,7 @@ Creating skeleton database
 | id| key| gaussian_keyword| psi4_keyword| litrefs| description|
 
 # Table of sets
-| id| key| property_type| litrefs| description|
+| id| key| litrefs| description|
 
 # Number of properties and structures in each set
 | id | key | properties | structures |

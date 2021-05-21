@@ -277,8 +277,8 @@ Creating skeleton database
 | 1| b3lyp/6-31+G*| method=b3lyp/6-31+G*;gbs=| method=b3lyp;basis=6-31+G*| bsip1 boys1970| This is a method.|
 
 # Table of sets
-| id| key| property_type| litrefs| description|
-| 1| s22x5| 1| bsip1 boys1970 | A description.|
+| id| key| litrefs| description|
+| 1| s22x5| bsip1 boys1970 | A description.|
 
 # Number of properties and structures in each set
 | id | key | properties | structures |
@@ -319,8 +319,8 @@ Creating skeleton database
 | 1| b3lyp/6-31+G*| method=b3lyp/6-31+G*;gbs=| method=b3lyp;basis=6-31+G*| bsip1 boys1970| This is a method.|
 
 # Table of sets
-| id| key| property_type| litrefs| description|
-| 1| s22x5| 1| bsip1 boys1970 | A description.|
+| id| key| litrefs| description|
+| 1| s22x5| bsip1 boys1970 | A description.|
 
 # Number of properties and structures in each set
 | id | key | properties | structures |

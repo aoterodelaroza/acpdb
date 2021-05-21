@@ -259,7 +259,7 @@ Creating skeleton database
 | 1| b3lyp/6-31+G*| method=b3lyp/6-31+G*;gbs=| method=b3lyp;basis=6-31+G*| bsip1 boys1970| This is a method.|
 
 # Table of sets
-| id| key| property_type| litrefs| description|
+| id| key| litrefs| description|
 
 # Number of properties and structures in each set
 | id | key | properties | structures |

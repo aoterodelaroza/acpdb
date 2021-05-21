@@ -42,10 +42,8 @@ CREATE TABLE Property_types (
 CREATE TABLE Sets (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
-  property_type INTEGER NOT NULL,
   litrefs       TEXT,
-  description   TEXT,
-  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE
+  description   TEXT
 );
 CREATE TABLE Methods (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,7 +81,7 @@ CREATE TABLE Properties (
 CREATE TABLE Evaluations (
   methodid      INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
-  value         REAL NOT NULL,
+  value         BLOB NOT NULL,
   PRIMARY KEY(methodid,propid)
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
@@ -94,7 +92,7 @@ CREATE TABLE Terms (
   l             INTEGER NOT NULL,
   exponent      REAL NOT NULL,
   propid        INTEGER NOT NULL,
-  value         REAL NOT NULL,
+  value         BLOB NOT NULL,
   maxcoef       REAL,
   PRIMARY KEY(methodid,atom,l,exponent,propid),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
@@ -173,7 +171,7 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_SET] =
 R"SQL(
-SELECT id,key,property_type,litrefs,description
+SELECT id,key,litrefs,description
 FROM Sets
 ORDER BY id;
 )SQL",
@@ -195,8 +193,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_SET] =
 R"SQL(
-INSERT INTO Sets (key,property_type,litrefs,description)
-       VALUES(:KEY,:PROPERTY_TYPE,:LITREFS,:DESCRIPTION);
+INSERT INTO Sets (key,litrefs,description)
+       VALUES(:KEY,:LITREFS,:DESCRIPTION);
 )SQL",
 
 [statement::STMT_QUERY_SET] =

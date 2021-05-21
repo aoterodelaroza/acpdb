@@ -71,11 +71,11 @@ coresponding functionalities.
 
 The following are the supported property types, and their units:
 
-- `energy_difference`: Differences in energy between two or more
+- `ENERGY_DIFFERENCE`: Differences in energy between two or more
   structures. Can be non-covalent binding energies, reaction energies,
   barrier heights, etc. Units are kcal/mol.
 
-- `energy`: The total energy of a molecule or crystal. Units are
+- `ENERGY`: The total energy of a molecule or crystal. Units are
   Hartree.
 
 ## Syntax
