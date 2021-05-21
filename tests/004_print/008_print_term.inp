@@ -48,4 +48,12 @@ insert term
  value -12.2
  maxcoef 10.0
 end
+insert term
+ method b3lyp/6-31+G*
+ property strange
+ atom C
+ l 0
+ exponent 0.1
+ maxcoef 0.001
+end
 print term

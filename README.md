@@ -3,7 +3,13 @@
 ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
-| [Global variables and commands](#global-variables-and-commands) | NCPU, MEM, SOURCE, SYSTEM, ECHO, END |
+| Section                                                                             | Keywords                                                                                                                                                               |
+|-------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                   |
+| [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                            |
+| [Print database information](#print-database-information)                           | [Whole database](#whole-database) [Individual tables](#individual-tables)                                                                                              |
+| [Inserting data](#inserting-data)                                                   | [Lit. refs.](#literature-references) [Sets](#sets) [Methods](#methods) [Structures](#structures) [Properties](#properties) [Evaluations](#evaluations) [Terms](#terms) |
+| [Deleting data](#deleting-data)                                                     |                                                                                                                                                                        |
 
 ## Command-Line Syntax
 ~~~
