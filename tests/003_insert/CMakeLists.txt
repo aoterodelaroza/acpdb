@@ -12,6 +12,7 @@ set(TESTS
   011_insert_property         ## insert a property
   012_insert_evaluation       ## insert an evaluation
   013_insert_term             ## insert a term
+  014_insert_term_maxcoef     ## update the maxcoef in a term
   )
 
 runtests(${TESTS})

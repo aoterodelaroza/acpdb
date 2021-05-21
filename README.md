@@ -329,10 +329,19 @@ Insert a term into the database. Corresponds to the ACP term
 calculated with method `method.s` (given by key) or `method.i` (by ID)
 on property `prop.s` (by key) or `prop.i` (by ID) for atom with atomic
 number `z.i`, angular momentum channel with l = `l.i`, and exponent
-`exp.r`. The value for this term is `value.r`. The units should be
-consistent with the property type of the indicated
-property. Optionally, the maximum coefficient for this term can also
-be given (`maxcoef.r`) if available.
+`exp.r`.
+
+This insert command has two purposes:
+
+- If VALUE is given the value for this term is inserted in the
+database as `value.r`. The units should be consistent with the
+property type of the indicated property. Optionally, the maximum
+coefficient for this term can also be given (`maxcoef.r`) if
+available.
+
+- If no VALUE is given but MAXCOEF is, then the term corresponding to
+the given method, property, atom, l, and exponent is updated with the
+MAXCOEF value (`maxcoef.r`).
 
 ### Deleting Data
 

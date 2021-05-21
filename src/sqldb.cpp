@@ -442,12 +442,20 @@ void sqldb::insert_term(std::ostream &os, const std::string &key, std::unordered
 
   const std::unordered_map<char,int> angmom = {{'s',0},{'p',1},{'d',2},{'f',3},{'g',4},{'h',5}};
 
+  // build command
+  std::string cmd;
+  if (kmap.find("VALUE") != kmap.end())
+    cmd = R"SQL(INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
+       VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF))SQL";
+  else if (kmap.find("MAXCOEF") != kmap.end())
+    cmd = R"SQL(UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID
+                AND atom = :ATOM AND l = :L AND exponent = :EXPONENT)SQL";
+  else
+    throw std::runtime_error("A VALUE or MAXCOEF must be given in INSERT TERM");
+
   // bind
   std::unordered_map<std::string,std::string>::const_iterator im;
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
-       VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)
-)SQL");
+  statement st(db,statement::STMT_CUSTOM,cmd);
   if ((im = kmap.find("METHOD")) != kmap.end()){
     if (isinteger(im->second))
       st.bind((char *) ":METHODID",std::stoi(im->second));
@@ -492,8 +500,6 @@ INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
     throw std::runtime_error("An exponent must be given in INSERT TERM");
   if ((im = kmap.find("VALUE")) != kmap.end())
     st.bind((char *) ":VALUE",std::stod(im->second));
-  else
-    throw std::runtime_error("A value must be given in INSERT TERM");
   if ((im = kmap.find("MAXCOEF")) != kmap.end())
     st.bind((char *) ":MAXCOEF",std::stod(im->second));
 
