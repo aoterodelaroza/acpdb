@@ -23,8 +23,8 @@ stdout are used. If the output file is not present, stdout is used.
 
 ## Definitions
 
-- Property type: a type of calculated property. At present, only total
-  energies and energy differences are allowed property types.
+- Property type: a type of calculated property. Can be scalar or a
+  vector.
 
 - Structure: the structural information about a molecule or crystal
   (atomic positions, unit cell, charge, multiplicity, etc.).
@@ -69,31 +69,19 @@ coresponding functionalities.
 
 ## Property types
 
-The following are the supported property types, and their units:
+The following are the supported property types, their units, and the
+number of values they comprise:
 
-- `ENERGY_DIFFERENCE`: Differences in energy between two or more
-  structures. Can be non-covalent binding energies, reaction energies,
-  barrier heights, etc. Units are kcal/mol.
-
-- `ENERGY`: The total energy of a molecule or crystal. Units are
-  Hartree.
-
-- `DIPOLE`: The electric dipole in a molecule, referred to the
-  coordinate framework in the database. Units are Debye.
-
-- `STRESS`: The stress tensor in a crystal. Units are GPa.
-
-- `D1E`: The first derivatives of the energy with respect to the
-  atomic positions in a molecule or crystal. Units are Hartree/bohr.
-
-- `D2E`: The second derivatives of the energy with respect to the
-  atomic positions in a molecule or crystal. Units are Hartree/bohr^2.
-
-- `HOMO`: The energy of the highest occupied molecular orbital in a
-  molecule. Units are Hartree.
-
-- `LUMO`: The energy of the lowest unoccupied molecular orbital in a
-  molecule. Units are Hartree.
+| PROPERTY_TYPE       |            Values | Units          | Description                                                                          |
+|---------------------|-------------------|----------------|--------------------------------------------------------------------------------------|
+| `ENERGY_DIFFERENCE` |                 1 | kcal/mol       | Energy differences between structures                                                |
+| `ENERGY`            |                 1 | Hartree        | Total energy                                                                         |
+| `DIPOLE`            |                 3 | Debye          | Electric dipole (molecules only)                                                     |
+| `STRESS`            |                 6 | GPa            | Stress tensor (crystals only; xx,yy,zz,yz,xz,xy)                                     |
+| `D1E`               |             3*nat | Hartree/bohr   | First derivatives of energy wrt atomic positions (1x,1y,1z,2x,...)                   |
+| `D2E`               | 3*nat*(3*nat-1)/2 | Hartree/bohr^2 | Second derivatives of energy wrt atomic positions (1x1x,1x1y,1x1z,1x2x,...,1y1y,...) |
+| `HOMO`              |                 1 | Hartree        | Energy of highest occupied molecular orbitals (molecule only)                        |
+| `LUMO`              |                 1 | Hartree        | Energy of lowest unoccupied molecular orbitals (molecule only)                       |
 
 ## Syntax
 
@@ -331,12 +319,14 @@ the number of coefficients.
 INSERT EVALUATION
   METHOD {method.s|method.i}
   PROPERTY {prop.s|prop.i}
-  VALUE value.r
+  VALUE value1.r [value2.r ...]
 END
 ~~~
 Insert an evaluation into the database. The evaluation is for property
 given by key `prop.s` or ID `prop.i` with method key `method.s` or ID
-`method.i`. The evaluation yields the value `value.r`.
+`method.i`. The evaluation yields the values `value1.r`,... The number
+of values and their units must be consistent with the corresponding
+property type.
 
 #### Terms
 ~~~
@@ -346,7 +336,7 @@ INSERT TERM
   ATOM z.i
   L l.i
   EXPONENT exp.r
-  VALUE value.r
+  VALUE value1.r [value2.r ...]
   MAXCOEF maxcoef.r
 END
 ~~~
@@ -359,8 +349,8 @@ number `z.i`, angular momentum channel with l = `l.i`, and exponent
 This insert command has two purposes:
 
 - If VALUE is given the value for this term is inserted in the
-database as `value.r`. The units should be consistent with the
-property type of the indicated property. Optionally, the maximum
+database as `value1.r`,... The number of values given and their units
+must be consistent with the property type. Optionally, the maximum
 coefficient for this term can also be given (`maxcoef.r`) if
 available.
 
@@ -392,14 +382,9 @@ the same as the root of the file names generated using WRITE, so this
 file can be easily generated with utilities such as grep or awk.
 Blank lines and comments (#) are ignored.
 
-The number and units of these calculated values depends on the
-property type for the insertion:
-
-- ENERGY_DIFFERENCE and ENERGY: a single value is read for each
-  structure, the total energy in Hartree.
-
-Only the necessary fields to satisfy the property type are read from
-each line.
+The number and units of these calculated values must be consistent
+with the corresponding property types. If a structure name is repeated
+in several lines, the values are appended to the same vector.
 
 ### Deleting Data
 

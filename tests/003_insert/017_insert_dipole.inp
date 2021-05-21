@@ -49,3 +49,5 @@ end
 print evaluation
 print term
 print full
+
+verify

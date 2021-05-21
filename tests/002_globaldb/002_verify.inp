@@ -11,8 +11,3 @@ connect 002_verify.db
 ## verify
 verify
 
-## existing database
-connect ../zz_source/bsip2-small/bsip2.db
-
-## verify
-verify

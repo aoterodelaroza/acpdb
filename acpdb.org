@@ -355,8 +355,6 @@ own implementation of LASSO in c++
 -------
 
 clean up prepared statements
-forces & stresses & energy derivatives
-maxcoef
 crystal inputs and outputs
 build all the databases
 
