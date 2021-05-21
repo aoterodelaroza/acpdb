@@ -39,6 +39,10 @@ void print_timestamp();
 // a comment character (#) is found as the first character in a token.
 std::list<std::string> list_all_words(const std::string &line);
 
+// Build a vector from all doubles in a line. Skip the rest of the line
+// if a non-numerical token is found.
+std::vector<double> list_all_doubles(const std::string &line);
+
 // Read lines from input stream is. Split each line into a key (first
 // word) and content (rest of the line) pair. If toupper, capitalize
 // the key. If the key END or the eof() is found, return the map.
@@ -99,11 +103,11 @@ void deblank(std::string &str);
 std::unordered_map<std::string,double> read_data_file(const std::string &file,const double convf=1.0);
 
 // Read vector data from a file. The data must be:
-//   string  double
-// This populates the map with string as key. The double is
+//   string  double1 double2 double3
+// This populates the map with string as key. The doubles are
 // accumulated into the value vector, in order of appearance.  Skip
-// blank lines and comments (#). Ignore the third and subsequent
-// fields.  Multiply the values by the conversion factor convf.
+// blank lines and comments (#). Multiply the values by the conversion
+// factor convf.
 std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const std::string &file,const double convf=1.0);
 
 // Count the number of digits required to represent an integer

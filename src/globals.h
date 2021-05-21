@@ -30,6 +30,12 @@ namespace globals {
   // property type IDs
   extern const int ppty_energy_difference;
   extern const int ppty_energy;
+  extern const int ppty_dipole;
+  extern const int ppty_stress;
+  extern const int ppty_d1e;
+  extern const int ppty_d2e;
+  extern const int ppty_homo;
+  extern const int ppty_lumo;
 }
 
 #endif

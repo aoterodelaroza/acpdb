@@ -41,6 +41,12 @@ int globals::mem = 2;
 const double globals::ha_to_kcal = 627.50947;
 const int globals::ppty_energy_difference = 1;
 const int globals::ppty_energy = 2;
+const int globals::ppty_dipole = 3;
+const int globals::ppty_stress = 4;
+const int globals::ppty_d1e = 5;
+const int globals::ppty_d2e = 6;
+const int globals::ppty_homo = 7;
+const int globals::ppty_lumo = 8;
 
 // variables for managing the input and output streams
 static std::istream *is;

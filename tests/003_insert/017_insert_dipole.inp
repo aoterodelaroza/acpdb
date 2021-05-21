@@ -1,0 +1,51 @@
+## check: 017_insert_dipole.out -a1e-10
+## delete: 017_insert_dipole.db
+## labels: regression quick
+
+system rm -f 017_insert_dipole.db
+connect 017_insert_dipole.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert method test
+end
+insert set s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method b3lyp/6-31+G*
+end
+insert property strange
+ property_type dipole
+ set s22
+ order 1
+ structures s22.c6h6_ch4
+end
+insert evaluation
+ method b3lyp/6-31+G*
+ property strange
+ value 0.1 0.2 0.3
+end
+insert term
+ method b3lyp/6-31+G*
+ property strange
+ atom 1
+ l P
+ exponent 0.1
+ value -12.2
+ maxcoef 10.0
+end
+insert calc
+ property_type dipole
+ file ../zz_source/s22.listvec
+ method test
+end
+print evaluation
+print term
+print full

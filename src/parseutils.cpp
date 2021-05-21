@@ -61,6 +61,24 @@ std::list<std::string> list_all_words(const std::string &line) {
   return result;
 }
 
+// Build a vector from all doubles in a line. Skip the rest of the line
+// if a non-numerical token is found.
+std::vector<double> list_all_doubles(const std::string &line) {
+
+  std::istringstream iss(line);
+  std::vector<double> result;
+  std::string token;
+
+  while (iss >> token){
+    try {
+      result.push_back(std::stod(token));
+    } catch (...) {
+      break;
+    }
+  }
+  return result;
+}
+
 // Read lines from input stream is using comment and continuation
 // rules. Split each line into a key (first word) and content (rest of
 // the line) pair. If toupper, capitalize the key. If the key END or
@@ -317,11 +335,11 @@ std::unordered_map<std::string,double> read_data_file(const std::string &file,co
 }
 
 // Read vector data from a file. The data must be:
-//   string  double
-// This populates the map with string as key. The double is
+//   string  double1 double2 double3
+// This populates the map with string as key. The doubles are
 // accumulated into the value vector, in order of appearance.  Skip
-// blank lines and comments (#). Ignore the third and subsequent
-// fields.  Multiply the values by the conversion factor convf.
+// blank lines and comments (#). Multiply the values by the conversion
+// factor convf.
 std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const std::string &file,const double convf/*=1.0*/){
   if (!fs::is_regular_file(file))
     throw std::runtime_error("File not found: " + file);
@@ -334,8 +352,9 @@ std::unordered_map<std::string,std::vector<double> > read_data_file_vector(const
     std::string str;
     double value;
     std::istringstream iss(line);
-    iss >> str >> value;
-    res[str].push_back(value * convf);
+    iss >> str;
+    while (iss >> value)
+      res[str].push_back(value * convf);
   }
   ifile.close();
   return res;

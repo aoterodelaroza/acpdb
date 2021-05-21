@@ -1,9 +1,9 @@
-* SYSTEM: rm -f 007_insert_method.db
+* SYSTEM: rm -f 017_insert_dipole.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 007_insert_method.db
+Connecting database file 017_insert_dipole.db
 Creating skeleton database 
 
 * INSERT: insert data into the database (LITREF)
@@ -245,6 +245,167 @@ Creating skeleton database
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD b3lyp/6-31+G*
 
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD test
+
+* INSERT: insert data into the database (SET)
+# INSERT SET s22
+# INSERT STRUCTURE s22.nh3_nh3
+# INSERT STRUCTURE s22.nh3_nh3_1
+# INSERT STRUCTURE s22.nh3_nh3_2
+# INSERT PROPERTY s22.nh3_nh3
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.nh3_nh3)
+# INSERT STRUCTURE s22.h2o_h2o
+# INSERT STRUCTURE s22.h2o_h2o_1
+# INSERT STRUCTURE s22.h2o_h2o_2
+# INSERT PROPERTY s22.h2o_h2o
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.h2o_h2o)
+# INSERT STRUCTURE s22.h2co2_h2co2
+# INSERT STRUCTURE s22.h2co2_h2co2_1
+# INSERT STRUCTURE s22.h2co2_h2co2_2
+# INSERT PROPERTY s22.h2co2_h2co2
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.h2co2_h2co2)
+# INSERT STRUCTURE s22.formamide_formamide
+# INSERT STRUCTURE s22.formamide_formamide_1
+# INSERT STRUCTURE s22.formamide_formamide_2
+# INSERT PROPERTY s22.formamide_formamide
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.formamide_formamide)
+# INSERT STRUCTURE s22.uracil_uracil_hb
+# INSERT STRUCTURE s22.uracil_uracil_hb_1
+# INSERT STRUCTURE s22.uracil_uracil_hb_2
+# INSERT PROPERTY s22.uracil_uracil_hb
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.uracil_uracil_hb)
+# INSERT STRUCTURE s22.pyridoxine_aminopyridine
+# INSERT STRUCTURE s22.pyridoxine_aminopyridine_1
+# INSERT STRUCTURE s22.pyridoxine_aminopyridine_2
+# INSERT PROPERTY s22.pyridoxine_aminopyridine
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.pyridoxine_aminopyridine)
+# INSERT STRUCTURE s22.adenine_thymine_wcc1
+# INSERT STRUCTURE s22.adenine_thymine_wcc1_1
+# INSERT STRUCTURE s22.adenine_thymine_wcc1_2
+# INSERT PROPERTY s22.adenine_thymine_wcc1
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.adenine_thymine_wcc1)
+# INSERT STRUCTURE s22.ch4_ch4
+# INSERT STRUCTURE s22.ch4_ch4_1
+# INSERT STRUCTURE s22.ch4_ch4_2
+# INSERT PROPERTY s22.ch4_ch4
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.ch4_ch4)
+# INSERT STRUCTURE s22.c2h4_c2h4
+# INSERT STRUCTURE s22.c2h4_c2h4_1
+# INSERT STRUCTURE s22.c2h4_c2h4_2
+# INSERT PROPERTY s22.c2h4_c2h4
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c2h4_c2h4)
+# INSERT STRUCTURE s22.c6h6_ch4
+# INSERT STRUCTURE s22.c6h6_ch4_1
+# INSERT STRUCTURE s22.c6h6_ch4_2
+# INSERT PROPERTY s22.c6h6_ch4
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_ch4)
+# INSERT STRUCTURE s22.c6h6_c6h6_pd
+# INSERT STRUCTURE s22.c6h6_c6h6_pd_1
+# INSERT STRUCTURE s22.c6h6_c6h6_pd_2
+# INSERT PROPERTY s22.c6h6_c6h6_pd
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_c6h6_pd)
+# INSERT STRUCTURE s22.pyrazine_pyrazine
+# INSERT STRUCTURE s22.pyrazine_pyrazine_1
+# INSERT STRUCTURE s22.pyrazine_pyrazine_2
+# INSERT PROPERTY s22.pyrazine_pyrazine
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.pyrazine_pyrazine)
+# INSERT STRUCTURE s22.uracil_uracil_stack
+# INSERT STRUCTURE s22.uracil_uracil_stack_1
+# INSERT STRUCTURE s22.uracil_uracil_stack_2
+# INSERT PROPERTY s22.uracil_uracil_stack
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.uracil_uracil_stack)
+# INSERT STRUCTURE s22.indole_c6h6_stack
+# INSERT STRUCTURE s22.indole_c6h6_stack_1
+# INSERT STRUCTURE s22.indole_c6h6_stack_2
+# INSERT PROPERTY s22.indole_c6h6_stack
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.indole_c6h6_stack)
+# INSERT STRUCTURE s22.adenine_thymine_stack
+# INSERT STRUCTURE s22.adenine_thymine_stack_1
+# INSERT STRUCTURE s22.adenine_thymine_stack_2
+# INSERT PROPERTY s22.adenine_thymine_stack
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.adenine_thymine_stack)
+# INSERT STRUCTURE s22.c2h4_c2h2
+# INSERT STRUCTURE s22.c2h4_c2h2_1
+# INSERT STRUCTURE s22.c2h4_c2h2_2
+# INSERT PROPERTY s22.c2h4_c2h2
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c2h4_c2h2)
+# INSERT STRUCTURE s22.c6h6_h2o
+# INSERT STRUCTURE s22.c6h6_h2o_1
+# INSERT STRUCTURE s22.c6h6_h2o_2
+# INSERT PROPERTY s22.c6h6_h2o
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_h2o)
+# INSERT STRUCTURE s22.c6h6_nh3
+# INSERT STRUCTURE s22.c6h6_nh3_1
+# INSERT STRUCTURE s22.c6h6_nh3_2
+# INSERT PROPERTY s22.c6h6_nh3
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_nh3)
+# INSERT STRUCTURE s22.c6h6_hcn
+# INSERT STRUCTURE s22.c6h6_hcn_1
+# INSERT STRUCTURE s22.c6h6_hcn_2
+# INSERT PROPERTY s22.c6h6_hcn
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_hcn)
+# INSERT STRUCTURE s22.c6h6_c6h6_t
+# INSERT STRUCTURE s22.c6h6_c6h6_t_1
+# INSERT STRUCTURE s22.c6h6_c6h6_t_2
+# INSERT PROPERTY s22.c6h6_c6h6_t
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.c6h6_c6h6_t)
+# INSERT STRUCTURE s22.indole_c6h6_t
+# INSERT STRUCTURE s22.indole_c6h6_t_1
+# INSERT STRUCTURE s22.indole_c6h6_t_2
+# INSERT PROPERTY s22.indole_c6h6_t
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.indole_c6h6_t)
+# INSERT STRUCTURE s22.phenol_phenol
+# INSERT STRUCTURE s22.phenol_phenol_1
+# INSERT STRUCTURE s22.phenol_phenol_2
+# INSERT PROPERTY s22.phenol_phenol
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.phenol_phenol)
+
+* INSERT: insert data into the database (PROPERTY)
+# INSERT PROPERTY strange
+
+* INSERT: insert data into the database (EVALUATION)
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=strange)
+
+* INSERT: insert data into the database (TERM)
+# INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=1;l=P;exponent=0.1)
+
+* INSERT: insert data into the database (CALC)
+# INSERT EVALUATION (method=test;property=23;nvalue=3)
+
+* PRINT: print the contents of the database 
+
+| methodid| propid| value|
+| 1| 1| -3.133|
+| 1| 2| -4.989|
+| 1| 3| -18.753|
+| 1| 4| -16.062|
+| 1| 5| -20.641|
+| 1| 6| -16.934|
+| 1| 7| -16.66|
+| 1| 8| -0.527|
+| 1| 9| -1.472|
+| 1| 10| -1.448|
+| 1| 11| -2.654|
+| 1| 12| -4.255|
+| 1| 13| -9.805|
+| 1| 14| -4.524|
+| 1| 15| -11.73|
+| 1| 16| -1.496|
+| 1| 17| -3.275|
+| 1| 18| -2.312|
+| 1| 19| -4.541|
+| 1| 20| -2.717|
+| 1| 21| -5.627|
+| 1| 22| -7.097|
+| 1| 23| 0.1|
+| 2| 23| 28|
+
+* PRINT: print the contents of the database 
+
+| methodid| propid| atom| l| exponent| value| maxcoef|
+| 1| 23| 1| 1| 0.1| -12.2| 10|
+
 * PRINT: print the contents of the database 
 
 # Table of property types
@@ -263,12 +424,20 @@ Creating skeleton database
 # Table of methods
 | id| key| gaussian_keyword| psi4_keyword| litrefs| description|
 | 1| b3lyp/6-31+G*| method=b3lyp/6-31+G*;gbs=| method=b3lyp;basis=6-31+G*| bsip1 boys1970| This is a method.|
+| 2| test| | | | |
 
 # Table of sets
 | id| key| litrefs| description|
+| 1| s22| bsip1 boys1970 | A description.|
 
 # Number of properties and structures in each set
 | id | key | properties | structures |
+| 1 | s22 | 23 | 66 |
+
+# Evaluations and terms for each combination of set & method
+| set-id | set-key | method-id | method-key | #evaluations | #terms |
+| 1 | s22 | 1 | b3lyp/6-31+G* |23 | 1 |
+| 1 | s22 | 2 | test |1 | 0 |
 
 ## Description of the training set
 # The TRAINING SET is NOT DEFINED

@@ -105,7 +105,13 @@ CREATE TABLE Training_set_repo (
 );
 INSERT INTO Property_types (id,key,description)
        VALUES (1,'ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
-              (2,'ENERGY','The total energy of a molecule or crystal');
+              (2,'ENERGY','The total energy of a molecule or crystal'),
+              (3,'DIPOLE','The electric dipole of a molecule'),
+              (4,'STRESS','The stress tensor in a crystal'),
+              (5,'D1E','The first derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+              (6,'D2E','The second derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+              (7,'HOMO','The orbital energy of the highest occupied molecular orbital'),
+              (8,'LUMO','The orbital energy of the lowest unoccupied molecular orbital');
 )SQL",
 
 [statement::STMT_INIT_DATABASE] =

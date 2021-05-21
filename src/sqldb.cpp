@@ -326,7 +326,8 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, std::unord
 
   // some variables
   std::unordered_map<std::string,std::string>::const_iterator im1, im2;
-  std::list<std::string> tok1, tok2;
+  std::list<std::string> tok1;
+  std::vector<double> tok2;
 
   // bind
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -362,7 +363,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   tok1 = list_all_words(im1->second);
   im2 = kmap.find("COEFFICIENTS");
   if (im2 != kmap.end())
-    tok2 = list_all_words(im2->second);
+    tok2 = list_all_doubles(im2->second);
 
   // number of structures
   int nstructures = tok1.size();
@@ -391,12 +392,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   if (!tok2.empty()) {
     if (nstructures != tok2.size())
       throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
-    int n = 0;
-    double *str = new double[nstructures];
-    for (auto it = tok2.begin(); it != tok2.end(); it++)
-      str[n++] = std::stod(*it);
-    st.bind((char *) ":COEFFICIENTS",(void *) str,true,nstructures * sizeof(double));
-    delete str;
+    st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
   }
 
   os << "# INSERT PROPERTY " << key << std::endl;
@@ -431,10 +427,10 @@ INSERT INTO Evaluations (methodid,propid,value)
   } else {
     throw std::runtime_error("A property must be given in INSERT EVALUATION");
   }
-  if ((im = kmap.find("VALUE")) != kmap.end()){
-    st.bind((char *) ":VALUE",std::stod(im->second));
-  } else
+  if (kmap.find("VALUE") == kmap.end())
     throw std::runtime_error("A value must be given in INSERT EVALUATION");
+  std::vector<double> value = list_all_doubles(kmap.find("VALUE")->second);
+  st.bind((char *) ":VALUE",(void *) &value[0],false,value.size()*sizeof(double));
 
   os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
 
@@ -504,8 +500,10 @@ void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::st
     st.bind((char *) ":EXPONENT",std::stod(im->second));
   else
     throw std::runtime_error("An exponent must be given in INSERT TERM");
-  if ((im = kmap.find("VALUE")) != kmap.end())
-    st.bind((char *) ":VALUE",std::stod(im->second));
+  if ((im = kmap.find("VALUE")) != kmap.end()){
+    std::vector<double> tok = list_all_doubles(im->second);
+    st.bind((char *) ":VALUE",(void *) &tok.front(),true,tok.size() * sizeof(double));
+  }
   if ((im = kmap.find("MAXCOEF")) != kmap.end())
     st.bind((char *) ":MAXCOEF",std::stod(im->second));
 
@@ -557,16 +555,14 @@ void sqldb::insert_calc(std::ostream &os, std::unordered_map<std::string,std::st
     throw std::runtime_error("The FILE must be given in INSERT CALC");
 
   // get the data from the file
- std::unordered_map<std::string,double> datmap;
+ std::unordered_map<std::string,std::vector<double>> datmap;
  if (ptid == globals::ppty_energy_difference)
-   datmap = read_data_file(file,globals::ha_to_kcal);
- else if (ptid == globals::ppty_energy)
-   datmap = read_data_file(file,1);
+   datmap = read_data_file_vector(file,globals::ha_to_kcal);
  else
-    throw std::runtime_error("Unknown PROPERTY_TYPE in INSERT CALC");
+   datmap = read_data_file_vector(file,1.);
 
   // build the property map
-  std::unordered_map<int,double> propmap;
+  std::unordered_map<int,std::vector<double>> propmap;
   statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT id, nstructures, structures, coefficients
@@ -579,7 +575,7 @@ ORDER BY id;)SQL");
     int nstr = sqlite3_column_int(st.ptr(),1);
     int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
     double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
-    double value = 0;
+    std::vector<double> value;
     bool found = true;
     for (int i = 0; i < nstr; i++){
       stkey.reset();
@@ -590,10 +586,18 @@ ORDER BY id;)SQL");
         found = false;
         break;
       }
-      if (coef)
-        value += coef[i] * datmap[strname];
-      else
-        value += datmap[strname];
+      if (i == 0)
+        value.resize(datmap[strname].size(), 0.);
+      else if (datmap[strname].size() != value.size())
+        throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
+
+      if (coef) {
+        for (int j = 0; j < value.size(); j++)
+          value[j] += coef[i] * datmap[strname][j];
+      } else {
+        for (int j = 0; j < value.size(); j++)
+          value[j] += datmap[strname][j];
+      }
     }
     if (found)
       propmap[propid] = value;
@@ -608,12 +612,13 @@ ORDER BY id;)SQL");
     st.reset();
     st.bind((char *) ":METHOD",methodid);
     st.bind((char *) ":PROPID",it->first);
-    st.bind((char *) ":VALUE",it->second);
-    os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first << ")" << std::endl;
+    st.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
+    os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first
+       << ";nvalue=" << it->second.size() << ")" << std::endl;
     if (st.step() != SQLITE_DONE){
       std::cout << "method = " << kmap.find("METHOD")->second << std::endl;
       std::cout << "propid = " << it->first << std::endl;
-      std::cout << "value = " << it->second << std::endl;
+      std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
       throw std::runtime_error("Failed inserting data in the database (READ CALC)");
     }
   }
@@ -981,11 +986,11 @@ DELETE FROM Terms WHERE
 void sqldb::print(std::ostream &os, const std::string &category, bool dobib){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
-  enum entrytype { t_str, t_int, t_double };
+  enum entrytype { t_str, t_int, t_double, t_ptr_double };
 
   std::vector<entrytype> types;
   std::vector<std::string> headers;
-  std::vector<int> cols;
+  std::vector<int> cols, nelems;
   bool dobib_ = false;
   std::string stmt;
   if (category == "LITREF"){
@@ -1036,16 +1041,16 @@ ORDER BY id;
 )SQL";
   } else if (category == "EVALUATION"){
     headers = {"methodid","propid", "value"};
-    types   = {     t_int,   t_int,t_double};
-    cols    = {         0,       1,       2};
+    types   = {     t_int,   t_int,t_ptr_double};
+    cols    = {         0,       1,           2};
     stmt = R"SQL(
 SELECT methodid,propid,value
 FROM Evaluations;
 )SQL";
   } else if (category == "TERM"){
-    headers = {"methodid","propid", "atom",   "l","exponent", "value","maxcoef"};
-    types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_double, t_double};
-    cols    = {         0,       1,      2,     3,         4,       5,        6};
+    headers = {"methodid","propid", "atom",   "l","exponent",     "value","maxcoef"};
+    types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_ptr_double, t_double};
+    cols    = {         0,       1,      2,     3,         4,           5,        6};
     stmt = R"SQL(
 SELECT methodid,propid,atom,l,exponent,value,maxcoef
 FROM Terms;
@@ -1083,6 +1088,9 @@ FROM Terms;
         os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
       } else if (types[i] == t_double && !dobib_){
         os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
+      } else if (types[i] == t_ptr_double && !dobib_){
+        double *ptr = (double *) sqlite3_column_blob(st.ptr(), cols[i]);
+        os << "| " << *ptr;
       }
     }
     if (!dobib_)

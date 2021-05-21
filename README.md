@@ -78,6 +78,23 @@ The following are the supported property types, and their units:
 - `ENERGY`: The total energy of a molecule or crystal. Units are
   Hartree.
 
+- `DIPOLE`: The electric dipole in a molecule, referred to the
+  coordinate framework in the database. Units are Debye.
+
+- `STRESS`: The stress tensor in a crystal. Units are GPa.
+
+- `D1E`: The first derivatives of the energy with respect to the
+  atomic positions in a molecule or crystal. Units are Hartree/bohr.
+
+- `D2E`: The second derivatives of the energy with respect to the
+  atomic positions in a molecule or crystal. Units are Hartree/bohr^2.
+
+- `HOMO`: The energy of the highest occupied molecular orbital in a
+  molecule. Units are Hartree.
+
+- `LUMO`: The energy of the lowest unoccupied molecular orbital in a
+  molecule. Units are Hartree.
+
 ## Syntax
 
 ### Global Variables and Commands
