@@ -7,7 +7,6 @@ connect 003_insert_set.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert set s22x5
- property_type energy_difference
  description A description.
  litrefs bsip1 boys1970
 end

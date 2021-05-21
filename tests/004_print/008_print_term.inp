@@ -12,7 +12,6 @@ insert method b3lyp/6-31+G*
  description This is a method.
 end
 insert set s22x5
- property_type energy_difference
  description A description.
  litrefs bsip1 boys1970
 end

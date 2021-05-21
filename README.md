@@ -194,7 +194,6 @@ compiling with the btparse library.
 
 ~~~
 INSERT SET name.s
-  PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
 END
@@ -207,7 +206,6 @@ their key or numerical id.
 
 ~~~
 INSERT SET name.s
-  PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
   XYZ xyz1.s [xyz2.s] [xyz3.s] ...
@@ -224,7 +222,6 @@ extension.
 
 ~~~
 INSERT SET name.s
-  PROPERTY_TYPE {prop.s|prop.i}
   DESCRIPTION ...
   LITREFS {ref1.s|ref1.i} [ref2.s|ref2.i] ...
   DIN file.s
@@ -237,7 +234,9 @@ belonging to this set, add the structures indicated in the din
 file. The xyz files are found in directory `directory.s`. If no
 directory is given, use the current directory. Also, add the
 corresponding properties and the corresponding evaluations with method
-`method.s`. If no METHOD is given, the evaluations are not inserted.
+`method.s` (the property type for the properties is assumed to be
+ENERGY_DIFFERENCE). If no METHOD is given, the evaluations are not
+inserted.
 
 #### Methods
 
