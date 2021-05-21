@@ -688,7 +688,7 @@ ORDER BY Training_set.id;
       smap["METHOD"] = std::to_string(refid);
       smap["PROPERTY"] = std::to_string(propid[i]);
       smap["VALUE"] = valstr;
-      db->insert_evaluation(os,"",smap);
+      db->insert_evaluation(os,smap);
     }
     ifile.peek();
     if (!ifile.eof())
@@ -714,7 +714,7 @@ ORDER BY Training_set.id;
     smap["METHOD"] = std::to_string(emptyid);
     smap["PROPERTY"] = std::to_string(propid[i]);
     smap["VALUE"] = valstr;
-    db->insert_evaluation(os,"",smap);
+    db->insert_evaluation(os,smap);
     yempty[n++] = std::stod(valstr);
   }
   ifile.peek();
@@ -747,7 +747,7 @@ ORDER BY Training_set.id;
           smap["L"] = std::to_string(il);
           smap["EXPONENT"] = to_string_precise(exp[iexp]);
           smap["VALUE"] = to_string_precise((std::stod(valstr)-yempty[n++])/0.001);
-          db->insert_term(os,"",smap);
+          db->insert_term(os,smap);
         }
 
         ifile.peek();
@@ -798,7 +798,7 @@ void trainset::insert_dat(std::ostream &os, std::unordered_map<std::string,std::
       smap["METHOD"] = std::to_string(methodid);
       smap["PROPERTY"] = std::to_string(propid[i]);
       smap["VALUE"] = valstr;
-      db->insert_evaluation(os,"",smap);
+      db->insert_evaluation(os,smap);
     }
     ifile.peek();
     if (!ifile.eof())
@@ -867,7 +867,7 @@ void trainset::insert_dat(std::ostream &os, std::unordered_map<std::string,std::
       smap["L"] = l_;
       smap["EXPONENT"] = to_string_precise(exp[iexp_]);
       smap["VALUE"] = valstr;
-      db->insert_term(os,"",smap);
+      db->insert_term(os,smap);
     }
     ifile.peek();
     if (!ifile.eof())

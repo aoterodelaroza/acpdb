@@ -266,9 +266,11 @@ int main(int argc, char *argv[]) {
         else if (category == "PROPERTY")
           db.insert_property(*os,key,kmap);
         else if (category == "EVALUATION")
-          db.insert_evaluation(*os,key,kmap);
+          db.insert_evaluation(*os,kmap);
         else if (category == "TERM")
-          db.insert_term(*os,key,kmap);
+          db.insert_term(*os,kmap);
+        else if (category == "CALC")
+          db.insert_calc(*os,kmap);
         // else if (category == "DAT")
         //   ts.insert_dat(*os,kmap);
       }
@@ -338,8 +340,6 @@ int main(int argc, char *argv[]) {
               db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
           }
         }
-        if (kmap.find("INSERT") != kmap.end())
-          db.read_and_insert(file,kmap["INSERT"]);
       }
 
       //

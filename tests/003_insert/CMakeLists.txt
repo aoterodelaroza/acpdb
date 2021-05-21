@@ -13,6 +13,7 @@ set(TESTS
   012_insert_evaluation       ## insert an evaluation
   013_insert_term             ## insert a term
   014_insert_term_maxcoef     ## update the maxcoef in a term
+  015_insert_calc             ## insert a file with calculation results
   )
 
 runtests(${TESTS})

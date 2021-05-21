@@ -258,5 +258,5 @@ Creating skeleton database
 # INSERT PROPERTY strange
 
 * INSERT: insert data into the database (EVALUATION)
-# INSERT PROPERTY (method=b3lyp/6-31+G*;property=strange)
+# INSERT EVALUATION (method=b3lyp/6-31+G*;property=strange)
 

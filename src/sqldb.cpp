@@ -46,10 +46,17 @@ struct propinfo {
 
 namespace fs = std::filesystem;
 
-// Find the id from a key from an sql table
-int sqldb::find_id_from_key(const std::string &key,const std::string &table){
+// Find the property type ID corresponding to the key in the database table.
+// If toupper, uppercase the key before fetching the ID from the table.
+int sqldb::find_id_from_key(const std::string &key,const std::string &table,bool toupper/*=false*/){
   statement st(db,statement::STMT_CUSTOM,"SELECT id FROM " + table + " WHERE key = ?1;");
-  st.bind(1,key);
+  if (toupper){
+    std::string ukey = key;
+    uppercase(ukey);
+    st.bind(1,ukey);
+  } else {
+    st.bind(1,key);
+  }
   st.step();
   int rc = sqlite3_column_int(st.ptr(),0);
   st.reset();
@@ -211,7 +218,7 @@ INSERT INTO Sets (key,property_type,litrefs,description)
     if (isinteger(im->second))
       st.bind((char *) ":PROPERTY_TYPE",std::stoi(im->second));
     else
-      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types"));
+      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im->second,"Property_types",true));
   }
   if ((im = kmap.find("LITREFS")) != kmap.end()){
     std::list<std::string> tokens = list_all_words(im->second);
@@ -339,7 +346,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     if (isinteger(im1->second))
       st.bind((char *) ":PROPERTY_TYPE",std::stoi(im1->second));
     else
-      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im1->second,"Property_types"));
+      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im1->second,"Property_types",true));
   }
   if ((im1 = kmap.find("SET")) != kmap.end()){
     if (isinteger(im1->second))
@@ -400,7 +407,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
 }
 
 // Insert an evaluation by manually giving the data
-void sqldb::insert_evaluation(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_evaluation(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT EVALUATION");
 
   // bind
@@ -430,14 +437,14 @@ INSERT INTO Evaluations (methodid,propid,value)
   else
     throw std::runtime_error("A value must be given in INSERT EVALUATION");
 
-  os << "# INSERT PROPERTY (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
+  os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
 
   // submit
   st.step();
 }
 
 // Insert a term by manually giving the data
-void sqldb::insert_term(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT TERM");
 
   const std::unordered_map<char,int> angmom = {{'s',0},{'p',1},{'d',2},{'f',3},{'g',4},{'h',5}};
@@ -509,6 +516,103 @@ void sqldb::insert_term(std::ostream &os, const std::string &key, std::unordered
 
   // submit
   st.step();
+}
+
+// Read data from a file, then insert as evaluation of the argument method.
+void sqldb::insert_calc(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+  if (!db)
+    throw std::runtime_error("A database file must be connected before using INSERT CALC");
+
+  // some variables
+  std::unordered_map<std::string,std::string>::const_iterator im;
+
+  // get the property_type
+  int ptid = -1;
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end())
+    if (isinteger(im->second))
+      ptid = std::stoi(im->second);
+    else
+      ptid = find_id_from_key(im->second,"Property_types",true);
+  else
+    throw std::runtime_error("The PROPERTY_TYPE must be given in INSERT CALC");
+  if (ptid <= 0)
+    throw std::runtime_error("The PROPERTY_TYPE in INSERT CALC was not found");
+
+  // get the method id
+  int methodid = -1;
+  if ((im = kmap.find("METHOD")) != kmap.end())
+    if (isinteger(im->second))
+      methodid = std::stoi(im->second);
+    else
+      methodid = find_id_from_key(im->second,"Methods");
+  else
+    throw std::runtime_error("The METHOD must be given in INSERT CALC");
+  if (methodid <= 0)
+    throw std::runtime_error("The METHOD in INSERT CALC was not found");
+
+  // get the file
+  std::string file;
+  if ((im = kmap.find("FILE")) != kmap.end())
+    file = im->second;
+  else
+    throw std::runtime_error("The FILE must be given in INSERT CALC");
+
+  // get the data from the file
+  auto datmap = read_data_file(file,globals::ha_to_kcal);
+
+  // build the property map
+  std::unordered_map<int,double> propmap;
+  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db,statement::STMT_CUSTOM,R"SQL(
+SELECT id, nstructures, structures, coefficients
+FROM Properties
+WHERE property_type = ?1
+ORDER BY id;)SQL");
+  st.bind(1,ptid);
+  while (st.step() != SQLITE_DONE){
+    int propid = sqlite3_column_int(st.ptr(),0);
+    int nstr = sqlite3_column_int(st.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
+    double value = 0;
+    bool found = true;
+    for (int i = 0; i < nstr; i++){
+      stkey.reset();
+      stkey.bind(1,istr[i]);
+      stkey.step();
+      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+      if (datmap.find(strname) == datmap.end()){
+        found = false;
+        break;
+      }
+      value += coef[i] * datmap[strname];
+    }
+    if (found)
+      propmap[propid] = value;
+  }
+  datmap.clear();
+
+  // begin the transaction
+  begin_transaction();
+
+  st.recycle(statement::STMT_CUSTOM,"INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);");
+  for (auto it = propmap.begin(); it != propmap.end(); it++){
+    st.reset();
+    st.bind((char *) ":METHOD",methodid);
+    st.bind((char *) ":PROPID",it->first);
+    st.bind((char *) ":VALUE",it->second);
+    if (st.step() != SQLITE_DONE){
+      std::cout << "method = " << kmap.find("METHOD")->second << std::endl;
+      std::cout << "propid = " << it->first << std::endl;
+      std::cout << "value = " << it->second << std::endl;
+      throw std::runtime_error("Failed inserting data in the database (READ CALC)");
+    } else {
+      os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first << ")" << std::endl;
+    }
+  }
+
+  // commit the transaction
+  commit_transaction();
 }
 
 // Insert literature references into the database from a bibtex file
@@ -764,7 +868,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
         skey += "_" + info[k].names[i];
     }
     smap.clear();
-    smap["PROPERTY_TYPE"] = "energy_difference";
+    smap["PROPERTY_TYPE"] = "ENERGY_DIFFERENCE";
     smap["SET"] = key;
     smap["ORDER"] = std::to_string(k+1);
     smap["NSTRUCTURES"] = std::to_string(n);
@@ -782,7 +886,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
       smap["METHOD"] = kmap["METHOD"];
       smap["PROPERTY"] = skey;
       smap["VALUE"] = to_string_precise(info[k].ref);
-      insert_evaluation(os,skey,smap);
+      insert_evaluation(os,smap);
     }
   }
 
@@ -1447,75 +1551,6 @@ ORDER BY Properties.id;)SQL";
     for (int i = 0; i < names_missing_fromdat.size(); i++)
       os << "## " << names_missing_fromdat[i] << std::endl;
   }
-}
-
-// Read data from a file, then insert as evaluation of the argument method.
-void sqldb::read_and_insert(const std::string &file, const std::string &method){
-  if (!db)
-    throw std::runtime_error("A database file must be connected before using READ");
-
-  // verify that we have a reference method
-  if (method.empty())
-    throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = find_id_from_key(method,"Methods");
-  if (!methodid)
-    throw std::runtime_error("Unknown method in READ/COMPARE: " + method);
-
-  // get the data from the file
-  auto datmap = read_data_file(file,globals::ha_to_kcal);
-
-  // build the property map
-  std::unordered_map<int,double> propmap;
-  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
-SELECT Properties.id, Properties.nstructures, Properties.structures, Properties.coefficients
-FROM Properties
-ORDER BY Properties.id;)SQL");
-  while (st.step() != SQLITE_DONE){
-    int propid = sqlite3_column_int(st.ptr(),0);
-    int nstr = sqlite3_column_int(st.ptr(),1);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
-    double value = 0;
-    bool found = true;
-    for (int i = 0; i < nstr; i++){
-      stkey.reset();
-      stkey.bind(1,istr[i]);
-      stkey.step();
-      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-      if (datmap.find(strname) == datmap.end()){
-        found = false;
-        break;
-      }
-      value += coef[i] * datmap[strname];
-    }
-    if (found)
-      propmap[propid] = value;
-  }
-  datmap.clear();
-
-  // begin the transaction
-  begin_transaction();
-
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Evaluations (methodid,propid,value)
-VALUES(:METHOD,:PROPID,:VALUE);
-)SQL");
-  for (auto it = propmap.begin(); it != propmap.end(); it++){
-    st.reset();
-    st.bind((char *) ":METHOD",methodid);
-    st.bind((char *) ":PROPID",it->first);
-    st.bind((char *) ":VALUE",it->second);
-    if (st.step() != SQLITE_DONE){
-      std::cout << "method = " << method << " (" << methodid << ")" << std::endl;
-      std::cout << "propid = " << it->first << std::endl;
-      std::cout << "value = " << it->second << std::endl;
-      throw std::runtime_error("Failed inserting data in the database (READ INSERT)");
-    }
-  }
-
-  // commit the transaction
-  commit_transaction();
 }
 
 // Write the structures with IDs given by the keys in smap. The

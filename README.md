@@ -3,13 +3,13 @@
 ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
-| Section                                                                             | Keywords                                                                                                                                                               |
-|-------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                   |
-| [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                            |
-| [Print database information](#print-database-information)                           | [Whole database](#whole-database) [Individual tables](#individual-tables)                                                                                              |
-| [Inserting data](#inserting-data)                                                   | [Lit. refs.](#literature-references) [Sets](#sets) [Methods](#methods) [Structures](#structures) [Properties](#properties) [Evaluations](#evaluations) [Terms](#terms) |
-| [Deleting data](#deleting-data)                                                     |                                                                                                                                                                        |
+| Section                                                                             | Keywords                                                                                                                                                                              |
+|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                                  |
+| [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
+| [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables))                                                                                                    |
+| [Inserting data (elements)](#inserting-data)                                        | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
+| [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                      |
 
 ## Command-Line Syntax
 ~~~
@@ -163,7 +163,7 @@ Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write
 the list of literature references in bibtex format.
 
-### Inserting Data
+### Inserting Data (elements)
 
 #### Literature References
 
@@ -350,6 +350,39 @@ available.
 - If no VALUE is given but MAXCOEF is, then the term corresponding to
 the given method, property, atom, l, and exponent is updated with the
 MAXCOEF value (`maxcoef.r`).
+
+### Inserting Data (bulk)
+~~~
+INSERT CALC
+  PROPERTY_TYPE {prop.s|prop.i}
+  FILE file.s
+  METHOD {method.s|method.i}
+END
+~~~
+Insert data in bulk from file `file.s`. The data corresponds to the
+evaluation of all properties of type `prop.s` (key) or `prop.i` (ID) with
+method `method.s` (key) or `method.i` (ID) that can be calculated
+using the information for the corresponding structures contained in
+the file. The file must have lines of the form:
+~~~
+structure1.s value1.r value2.r ...
+structure2.s value3.r value4.r ...
+...
+~~~
+where `structure<n>.s` are structure identifiers from the database
+and `value<n>.r` are the calculated values. The structure names are
+the same as the root of the file names generated using WRITE, so this
+file can be easily generated with utilities such as grep or awk.
+Blank lines and comments (#) are ignored.
+
+The number and units of these calculated values depends on the
+property type for the insertion:
+
+- ENERGY_DIFFERENCE and ENERGY: a single value is read for each
+  structure, the total energy in Hartree.
+
+Only the necessary fields to satisfy the property type are read from
+each line.
 
 ### Deleting Data
 

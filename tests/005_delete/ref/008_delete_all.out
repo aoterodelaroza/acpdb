@@ -267,8 +267,8 @@ Creating skeleton database
 
 # Table of property types
 | id | key | description |
-| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
-| 2 | energy | The total energy of a molecule or crystal |
+| 1 | ENERGY_DIFFERENCE | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | ENERGY | The total energy of a molecule or crystal |
 
 # Number of literature references: 234
 
@@ -326,8 +326,8 @@ Creating skeleton database
 
 # Table of property types
 | id | key | description |
-| 1 | energy_difference | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
-| 2 | energy | The total energy of a molecule or crystal |
+| 1 | ENERGY_DIFFERENCE | A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.) |
+| 2 | ENERGY | The total energy of a molecule or crystal |
 
 # Number of literature references: 0
 

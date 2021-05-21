@@ -70,8 +70,11 @@ class sqldb {
   void insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
   void insert_property(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_evaluation(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
-  void insert_term(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap);
+  void insert_evaluation(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
+  void insert_term(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
+
+  // Bulk insert
+  void insert_calc(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::ostream &os, std::list<std::string> &tokens);
@@ -104,9 +107,6 @@ class sqldb {
   // compare to reference method refm.
   void read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap);
 
-  // Read data from a file, then insert as evaluation of the argument method.
-  void read_and_insert(const std::string &file, const std::string &method);
-
   // Write the structures with IDs given by the keys in smap. The
   // values of smap give the types (xyz for an xyz file, terms for a
   // terms input file or energy_difference, etc. for a property input
@@ -127,8 +127,9 @@ class sqldb {
                                   const acp &a = {},
                                   const std::vector<unsigned char> &zat = {}, const std::vector<unsigned char> &lmax = {}, const std::vector<double> &exp = {});
 
-  // Find the property type ID corresponding to the key 
-  int find_id_from_key(const std::string &key,const std::string &table);
+  // Find the property type ID corresponding to the key in the database table.
+  // If toupper, uppercase the key before fetching the ID from the table.
+  int find_id_from_key(const std::string &key,const std::string &table,bool toupper=false);
 
   // Get the Gaussian map from the method key
   std::unordered_map<std::string,std::string> get_program_map(const std::string &methodkey, const std::string &program);

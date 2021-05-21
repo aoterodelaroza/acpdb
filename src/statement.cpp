@@ -106,8 +106,8 @@ CREATE TABLE Training_set_repo (
   training_set BLOB NOT NULL
 );
 INSERT INTO Property_types (key,description)
-       VALUES ('energy_difference','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
-              ('energy','The total energy of a molecule or crystal');
+       VALUES ('ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
+              ('ENERGY','The total energy of a molecule or crystal');
 )SQL",
 
 [statement::STMT_INIT_DATABASE] =
