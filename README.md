@@ -9,7 +9,7 @@ atom-centered potentials (ACPs).
 | [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
 | [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables))                                                                                                    |
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
-| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT (properties), INSERT CALC (evaluations)                                                                                                                                        |
+| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
 
 ## Command-Line Syntax
