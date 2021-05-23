@@ -38,7 +38,7 @@ insert term
  atom 1
  l P
  exponent 0.1
- value -12.2
+ value -12.2 12.3 13.4
  maxcoef 10.0
 end
 insert calc
@@ -50,3 +50,4 @@ print evaluation
 print term
 print full
 
+verify

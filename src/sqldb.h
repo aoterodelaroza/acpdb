@@ -38,13 +38,13 @@ class sqldb {
     connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     if (!checksane())
       create();
-  }; 
+  };
   sqldb(sqldb&& rhs) = delete; // move constructor (deleted)
   sqldb(const sqldb& rhs) = delete; // copy constructor (deleted)
 
   // destructors
-  ~sqldb() { 
-    close(); 
+  ~sqldb() {
+    close();
   };
 
   // bool operator
@@ -114,8 +114,8 @@ class sqldb {
   // output directory. npack = package and compress in packets of
   // npack files (0 = no packing). a: ACP to use in the inputs.
   // zat, l, exp: details for term inputs.
-  void write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap = {}, 
-                             const std::string &dir = "./", int npack = 0, 
+  void write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap = {},
+                             const std::string &dir = "./", int npack = 0,
                              const acp &a = {},
                              const std::vector<unsigned char> &zat = {}, const std::vector<unsigned char> &lmax = {}, const std::vector<double> &exp = {});
 
@@ -157,4 +157,3 @@ class sqldb {
 };
 
 #endif
-

@@ -1360,6 +1360,103 @@ SELECT id FROM Structures WHERE id = ?1;
     }
   }
 
+  // check the number of values and structures in evaluations
+  os << "Checking the number of values and structures in the evaluations table" << std::endl;
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Evaluations.methodid, Evaluations.propid, Properties.property_type, length(Evaluations.value), Properties.nstructures, Properties.structures
+FROM Evaluations, Properties
+WHERE Evaluations.propid = Properties.id
+)SQL");
+  stcheck.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT nat FROM Structures WHERE id = ?1;
+)SQL");
+  while (st.step() != SQLITE_DONE){
+    int methodid = sqlite3_column_int(st.ptr(), 0);
+    int propid = sqlite3_column_int(st.ptr(), 1);
+    int ppty = sqlite3_column_int(st.ptr(), 2);
+    int nvalue = sqlite3_column_int(st.ptr(), 3) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(), 4);
+
+    // check the number of structures
+    if (ppty != globals::ppty_energy_difference && nstr != 1){
+      os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have one structure, but has " << nstr << std::endl;
+      continue;
+    }
+
+    // check the number of values
+    if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
+      if (nvalue != 1)
+        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have one value, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_dipole && nvalue != 3){
+      os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3 values, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_stress && nvalue != 6){
+      os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 6 values, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
+      int idstr = sqlite3_column_int(st.ptr(),5);
+      stcheck.bind(1,idstr);
+      stcheck.step();
+      int nat = sqlite3_column_int(stcheck.ptr(),0);
+      if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
+        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
+      else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
+        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
+      stcheck.reset();
+    }
+  }
+
+  // check the number of values and structures in terms
+  os << "Checking the number of values and structures in the terms table" << std::endl;
+  st.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT Terms.methodid, Terms.atom, Terms.l, Terms.exponent, Terms.propid, Properties.property_type, length(Terms.value), Properties.nstructures, Properties.structures
+FROM Terms, Properties
+WHERE Terms.propid = Properties.id
+)SQL");
+  stcheck.recycle(statement::STMT_CUSTOM,R"SQL(
+SELECT nat FROM Structures WHERE id = ?1;
+)SQL");
+  while (st.step() != SQLITE_DONE){
+    int methodid = sqlite3_column_int(st.ptr(), 0);
+    int atom = sqlite3_column_int(st.ptr(), 1);
+    int l = sqlite3_column_int(st.ptr(), 2);
+    int exp = sqlite3_column_int(st.ptr(), 3);
+    int propid = sqlite3_column_int(st.ptr(), 4);
+    int ppty = sqlite3_column_int(st.ptr(), 5);
+    int nvalue = sqlite3_column_int(st.ptr(), 6) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(), 7);
+
+    // check the number of structures
+    if (ppty != globals::ppty_energy_difference && nstr != 1){
+      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+         << ") should have one structure, but has " << nstr << std::endl;
+      continue;
+    }
+
+    // check the number of values
+    if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
+      if (nvalue != 1)
+        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+           << ") should have one value, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_dipole && nvalue != 3){
+      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+         << ") should have 3 values, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_stress && nvalue != 6){
+      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+         << ") should have 6 values, but has " << nvalue << std::endl;
+    } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
+      int idstr = sqlite3_column_int(st.ptr(),8);
+      stcheck.bind(1,idstr);
+      stcheck.step();
+      int nat = sqlite3_column_int(stcheck.ptr(),0);
+      if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
+        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+           << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
+      else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
+        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+           << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
+      stcheck.reset();
+    }
+  }
+
   os << std::endl;
 }
 
