@@ -4,12 +4,12 @@ ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
 | Section                                                                             | Keywords                                                                                                                                                                              |
-|-------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                                  |
 | [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
 | [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables))                                                                                                    |
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
-| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT CALC                                                                                                                                                                           |
+| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT (properties), INSERT CALC (evaluations)                                                                                                                                        |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
 
 ## Command-Line Syntax
@@ -314,18 +314,6 @@ structures multiplied by coefficients `c1.r`, etc. This property is
 number `order.i` in the set. The number of structures must be equal to
 the number of coefficients.
 
-~~~
-INSERT PROPERTY prefix.s
-  PROPERTY_TYPE {prop.s|prop.i}
-  SET {set.s|set.i}
-END
-~~~
-Insert a property for every structure in set `set.s` (key) or `set.i`
-(ID). The key of the new property is the key of the structure
-prefixed by `prefix.s`. The property type is given by `prop.s` (key)
-or `prop.i` (ID) and it must not be `ENERGY_DIFFERENCE`. The
-properties have the same order as the structures in the set.
-
 #### Evaluations
 ~~~
 INSERT EVALUATION
@@ -371,6 +359,23 @@ the given method, property, atom, l, and exponent is updated with the
 MAXCOEF value (`maxcoef.r`).
 
 ### Inserting Data (bulk)
+
+#### Insert Several Properties for a Set
+
+~~~
+INSERT PROPERTY prefix.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  SET {set.s|set.i}
+END
+~~~
+Insert a property for every structure in set `set.s` (key) or `set.i`
+(ID). The key of the new property is the key of the structure
+prefixed by `prefix.s`. The property type is given by `prop.s` (key)
+or `prop.i` (ID) and it must not be `ENERGY_DIFFERENCE`. The
+properties have the same order as the structures in the set.
+
+#### Insert Evaluations from a File with Calculated Values
+
 ~~~
 INSERT CALC
   PROPERTY_TYPE {prop.s|prop.i}
