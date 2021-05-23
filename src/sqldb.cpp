@@ -986,7 +986,7 @@ DELETE FROM Terms WHERE
 void sqldb::print(std::ostream &os, const std::string &category, bool dobib){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST");
 
-  enum entrytype { t_str, t_int, t_double, t_ptr_double };
+  enum entrytype { t_str, t_int, t_intsize, t_double, t_ptr_double };
 
   std::vector<entrytype> types;
   std::vector<std::string> headers;
@@ -1040,19 +1040,19 @@ FROM Properties
 ORDER BY id;
 )SQL";
   } else if (category == "EVALUATION"){
-    headers = {"methodid","propid", "value"};
-    types   = {     t_int,   t_int,t_ptr_double};
-    cols    = {         0,       1,           2};
+    headers = {"methodid","propid",   "#values", "1st value"};
+    types   = {     t_int,   t_int,   t_intsize,t_ptr_double};
+    cols    = {         0,       1,           2,           3};
     stmt = R"SQL(
-SELECT methodid,propid,value
+SELECT methodid,propid,length(value),value
 FROM Evaluations;
 )SQL";
   } else if (category == "TERM"){
-    headers = {"methodid","propid", "atom",   "l","exponent",     "value","maxcoef"};
-    types   = {     t_int,   t_int,  t_int, t_int,  t_double,t_ptr_double, t_double};
-    cols    = {         0,       1,      2,     3,         4,           5,        6};
+    headers = {"methodid","propid", "atom",   "l","exponent",   "#values", "1st value","maxcoef"};
+    types   = {     t_int,   t_int,  t_int, t_int,  t_double,   t_intsize,t_ptr_double, t_double};
+    cols    = {         0,       1,      2,     3,         4,           5,           6,        7};
     stmt = R"SQL(
-SELECT methodid,propid,atom,l,exponent,value,maxcoef
+SELECT methodid,propid,atom,l,exponent,length(value),value,maxcoef
 FROM Terms;
 )SQL";
   } else {
@@ -1086,6 +1086,8 @@ FROM Terms;
         }
       } else if (types[i] == t_int && !dobib_){
         os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
+      } else if (types[i] == t_intsize && !dobib_){
+        os << "| " << sqlite3_column_int(st.ptr(), cols[i]) / sizeof(double);
       } else if (types[i] == t_double && !dobib_){
         os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
       } else if (types[i] == t_ptr_double && !dobib_){
