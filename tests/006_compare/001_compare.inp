@@ -23,17 +23,17 @@ insert property dip-
  set s22
 end
 
-# insert calc
-#  property_type energy_difference
-#  file ../zz_source/s22.list
-#  method test2
-# end
-# insert calc
-#  property_type dipole
-#  file ../zz_source/s22.listvec
-#  method test2
-# end
-# 
+insert calc
+ property_type energy_difference
+ file ../zz_source/s22.list
+ method test2
+end
+insert calc
+ property_type dipole
+ file ../zz_source/s22.listvec
+ method test2
+end
+
 # delete evaluation test2 s22.nh3_nh3
 # 
 # compare

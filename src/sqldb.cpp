@@ -427,7 +427,7 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
       n++;
 
       // bind
-      int id = sqlite3_column_int(ststr.ptr(),0);
+      int id[1] = {sqlite3_column_int(ststr.ptr(),0)};
       std::string str = (char *) sqlite3_column_text(ststr.ptr(), 1);
       std::string newkey = key + str;
       st.bind((char *) ":KEY",newkey,false);
@@ -435,7 +435,7 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
       st.bind((char *) ":SETID",setid);
       st.bind((char *) ":ORDERID",n);
       st.bind((char *) ":NSTRUCTURES",1);
-      st.bind((char *) ":STRUCTURES",id);
+      st.bind((char *) ":STRUCTURES",(void *) &id,false,1 * sizeof(int));
       st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,sizeof(double));
 
       os << "# INSERT PROPERTY " << newkey << std::endl;
@@ -616,6 +616,7 @@ FROM Properties
 WHERE property_type = ?1
 ORDER BY id;)SQL");
   st.bind(1,ptid);
+
   while (st.step() != SQLITE_DONE){
     int propid = sqlite3_column_int(st.ptr(),0);
     int nstr = sqlite3_column_int(st.ptr(),1);
