@@ -29,7 +29,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // the table. The name arguments are used in the header.  If id is
 // empty, use integers starting at 0.
 void output_eval(std::ostream &os,
-                 std::vector<int> id,std::vector<std::string> name, std::vector<double> w,
+                 std::vector<int> id,std::vector<std::string> name, std::vector<int> num,
+                 std::vector<double> w,
                  std::vector<double> approx, const std::string &approxname,
                  std::vector<double> ref, const std::string &refname,
                  std::vector<std::vector<double> > add={}, const std::vector<std::string> addname={});

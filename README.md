@@ -314,6 +314,18 @@ structures multiplied by coefficients `c1.r`, etc. This property is
 number `order.i` in the set. The number of structures must be equal to
 the number of coefficients.
 
+~~~
+INSERT PROPERTY prefix.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  SET {set.s|set.i}
+END
+~~~
+Insert a property for every structure in set `set.s` (key) or `set.i`
+(ID). The key of the new property is the key of the structure
+prefixed by `prefix.s`. The property type is given by `prop.s` (key)
+or `prop.i` (ID) and it must not be `ENERGY_DIFFERENCE`. The
+properties have the same order as the structures in the set.
+
 #### Evaluations
 ~~~
 INSERT EVALUATION
@@ -380,11 +392,10 @@ where `structure<n>.s` are structure identifiers from the database
 and `value<n>.r` are the calculated values. The structure names are
 the same as the root of the file names generated using WRITE, so this
 file can be easily generated with utilities such as grep or awk.
-Blank lines and comments (#) are ignored.
-
-The number and units of these calculated values must be consistent
-with the corresponding property types. If a structure name is repeated
-in several lines, the values are appended to the same vector.
+Blank lines and comments (#) are ignored. The number and units of
+these calculated values must be consistent with the corresponding
+property types. If a structure name is repeated in several lines, the
+values are appended to the same vector.
 
 ### Deleting Data
 
@@ -406,3 +417,33 @@ momentum channel (as an integer), and exponent.
 
 In all cases, multiple entries can be deleted with the same DELETE
 keyword. If no entries are passed to DELETE, all entries are deleted.
+
+### Comparing to the Database Contents
+~~~
+COMPARE
+  FILE file.s
+  METHOD method.s
+  [SET set.s]
+END
+~~~
+Read calculated properties from `file.s` and compare them against the
+database contents. The file must have lines of the form:
+~~~
+structure1.s value1.r value2.r ...
+structure2.s value3.r value4.r ...
+...
+~~~
+where `structure<n>.s` are structure identifiers from the database
+and `value<n>.r` are the calculated values. The structure names are
+the same as the root of the file names generated using WRITE, so this
+file can be easily generated with utilities such as grep or awk.
+Blank lines and comments (#) are ignored. The number and units of
+these calculated values must be consistent with the corresponding
+property types. If a structure name is repeated in several lines, the
+values are appended to the same vector.
+
+The data in the file are compared against the evaluations from method
+`method.s`. If SET is present, restrict the comparison to the
+properties that belong in set `set.s`. Otherwise, compare to all
+evaluations available for the chosen method regardless of set.
+

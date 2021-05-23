@@ -27,7 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // the table. The name arguments are used in the header.  If id is
 // empty, use integers starting at 0.
 void output_eval(std::ostream &os,
-                 std::vector<int> id,std::vector<std::string> name, std::vector<double> w,
+                 std::vector<int> id,std::vector<std::string> name, std::vector<int> num,
+                 std::vector<double> w,
                  std::vector<double> approx, const std::string &approxname,
                  std::vector<double> ref, const std::string &refname,
                  std::vector<std::vector<double> > add/*={}*/, const std::vector<std::string> addname/*={}*/){
@@ -47,7 +48,7 @@ void output_eval(std::ostream &os,
 
   for (int j = 0; j < add.size(); j++)
     os << std::setw(16) << std::right << addname[j] << " ";
-        
+
   os << std::setw(16) << std::right << approxname << " "
      << std::setw(16) << std::right << refname << " "
      << std::setw(16) << std::right << "difference"
@@ -56,20 +57,24 @@ void output_eval(std::ostream &os,
   // write the data
   std::streamsize prec = os.precision(7);
   os << std::fixed;
-  for (int i = 0; i < ref.size(); i++){
-    os << std::setw(idwidth) << std::left << (id.empty()?i:id[i]) << " "
-       << std::setw(40) << std::left << name[i] << " ";
+  int k = 0;
+  for (int i = 0; i < name.size(); i++){
+    for (int j = 0; j < num[j]; j++){
+      os << std::setw(idwidth) << std::left << (id.empty()?i:id[i]) << " "
+         << std::setw(40) << std::left << name[i] << " ";
 
-    if (!w.empty())
-      os << std::setprecision(6) << std::setw(10) << std::right << w[i] << " ";
+      if (!w.empty())
+        os << std::setprecision(6) << std::setw(10) << std::right << w[i] << " ";
 
-    for (int j = 0; j < add.size(); j++)
-      os << std::setprecision(10) << std::setw(16) << std::right << add[j][i] << " ";
-        
-    os << std::setprecision(10) << std::setw(16) << std::right << approx[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << ref[i] << " "
-       << std::setprecision(10) << std::setw(16) << std::right << approx[i]-ref[i]
-       << std::endl;
+      for (int j = 0; j < add.size(); j++)
+        os << std::setprecision(10) << std::setw(16) << std::right << add[j][k] << " ";
+
+      os << std::setprecision(10) << std::setw(16) << std::right << approx[k] << " "
+         << std::setprecision(10) << std::setw(16) << std::right << ref[k] << " "
+         << std::setprecision(10) << std::setw(16) << std::right << approx[k]-ref[k]
+         << std::endl;
+      k++;
+    }
   }
   os.precision(prec);
 }
@@ -82,7 +87,7 @@ void output_eval(std::ostream &os,
 // weights are assumed to be one. Returns the number of items
 // processed.
 int calc_stats(const std::vector<double> x1, const std::vector<double> x2, const std::vector<double> w,
-               double &wrms, double &rms, double &mae, double &mse, 
+               double &wrms, double &rms, double &mae, double &mse,
                const int istart/*=-1*/, const int iend/*=-1*/,
                const std::vector<int> ids/*={}*/, const int idini/*=-1*/, const int idend/*=-1*/){
 

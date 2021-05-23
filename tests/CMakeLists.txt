@@ -7,6 +7,7 @@ set(TESTDIRS
   003_insert        ## insert database operations
   004_print         ## printing
   005_delete        ## deleting
+  006_compare       ## comparing
   )
 
 ## define the macro that will run the tests

@@ -999,7 +999,8 @@ ORDER BY Training_set.id;
      << std::left << "  mse = " << std::right << std::setw(14) << mset
      << std::endl;
 
-  output_eval(os,{},names,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
+  //// FIXME
+  // output_eval(os,{},names,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
 }
 
 // Save the current training set to the database
@@ -1453,7 +1454,8 @@ ORDER BY Training_set.id;
   os.precision(prec);
 
   // output the results
-  output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);
+  // FIXME
+  // output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);
   if (!names_missing_fromdb.empty()){
     os << "## The following properties are missing from the DATABASE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)

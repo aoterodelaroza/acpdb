@@ -16,6 +16,7 @@ set(TESTS
   015_insert_calc             ## insert a file with calculation results
   016_insert_total_energy     ## insert total energies
   017_insert_dipole           ## insert dipoles
+  018_insert_property_fullset ## insert property, for all structures in a set
   )
 
 runtests(${TESTS})

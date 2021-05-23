@@ -1,0 +1,50 @@
+## check: 001_compare.out -a1e-10
+## delete: 001_compare.db
+## labels: regression quick
+
+system rm -f 001_compare.db
+connect 001_compare.db
+
+insert method test
+end
+insert method test2
+end
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+insert property dip-
+ property_type dipole
+ set s22
+end
+
+# insert calc
+#  property_type energy_difference
+#  file ../zz_source/s22.list
+#  method test2
+# end
+# insert calc
+#  property_type dipole
+#  file ../zz_source/s22.listvec
+#  method test2
+# end
+# 
+# delete evaluation test2 s22.nh3_nh3
+# 
+# compare
+#  method test2
+#  file ../zz_source/s22.list2
+# end
+# 
+# delete evaluation test2 s22.nh3_nh3
+# 
+# compare
+#  method test2
+#  file ../zz_source/s22.listvec2
+# end
+# 

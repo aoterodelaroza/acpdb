@@ -1,0 +1,29 @@
+## check: 018_insert_property_fullset.out -a1e-10
+## delete: 018_insert_property_fullset.db
+## labels: regression quick
+
+system rm -f 018_insert_property_fullset.db
+connect 018_insert_property_fullset.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert method test
+end
+insert set s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method b3lyp/6-31+G*
+end
+insert property strange-
+ property_type dipole
+ set s22
+end
+
+print property

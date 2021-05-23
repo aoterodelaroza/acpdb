@@ -322,83 +322,129 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 void sqldb::insert_property(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT PROPERTY");
   if (key.empty())
-    throw std::runtime_error("Empty key in INSERT PROPERTY");
+    throw std::runtime_error("Empty key or prefix in INSERT PROPERTY");
 
   // some variables
   std::unordered_map<std::string,std::string>::const_iterator im1, im2;
   std::list<std::string> tok1;
   std::vector<double> tok2;
 
-  // bind
+  // prepared statements
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL");
-  st.bind((char *) ":KEY",key,false);
+  statement ststr(db,statement::STMT_CUSTOM,R"SQL(
+SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
+)SQL");
+
+  // property type
+  int ppid = -1;
   if ((im1 = kmap.find("PROPERTY_TYPE")) != kmap.end()){
     if (isinteger(im1->second))
-      st.bind((char *) ":PROPERTY_TYPE",std::stoi(im1->second));
+      ppid = std::stoi(im1->second);
     else
-      st.bind((char *) ":PROPERTY_TYPE",find_id_from_key(im1->second,"Property_types",true));
+      ppid = find_id_from_key(im1->second,"Property_types",true);
   } else {
     throw std::runtime_error("No property_type given in INSERT PROPERTY");
   }
+  st.bind((char *) ":PROPERTY_TYPE",ppid);
+
+  // set ID
+  int setid = -1;
   if ((im1 = kmap.find("SET")) != kmap.end()){
     if (isinteger(im1->second))
-      st.bind((char *) ":SETID",std::stoi(im1->second));
+      setid = std::stoi(im1->second);
     else
-      st.bind((char *) ":SETID",find_id_from_key(im1->second,"Sets"));
+      setid = find_id_from_key(im1->second,"Sets");
   } else {
     throw std::runtime_error("No set given in INSERT PROPERTY");
   }
-  if ((im1 = kmap.find("ORDER")) != kmap.end())
-    st.bind((char *) ":ORDERID",std::stoi(im1->second));
-  else
-    throw std::runtime_error("No order given in INSERT PROPERTY");
+  st.bind((char *) ":SETID",setid);
+  ststr.bind(1,setid);
 
-  // parse structures and coefficients
-  im1 = kmap.find("STRUCTURES");
-  if (im1 == kmap.end())
-    throw std::runtime_error("No structures given in INSERT PROPERTY");
-  tok1 = list_all_words(im1->second);
-  im2 = kmap.find("COEFFICIENTS");
-  if (im2 != kmap.end())
-    tok2 = list_all_doubles(im2->second);
-
-  // number of structures
-  int nstructures = tok1.size();
-  st.bind((char *) ":NSTRUCTURES",nstructures);
-
-  // bind the structures
-  {
-  int n = 0;
-  int *str = new int[nstructures];
-  for (auto it = tok1.begin(); it != tok1.end(); it++){
-    int idx = 0;
-    if (isinteger(*it))
-      idx = std::stoi(*it);
+  // whether we are inserting only one or prefixing; set the key and orderid
+  bool justone = (kmap.find("ORDER") != kmap.end());
+  if (justone){
+    st.bind((char *) ":KEY",key,false);
+    if ((im1 = kmap.find("ORDER")) != kmap.end())
+      st.bind((char *) ":ORDERID",std::stoi(im1->second));
     else
-      idx = find_id_from_key(*it,"Structures");
+      throw std::runtime_error("No order given in INSERT PROPERTY");
 
-    if (!idx)
-      throw std::runtime_error("Structure not found: " + *it);
-    str[n++] = idx;
+    // parse structures and coefficients
+    im1 = kmap.find("STRUCTURES");
+    if (im1 == kmap.end())
+      throw std::runtime_error("No structures given in INSERT PROPERTY");
+    tok1 = list_all_words(im1->second);
+    im2 = kmap.find("COEFFICIENTS");
+    if (im2 != kmap.end())
+      tok2 = list_all_doubles(im2->second);
+
+    // number of structures
+    int nstructures = tok1.size();
+    st.bind((char *) ":NSTRUCTURES",nstructures);
+
+    // bind the structures
+    {
+      int n = 0;
+      int *str = new int[nstructures];
+      for (auto it = tok1.begin(); it != tok1.end(); it++){
+        int idx = 0;
+        if (isinteger(*it))
+          idx = std::stoi(*it);
+        else
+          idx = find_id_from_key(*it,"Structures");
+
+        if (!idx)
+          throw std::runtime_error("Structure not found: " + *it);
+        str[n++] = idx;
+      }
+      st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
+      delete str;
+    }
+
+    // bind the coefficients
+    if (!tok2.empty()) {
+      if (nstructures != tok2.size())
+        throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
+      st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
+    }
+
+    os << "# INSERT PROPERTY " << key << std::endl;
+
+    // submit
+    st.step();
+  } else {
+    // coefficients
+    const double coef[1] = {1.0};
+
+    // begin the transaction
+    begin_transaction();
+
+    int n = 0;
+    while (ststr.step() != SQLITE_DONE){
+      n++;
+
+      // bind
+      int id = sqlite3_column_int(ststr.ptr(),0);
+      std::string str = (char *) sqlite3_column_text(ststr.ptr(), 1);
+      std::string newkey = key + str;
+      st.bind((char *) ":KEY",newkey,false);
+      st.bind((char *) ":PROPERTY_TYPE",ppid);
+      st.bind((char *) ":SETID",setid);
+      st.bind((char *) ":ORDERID",n);
+      st.bind((char *) ":NSTRUCTURES",1);
+      st.bind((char *) ":STRUCTURES",id);
+      st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,sizeof(double));
+
+      os << "# INSERT PROPERTY " << newkey << std::endl;
+      st.step();
+    }
+
+    // commit the transaction
+    commit_transaction();
   }
-  st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
-  delete str;
-  }
-
-  // bind the coefficients
-  if (!tok2.empty()) {
-    if (nstructures != tok2.size())
-      throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
-    st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
-  }
-
-  os << "# INSERT PROPERTY " << key << std::endl;
-
-  // submit
-  st.step();
 }
 
 // Insert an evaluation by manually giving the data
@@ -1543,64 +1589,83 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
 }
 
 // Read data for the database or one of its subsets from a file, then
-// compare to reference method refm.
-void sqldb::read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap){
+// compare to a reference method.
+void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
   if (!db)
-    throw std::runtime_error("A database file must be connected before using READ");
+    throw std::runtime_error("A database file must be connected before using COMPARE");
 
-  // verify that we have a reference method
-  if (refm.empty())
-    throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = find_id_from_key(refm,"Methods");
-  if (!methodid)
-    throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
+  // reference method
+  int refm = -1;
+  std::string refmethodname;
+  auto im = kmap.find("METHOD");
+  if (im != kmap.end()){
+    refmethodname = im->second;
+    if (isinteger(im->second))
+      refm = std::stoi(im->second);
+    else
+      refm = find_id_from_key(im->second,"Methods");
+  } else {
+    throw std::runtime_error("A METHOD is necessary when using COMPARE");
+  }
+
+  // file
+  im = kmap.find("FILE");
+  if (im == kmap.end())
+    throw std::runtime_error("A FILE is necessary when using COMPARE");
+  std::string file = im->second;
 
   // set
   int sid = -1;
   if (kmap.find("SET") != kmap.end())
     sid = find_id_from_key(kmap["SET"],"Sets");
+  if (sid == 0)
+    throw std::runtime_error("The SET was not found in COMPARE");
 
-  // get the data from the file
-  auto datmap = read_data_file(file,globals::ha_to_kcal);
+  // read the file and build the data file
+  std::unordered_map<std::string,std::vector<double>> datmap;
+  datmap = read_data_file_vector(file,1.);
 
   // fetch the reference method values from the DB and populate vectors
   std::vector<std::string> names_found;
   std::vector<std::string> names_missing_fromdb;
   std::vector<std::string> names_missing_fromdat;
+  std::vector<int> numvalues;
   std::vector<double> refvalues, datvalues;
   statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
   std::string sttext;
   if (sid >= 0){
     sttext = R"SQL(
-SELECT Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
 WHERE Properties.setid = :SET
 ORDER BY Properties.id;)SQL";
   } else {
     sttext = R"SQL(
-SELECT Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
 ORDER BY Properties.id;)SQL";
   }
   statement st(db,statement::STMT_CUSTOM,sttext);
-  if (sid >= 0)
+  if (sid > 0)
     st.bind((char *) ":SET",sid);
-  st.bind((char *) ":METHOD",methodid);
+  st.bind((char *) ":METHOD",refm);
   while (st.step() != SQLITE_DONE){
     // check if the evaluation is available in the database
     std::string key = (char *) sqlite3_column_text(st.ptr(),0);
-    if (sqlite3_column_type(st.ptr(),1) == SQLITE_NULL){
+    if (sqlite3_column_type(st.ptr(),2) == SQLITE_NULL){
       names_missing_fromdb.push_back(key);
       continue;
     }
 
     // check if the components are in the data file
-    int nstr = sqlite3_column_int(st.ptr(),2);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),3);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),4);
-    double value = 0;
+    int nvalue = sqlite3_column_int(st.ptr(),1) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(),3);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
+    int ptid = sqlite3_column_int(st.ptr(),6);
+    std::vector<double> value(nvalue,0.0);
     bool found = true;
     for (int i = 0; i < nstr; i++){
       stkey.reset();
@@ -1611,16 +1676,26 @@ ORDER BY Properties.id;)SQL";
         found = false;
         break;
       }
-      value += coef[i] * datmap[strname];
+      for (int j = 0; j < nvalue; j++)
+        value[j] += coef[i] * datmap[strname][j];
     }
+
+    // conversion factor
+    double scal = 1.0;
+    if (ptid == globals::ppty_energy_difference)
+      scal = globals::ha_to_kcal;
 
     // populate the vectors
     if (!found){
       names_missing_fromdat.push_back(key);
     } else {
       names_found.push_back(key);
-      refvalues.push_back(sqlite3_column_double(st.ptr(),1));
-      datvalues.push_back(value);
+      numvalues.push_back(nvalue);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),2);
+      for (int j = 0; j < nvalue; j++){
+        refvalues.push_back(rval[j]);
+        datvalues.push_back(value[j] * scal);
+      }
     }
   }
   datmap.clear();
@@ -1635,11 +1710,10 @@ ORDER BY Properties.id;)SQL";
   else
     os << "# Statistics: " << std::endl;
 
-  std::streamsize prec = os.precision(7);
+  std::streamsize prec = os.precision(8);
   os << std::fixed;
-  os.precision(8);
   if (refvalues.empty())
-    os << "#   (not enough data for statistics)" << std::endl;
+    os << "#   (no reference data for statistics)" << std::endl;
   else{
     // calculate the statistics for the given set
     double wrms, rms, mae, mse;
@@ -1655,7 +1729,7 @@ ORDER BY Properties.id;)SQL";
   os.precision(prec);
 
   // output the results
-  output_eval(os,{},names_found,{},datvalues,file,refvalues,refm);
+  output_eval(os,{},names_found,numvalues,{},datvalues,file,refvalues,refmethodname);
   if (!names_missing_fromdb.empty()){
     os << "## The following properties are missing from the DATABASE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)
@@ -1666,6 +1740,7 @@ ORDER BY Properties.id;)SQL";
     for (int i = 0; i < names_missing_fromdat.size(); i++)
       os << "## " << names_missing_fromdat[i] << std::endl;
   }
+  os << std::endl;
 }
 
 // Write the structures with IDs given by the keys in smap. The

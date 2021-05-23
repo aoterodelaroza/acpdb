@@ -290,6 +290,12 @@ int main(int argc, char *argv[]) {
       *os << "* DELETE: delete data from the database (" << category << ")" << std::endl << std::endl;
       db.erase(*os,category,tokens);
 
+      //// COMPARE
+    } else if (keyw == "COMPARE") {
+      *os << "* COMPARE: compare data to database evaluations" << std::endl << std::endl;
+      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+      db.read_and_compare(*os,kmap);
+
       ///////////////////////////////////////////////////
 
       //
@@ -343,9 +349,6 @@ int main(int argc, char *argv[]) {
         if (kmap.find("COMPARE") != kmap.end()){
           if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
             ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
-          } else {
-            if (kmap.find("COMPARE") != kmap.end())
-              db.read_and_compare(*os,file,kmap["COMPARE"],kmap);
           }
         }
       }
