@@ -7,8 +7,6 @@ connect 014_insert_term_maxcoef.db
 
 insert litref bibtex ../zz_source/bsip2.bib
 insert method b3lyp/6-31+G*
- gaussian_keyword method=b3lyp/6-31+G*;gbs=
- psi4_keyword method=b3lyp;basis=6-31+G*
  litrefs bsip1 boys1970
  description This is a method.
 end

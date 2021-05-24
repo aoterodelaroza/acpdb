@@ -261,8 +261,8 @@ Creating skeleton database
 # Number of literature references: 234
 
 # Table of methods
-| id| key| gaussian_keyword| psi4_keyword| litrefs| description|
-| 1| b3lyp/6-31+G*| method=b3lyp/6-31+G*;gbs=| method=b3lyp;basis=6-31+G*| bsip1 boys1970| This is a method.|
+| id| key| litrefs| description|
+| 1| b3lyp/6-31+G*| bsip1 boys1970| This is a method.|
 
 # Table of sets
 | id| key| litrefs| description|

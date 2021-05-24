@@ -477,22 +477,23 @@ chosen method regardless of set.
 ### Writing Input and Structure Files
 ~~~
 WRITE
-  [METHOD {method.s|method.i}]
-  [PROGRAM {gaussian|psi4}]
-  [ACP acp.s]
+  [TEMPLATE file.s]
+  [TEMPLATE_MOL filemol.s]
+  [TEMPLATE_CRYS filecrys.s]
   [SET {set.s|set.i}]
   [DIRECTORY dir.s]
   [PACK ipack.i]
 END
 ~~~
 Write the structures in the database to input or structure files. If
-no METHOD is given, write structure files (xyz format for
+no `TEMPLATE` is given, write the structure files (xyz format for
 molecules, POSCAR format for crystals). Otherwise, write input files
-appropriate for evaluating that method according to the database.
-The PROGRAM keyword selects the program for which the inputs are
-written. If ACP is present, use that ACP in the input files (only if
-the PROGRAM allows it and it has no effect if writing structure
-files).
+according to the template (the template format is described below). If
+`TEMPLATE` is given, `file.s` is used as template for both crystals
+and molecules. If `TEMPLATE_MOL` is given, use `filemol.s` for
+molecules. If `TEMPLATE_CRYS` is given, use `filecrys.s` for
+crystals. The extensions of the generated input files are the same as
+the extension of the template.
 
 If SET is not present, write all the structures in the database. If
 SET is present, write the structures in the database set with that

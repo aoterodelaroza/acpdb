@@ -150,9 +150,6 @@ class sqldb {
   int get_key_and_id(const std::string &input, const std::string &table,
                      std::string &key, int &id, bool toupperi=false, bool touppero=false);
 
-  // Get the Gaussian map from the method key
-  std::unordered_map<std::string,std::string> get_program_map(const std::string &methodkey, const std::string &program);
-
   // Begin a transaction
   void begin_transaction(){ stmt[statement::STMT_BEGIN_TRANSACTION]->execute(); }
 

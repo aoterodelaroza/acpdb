@@ -1240,79 +1240,79 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using WRITE");
 
-  // program
-  std::string program = "gaussian";
-  if (kmap.find("PROGRAM") != kmap.end())
-    program = kmap["PROGRAM"];
-
-  // unpack the gaussian keyword into a map for this method, if a method was given
-  bool havemethod = (kmap.find("METHOD") != kmap.end());
-  std::unordered_map<std::string,std::string> gmap = {};
-  if (havemethod)
-    gmap = db->get_program_map(kmap["METHOD"],program);
-  else if (terms)
-    gmap = db->get_program_map(emptyname,program);
-
-  // directory and pack number
-  std::string dir = fetch_directory(kmap);
-  int npack = 0;
-  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
-
-  // set
-  int idini, idfin;
-  if (kmap.find("SET") != kmap.end()){
-    std::string setname = kmap["SET"];
-    auto it = std::find(alias.begin(),alias.end(),setname);
-    if (it == alias.end())
-      throw std::runtime_error("Unknown SET in write_structures (no alias found)");
-    int sid = it - alias.begin();
-    idini = set_initial_idx[sid];
-    idfin = set_final_idx[sid]-1;
-  } else {
-    idini = 0;
-    idfin = ntot-1;
-  }
-
-  // collect the structure indices for the training set
-  std::unordered_map<int,std::string> smap;
-  if (havemethod || terms){
-    // if method or WRITE TERMS, write input files
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
-FROM Properties, Property_types, Training_set
-WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
-      AND Training_set.id BETWEEN ?1 AND ?2;
-)SQL");
-    st.bind(1,idini);
-    st.bind(2,idfin);
-    while (st.step() != SQLITE_DONE){
-      int n = sqlite3_column_int(st.ptr(),1);
-      const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-      for (int i = 0; i < n; i++){
-        if (terms)
-          smap[str[i]] = "terms";
-        else
-          smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
-      }
-    }
-  } else {
-    // if no method and not WRITE TERMS, write structure files
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT DISTINCT Properties.nstructures, Properties.structures
-FROM Properties, Training_set
-WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;)SQL");
-    st.bind(1,idini);
-    st.bind(2,idfin);
-    while (st.step() != SQLITE_DONE){
-      int n = sqlite3_column_int(st.ptr(),0);
-      const int *str = (int *)sqlite3_column_blob(st.ptr(),1);
-      for (int i = 0; i < n; i++)
-        smap[str[i]] = "xyz";
-    }
-  }
-
-  // write the inputs
-  db->write_many_structures(smap,gmap,dir,npack,a,zat,lmax,exp);
+//  // program
+//  std::string program = "gaussian";
+//  if (kmap.find("PROGRAM") != kmap.end())
+//    program = kmap["PROGRAM"];
+//
+//  // unpack the gaussian keyword into a map for this method, if a method was given
+//  bool havemethod = (kmap.find("METHOD") != kmap.end());
+//  std::unordered_map<std::string,std::string> gmap = {};
+//  if (havemethod)
+//    gmap = db->get_program_map(kmap["METHOD"],program);
+//  else if (terms)
+//    gmap = db->get_program_map(emptyname,program);
+//
+//  // directory and pack number
+//  std::string dir = fetch_directory(kmap);
+//  int npack = 0;
+//  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
+//
+//  // set
+//  int idini, idfin;
+//  if (kmap.find("SET") != kmap.end()){
+//    std::string setname = kmap["SET"];
+//    auto it = std::find(alias.begin(),alias.end(),setname);
+//    if (it == alias.end())
+//      throw std::runtime_error("Unknown SET in write_structures (no alias found)");
+//    int sid = it - alias.begin();
+//    idini = set_initial_idx[sid];
+//    idfin = set_final_idx[sid]-1;
+//  } else {
+//    idini = 0;
+//    idfin = ntot-1;
+//  }
+//
+//  // collect the structure indices for the training set
+//  std::unordered_map<int,std::string> smap;
+//  if (havemethod || terms){
+//    // if method or WRITE TERMS, write input files
+//    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+//SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
+//FROM Properties, Property_types, Training_set
+//WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
+//      AND Training_set.id BETWEEN ?1 AND ?2;
+//)SQL");
+//    st.bind(1,idini);
+//    st.bind(2,idfin);
+//    while (st.step() != SQLITE_DONE){
+//      int n = sqlite3_column_int(st.ptr(),1);
+//      const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
+//      for (int i = 0; i < n; i++){
+//        if (terms)
+//          smap[str[i]] = "terms";
+//        else
+//          smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
+//      }
+//    }
+//  } else {
+//    // if no method and not WRITE TERMS, write structure files
+//    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+//SELECT DISTINCT Properties.nstructures, Properties.structures
+//FROM Properties, Training_set
+//WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;)SQL");
+//    st.bind(1,idini);
+//    st.bind(2,idfin);
+//    while (st.step() != SQLITE_DONE){
+//      int n = sqlite3_column_int(st.ptr(),0);
+//      const int *str = (int *)sqlite3_column_blob(st.ptr(),1);
+//      for (int i = 0; i < n; i++)
+//        smap[str[i]] = "xyz";
+//    }
+//  }
+//
+//  // write the inputs
+//  db->write_many_structures(smap,gmap,dir,npack,a,zat,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,

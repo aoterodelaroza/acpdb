@@ -48,8 +48,6 @@ CREATE TABLE Sets (
 CREATE TABLE Methods (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
   key              TEXT UNIQUE NOT NULL,
-  gaussian_keyword TEXT,
-  psi4_keyword     TEXT,
   litrefs          TEXT,
   description      TEXT
 );
@@ -212,7 +210,7 @@ WHERE key = ?1;
 
 [statement::STMT_LIST_METHOD] =
 R"SQL(
-SELECT id,key,gaussian_keyword,psi4_keyword,litrefs,description
+SELECT id,key,litrefs,description
 FROM Methods
 ORDER BY id;
 )SQL",
@@ -234,8 +232,8 @@ WHERE id = ?1;
 
 [statement::STMT_INSERT_METHOD] =
 R"SQL(
-INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
-       VALUES(:KEY,:GAUSSIAN_KEYWORD,:PSI4_KEYWORD,:LITREFS,:DESCRIPTION);
+INSERT INTO Methods (key,litrefs,description)
+       VALUES(:KEY,:LITREFS,:DESCRIPTION);
 )SQL",
 
 [statement::STMT_QUERY_METHOD] =
