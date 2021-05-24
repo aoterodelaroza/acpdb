@@ -1525,72 +1525,44 @@ void sqldb::write_structures(const std::unordered_map<std::string,std::string> &
 %vasp_xyz%
 )SQL";
 
+  std::unordered_map<std::string,std::string>::const_iterator im;
 
-  exit(1);
+  // set
+  int setid = 0;
+  std::string setkey;
+  if ((im = kmap.find("SET")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Sets",setkey,setid))
+      throw std::runtime_error("Invalid SET in WRITE");
+  }
 
-//   // set
-//   bool haveset = (kmap.find("SET") != kmap.end());
-//   int setid = 0;
-//   if (haveset){
-//     std::string setname = kmap.at("SET");
-//     setid = find_id_from_key(setname,"Sets");
-//     if (setid == 0)
-//       throw std::runtime_error("Unknown SET in write_structures");
-//   }
-// 
-//   // directory and pack number
-//   std::string dir = fetch_directory(kmap);
-//   int npack = 0;
-//   if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap.at("PACK"));
-// 
-//   // collect the structure indices for this set (better here than in
-//   // the Sets table).
-//   std::unordered_map<int,std::string> smap;
-//   if (havemethod){
-//     if (haveset){
-//       // method and set
-//       statement st(db,statement::STMT_CUSTOM,R"SQL(
-// SELECT Property_types.key, Properties.nstructures, Properties.structures
-// FROM Properties, Property_types
-// WHERE Properties.setid = ?1 AND Properties.property_type = Property_types.id )SQL");
-//       st.bind(1,setid);
-//       while (st.step() != SQLITE_DONE){
-//         int n = sqlite3_column_int(st.ptr(),1);
-//         const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-//         for (int i = 0; i < n; i++)
-//           smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
-//       }
-//     } else {
-//       // method but not set
-//       statement st(db,statement::STMT_CUSTOM,R"SQL(
-// SELECT Property_types.key, Properties.nstructures, Properties.structures
-// FROM Properties, Property_types
-// WHERE Properties.property_type = Property_types.id )SQL");
-//       while (st.step() != SQLITE_DONE){
-//         int n = sqlite3_column_int(st.ptr(),1);
-//         const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-//         for (int i = 0; i < n; i++)
-//           smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
-//       }
-//     }
-//   } else {
-//     if (haveset){
-//       // set but not method
-//       statement st(db,statement::STMT_CUSTOM,R"SQL(
-// SELECT Structures.id
-// FROM Structures, Sets
-// WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
-//       st.bind(1,setid);
-//       while (st.step() != SQLITE_DONE)
-//         smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
-//     } else {
-//       // neither method nor set
-//       statement st(db,statement::STMT_CUSTOM,"SELECT Structures.id FROM Structures;");
-//       while (st.step() != SQLITE_DONE)
-//         smap[sqlite3_column_int(st.ptr(),0)] = "xyz";
-//     }
-//   }
-// 
+  // directory and pack number
+  std::string dir = fetch_directory(kmap);
+  int npack = 0;
+  if (kmap.find("PACK") != kmap.end()){
+    if (isinteger(kmap.at("PACK")))
+      npack = std::stoi(kmap.at("PACK"));
+    else
+      throw std::runtime_error("The argument to PACK must be an integer in WRITE");
+  }
+
+  // Collect the structure indices for this set
+  std::unordered_map<int,int> smap;
+  std::string sttext=R"SQL(
+SELECT Properties.nstructures, Properties.structures
+FROM Properties)SQL";
+  if (setid > 0)
+    sttext += " WHERE Properties.setid = ?1";
+  sttext += ";";
+  statement st(db,statement::STMT_CUSTOM,sttext);
+  if (setid > 0)
+    st.bind(1,setid);
+  while (st.step() != SQLITE_DONE){
+    int n = sqlite3_column_int(st.ptr(),0);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+    for (int i = 0; i < n; i++)
+      smap[str[i]] = 1;
+  }
+
 //   // write the inputs
 //   // write_many_structures(smap,gmap,dir,npack,a);
 }

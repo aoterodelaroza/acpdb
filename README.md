@@ -266,36 +266,13 @@ inserted.
 
 ~~~
 INSERT METHOD name.s
-  GAUSSIAN_KEYWORD ...
-  PSI4_KEYWORD ...
   LITREFS ref1.s [ref2.s] ...
   DESCRIPTION ...
 END
 ~~~
 Insert a computational method with name `name.s` in the
-database. The method definition includes details regarding how to
-write input files for it. At the moment, only two writer interfaces
-are supported: Gaussian and psi4. The literature references (by key or
-numerical ID) for the method are given in LITREFS and a description
-can be provided.
-
-The details for Gaussian calculations using this methods are given in
-the GAUSSIAN\_KEYWORD. This should be a string of key=value entries
-separated by ;. For GAUSSIAN\_KEYWORD, the following keys are
-accepted:
-
-- method: the method and basis set combination to put in the route
-  section (can include other information). Example: method=b3lyp/6-31G*.
-
-- gbs: the gbs file for a general basis set input. Example:
-  gbs=minis.gbs.
-
-For the PSI4\_KEYWORD, the accpetable keys are:
-
-- method: the name of the method to be passed to the energy()
-  call. Example: method=b3lyp.
-
-- basis: the basis set. Example: basis=6-31G*.
+database. The literature references (by key or numerical ID) for the
+method are given in LITREFS and a description can be provided.
 
 #### Structures
 
