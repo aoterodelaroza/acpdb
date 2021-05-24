@@ -85,8 +85,8 @@ std::string sqldb::find_key_from_id(const int id,const std::string &table,bool t
 // key. If it is a key, find the corresponding ID in the table and
 // return both the key and id. If it is a number, find the key in the
 // table and return the key and id. If toupperi, uppercase the input
-// before parsing it. If touppero, uppercase the output key. Returns 1
-// if succeeded, 0 if failed.
+// before parsing it. If touppero, uppercase the output key. Returns the
+// ID if succeeded, 0 if failed.
 int sqldb::get_key_and_id(const std::string &input, const std::string &table,
                           std::string &key, int &id, bool toupperi/*=false*/, bool touppero/*=false*/){
 
@@ -100,10 +100,8 @@ int sqldb::get_key_and_id(const std::string &input, const std::string &table,
     id = find_id_from_key(key,table,toupperi);
     if (touppero)
       uppercase(key);
-    if (id == 0)
-      return 0;
   }
-  return 1;
+  return id;
 }
 
 // Get the Gaussian map from the method key
@@ -242,7 +240,7 @@ void sqldb::insert_set(std::ostream &os, const std::string &key, std::unordered_
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT SET");
   if (kmap.find("XYZ") != kmap.end() && kmap.find("DIN") != kmap.end())
-    throw std::runtime_error("XYZ and SET options in SET are incompatible");
+    throw std::runtime_error("XYZ and DIN options in SET are incompatible");
 
   // statement
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -345,11 +343,14 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
   st.bind((char *) ":CHARGE",s.get_charge(),false);
   st.bind((char *) ":MULTIPLICITY",s.get_mult(),false);
   if ((im = kmap.find("SET")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":SETID",std::stoi(im->second));
+    int setid;
+    std::string setkey;
+    if (get_key_and_id(im->second,"Sets",setkey,setid))
+      st.bind((char *) ":SETID",setid);
     else
-      st.bind((char *) ":SETID",find_id_from_key(im->second,"Sets"));
-  }
+      throw std::runtime_error("Invalid set ID or key in INSERT STRUCTURE");
+  } else
+    throw std::runtime_error("A set is required in INSERT STRUCTURE");
   if (!s.ismolecule())
     st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
@@ -384,25 +385,21 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
   // property type
   int ppid = -1;
   if ((im1 = kmap.find("PROPERTY_TYPE")) != kmap.end()){
-    if (isinteger(im1->second))
-      ppid = std::stoi(im1->second);
-    else
-      ppid = find_id_from_key(im1->second,"Property_types",true);
-  } else {
-    throw std::runtime_error("No property_type given in INSERT PROPERTY");
-  }
+    std::string ppkey;
+    if (!get_key_and_id(im1->second,"Property_types",ppkey,ppid,true,true))
+      throw std::runtime_error("Invalid property_type ID or key in INSERT PROPERTY");
+  } else
+    throw std::runtime_error("A PROPERTY_TYPE is required in INSERT PROPERTY");
   st.bind((char *) ":PROPERTY_TYPE",ppid);
 
   // set ID
   int setid = -1;
   if ((im1 = kmap.find("SET")) != kmap.end()){
-    if (isinteger(im1->second))
-      setid = std::stoi(im1->second);
-    else
-      setid = find_id_from_key(im1->second,"Sets");
-  } else {
-    throw std::runtime_error("No set given in INSERT PROPERTY");
-  }
+    std::string setkey;
+    if (!get_key_and_id(im1->second,"Sets",setkey,setid))
+      throw std::runtime_error("Invalid SET ID or key in INSERT PROPERTY");
+  } else
+    throw std::runtime_error("A SET is required in INSERT PROPERTY");
   st.bind((char *) ":SETID",setid);
   ststr.bind(1,setid);
 
@@ -410,10 +407,7 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
   bool justone = (kmap.find("ORDER") != kmap.end());
   if (justone){
     st.bind((char *) ":KEY",key,false);
-    if ((im1 = kmap.find("ORDER")) != kmap.end())
-      st.bind((char *) ":ORDERID",std::stoi(im1->second));
-    else
-      throw std::runtime_error("No order given in INSERT PROPERTY");
+    st.bind((char *) ":ORDERID",std::stoi(kmap.find("ORDER")->second));
 
     // parse structures and coefficients
     im1 = kmap.find("STRUCTURES");
@@ -500,28 +494,31 @@ void sqldb::insert_evaluation(std::ostream &os, std::unordered_map<std::string,s
 INSERT INTO Evaluations (methodid,propid,value)
        VALUES(:METHODID,:PROPID,:VALUE)
 )SQL");
+
+  std::string methodkey;
+  int methodid;
   if ((im = kmap.find("METHOD")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":METHODID",std::stoi(im->second));
-    else
-      st.bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
-  } else {
-    throw std::runtime_error("A method must be given in INSERT EVALUATION");
-  }
+    if (!get_key_and_id(im->second,"Methods",methodkey,methodid))
+      throw std::runtime_error("Invalid METHOD ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A METHOD is required in INSERT EVALUATION");
+  st.bind((char *) ":METHODID",methodid);
+
+  std::string propkey;
+  int propid;
   if ((im = kmap.find("PROPERTY")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":PROPID",std::stoi(im->second));
-    else
-      st.bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
-  } else {
-    throw std::runtime_error("A property must be given in INSERT EVALUATION");
-  }
+    if (!get_key_and_id(im->second,"Properties",propkey,propid))
+      throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A PROPERTY is required in INSERT EVALUATION");
+  st.bind((char *) ":PROPID",propid);
+
   if (kmap.find("VALUE") == kmap.end())
     throw std::runtime_error("A value must be given in INSERT EVALUATION");
   std::vector<double> value = list_all_doubles(kmap.find("VALUE")->second);
   st.bind((char *) ":VALUE",(void *) &value[0],false,value.size()*sizeof(double));
 
-  os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second << ")" << std::endl;
+  os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << propkey << ")" << std::endl;
 
   // submit
   st.step();
@@ -547,22 +544,25 @@ void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::st
   // bind
   std::unordered_map<std::string,std::string>::const_iterator im;
   statement st(db,statement::STMT_CUSTOM,cmd);
+
+  std::string methodkey;
+  int methodid;
   if ((im = kmap.find("METHOD")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":METHODID",std::stoi(im->second));
-    else
-      st.bind((char *) ":METHODID",find_id_from_key(im->second,"Methods"));
-  } else {
-    throw std::runtime_error("A method must be given in INSERT TERM");
-  }
+    if (!get_key_and_id(im->second,"Methods",methodkey,methodid))
+      throw std::runtime_error("Invalid METHOD ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A METHOD is required in INSERT EVALUATION");
+  st.bind((char *) ":METHODID",methodid);
+
+  std::string propkey;
+  int propid;
   if ((im = kmap.find("PROPERTY")) != kmap.end()){
-    if (isinteger(im->second))
-      st.bind((char *) ":PROPID",std::stoi(im->second));
-    else
-      st.bind((char *) ":PROPID",find_id_from_key(im->second,"Properties"));
-  } else {
-    throw std::runtime_error("A property must be given in INSERT TERM");
-  }
+    if (!get_key_and_id(im->second,"Properties",propkey,propid))
+      throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A PROPERTY is required in INSERT EVALUATION");
+  st.bind((char *) ":PROPID",propid);
+
   if ((im = kmap.find("ATOM")) != kmap.end())
     if (isinteger(im->second))
       st.bind((char *) ":ATOM",std::stoi(im->second));
@@ -596,7 +596,7 @@ void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::st
   if ((im = kmap.find("MAXCOEF")) != kmap.end())
     st.bind((char *) ":MAXCOEF",std::stod(im->second));
 
-  os << "# INSERT TERM (method=" << kmap.find("METHOD")->second << ";property=" << kmap.find("PROPERTY")->second
+  os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
      << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
      << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
 
@@ -613,28 +613,22 @@ void sqldb::insert_calc(std::ostream &os, std::unordered_map<std::string,std::st
   std::unordered_map<std::string,std::string>::const_iterator im;
 
   // get the property_type
-  int ptid = -1;
-  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end())
-    if (isinteger(im->second))
-      ptid = std::stoi(im->second);
-    else
-      ptid = find_id_from_key(im->second,"Property_types",true);
-  else
+  std::string ptkey;
+  int ptid;
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Property_types",ptkey,ptid,true,true))
+      throw std::runtime_error("Invalid property_type ID or key in INSERT CALC");
+  } else
     throw std::runtime_error("The PROPERTY_TYPE must be given in INSERT CALC");
-  if (ptid <= 0)
-    throw std::runtime_error("The PROPERTY_TYPE in INSERT CALC was not found");
 
   // get the method id
-  int methodid = -1;
-  if ((im = kmap.find("METHOD")) != kmap.end())
-    if (isinteger(im->second))
-      methodid = std::stoi(im->second);
-    else
-      methodid = find_id_from_key(im->second,"Methods");
-  else
+  std::string methodkey;
+  int methodid;
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",methodkey,methodid))
+      throw std::runtime_error("Invalid method ID or key in INSERT CALC");
+  } else
     throw std::runtime_error("The METHOD must be given in INSERT CALC");
-  if (methodid <= 0)
-    throw std::runtime_error("The METHOD in INSERT CALC was not found");
 
   // get the file
   std::string file;
@@ -703,10 +697,9 @@ ORDER BY id;)SQL");
     st.bind((char *) ":METHOD",methodid);
     st.bind((char *) ":PROPID",it->first);
     st.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
-    os << "# INSERT EVALUATION (method=" << kmap.find("METHOD")->second << ";property=" << it->first
-       << ";nvalue=" << it->second.size() << ")" << std::endl;
+    os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
     if (st.step() != SQLITE_DONE){
-      std::cout << "method = " << kmap.find("METHOD")->second << std::endl;
+      std::cout << "method = " << methodkey << std::endl;
       std::cout << "propid = " << it->first << std::endl;
       std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
       throw std::runtime_error("Failed inserting data in the database (READ CALC)");
@@ -1638,33 +1631,25 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
   if (!db)
     throw std::runtime_error("A database file must be connected before using COMPARE");
 
+  std::unordered_map<std::string,std::string>::const_iterator im;
+
   // property_type
-  int ppid = -1;
+  int ppid;
   std::string ppidname;
-  auto im = kmap.find("PROPERTY_TYPE");
-  if (im != kmap.end()){
-    ppidname = im->second;
-    if (isinteger(im->second))
-      ppid = std::stoi(im->second);
-    else
-      ppid = find_id_from_key(im->second,"Property_types",true);
-  } else {
-    throw std::runtime_error("A PROPERTY_TYPE is necessary when using COMPARE");
-  }
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Property_types",ppidname,ppid,true,true))
+      throw std::runtime_error("Invalid PROPERTY_TYPE in COMPARE");
+  } else
+    throw std::runtime_error("A PROPERTY_TYPE is required when using COMPARE");
 
   // reference method
   int refm = -1;
   std::string refmethodname;
-  im = kmap.find("METHOD");
-  if (im != kmap.end()){
-    refmethodname = im->second;
-    if (isinteger(im->second))
-      refm = std::stoi(im->second);
-    else
-      refm = find_id_from_key(im->second,"Methods");
-  } else {
-    throw std::runtime_error("A METHOD is necessary when using COMPARE");
-  }
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",refmethodname,refm))
+      throw std::runtime_error("Invalid METHOD in COMPARE");
+  } else
+    throw std::runtime_error("A METHOD is required when using COMPARE");
 
   // file
   im = kmap.find("FILE");
@@ -1674,10 +1659,11 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
 
   // set
   int sid = -1;
-  if (kmap.find("SET") != kmap.end())
-    sid = find_id_from_key(kmap["SET"],"Sets");
-  if (sid == 0)
-    throw std::runtime_error("The SET was not found in COMPARE");
+  if ((im = kmap.find("SET")) != kmap.end()){
+    std::string setnamein;
+    if (!get_key_and_id(im->second,"Sets",setnamein,sid))
+      throw std::runtime_error("Invalid SET in COMPARE");
+  }
 
   // read the file and build the data file
   std::unordered_map<std::string,std::vector<double>> datmap;
@@ -1692,7 +1678,7 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
   std::map<int,std::string> setname;
   statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
   std::string sttext;
-  if (sid >= 0){
+  if (sid > 0){
     sttext = R"SQL(
 SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
 FROM Properties, Sets

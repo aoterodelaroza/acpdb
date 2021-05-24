@@ -141,7 +141,8 @@ class sqldb {
   // key. If it is a key, find the corresponding ID in the table and
   // return both the key and id. If it is a number, find the key in the
   // table and return the key and id. If toupperi, uppercase the input
-  // before parsing it. If touppero, uppercase the output key.
+  // before parsing it. If touppero, uppercase the output key. Returns the
+  // ID if succeeded, 0 if failed.
   int get_key_and_id(const std::string &input, const std::string &table,
                      std::string &key, int &id, bool toupperi=false, bool touppero=false);
 
