@@ -257,9 +257,8 @@ INSERT INTO Sets (key,litrefs,description)
     std::list<std::string> tokens = list_all_words(im->second);
     std::string str = "";
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      int idx = find_id_from_key(*it,"Literature_refs");
-      if (!idx)
-        throw std::runtime_error("Litref not found: " + *it);
+      if (!find_id_from_key(*it,"Literature_refs"))
+        throw std::runtime_error("Litref not found (" + *it + ") in INSERT SET");
       str = str + *it + " ";
     }
     st.bind((char *) ":LITREFS",str);
