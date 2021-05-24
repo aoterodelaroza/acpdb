@@ -8,6 +8,7 @@ set(TESTDIRS
   004_print         ## printing
   005_delete        ## deleting
   006_compare       ## comparing
+  007_write         ## writing inputs
   )
 
 ## define the macro that will run the tests

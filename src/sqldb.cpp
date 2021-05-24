@@ -207,7 +207,7 @@ void sqldb::close(){
 }
 
 // Insert a literature reference by manually giving the data
-void sqldb::insert_litref(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert_litref(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT LITREF");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT LITREF");
@@ -235,7 +235,7 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 }
 
 // Insert a set by manually giving the data
-void sqldb::insert_set(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap) {
+void sqldb::insert_set(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap) {
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT SET");
@@ -279,7 +279,7 @@ INSERT INTO Sets (key,litrefs,description)
 }
 
 // Insert a method by manually giving the data
-void sqldb::insert_method(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_method(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT METHOD");
@@ -306,7 +306,7 @@ INSERT INTO Methods (key,gaussian_keyword,psi4_keyword,litrefs,description)
 }
 
 // Insert a property by manually giving the data
-void sqldb::insert_structure(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_structure(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
   if (key.empty())
     throw std::runtime_error("Empty key in INSERT STRUCTURE");
@@ -362,7 +362,7 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 }
 
 // Insert a property by manually giving the data
-void sqldb::insert_property(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_property(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT PROPERTY");
   if (key.empty())
     throw std::runtime_error("Empty key or prefix in INSERT PROPERTY");
@@ -484,7 +484,7 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
 }
 
 // Insert an evaluation by manually giving the data
-void sqldb::insert_evaluation(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_evaluation(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT EVALUATION");
 
   // bind
@@ -524,7 +524,7 @@ INSERT INTO Evaluations (methodid,propid,value)
 }
 
 // Insert a term by manually giving the data
-void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT TERM");
 
   const std::unordered_map<char,int> angmom = {{'s',0},{'p',1},{'d',2},{'f',3},{'g',4},{'h',5}};
@@ -604,7 +604,7 @@ void sqldb::insert_term(std::ostream &os, std::unordered_map<std::string,std::st
 }
 
 // Read data from a file, then insert as evaluation of the argument method.
-void sqldb::insert_calc(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db)
     throw std::runtime_error("A database file must be connected before using INSERT CALC");
 
@@ -710,7 +710,7 @@ ORDER BY id;)SQL");
 }
 
 // Insert literature references into the database from a bibtex file
-void sqldb::insert_litref_bibtex(std::ostream &os, std::list<std::string> &tokens){
+void sqldb::insert_litref_bibtex(std::ostream &os, const std::list<std::string> &tokens){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
 #ifdef BTPARSE_FOUND
@@ -719,10 +719,12 @@ void sqldb::insert_litref_bibtex(std::ostream &os, std::list<std::string> &token
     throw std::runtime_error("Need a bibtex file name in INSERT");
 
   // open the file name (need a char* and FILE* for btparse)
-  char *filename = &(tokens.front()[0]);
-  FILE *fp = fopen(filename,"r");
+  std::string filename = &(tokens.front()[0]);
+  FILE *fp = fopen(filename.c_str(),"r");
   if (!fp)
-    throw std::runtime_error(std::string("Could not open bibtex file in INSERT: ") + filename);
+    throw std::runtime_error("Could not open bibtex file in INSERT: " + filename);
+  char *filename_c = new char[filename.length() + 1];
+  strcpy(filename_c, filename.c_str());
 
   // begin the transaction
   begin_transaction();
@@ -735,7 +737,7 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 
   // loop over the contents of the bib file and add to the database
   boolean rc;
-  while (AST *entry = bt_parse_entry(fp,filename,0,&rc)){
+  while (AST *entry = bt_parse_entry(fp,filename_c,0,&rc)){
     if (rc && bt_entry_metatype(entry) == BTE_REGULAR) {
       std::string key = bt_entry_key(entry);
       std::string type = bt_entry_type(entry);
@@ -785,8 +787,9 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
   // commit the transaction
   commit_transaction();
 
-  // close the file
+  // close the file and free memory
   fclose(fp);
+  delete [] filename_c;
 
 #else
   throw std::runtime_error("Cannot use INSERT LITREF BIBTEX: not compiled with bibtex support");
@@ -794,11 +797,11 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 }
 
 // Insert additional info from an INSERT SET command (xyz keyword)
-void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // tokenize the line following the xyz keyword
-  std::list<std::string> tokens(list_all_words(kmap["XYZ"]));
+  std::list<std::string> tokens(list_all_words(kmap.at("XYZ")));
   if (tokens.empty())
     throw std::runtime_error("Need arguments after XYZ");
 
@@ -858,7 +861,7 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, std::unorde
 }
 
 // Insert additional info from an INSERT SET command (xyz keyword)
-void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
 
   // Check sanity of the keywords
@@ -866,7 +869,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
 
   std::string dir = fetch_directory(kmap);
 
-  std::string din = kmap["DIN"];
+  std::string din = kmap.at("DIN");
   if (!fs::is_regular_file(din))
     throw std::runtime_error("din file " + din + " not found");
 
@@ -978,7 +981,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
     // insert the evaluation
     if (havemethod){
       smap.clear();
-      smap["METHOD"] = kmap["METHOD"];
+      smap["METHOD"] = kmap.at("METHOD");
       smap["PROPERTY"] = skey;
       smap["VALUE"] = to_string_precise(info[k].ref);
       insert_evaluation(os,smap);
@@ -990,7 +993,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, std::unorde
 }
 
 // Delete items from the database
-void sqldb::erase(std::ostream &os, const std::string &category, std::list<std::string> &tokens) {
+void sqldb::erase(std::ostream &os, const std::string &category, const std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");
 
   // pick the table
@@ -1268,7 +1271,7 @@ ORDER BY Sets.id, Methods.id;
 }
 
 // List sets of properties in the database (din format)
-void sqldb::print_din(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::print_din(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST DIN");
 
   std::unordered_map<std::string,std::string>::const_iterator im;
@@ -1530,25 +1533,28 @@ SELECT nat FROM Structures WHERE id = ?1;
 }
 
 // Write input files for a database set
-void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a){
+void sqldb::write_structures(const std::unordered_map<std::string,std::string> &kmap, const acp &a){
   if (!db)
     throw std::runtime_error("Error reading connected database");
+
+  printf("here!\n");
+  exit(1);
 
   // program
   std::string program = "gaussian";
   if (kmap.find("PROGRAM") != kmap.end())
-      program = kmap["PROGRAM"];
+      program = kmap.at("PROGRAM");
 
   // unpack the gaussian keyword into a map for this method
   bool havemethod = (kmap.find("METHOD") != kmap.end());
   std::unordered_map<std::string,std::string> gmap = {};
-  if (havemethod) gmap = get_program_map(kmap["METHOD"],program);
+  if (havemethod) gmap = get_program_map(kmap.at("METHOD"),program);
 
   // set
   bool haveset = (kmap.find("SET") != kmap.end());
   int setid = 0;
   if (haveset){
-    std::string setname = kmap["SET"];
+    std::string setname = kmap.at("SET");
     setid = find_id_from_key(setname,"Sets");
     if (setid == 0)
       throw std::runtime_error("Unknown SET in write_structures");
@@ -1557,7 +1563,7 @@ void sqldb::write_structures(std::unordered_map<std::string,std::string> &kmap, 
   // directory and pack number
   std::string dir = fetch_directory(kmap);
   int npack = 0;
-  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap["PACK"]);
+  if (kmap.find("PACK") != kmap.end()) npack = std::stoi(kmap.at("PACK"));
 
   // collect the structure indices for this set (better here than in
   // the Sets table).
@@ -1608,12 +1614,12 @@ WHERE Structures.setid = Sets.id AND Sets.id = ?1;)SQL");
   }
 
   // write the inputs
-  write_many_structures(smap,gmap,dir,npack,a);
+  // write_many_structures(smap,gmap,dir,npack,a);
 }
 
 // Read data for the database or one of its subsets from a file, then
 // compare to a reference method.
-void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
+void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db)
     throw std::runtime_error("A database file must be connected before using COMPARE");
 
@@ -1805,7 +1811,8 @@ ORDER BY Properties.id;)SQL";
 // output directory. npack = package and compress in packets of
 // npack files (0 = no packing). a: ACP to use in the inputs.
 // zat, l, exp: details for term inputs.
-void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, const std::unordered_map<std::string,std::string> &gmap/*={}*/,
+void sqldb::write_many_structures(const std::unordered_map<int,std::string> &smap,
+                                  const std::unordered_map<std::string,std::string> &gmap/*={}*/,
                                   const std::string &dir/*="./"*/, int npack/*=0*/,
                                   const acp &a/*={}*/,
                                   const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
@@ -1830,7 +1837,7 @@ void sqldb::write_many_structures(std::unordered_map<int,std::string> &smap, con
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(srand[i],smap[srand[i]],gmap,dir,a,zat,lmax,exp)));
+      written.push_back(fs::path(write_one_structure(srand[i],smap.at(srand[i]),gmap,dir,a,zat,lmax,exp)));
 
       // create a new package if written has npack items or we are about to finish
       if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){

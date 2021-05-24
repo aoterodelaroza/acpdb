@@ -25,19 +25,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <cmath>
 
-const static std::unordered_map<std::string, int> ltoint { 
-   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, 
+const static std::unordered_map<std::string, int> ltoint {
+   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6},
 };
 const static std::vector<unsigned char> inttol = {'l','s','p','d','f','g','h'};
 
+// ACP class
 acp::acp(const std::string &name_, const std::string &filename){
   std::ifstream ifile(filename,std::ios::in);
-  if (ifile.fail()) 
+  if (ifile.fail())
       throw std::runtime_error("Error opening ACP file " + filename);
-  
+
   std::string line, str;
   while (get_next_line(ifile,line,'!','\0')){
-    if (ifile.fail()) 
+    if (ifile.fail())
       throw std::runtime_error("Error reading ACP file " + filename);
 
     // process the atom
@@ -54,7 +55,7 @@ acp::acp(const std::string &name_, const std::string &filename){
     int nblock;
     ifile >> str >> nblock;
     ifile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-    
+
     for (int i = 0; i <= nblock; i++){
       // read the block corresponding to angular momentum i
       ifile >> str;
@@ -86,7 +87,7 @@ acp::acp(const std::string &name_, std::istream &is){
     t_.atom = zatguess(str);
     if (t_.atom == 0)
       throw std::runtime_error("Unknown atom: " + str);
-    
+
     iss >> str;
     if (ltoint.find(str) == ltoint.end())
       throw std::runtime_error("Unknown angular momentum symbol: " + str);
@@ -107,7 +108,7 @@ void acp::writeacp_text(std::ostream &os) const{
   os << "| id | atom | l | exponent | coefficient |" << std::endl;
   std::streamsize prec = os.precision(10);
   for (int i = 0; i < t.size(); i++){
-    os << "| " << i << " | " << nameguess(t[i].atom) << " | " << inttol[t[i].l] << " | " 
+    os << "| " << i << " | " << nameguess(t[i].atom) << " | " << inttol[t[i].l] << " | "
        << t[i].exp << " | " << t[i].coef << " |" << std::endl;
   }
   os << std::endl;
@@ -119,11 +120,11 @@ void acp::writeacp_gaussian(const std::string &filename) const{
   if (t.empty()) return;
 
   std::ofstream ofile(filename,std::ios::trunc);
-  if (ofile.fail()) 
+  if (ofile.fail())
     throw std::runtime_error("Error opening ACP file for write: " + filename);
 
   writeacp_gaussian(ofile);
-  if (ofile.fail()) 
+  if (ofile.fail())
     throw std::runtime_error("Error writing ACP file: " + filename);
 }
 
@@ -246,4 +247,3 @@ void acp::split(const std::string &templ, std::list<std::string> &tokens){
     }
   }
 }
-

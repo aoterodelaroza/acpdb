@@ -11,6 +11,7 @@ atom-centered potentials (ACPs).
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
 | [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
+| [Writing Input and Structure Files](#writing-input-and-structure-files)             | WRITE                                                                                                                                                                                 |
 
 ## Command-Line Syntax
 ~~~
@@ -473,3 +474,32 @@ comparison to the properties that belong in set `set.s` (key) or
 `set.i` (ID). Otherwise, compare to all evaluations available for the
 chosen method regardless of set.
 
+### Writing Input and Structure Files
+~~~
+WRITE
+  [METHOD {method.s|method.i}]
+  [PROGRAM {gaussian|psi4}]
+  [ACP acp.s]
+  [SET {set.s|set.i}]
+  [DIRECTORY dir.s]
+  [PACK ipack.i]
+END
+~~~
+Write the structures in the database to input or structure files. If
+no METHOD is given, write structure files (xyz format for
+molecules, POSCAR format for crystals). Otherwise, write input files
+appropriate for evaluating that method according to the database.
+The PROGRAM keyword selects the program for which the inputs are
+written. If ACP is present, use that ACP in the input files (only if
+the PROGRAM allows it and it has no effect if writing structure
+files).
+
+If SET is not present, write all the structures in the database. If
+SET is present, write the structures in the database set with that
+name (`set.s`) or ID (`set.i`).
+
+The files are written to directory `dir.s` (default: `./`). If PACK is
+present, create `tar.xz` compressed archives with at most `ipack.i`
+structures each (this only works if the number of structures is
+greater than `ipack.i`). The `PACK` keyword invokes the `tar` utility
+through a `system()` call.

@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <list>
 #include <cmath>
+#include <unordered_map>
 
 // A class for ACPs.
 class acp {

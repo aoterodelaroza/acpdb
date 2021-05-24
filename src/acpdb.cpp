@@ -292,7 +292,16 @@ int main(int argc, char *argv[]) {
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
       db.read_and_compare(*os,kmap);
 
+      //// WRITE
+    } else if (keyw == "WRITE") {
+      *os << "* WRITE: write input files for database structures" << std::endl << std::endl;
+      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+      db.write_structures(kmap,kmap_to_acp(kmap));
+
       ///////////////////////////////////////////////////
+
+      // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
+      //   ts.write_structures(kmap,a,false);
 
       // if (category == "DIN_TRAINING")
       //   ts.write_din(tokens);
@@ -306,7 +315,7 @@ int main(int argc, char *argv[]) {
         nacp[name] = acp(name,tokens.front());
 
       //
-    } else if (keyw == "WRITE") {
+    } else if (keyw == "WRITEX") {
       std::string category = popstring(tokens,true);
       if (category == "ACP"){
         // WRITE ACP keyword
@@ -329,8 +338,6 @@ int main(int argc, char *argv[]) {
         acp a = kmap_to_acp(kmap);
         if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
           ts.write_structures(kmap,a,false);
-        else
-          db.write_structures(kmap,a);
       } else {
         throw std::runtime_error("Unknown syntax in WRITE: " + category);
       }
