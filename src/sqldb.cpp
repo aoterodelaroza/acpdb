@@ -1644,23 +1644,24 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
   std::vector<std::string> names_found;
   std::vector<std::string> names_missing_fromdb;
   std::vector<std::string> names_missing_fromdat;
-  std::vector<int> numvalues;
+  std::vector<int> numvalues, setid;
   std::vector<double> refvalues, datvalues;
+  std::map<int,std::string> setname;
   statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
   std::string sttext;
   if (sid >= 0){
     sttext = R"SQL(
-SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
-FROM Properties
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
+FROM Properties, Sets
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
-WHERE Properties.setid = :SET AND Properties.property_type = :PROPERTY_TYPE
+WHERE Properties.setid = :SET AND Properties.property_type = :PROPERTY_TYPE AND Sets.id = :SET
 ORDER BY Properties.id;)SQL";
   } else {
     sttext = R"SQL(
-SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
-FROM Properties
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
+FROM Properties, Sets
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
-WHERE Properties.property_type = :PROPERTY_TYPE
+WHERE Properties.property_type = :PROPERTY_TYPE AND Sets.id = Properties.setid
 ORDER BY Properties.id;)SQL";
   }
   statement st(db,statement::STMT_CUSTOM,sttext);
@@ -1682,6 +1683,8 @@ ORDER BY Properties.id;)SQL";
     int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
     double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
     int ptid = sqlite3_column_int(st.ptr(),6);
+    int thissetid = sqlite3_column_int(st.ptr(),7);
+    std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 8);
     std::vector<double> value(nvalue,0.0);
     bool found = true;
     for (int i = 0; i < nstr; i++){
@@ -1708,6 +1711,8 @@ ORDER BY Properties.id;)SQL";
     } else {
       names_found.push_back(key);
       numvalues.push_back(nvalue);
+      setid.push_back(thissetid);
+      setname[thissetid] = thissetname;
       double *rval = (double *) sqlite3_column_blob(st.ptr(),2);
       for (int j = 0; j < nvalue; j++){
         refvalues.push_back(rval[j]);
@@ -1734,11 +1739,24 @@ ORDER BY Properties.id;)SQL";
   if (refvalues.empty())
     os << "#   (no reference data for statistics)" << std::endl;
   else{
-    // calculate the statistics for the given set
+    // calculate statistics set-wise
     double wrms, rms, mae, mse;
-    int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
 
-    os << "# " << std::left << std::setw(10) << "all"
+    for (auto it = setname.begin(); it != setname.end(); it++){
+      // calculate the statistics for the given set
+      int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse,-1,-1,{},-1,-1,
+                            setid,it->first);
+      os << "# " << std::left << std::setw(15) << it->second
+         << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
+         << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
+         << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
+         << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
+         << std::left << " ndat = " << ndat
+         << std::endl;
+    }
+
+    int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
+    os << "# " << std::left << std::setw(15) << "ALL"
        << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
        << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
        << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
