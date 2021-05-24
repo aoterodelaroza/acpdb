@@ -3,6 +3,7 @@ db-design.org
 
 # databases from tests
 *.db
+*.db-journal
 tests/zz_source/
 
 # object, module, library files
