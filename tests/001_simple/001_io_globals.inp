@@ -2,7 +2,7 @@
 ## labels: regression quick nodata
 
 # this is a comment
-ncpu \
-  4
-mem \
-  2
+echo \
+ bleh \
+
+

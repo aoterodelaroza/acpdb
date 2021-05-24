@@ -20,10 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define GLOBALS_H
 
 namespace globals {
-  //// global variables for use in the input generators ////
-  extern int ncpu; // number of cores
-  extern int mem;  // memory in GB
-
   // universal constants and conversion factors
   extern const double ha_to_kcal; // Hartree to kcal/mol
 

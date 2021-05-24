@@ -229,8 +229,8 @@ int structure::writegjf(std::ostream &os, const std::string &keyw, const std::st
 
   // header
   os << "%chk=" << root << ".chk" << std::endl
-     << "%mem=" << globals::mem << "GB" << std::endl
-     << "%nproc=" << globals::ncpu << std::endl
+     << "%mem=" << 4 << "GB" << std::endl
+     << "%nproc=" << 4 << std::endl
      << "#t "
      << keyw << " "
      << (a?"pseudo=read ":"")
@@ -270,8 +270,8 @@ int structure::writepsi4(std::ostream &os, const std::string &method, const std:
   os << "import os" << std::endl
      << "import psi4" << std::endl
      << "import psi4.core" << std::endl << std::endl
-     << "memory " << globals::mem << "GB" << std::endl
-     << "set_num_threads(" << globals::ncpu << ")" << std::endl << std::endl
+     << "memory " << 4 << "GB" << std::endl
+     << "set_num_threads(" << 4 << ")" << std::endl << std::endl
      << "molecule mol {" << std::endl;
   if (os.fail()) return 2;
 
@@ -317,8 +317,8 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
 
   // header
   os << "%chk=" << root << ".chk" << std::endl
-     << "%mem=" << globals::mem << "GB" << std::endl
-     << "%nproc=" << globals::ncpu << std::endl
+     << "%mem=" << 4 << "GB" << std::endl
+     << "%nproc=" << 4 << std::endl
      << "#t "
      << keyw << " "
      << "Symm=none int=(grid=ultrafine) guess=(read,tcheck)" << std::endl
@@ -345,8 +345,8 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
 
         os << "--Link1--" << std::endl
            << "%chk=" << root << ".chk" << std::endl
-           << "%mem=" << globals::mem << "GB" << std::endl
-           << "%nproc=" << globals::ncpu << std::endl
+           << "%mem=" << 4 << "GB" << std::endl
+           << "%nproc=" << 4 << std::endl
            << "#t "
            << keyw << " "
            << "pseudo=read iop(5/13=1,5/36=2,99/5=2) Symm=none geom=check" << std::endl

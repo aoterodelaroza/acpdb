@@ -36,8 +36,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 namespace fs = std::filesystem;
 
 // global variables and constants (globals.h)
-int globals::ncpu = 4;
-int globals::mem = 2;
 const double globals::ha_to_kcal = 627.50947;
 const int globals::ppty_energy_difference = 1;
 const int globals::ppty_energy = 2;
@@ -153,31 +151,33 @@ int main(int argc, char *argv[]) {
     // Get the first keyword
     std::string keyw = popstring(tokens,true);
 
-    //// Set global variables ////
+      //// Global commands ////
 
-    //// NCPU ncpu.i
-    if (keyw == "NCPU") {
-      if (!isinteger(tokens.front()))
-        throw std::runtime_error("NCPU must be an integer greater than zero");
-      globals::ncpu = std::stoi(tokens.front());
-      if (globals::ncpu <= 0)
-        throw std::runtime_error("NCPU must be an integer greater than zero");
-      *os << "* NCPU set to " << globals::ncpu << std::endl << std::endl;
-
-      //// MEM mem.i
-    } else if (keyw == "MEM") {
-      if (!isinteger(tokens.front()))
-        throw std::runtime_error("MEM must be an integer greater than zero");
-      globals::mem = std::stoi(tokens.front());
-      if (globals::mem <= 0)
-        throw std::runtime_error("MEM must be an integer greater than zero");
-      *os << "* MEM set to " << globals::mem << "GB" << std::endl << std::endl;
-
-      //// SYSTEM command.s
-    } else if (keyw == "SYSTEM") {
+      //// SYSTEM
+    if (keyw == "SYSTEM") {
       std::string cmd = mergetokens(tokens);
       *os << "* SYSTEM: " << cmd << std::endl << std::endl;
       system(cmd.c_str());
+
+      //// SOURCE
+    } else if (keyw == "SOURCE") {
+      std::string filename = popstring(tokens);
+      std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));
+      if (afile->fail())
+        throw std::runtime_error("Error opening file " + filename);
+      ifile.push(afile);
+      istack.push(ifile.top().get());
+      icwd.push(fs::canonical(fs::path(filename)).parent_path().string());
+
+      //// ECHO
+    } else if (keyw == "ECHO") {
+      std::string aux = line.substr(5);
+      deblank(aux);
+      *os << aux << std::endl;
+
+      //// END
+    } else if (keyw == "END") {
+      break;
 
       //// Global database operations ////
 
@@ -452,26 +452,6 @@ int main(int argc, char *argv[]) {
       //
     } else if (keyw == "DUMP") {
       ts.dump();
-
-      //
-    } else if (keyw == "SOURCE") {
-      std::string filename = popstring(tokens);
-      std::shared_ptr<std::ifstream> afile(new std::ifstream(filename,std::ios::in));
-      if (afile->fail())
-        throw std::runtime_error("Error opening file " + filename);
-      ifile.push(afile);
-      istack.push(ifile.top().get());
-      icwd.push(fs::canonical(fs::path(filename)).parent_path().string());
-
-      //
-    } else if (keyw == "ECHO") {
-      std::string aux = line.substr(5);
-      deblank(aux);
-      *os << aux << std::endl;
-
-      //
-    } else if (keyw == "END") {
-      break;
 
       //
     } else {
