@@ -34,17 +34,19 @@ insert calc
  method test2
 end
 
+delete evaluation test2 s22.nh3_nh3
+
+compare
+ property_type energy_difference
+ method test2
+ file ../zz_source/s22.list2
+end
+
 # delete evaluation test2 s22.nh3_nh3
-# 
-# compare
-#  method test2
-#  file ../zz_source/s22.list2
-# end
-# 
-# delete evaluation test2 s22.nh3_nh3
-# 
-# compare
-#  method test2
-#  file ../zz_source/s22.listvec2
-# end
-# 
+
+compare
+ property_type dipole
+ method test2
+ file ../zz_source/s22.listvec2
+end
+

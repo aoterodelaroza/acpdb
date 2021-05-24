@@ -41,17 +41,17 @@ void output_eval(std::ostream &os,
 
   // write the header
   os << std::setw(idwidth) << std::left << "Id" << " "
-     << std::setw(40) << std::left << "Name" << " ";
+     << std::setw(45) << std::left << "Name" << " ";
 
   if (!w.empty())
     os << std::setw(10) << std::right << "weight" << " ";
 
   for (int j = 0; j < add.size(); j++)
-    os << std::setw(16) << std::right << addname[j] << " ";
+    os << std::setw(18) << std::right << addname[j] << " ";
 
-  os << std::setw(16) << std::right << approxname << " "
-     << std::setw(16) << std::right << refname << " "
-     << std::setw(16) << std::right << "difference"
+  os << std::setw(18) << std::right << approxname << " "
+     << std::setw(18) << std::right << refname << " "
+     << std::setw(18) << std::right << "difference"
      << std::endl;
 
   // write the data
@@ -61,17 +61,21 @@ void output_eval(std::ostream &os,
   for (int i = 0; i < name.size(); i++){
     for (int j = 0; j < num[j]; j++){
       os << std::setw(idwidth) << std::left << (id.empty()?i:id[i]) << " "
-         << std::setw(40) << std::left << name[i] << " ";
+         << std::setw(40) << std::left << name[i];
+      if (num[j] > 1){
+        std::string attach = " (" + std::to_string(j+1) + ")";
+        os << std::setw(4) << attach << " ";
+      }
 
       if (!w.empty())
         os << std::setprecision(6) << std::setw(10) << std::right << w[i] << " ";
 
       for (int j = 0; j < add.size(); j++)
-        os << std::setprecision(10) << std::setw(16) << std::right << add[j][k] << " ";
+        os << std::setprecision(10) << std::setw(18) << std::right << add[j][k] << " ";
 
-      os << std::setprecision(10) << std::setw(16) << std::right << approx[k] << " "
-         << std::setprecision(10) << std::setw(16) << std::right << ref[k] << " "
-         << std::setprecision(10) << std::setw(16) << std::right << approx[k]-ref[k]
+      os << std::setprecision(10) << std::setw(18) << std::right << approx[k] << " "
+         << std::setprecision(10) << std::setw(18) << std::right << ref[k] << " "
+         << std::setprecision(10) << std::setw(18) << std::right << approx[k]-ref[k]
          << std::endl;
       k++;
     }

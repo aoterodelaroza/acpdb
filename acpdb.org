@@ -357,6 +357,7 @@ own implementation of LASSO in c++
 clean up prepared statements
 crystal inputs and outputs
 build all the databases
+automatic testing on github & upload zz_source
 
 -------
 

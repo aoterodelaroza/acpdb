@@ -427,7 +427,8 @@ keyword. If no entries are passed to DELETE, all entries are deleted.
 ~~~
 COMPARE
   FILE file.s
-  METHOD method.s
+  PROPERTY_TYPE {prop.s|prop.i}
+  METHOD {method.s|method.i}
   [SET set.s]
 END
 ~~~
@@ -448,7 +449,9 @@ property types. If a structure name is repeated in several lines, the
 values are appended to the same vector.
 
 The data in the file are compared against the evaluations from method
-`method.s`. If SET is present, restrict the comparison to the
-properties that belong in set `set.s`. Otherwise, compare to all
-evaluations available for the chosen method regardless of set.
+`method.s` (key) or `method.i` (ID). The evaluations are for property
+type `prop.s` (key) or `prop.i` (ID). If SET is present, restrict the
+comparison to the properties that belong in set `set.s`. Otherwise,
+compare to all evaluations available for the chosen method regardless
+of set.
 

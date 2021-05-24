@@ -1595,10 +1595,24 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
   if (!db)
     throw std::runtime_error("A database file must be connected before using COMPARE");
 
+  // property_type
+  int ppid = -1;
+  std::string ppidname;
+  auto im = kmap.find("PROPERTY_TYPE");
+  if (im != kmap.end()){
+    ppidname = im->second;
+    if (isinteger(im->second))
+      ppid = std::stoi(im->second);
+    else
+      ppid = find_id_from_key(im->second,"Property_types",true);
+  } else {
+    throw std::runtime_error("A PROPERTY_TYPE is necessary when using COMPARE");
+  }
+
   // reference method
   int refm = -1;
   std::string refmethodname;
-  auto im = kmap.find("METHOD");
+  im = kmap.find("METHOD");
   if (im != kmap.end()){
     refmethodname = im->second;
     if (isinteger(im->second))
@@ -1639,19 +1653,21 @@ void sqldb::read_and_compare(std::ostream &os, std::unordered_map<std::string,st
 SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
-WHERE Properties.setid = :SET
+WHERE Properties.setid = :SET AND Properties.property_type = :PROPERTY_TYPE
 ORDER BY Properties.id;)SQL";
   } else {
     sttext = R"SQL(
 SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+WHERE Properties.property_type = :PROPERTY_TYPE
 ORDER BY Properties.id;)SQL";
   }
   statement st(db,statement::STMT_CUSTOM,sttext);
   if (sid > 0)
     st.bind((char *) ":SET",sid);
   st.bind((char *) ":METHOD",refm);
+  st.bind((char *) ":PROPERTY_TYPE",ppid);
   while (st.step() != SQLITE_DONE){
     // check if the evaluation is available in the database
     std::string key = (char *) sqlite3_column_text(st.ptr(),0);
@@ -1702,8 +1718,10 @@ ORDER BY Properties.id;)SQL";
   datmap.clear();
 
   // output the header and the statistics
-  os << "# Evaluation: " << file << std::endl
-     << "# Reference: " << refm << std::endl;
+  os << "# -- Evaluation of data from file -- " << std::endl
+     << "# File: " << file << std::endl
+     << "# Property type: " << ppidname << std::endl
+     << "# Reference method: " << refmethodname << std::endl;
   if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
     os << "# Statistics: " << "(partial, missing: "
        << names_missing_fromdat.size() << " from file, "
@@ -1718,19 +1736,22 @@ ORDER BY Properties.id;)SQL";
   else{
     // calculate the statistics for the given set
     double wrms, rms, mae, mse;
-    calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
+    int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
 
     os << "# " << std::left << std::setw(10) << "all"
-       << std::left << "  rms = " << std::right << std::setw(12) << rms
-       << std::left << "  mae = " << std::right << std::setw(12) << mae
-       << std::left << "  mse = " << std::right << std::setw(12) << mse
-       << std::left << " wrms = " << std::right << std::setw(12) << wrms
+       << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
+       << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
+       << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
+       << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
+       << std::left << " ndat = " << ndat
        << std::endl;
   }
+  os << "#" << std::endl;
   os.precision(prec);
 
   // output the results
-  output_eval(os,{},names_found,numvalues,{},datvalues,file,refvalues,refmethodname);
+  const std::string approxname = "File";
+  output_eval(os,{},names_found,numvalues,{},datvalues,approxname,refvalues,refmethodname);
   if (!names_missing_fromdb.empty()){
     os << "## The following properties are missing from the DATABASE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)
