@@ -95,7 +95,7 @@ class sqldb {
   void printsummary(std::ostream &os, bool full);
 
   // List sets of properties in the database (din format)
-  void list_din(std::unordered_map<std::string,std::string> &kmap);
+  void print_din(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
 
   // Verify the consistency of the database
   void verify(std::ostream &os);

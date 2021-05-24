@@ -239,17 +239,13 @@ int main(int argc, char *argv[]) {
         db.printsummary(*os,true);
         ts.describe(*os,false,true);
         ts.listdb(*os);
+      } else if (category == "DIN") {
+        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+        *os << "# PRINT DIN: print the database to DIN files " << std::endl << std::endl;
+        db.print_din(*os,kmap);
       } else {
         db.print(*os,category,!tokens.empty() && equali_strings(tokens.front(),"BIBTEX"));
       }
-
-      // if (category == "DIN_TRAINING")
-      //   ts.write_din(tokens);
-      // else if (category == "DIN"){
-      //   std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      //   db.list_din(kmap);
-      // } else
-      //
 
       //// INSERT
     } else if (keyw == "INSERT") {
@@ -297,6 +293,9 @@ int main(int argc, char *argv[]) {
       db.read_and_compare(*os,kmap);
 
       ///////////////////////////////////////////////////
+
+      // if (category == "DIN_TRAINING")
+      //   ts.write_din(tokens);
 
       //
     } else if (keyw == "ACP") {

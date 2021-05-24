@@ -1,0 +1,50 @@
+## check: 009_print_din.out -a1e-10
+## delete: 009_print_din.db
+## check: 009_print_din_s22.din -a1e-10
+## check: 009_print_din_s22b.din -a1e-10
+## check: 009_print_din_s22c.din -a1e-10
+## labels: regression quick
+
+system rm -f 009_print_din.db
+connect 009_print_din.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ gaussian_keyword method=b3lyp/6-31+G*;gbs=
+ psi4_keyword method=b3lyp;basis=6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert method test
+end
+insert set 009_print_din_s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method b3lyp/6-31+G*
+end
+insert set 009_print_din_s22b
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+print din
+end
+
+insert set 009_print_din_s22c
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+print din
+ directory ./
+ method test
+ set 009_print_din_s22c
+end

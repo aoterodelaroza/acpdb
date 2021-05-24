@@ -1,20 +1,5 @@
 #+STARTUP: showeverything
 
-* Keywords (database build)
-
-LIST DIN
- [DIRECTORY directory.s]
- [SET {set1.s|set1.i} {set2.s|set2.i} ...]
- [METHOD method.s|method.i]
-END
-
-  Write din files for all subsets of the current training set. If
-  directory.s is given, write them in that directory. If SET is given,
-  write only the din files for those sets. Use method
-  method.s/method.i to write the reference values, or 0 if method is
-  not given. (Use DIN_TRAINING to write the din files for a training
-  set.)
-
 * Keywords (define the training set)
 
 ATOM|ATOMS [at1.s l1.i at2.s l2.i ... ]

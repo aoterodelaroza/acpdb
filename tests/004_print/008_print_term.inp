@@ -1,4 +1,5 @@
 ## check: 008_print_term.out -a1e-10
+## delete: 008_print_term.db
 ## labels: regression quick
 
 system rm -f 008_print_term.db

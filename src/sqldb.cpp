@@ -1268,54 +1268,46 @@ ORDER BY Sets.id, Methods.id;
 }
 
 // List sets of properties in the database (din format)
-void sqldb::list_din(std::unordered_map<std::string,std::string> &kmap){
+void sqldb::print_din(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using LIST DIN");
+
+  std::unordered_map<std::string,std::string>::const_iterator im;
 
   // get the directory
   std::string dir = fetch_directory(kmap);
 
-  // get the list of sets
-  auto im = kmap.find("SET");
+  // get the list of sets (IDs and names)
   std::vector<int> idset;
-  if (im != kmap.end()){
+  std::vector<std::string> nameset;
+  if ((im = kmap.find("SET")) != kmap.end()){
     std::list<std::string> vlist = list_all_words(im->second);
     for (auto it = vlist.begin(); it != vlist.end(); ++it){
-      if (isinteger(*it))
-        idset.push_back(std::stoi(*it));
-      else
-        idset.push_back(find_id_from_key(*it,"Sets"));
+      int idx;
+      std::string key;
+      if (get_key_and_id(*it,"Sets",key,idx)){
+        idset.push_back(idx);
+        nameset.push_back(key);
+      } else
+        throw std::runtime_error("Invalid set " + *it + " in PRINT DIN");
     }
   } else {
-    statement *st = stmt[statement::STMT_LIST_SET];
-    while (st->step() != SQLITE_DONE)
-      idset.push_back(sqlite3_column_int(st->ptr(), 0));
+    statement st(db,statement::STMT_CUSTOM,"SELECT id, key FROM Sets ORDER BY id;");
+    while (st.step() != SQLITE_DONE){
+      idset.push_back(sqlite3_column_int(st.ptr(), 0));
+      std::string name = (char *) sqlite3_column_text(st.ptr(), 1);
+      nameset.push_back(name);
+    }
   }
   if (idset.empty())
-    throw std::runtime_error("No sets found in LIST DIN");
-
-  // get the set names
-  statement stname(db,statement::STMT_CUSTOM,R"SQL(
-SELECT key FROM Sets WHERE id = ?1;
-)SQL");
-  std::vector<std::string> nameset;
-  for (int i = 0; i < idset.size(); i++){
-    stname.bind(1,idset[i]);
-    stname.step();
-    std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
-    nameset.push_back(name);
-    stname.reset();
-  }
+    throw std::runtime_error("No sets found in PRINT DIN");
 
   // get the method and prepare the statement
   statement st(db);
-  im = kmap.find("METHOD");
   int methodid = 0;
-  if (im != kmap.end()){
-    // get the method ID
-    if (isinteger(im->second))
-      methodid = std::stoi(im->second);
-    else
-      methodid = find_id_from_key(im->second,"Methods");
+  std::string methodkey = "(none)";
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",methodkey,methodid))
+      throw std::runtime_error("Invalid method (" + im->second + ") in PRINT DIN");
 
     // prepare the statement text
     std::string sttext = R"SQL(
@@ -1323,38 +1315,37 @@ SELECT Properties.nstructures, Properties.structures, Properties.coefficients, E
 FROM Properties
 INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
-WHERE Properties.setid = :SET AND Methods.id = )SQL";
-    sttext = sttext + std::to_string(methodid) + " " + R"SQL(
-ORDER BY Properties.orderid;
-)SQL";
+WHERE Properties.property_type = 1 AND Properties.setid = :SET AND Methods.id = )SQL";
+    sttext = sttext + std::to_string(methodid) + " ORDER BY Properties.orderid;";
     st.recycle(statement::STMT_CUSTOM,sttext);
   } else {
     // no method was given - zeros as reference values
     std::string sttext = R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
 FROM Properties
-WHERE Properties.setid = :SET
+WHERE Properties.property_type = 1 AND Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL";
     st.recycle(statement::STMT_CUSTOM,sttext);
   }
 
   // the statement to fetch a structure name
-  stname.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT key FROM Structures WHERE id = ?1;
-)SQL");
-
   for (int i = 0; i < idset.size(); i++){
     // open and write the din header
-    std::string fname = dir + "/" + nameset[i] + ".din";
+    std::string fname = dir;
+    if (fname.back() != '/')
+      fname += "/";
+    fname += nameset[i] + ".din";
     std::ofstream ofile(fname,std::ios::trunc);
     if (ofile.fail())
       throw std::runtime_error("Error writing din file " + fname);
-    std::streamsize prec = ofile.precision(10);
+    ofile << std::fixed << std::setprecision(10);
+
+    os << "# PRINT DIN writing file: " << fname << std::endl;
+
     ofile << "# din file crated by acpdb" << std::endl;
-    ofile << "# setid = " << idset[i] << std::endl;
-    ofile << "# setname = " << nameset[i] << std::endl;
-    ofile << "# reference id = " << methodid << std::endl;
+    ofile << "# set = " << nameset[i] << std::endl;
+    ofile << "# method = " << methodkey << std::endl;
 
     // step over the components of this set
     st.bind((char *) ":SET",idset[i]);
@@ -1364,23 +1355,19 @@ SELECT key FROM Structures WHERE id = ?1;
       double *coef = (double *) sqlite3_column_blob(st.ptr(),2);
 
       for (int j = 0; j < nstr; j++){
-        stname.bind(1,str[j]);
-        stname.step();
-        std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
         ofile << coef[j] << std::endl;
-        ofile << name << std::endl;
-        stname.reset();
+        ofile << find_key_from_id(str[j],"Structures") << std::endl;
       }
       ofile << "0" << std::endl;
 
       if (methodid > 0){
-        double value = sqlite3_column_double(st.ptr(),3);
-        ofile << value << std::endl;
-      } else {
+        double *value = (double *) sqlite3_column_blob(st.ptr(),3);
+        ofile << value[0] << std::endl;
+      } else
         ofile << "0.0" << std::endl;
-      }
     }
   }
+  os << std::endl;
 }
 
 // Verify the consistency of the database

@@ -7,7 +7,7 @@ atom-centered potentials (ACPs).
 |-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                                  |
 | [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
-| [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables))                                                                                                    |
+| [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                           |
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
 | [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
@@ -168,6 +168,24 @@ PRINT TERM
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write
 the list of literature references in bibtex format.
+
+#### DIN files
+~~~
+PRINT DIN
+ [DIRECTORY directory.s]
+ [SET {set1.s|set1.i} {set2.s|set2.i} ...]
+ [METHOD method.s|method.i]
+END
+~~~
+Write din files for all the properties in the database. A din file is
+written for each set and only properties with property type
+`ENERGY_DIFFERENCE` are written. The base name of the din files is the
+same as the name of the sets. If a DIRECTORY is given, write the new
+din files in that directory. If one or more SETs are given, either by
+key (`set.s`) or ID (`set.i`), write only the din files for those sets.
+Use method `method.s` (key) or `method.i` (ID) to write the reference
+values in the din files, or 0 if method is not given or evaluations
+are not available with that method.
 
 ### Inserting Data (elements)
 
