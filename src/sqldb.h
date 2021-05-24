@@ -128,8 +128,22 @@ class sqldb {
                                   const std::vector<unsigned char> &zat = {}, const std::vector<unsigned char> &lmax = {}, const std::vector<double> &exp = {});
 
   // Find the property type ID corresponding to the key in the database table.
-  // If toupper, uppercase the key before fetching the ID from the table.
+  // If toupper, uppercase the key before fetching the ID from the table. If
+  // no such key is found in the table, return 0.
   int find_id_from_key(const std::string &key,const std::string &table,bool toupper=false);
+
+  // Find the key corresponding to the ID in the database table. If
+  // toupper, the key is returned in uppercase. If no such ID is found
+  // in the table, return an empty string.
+  std::string find_key_from_id(const int id,const std::string &table,bool toupper=false);
+
+  // Parse the input string input and find if it is a number or a
+  // key. If it is a key, find the corresponding ID in the table and
+  // return both the key and id. If it is a number, find the key in the
+  // table and return the key and id. If toupperi, uppercase the input
+  // before parsing it. If touppero, uppercase the output key.
+  int get_key_and_id(const std::string &input, const std::string &table,
+                     std::string &key, int &id, bool toupperi=false, bool touppero=false);
 
   // Get the Gaussian map from the method key
   std::unordered_map<std::string,std::string> get_program_map(const std::string &methodkey, const std::string &program);

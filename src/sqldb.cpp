@@ -47,7 +47,8 @@ struct propinfo {
 namespace fs = std::filesystem;
 
 // Find the property type ID corresponding to the key in the database table.
-// If toupper, uppercase the key before fetching the ID from the table.
+// If toupper, uppercase the key before fetching the ID from the table. If
+// no such key is found in the table, return 0.
 int sqldb::find_id_from_key(const std::string &key,const std::string &table,bool toupper/*=false*/){
   statement st(db,statement::STMT_CUSTOM,"SELECT id FROM " + table + " WHERE key = ?1;");
   if (toupper){
@@ -61,6 +62,48 @@ int sqldb::find_id_from_key(const std::string &key,const std::string &table,bool
   int rc = sqlite3_column_int(st.ptr(),0);
   st.reset();
   return rc;
+}
+
+// Find the key corresponding to the ID in the database table. If
+// toupper, the key is returned in uppercase. If no such ID is found
+// in the table, return an empty string.
+std::string sqldb::find_key_from_id(const int id,const std::string &table,bool toupper/*=false*/){
+  statement st(db,statement::STMT_CUSTOM,"SELECT key FROM " + table + " WHERE id = ?1;");
+  st.bind(1,id);
+  st.step();
+  const unsigned char *result = sqlite3_column_text(st.ptr(),0);
+  if (!result)
+    return "";
+
+  std::string key = (char *) result;
+  if (toupper)
+    uppercase(key);
+  return key;
+}
+
+// Parse the input string input and find if it is a number or a
+// key. If it is a key, find the corresponding ID in the table and
+// return both the key and id. If it is a number, find the key in the
+// table and return the key and id. If toupperi, uppercase the input
+// before parsing it. If touppero, uppercase the output key. Returns 1
+// if succeeded, 0 if failed.
+int sqldb::get_key_and_id(const std::string &input, const std::string &table,
+                          std::string &key, int &id, bool toupperi/*=false*/, bool touppero/*=false*/){
+
+  if (isinteger(input)){
+    id = std::stoi(input);
+    key = find_key_from_id(id,table,touppero);
+    if (key.length() == 0)
+      return 0;
+  } else {
+    key = input;
+    id = find_id_from_key(key,table,toupperi);
+    if (touppero)
+      uppercase(key);
+    if (id == 0)
+      return 0;
+  }
+  return 1;
 }
 
 // Get the Gaussian map from the method key
