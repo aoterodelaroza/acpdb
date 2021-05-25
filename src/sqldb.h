@@ -105,21 +105,22 @@ class sqldb {
   // compare to a reference method.
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
-  // Write input files for a database set
+  // Write input files for a database set or the whole database
   void write_structures(const std::unordered_map<std::string,std::string> &kmap);
 
-  // Write the structures with IDs given by the keys in smap. dir:
-  // output directory. npack = package and compress in packets of
-  // npack files (0 = no packing). Use molecule (template_m) and crystal
-  // (template_c) templates.
+  // Write the structures with IDs given by the keys in smap. The values
+  // of smap should be 1 if the structures are molecules or zero if they
+  // are crystals. Use template_m and template_c as templates for
+  // molecules and crystals. Use ext_m and ext_c as file extensions for
+  // molecules and crystals. dir: output directory. npack = package and
+  // compress in packets of npack files (0 = no packing).
   void write_many_structures(const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
                              const std::unordered_map<int,int> &smap,
                              const std::string &dir="./", int npack=0);
 
-  // Write the structure id in the database. Options have the same
-  // meaning as in write_many_structures. Returns filename of the
-  // written file.
+  // Write the structure id in the database with template tmpl and
+  // extension ext. dir: output directory.
   std::string write_one_structure(int id, const strtemplate &tmpl,
                                   const std::string &ext, const std::string &dir="./");
 

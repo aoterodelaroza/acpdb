@@ -92,6 +92,10 @@ std::istream &get_next_line(std::istream &is, std::string &line, char skipchar =
 // the key was not present.
 std::string fetch_directory(const std::unordered_map<std::string,std::string> &kmap);
 
+// Get the extension from the file. Optional argument dot: set of
+// separators for detecting the extension.
+std::string get_file_extension(const std::string &file, const std::string &dot=".");
+
 // Remove leading and trailing blanks from a string
 void deblank(std::string &str);
 

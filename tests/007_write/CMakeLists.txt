@@ -1,5 +1,5 @@
 set(TESTS
-##  001_write_db        ## write database contents
+  001_write_db        ## write database contents
   )
 
 runtests(${TESTS})

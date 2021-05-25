@@ -1,4 +1,10 @@
 ## check: 001_write_db.out -a1e-10
+## check: s22partial.h2o_h2o_1.xyz -a1e-10
+## check: s22partial.h2o_h2o_2.xyz -a1e-10
+## check: s22partial.h2o_h2o.xyz -a1e-10
+## check: s22partial.nh3_nh3_1.xyz -a1e-10
+## check: s22partial.nh3_nh3_2.xyz -a1e-10
+## check: s22partial.nh3_nh3.xyz -a1e-10
 ## delete: 001_write_db.db
 ## labels: regression quick
 
@@ -8,15 +14,14 @@ connect 001_write_db.db
 insert method test
 end
 insert litref bibtex ../zz_source/bsip2.bib
-insert set s22
+insert set s22partial
  description A description.
  litrefs bsip1 boys1970
- din ../zz_source/s22.din
+ din ../zz_source/s22partial.din
  directory ../zz_source/s22_xyz
  method test
 end
 
 write
- set s22
- directory bleh
+ set s22partial
 end

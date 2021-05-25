@@ -4,14 +4,14 @@ ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
 | Section                                                                             | Keywords                                                                                                                                                                              |
-|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|-------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                                  |
 | [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
 | [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                           |
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
 | [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
-| [Writing Input and Structure Files](#writing-input-and-structure-files)             | WRITE                                                                                                                                                                                 |
+| [Writing Input and Structure Files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
 
 ## Command-Line Syntax
 ~~~
@@ -481,3 +481,31 @@ present, create `tar.xz` compressed archives with at most `ipack.i`
 structures each (this only works if the number of structures is
 greater than `ipack.i`). The `PACK` keyword invokes the `tar` utility
 through a `system()` call.
+
+#### Description of the Template Format
+
+The template file for WRITE is a plain text file containing keywords
+delimited by percent signs (`%keyword%`). These keywords are expanded
+by the database program. The available keywords are:
+
+- `%basename%`: the name of the structure in the database.
+
+- `%cell%`: a 3x3 matrix with the lattice vectors (same as in a
+  POSCAR).
+
+- `%charge%`: the molecular charge.
+
+- `%mult%`: the molecular multiplicity.
+
+- `%nat%`: the number of atoms.
+
+- `%xyz%`: the block with the atomic coordinates. The format of each
+  line is the atomic symbol followed by the x, y, and z coordinates.
+
+- `%vaspxyz%`: the coordinates block in POSCAR format. The first line
+  is the atomic symbols for the species in the system. The second line
+  is the number of atoms belonging to each species. Lastly, the
+  coordinate block is given, as the x, y, and z coordinates of each
+  atom.
+
+

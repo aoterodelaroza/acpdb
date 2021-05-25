@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <regex>
 #include <fstream>
 #include <string>
+#include <iterator>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -1695,20 +1696,10 @@ ORDER BY Properties.id;)SQL";
   os << std::endl;
 }
 
-// Write input files for a database set
+// Write input files for a database set or the whole database
 void sqldb::write_structures(const std::unordered_map<std::string,std::string> &kmap){
   if (!db)
     throw std::runtime_error("Error reading connected database");
-
-  const std::string template_m = R"SQL(%nat%
-%charge% %multiplicity%
-%xyz%)SQL";
-  const std::string ext_m = "xyz";
-  const std::string template_c = R"SQL(%basename%
-1.0
-%cell%
-%vasp_xyz%)SQL";
-  const std::string ext_c = "POSCAR";
 
   std::unordered_map<std::string,std::string>::const_iterator im;
 
@@ -1728,6 +1719,34 @@ void sqldb::write_structures(const std::unordered_map<std::string,std::string> &
       npack = std::stoi(kmap.at("PACK"));
     else
       throw std::runtime_error("The argument to PACK must be an integer in WRITE");
+  }
+
+  // templates
+  std::string template_m = R"SQL(%nat%
+%charge% %mult%
+%xyz%
+)SQL";
+  std::string ext_m = "xyz";
+  std::string template_c = R"SQL(%basename%
+1.0
+%cell%
+%vaspxyz%
+)SQL";
+  std::string ext_c = "POSCAR";
+  if ((im = kmap.find("TEMPLATE")) != kmap.end()){
+    std::ifstream is(im->second.c_str(),std::ios::in);
+    template_c = template_m = std::string(std::istreambuf_iterator<char>(is),{});
+    ext_c = ext_m = get_file_extension(im->second);
+  }
+  if ((im = kmap.find("TEMPLATE_MOL")) != kmap.end()){
+    std::ifstream is(im->second.c_str(),std::ios::in);
+    template_m = std::string(std::istreambuf_iterator<char>(is),{});
+    ext_m = get_file_extension(im->second);
+  }
+  if ((im = kmap.find("TEMPLATE_CRYS")) != kmap.end()){
+    std::ifstream is(im->second.c_str(),std::ios::in);
+    template_c = std::string(std::istreambuf_iterator<char>(is),{});
+    ext_c = get_file_extension(im->second);
   }
 
   // Collect the structure indices for this set
@@ -1757,10 +1776,12 @@ FROM Properties)SQL";
   write_many_structures(template_m,template_c,ext_m,ext_c,smap,dir,npack);
 }
 
-// Write the structures with IDs given by the keys in smap. dir:
-// output directory. npack = package and compress in packets of
-// npack files (0 = no packing). Use molecule (template_m) and crystal
-// (template_c) templates.
+// Write the structures with IDs given by the keys in smap. The values
+// of smap should be 1 if the structures are molecules or zero if they
+// are crystals. Use template_m and template_c as templates for
+// molecules and crystals. Use ext_m and ext_c as file extensions for
+// molecules and crystals. dir: output directory. npack = package and
+// compress in packets of npack files (0 = no packing).
 void sqldb::write_many_structures(const std::string &template_m, const std::string &template_c,
                                   const std::string &ext_m, const std::string &ext_c,
                                   const std::unordered_map<int,int> &smap,
@@ -1774,45 +1795,44 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
     for (auto it = smap.begin(); it != smap.end(); it++)
       write_one_structure(it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), dir);
   } else {
-  //   unsigned long div = smap.size() / (unsigned long) npack;
-  //   if (smap.size() % npack != 0) div++;
-  //   int slen = digits((int) div);
+    unsigned long div = smap.size() / (unsigned long) npack;
+    if (smap.size() % npack != 0) div++;
+    int slen = digits((int) div);
 
-  //   // build the random vector
-  //   int n = 0;
-  //   std::vector<int> srand;
-  //   srand.resize(smap.size());
-  //   for (auto it = smap.begin(); it != smap.end(); it++)
-  //     srand[n++] = it->first;
-  //   std::random_shuffle(srand.begin(),srand.end());
+    // build the random vector
+    int n = 0;
+    std::vector<int> srand;
+    srand.resize(smap.size());
+    for (auto it = smap.begin(); it != smap.end(); it++)
+      srand[n++] = it->first;
+    std::random_shuffle(srand.begin(),srand.end());
 
-  //   n = 0;
-  //   int ipack = 0;
-  //   std::list<fs::path> written;
-  //   for (int i = 0; i < srand.size(); i++){
-  //     written.push_back(fs::path(write_one_structure(srand[i],smap.at(srand[i]),gmap,dir,a,zat,lmax,exp)));
+    n = 0;
+    int ipack = 0;
+    std::list<fs::path> written;
+    for (int i = 0; i < srand.size(); i++){
+      written.push_back(fs::path(write_one_structure(srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), dir)));
 
-  //     // create a new package if written has npack items or we are about to finish
-  //     if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
-  //       std::string tarcmd = std::to_string(++ipack);
-  //       tarcmd.insert(0,slen-tarcmd.size(),'0');
-  //       tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-  //       for (auto iw = written.begin(); iw != written.end(); iw++)
-  //         tarcmd = tarcmd + " " + iw->string();
+      // create a new package if written has npack items or we are about to finish
+      if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
+        std::string tarcmd = std::to_string(++ipack);
+        tarcmd.insert(0,slen-tarcmd.size(),'0');
+        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+        for (auto iw = written.begin(); iw != written.end(); iw++)
+          tarcmd = tarcmd + " " + iw->string();
 
-  //       if (system(tarcmd.c_str()))
-  //         throw std::runtime_error("Error running tar command on input files");
-  //       for (auto iw = written.begin(); iw != written.end(); iw++)
-  //         remove(dir / *iw);
-  //       written.clear();
-  //     }
-  //   }
+        if (system(tarcmd.c_str()))
+          throw std::runtime_error("Error running tar command on input files");
+        for (auto iw = written.begin(); iw != written.end(); iw++)
+          remove(dir / *iw);
+        written.clear();
+      }
+    }
   }
 }
 
-// Write the structure id in the database. Options have the same
-// meaning as in write_many_structures. Returns filename of the
-// written file.
+// Write the structure id in the database with template tmpl and
+// extension ext. dir: output directory.
 std::string sqldb::write_one_structure(int id, const strtemplate &tmpl,
                                        const std::string &ext, const std::string &dir/*="./"*/){
 

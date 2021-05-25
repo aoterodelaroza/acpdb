@@ -22,12 +22,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "strtemplate.h"
 #include "parseutils.h"
 
-// 1: t_string, t_basename, t_cell, t_charge, t_multiplicity, t_nat, t_vaspxyz, t_xyz
+// 1: t_string, t_basename, t_cell, t_charge, t_mult, t_nat, t_vaspxyz, t_xyz
 static const std::vector<std::string> tokenname = { // keyword names for printing
-  "string","basename","cell","charge","multiplicity","nat","vaspxyz","xyz"
+  "string","basename","cell","charge","mult","nat","vaspxyz","xyz"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords
-  "","%basename%","%cell%","%charge%","%multiplicity%","%nat%","%vaspxyz%","%xyz%"
+  "","%basename%","%cell%","%charge%","%mult%","%nat%","%vaspxyz%","%xyz%"
 };
 static const int ntoken = tokenstr.size();
 
@@ -85,7 +85,7 @@ std::string strtemplate::apply(const structure &s) const {
     } else if (it->token == t_charge){
       result.append(std::to_string(s.get_charge()));
 
-    } else if (it->token == t_multiplicity){
+    } else if (it->token == t_mult){
       result.append(std::to_string(s.get_mult()));
 
     } else if (it->token == t_nat){
@@ -116,9 +116,12 @@ std::string strtemplate::apply(const structure &s) const {
       ss << "Direct" << std::endl;
 
       // write the atomic coordinates
-      for (auto it = ityp.begin(); it != ityp.end(); it++)
-        for (auto ia = it->second.begin(); ia != it->second.end(); ia++)
-          ss << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2] << std::endl;
+      for (auto it = ityp.begin(); it != ityp.end(); it++){
+        for (auto ia = it->second.begin(); ia != it->second.end(); ia++){
+          ss << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2];
+          if (std::next(ia) != it->second.end()) ss << std::endl;
+        }
+      }
 
       result.append(ss.str());
 
@@ -129,8 +132,10 @@ std::string strtemplate::apply(const structure &s) const {
 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
-      for (int i = 0; i < nat; i++)
-        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2] << std::endl;
+      for (int i = 0; i < nat; i++){
+        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
+        if (i < nat-1) ss << std::endl;
+      }
       result.append(ss.str());
     }
   }

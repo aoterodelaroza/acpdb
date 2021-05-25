@@ -303,6 +303,16 @@ std::string fetch_directory(const std::unordered_map<std::string,std::string> &k
   return dir;
 }
 
+// Get the extension from the file. Optional argument dot: set of
+// separators for detecting the extension.
+std::string get_file_extension(const std::string &file, const std::string &dot/*="."*/){
+  std::string ext;
+  size_t pos = file.find_last_of(dot);
+  if (pos != std::string::npos)
+    ext = file.substr(pos+1);
+  return ext;
+}
+
 // Remove leading and trailing blanks from a string
 void deblank(std::string &str){
   if (str.empty()) return;

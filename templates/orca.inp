@@ -1,0 +1,7 @@
+! pbe def2-QZVPPD aim grid4 tightscf autostart nososcf nori
+%pal
+  nprocs 8
+end
+*xyz %charge% %mult%
+%xyz%
+*
