@@ -106,7 +106,7 @@ class sqldb {
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Write input files for a database set or the whole database
-  void write_structures(const std::unordered_map<std::string,std::string> &kmap);
+  void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Write the structures with IDs given by the keys in smap. The values
   // of smap should be 1 if the structures are molecules or zero if they
@@ -114,14 +114,16 @@ class sqldb {
   // molecules and crystals. Use ext_m and ext_c as file extensions for
   // molecules and crystals. dir: output directory. npack = package and
   // compress in packets of npack files (0 = no packing).
-  void write_many_structures(const std::string &template_m, const std::string &template_c,
+  void write_many_structures(std::ostream &os,
+                             const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
                              const std::unordered_map<int,int> &smap,
                              const std::string &dir="./", int npack=0);
 
   // Write the structure id in the database with template tmpl and
   // extension ext. dir: output directory.
-  std::string write_one_structure(int id, const strtemplate &tmpl,
+  std::string write_one_structure(std::ostream &os,
+                                  int id, const strtemplate &tmpl,
                                   const std::string &ext, const std::string &dir="./");
 
   // Find the property type ID corresponding to the key in the database table.

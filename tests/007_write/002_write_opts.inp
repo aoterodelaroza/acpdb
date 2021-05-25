@@ -1,0 +1,26 @@
+## check: 002_write_opts.out -a1e-10
+## delete: pack_1.tar.xz -a1e-10
+## delete: pack_2.tar.xz -a1e-10
+## delete: pack_3.tar.xz -a1e-10
+## delete: 002_write_opts.db
+## labels: regression quick
+
+system rm -f 002_write_opts.db
+connect 002_write_opts.db
+
+insert method test
+end
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22partial
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+write
+ set s22partial
+ pack 2
+ directory .
+end

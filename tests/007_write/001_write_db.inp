@@ -1,10 +1,10 @@
 ## check: 001_write_db.out -a1e-10
-## check: s22partial.h2o_h2o_1.xyz -a1e-10
-## check: s22partial.h2o_h2o_2.xyz -a1e-10
-## check: s22partial.h2o_h2o.xyz -a1e-10
-## check: s22partial.nh3_nh3_1.xyz -a1e-10
-## check: s22partial.nh3_nh3_2.xyz -a1e-10
-## check: s22partial.nh3_nh3.xyz -a1e-10
+## delete: s22partial.h2o_h2o_1.xyz -a1e-10
+## delete: s22partial.h2o_h2o_2.xyz -a1e-10
+## delete: s22partial.h2o_h2o.xyz -a1e-10
+## delete: s22partial.nh3_nh3_1.xyz -a1e-10
+## delete: s22partial.nh3_nh3_2.xyz -a1e-10
+## delete: s22partial.nh3_nh3.xyz -a1e-10
 ## delete: 001_write_db.db
 ## labels: regression quick
 

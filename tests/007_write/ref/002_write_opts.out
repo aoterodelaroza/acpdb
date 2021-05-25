@@ -1,9 +1,9 @@
-* SYSTEM: rm -f 001_write_db.db
+* SYSTEM: rm -f 002_write_opts.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 001_write_db.db
+Connecting database file 002_write_opts.db
 Creating skeleton database 
 
 * INSERT: insert data into the database (METHOD)
@@ -260,10 +260,10 @@ Creating skeleton database
 
 * WRITE: write input files for database structures
 
-# WRITE file ./s22partial.h2o_h2o_2.xyz
+# WRITE file ./s22partial.nh3_nh3_1.xyz
+# WRITE file ./s22partial.nh3_nh3_2.xyz
 # WRITE file ./s22partial.h2o_h2o_1.xyz
 # WRITE file ./s22partial.h2o_h2o.xyz
-# WRITE file ./s22partial.nh3_nh3_2.xyz
-# WRITE file ./s22partial.nh3_nh3_1.xyz
+# WRITE file ./s22partial.h2o_h2o_2.xyz
 # WRITE file ./s22partial.nh3_nh3.xyz
 

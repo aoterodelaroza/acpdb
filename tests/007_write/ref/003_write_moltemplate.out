@@ -1,9 +1,9 @@
-* SYSTEM: rm -f 001_write_db.db
+* SYSTEM: rm -f 003_write_moltemplate.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 001_write_db.db
+Connecting database file 003_write_moltemplate.db
 Creating skeleton database 
 
 * INSERT: insert data into the database (METHOD)
@@ -260,10 +260,19 @@ Creating skeleton database
 
 * WRITE: write input files for database structures
 
-# WRITE file ./s22partial.h2o_h2o_2.xyz
-# WRITE file ./s22partial.h2o_h2o_1.xyz
-# WRITE file ./s22partial.h2o_h2o.xyz
-# WRITE file ./s22partial.nh3_nh3_2.xyz
-# WRITE file ./s22partial.nh3_nh3_1.xyz
-# WRITE file ./s22partial.nh3_nh3.xyz
+# WRITE file ./s22partial.h2o_h2o_2.gjf
+# WRITE file ./s22partial.h2o_h2o_1.gjf
+# WRITE file ./s22partial.h2o_h2o.gjf
+# WRITE file ./s22partial.nh3_nh3_2.gjf
+# WRITE file ./s22partial.nh3_nh3_1.gjf
+# WRITE file ./s22partial.nh3_nh3.gjf
+
+* WRITE: write input files for database structures
+
+# WRITE file ./s22partial.h2o_h2o_2.inp
+# WRITE file ./s22partial.h2o_h2o_1.inp
+# WRITE file ./s22partial.h2o_h2o.inp
+# WRITE file ./s22partial.nh3_nh3_2.inp
+# WRITE file ./s22partial.nh3_nh3_1.inp
+# WRITE file ./s22partial.nh3_nh3.inp
 

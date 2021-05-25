@@ -1697,7 +1697,7 @@ ORDER BY Properties.id;)SQL";
 }
 
 // Write input files for a database set or the whole database
-void sqldb::write_structures(const std::unordered_map<std::string,std::string> &kmap){
+void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
@@ -1773,7 +1773,8 @@ FROM Properties)SQL";
   }
 
   // write the inputs
-  write_many_structures(template_m,template_c,ext_m,ext_c,smap,dir,npack);
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,smap,dir,npack);
+  os << std::endl;
 }
 
 // Write the structures with IDs given by the keys in smap. The values
@@ -1782,7 +1783,8 @@ FROM Properties)SQL";
 // molecules and crystals. Use ext_m and ext_c as file extensions for
 // molecules and crystals. dir: output directory. npack = package and
 // compress in packets of npack files (0 = no packing).
-void sqldb::write_many_structures(const std::string &template_m, const std::string &template_c,
+void sqldb::write_many_structures(std::ostream &os,
+                                  const std::string &template_m, const std::string &template_c,
                                   const std::string &ext_m, const std::string &ext_c,
                                   const std::unordered_map<int,int> &smap,
                                   const std::string &dir/*="./"*/, int npack/*=0*/){
@@ -1793,7 +1795,7 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
 
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), dir);
+      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), dir);
   } else {
     unsigned long div = smap.size() / (unsigned long) npack;
     if (smap.size() % npack != 0) div++;
@@ -1811,7 +1813,7 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), dir)));
+      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), dir)));
 
       // create a new package if written has npack items or we are about to finish
       if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
@@ -1833,7 +1835,7 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
 
 // Write the structure id in the database with template tmpl and
 // extension ext. dir: output directory.
-std::string sqldb::write_one_structure(int id, const strtemplate &tmpl,
+std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
                                        const std::string &ext, const std::string &dir/*="./"*/){
 
   // get the structure from the database
@@ -1855,6 +1857,7 @@ FROM Structures WHERE id = ?1;
   std::string content = tmpl.apply(s);
 
   // write the actual file and exit
+  os << "# WRITE file " << dir << "/" << name << std::endl;
   std::ofstream ofile(dir + "/" + name,std::ios::trunc);
   ofile << content;
   ofile.close();

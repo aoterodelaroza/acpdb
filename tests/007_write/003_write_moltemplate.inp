@@ -1,0 +1,38 @@
+## check: 003_write_moltemplate.out -a1e-10
+## delete: s22partial.h2o_h2o_1.gjf -a1e-10
+## delete: s22partial.h2o_h2o_2.gjf -a1e-10
+## delete: s22partial.h2o_h2o.gjf -a1e-10
+## delete: s22partial.nh3_nh3_1.gjf -a1e-10
+## delete: s22partial.nh3_nh3_2.gjf -a1e-10
+## delete: s22partial.nh3_nh3.gjf -a1e-10
+## delete: s22partial.h2o_h2o_1.inp -a1e-10
+## delete: s22partial.h2o_h2o_2.inp -a1e-10
+## delete: s22partial.h2o_h2o.inp -a1e-10
+## delete: s22partial.nh3_nh3_1.inp -a1e-10
+## delete: s22partial.nh3_nh3_2.inp -a1e-10
+## delete: s22partial.nh3_nh3.inp -a1e-10
+## delete: 003_write_moltemplate.db
+## labels: regression quick
+
+system rm -f 003_write_moltemplate.db
+connect 003_write_moltemplate.db
+
+insert method test
+end
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22partial
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+write
+ set s22partial
+ template_mol ../../templates/gaussian.gjf
+end
+write
+ set s22partial
+ template ../../templates/orca.inp
+end
