@@ -470,7 +470,8 @@ according to the template (the template format is described below). If
 and molecules. If `TEMPLATE_MOL` is given, use `filemol.s` for
 molecules. If `TEMPLATE_CRYS` is given, use `filecrys.s` for
 crystals. The extensions of the generated input files are the same as
-the extension of the template.
+the extension of the template. Some template examples can be found in
+the `templates/` directory.
 
 If SET is not present, write all the structures in the database. If
 SET is present, write the structures in the database set with that
@@ -490,14 +491,18 @@ by the database program. The available keywords are:
 
 - `%basename%`: the name of the structure in the database.
 
-- `%cell%`: a 3x3 matrix with the lattice vectors (same as in a
-  POSCAR).
+- `%cell%`: a 3x3 matrix with the lattice vectors in angstrom (same as
+  in VASP/QE).
+
+- `%cellbohr%`: a 3x3 matrix with the lattice vectors in bohr.
 
 - `%charge%`: the molecular charge.
 
 - `%mult%`: the molecular multiplicity.
 
 - `%nat%`: the number of atoms.
+
+- `%ntyp%`: the number of atomic species.
 
 - `%xyz%`: the block with the atomic coordinates. The format of each
   line is the atomic symbol followed by the x, y, and z coordinates.
@@ -508,4 +513,7 @@ by the database program. The available keywords are:
   coordinate block is given, as the x, y, and z coordinates of each
   atom.
 
+- `%qexyz%`: a combination of the `ATOMIC_SPECIES` and
+  `ATOMIC_COORDINATES` blocks in QE format.
 
+Some template examples can be found in the `templates/` directory.

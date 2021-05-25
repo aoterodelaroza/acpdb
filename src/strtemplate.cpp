@@ -169,12 +169,12 @@ std::string strtemplate::apply(const structure &s) const {
       ss << "ATOMIC_SPECIES" << std::endl;
       for (auto it = ntyp.begin(); it != ntyp.end(); it++){
         std::string atsym = nameguess(it->first);
-        ss << atsym << " " << 1.0 << " " << atsym << ".UPF" << std::endl;
+        ss << atsym << " " << std::fixed << std::setprecision(6) << globals::atmass[it->first] << " " << atsym << ".UPF" << std::endl;
       }
       ss << std::endl;
 
       // write the atomic positions block
-      ss << "ATOMIC_POSITIONS" << std::endl;
+      ss << "ATOMIC_POSITIONS crystal" << std::endl;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++){
         ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];

@@ -33,6 +33,9 @@ namespace globals {
   extern const int ppty_d2e;
   extern const int ppty_homo;
   extern const int ppty_lumo;
+
+  // atomic properties
+  extern const double atmass[];
 }
 
 #endif
