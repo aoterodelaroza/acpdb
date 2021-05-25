@@ -1700,13 +1700,15 @@ void sqldb::write_structures(const std::unordered_map<std::string,std::string> &
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
-  std::string template_m = R"SQL(%nat%
+  const std::string template_m = R"SQL(%nat%
 %charge% %multiplicity%
 %xyz%)SQL";
-  std::string template_c = R"SQL(%basename%
+  const std::string ext_m = "xyz";
+  const std::string template_c = R"SQL(%basename%
 1.0
 %cell%
 %vasp_xyz%)SQL";
+  const std::string ext_c = "POSCAR";
 
   std::unordered_map<std::string,std::string>::const_iterator im;
 
@@ -1752,7 +1754,7 @@ FROM Properties)SQL";
   }
 
   // write the inputs
-  write_many_structures(template_m,template_c,smap,dir,npack);
+  write_many_structures(template_m,template_c,ext_m,ext_c,smap,dir,npack);
 }
 
 // Write the structures with IDs given by the keys in smap. dir:
@@ -1760,6 +1762,7 @@ FROM Properties)SQL";
 // npack files (0 = no packing). Use molecule (template_m) and crystal
 // (template_c) templates.
 void sqldb::write_many_structures(const std::string &template_m, const std::string &template_c,
+                                  const std::string &ext_m, const std::string &ext_c,
                                   const std::unordered_map<int,int> &smap,
                                   const std::string &dir/*="./"*/, int npack/*=0*/){
 
@@ -1769,7 +1772,7 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
 
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(it->first, (it->second?tm:tc), dir);
+      write_one_structure(it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), dir);
   } else {
   //   unsigned long div = smap.size() / (unsigned long) npack;
   //   if (smap.size() % npack != 0) div++;
@@ -1810,7 +1813,8 @@ void sqldb::write_many_structures(const std::string &template_m, const std::stri
 // Write the structure id in the database. Options have the same
 // meaning as in write_many_structures. Returns filename of the
 // written file.
-std::string sqldb::write_one_structure(int id, const strtemplate &tmpl, const std::string &dir/*="./"*/){
+std::string sqldb::write_one_structure(int id, const strtemplate &tmpl,
+                                       const std::string &ext, const std::string &dir/*="./"*/){
 
   // get the structure from the database
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -1825,17 +1829,15 @@ FROM Structures WHERE id = ?1;
   s.readdbrow(st.ptr());
 
   // filename, extension
-  std::string name = dir + "/" + s.get_name();
-  std::string ext = "xyz";
-  name += ("." + ext);
+  std::string name = s.get_name() + "." + ext;
 
   // write the substitution of the template to a string
   std::string content = tmpl.apply(s);
 
   // write the actual file and exit
-  std::ofstream ofile(name,std::ios::trunc);
+  std::ofstream ofile(dir + "/" + name,std::ios::trunc);
   ofile << content;
   ofile.close();
 
-  return (s.get_name() + "." + ext);
+  return name;
 }

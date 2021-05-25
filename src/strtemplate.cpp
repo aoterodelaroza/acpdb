@@ -130,7 +130,7 @@ std::string strtemplate::apply(const structure &s) const {
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++)
-        ss << nameguess(z[i]) << " " << x[3*i+1] << " " << x[3*i+2] << " " << x[3*i+3] << std::endl;
+        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2] << std::endl;
       result.append(ss.str());
     }
   }

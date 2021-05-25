@@ -113,13 +113,15 @@ class sqldb {
   // npack files (0 = no packing). Use molecule (template_m) and crystal
   // (template_c) templates.
   void write_many_structures(const std::string &template_m, const std::string &template_c,
+                             const std::string &ext_m, const std::string &ext_c,
                              const std::unordered_map<int,int> &smap,
                              const std::string &dir="./", int npack=0);
 
   // Write the structure id in the database. Options have the same
   // meaning as in write_many_structures. Returns filename of the
   // written file.
-  std::string write_one_structure(int id, const strtemplate &tmpl, const std::string &dir="./");
+  std::string write_one_structure(int id, const strtemplate &tmpl,
+                                  const std::string &ext, const std::string &dir="./");
 
   // Find the property type ID corresponding to the key in the database table.
   // If toupper, uppercase the key before fetching the ID from the table. If
