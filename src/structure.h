@@ -107,6 +107,7 @@ class structure {
   const double *get_r() const { return r; }
   const unsigned char *get_z() const { return z; }
   const double *get_x() const { return x; }
+  const std::string &get_name() const { return name; }
 
  private:
   //// Private methods ////
@@ -134,6 +135,7 @@ class structure {
 
   //// Private data ////
 
+  std::string name;
   bool ismol; // whether this is a molecule
   int nat; // the number of atoms
   int charge; // molecular charge

@@ -26,6 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "sqlite3.h"
 #include "statement.h"
 #include "acp.h"
+#include "strtemplate.h"
 
 // A SQLite3 database class.
 class sqldb {
@@ -105,31 +106,20 @@ class sqldb {
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Write input files for a database set
-  void write_structures(const std::unordered_map<std::string,std::string> &kmap, const acp &a);
+  void write_structures(const std::unordered_map<std::string,std::string> &kmap);
 
-  // Write the structures with IDs given by the keys in smap. The
-  // values of smap give the types (xyz for an xyz file, terms for a
-  // terms input file or energy_difference, etc. for a property input
-  // file). gmap: writer-dependent options for the structures. dir:
+  // Write the structures with IDs given by the keys in smap. dir:
   // output directory. npack = package and compress in packets of
-  // npack files (0 = no packing). a: ACP to use in the inputs.
-  // zat, l, exp: details for term inputs.
-  void write_many_structures(const std::unordered_map<int,std::string> &smap,
-                             const std::unordered_map<std::string,std::string> &gmap = {},
-                             const std::string &dir = "./", int npack = 0,
-                             const acp &a = {},
-                             const std::vector<unsigned char> &zat = {}, const std::vector<unsigned char> &lmax = {}, const std::vector<double> &exp = {});
+  // npack files (0 = no packing). Use molecule (template_m) and crystal
+  // (template_c) templates.
+  void write_many_structures(const std::string &template_m, const std::string &template_c,
+                             const std::unordered_map<int,int> &smap,
+                             const std::string &dir="./", int npack=0);
 
   // Write the structure id in the database. Options have the same
   // meaning as in write_many_structures. Returns filename of the
   // written file.
-  std::string write_one_structure(int id, const std::string type,
-                                  const std::unordered_map<std::string,std::string> gmap = {},
-                                  const std::string &dir = "./",
-                                  const acp &a = {},
-                                  const std::vector<unsigned char> &zat = {},
-                                  const std::vector<unsigned char> &lmax = {},
-                                  const std::vector<double> &exp = {});
+  std::string write_one_structure(int id, const strtemplate &tmpl, const std::string &dir="./");
 
   // Find the property type ID corresponding to the key in the database table.
   // If toupper, uppercase the key before fetching the ID from the table. If

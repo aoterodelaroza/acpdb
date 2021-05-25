@@ -7,9 +7,6 @@ connect 001_write_db.db
 
 insert method test
 end
-insert method test2
-end
-
 insert litref bibtex ../zz_source/bsip2.bib
 insert set s22
  description A description.
@@ -18,19 +15,8 @@ insert set s22
  directory ../zz_source/s22_xyz
  method test
 end
-insert property dip-
- property_type dipole
+
+write
  set s22
+ directory bleh
 end
-
-insert calc
- property_type energy_difference
- file ../zz_source/s22.list
- method test2
-end
-insert calc
- property_type dipole
- file ../zz_source/s22.listvec
- method test2
-end
-

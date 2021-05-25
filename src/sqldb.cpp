@@ -1508,65 +1508,6 @@ SELECT nat FROM Structures WHERE id = ?1;
   os << std::endl;
 }
 
-// Write input files for a database set
-void sqldb::write_structures(const std::unordered_map<std::string,std::string> &kmap, const acp &a){
-  if (!db)
-    throw std::runtime_error("Error reading connected database");
-
-  std::string template_m = R"SQL(
-%nat%
-%charge% %multiplicity%
-%xyz%
-)SQL";
-  std::string template_c = R"SQL(
-%basename%
-1.0
-%cell%
-%vasp_xyz%
-)SQL";
-
-  std::unordered_map<std::string,std::string>::const_iterator im;
-
-  // set
-  int setid = 0;
-  std::string setkey;
-  if ((im = kmap.find("SET")) != kmap.end()){
-    if (!get_key_and_id(im->second,"Sets",setkey,setid))
-      throw std::runtime_error("Invalid SET in WRITE");
-  }
-
-  // directory and pack number
-  std::string dir = fetch_directory(kmap);
-  int npack = 0;
-  if (kmap.find("PACK") != kmap.end()){
-    if (isinteger(kmap.at("PACK")))
-      npack = std::stoi(kmap.at("PACK"));
-    else
-      throw std::runtime_error("The argument to PACK must be an integer in WRITE");
-  }
-
-  // Collect the structure indices for this set
-  std::unordered_map<int,int> smap;
-  std::string sttext=R"SQL(
-SELECT Properties.nstructures, Properties.structures
-FROM Properties)SQL";
-  if (setid > 0)
-    sttext += " WHERE Properties.setid = ?1";
-  sttext += ";";
-  statement st(db,statement::STMT_CUSTOM,sttext);
-  if (setid > 0)
-    st.bind(1,setid);
-  while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),0);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
-    for (int i = 0; i < n; i++)
-      smap[str[i]] = 1;
-  }
-
-//   // write the inputs
-//   // write_many_structures(smap,gmap,dir,npack,a);
-}
-
 // Read data for the database or one of its subsets from a file, then
 // compare to a reference method.
 void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
@@ -1754,137 +1695,147 @@ ORDER BY Properties.id;)SQL";
   os << std::endl;
 }
 
-// Write the structures with IDs given by the keys in smap. The
-// values of smap give the types (xyz for an xyz file, terms for a
-// terms input file or energy_difference, etc. for a property input
-// file). gmap: writer-dependent options for the structures. dir:
+// Write input files for a database set
+void sqldb::write_structures(const std::unordered_map<std::string,std::string> &kmap){
+  if (!db)
+    throw std::runtime_error("Error reading connected database");
+
+  std::string template_m = R"SQL(%nat%
+%charge% %multiplicity%
+%xyz%)SQL";
+  std::string template_c = R"SQL(%basename%
+1.0
+%cell%
+%vasp_xyz%)SQL";
+
+  std::unordered_map<std::string,std::string>::const_iterator im;
+
+  // set
+  int setid = 0;
+  std::string setkey;
+  if ((im = kmap.find("SET")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Sets",setkey,setid))
+      throw std::runtime_error("Invalid SET in WRITE");
+  }
+
+  // directory and pack number
+  std::string dir = fetch_directory(kmap);
+  int npack = 0;
+  if (kmap.find("PACK") != kmap.end()){
+    if (isinteger(kmap.at("PACK")))
+      npack = std::stoi(kmap.at("PACK"));
+    else
+      throw std::runtime_error("The argument to PACK must be an integer in WRITE");
+  }
+
+  // Collect the structure indices for this set
+  std::unordered_map<int,int> smap;
+  std::string sttext=R"SQL(
+SELECT Properties.nstructures, Properties.structures
+FROM Properties)SQL";
+  if (setid > 0)
+    sttext += " WHERE Properties.setid = ?1";
+  sttext += ";";
+  statement st(db,statement::STMT_CUSTOM,sttext);
+  statement ststr(db,statement::STMT_CUSTOM,"SELECT ismolecule FROM Structures WHERE id = ?1;");
+  if (setid > 0)
+    st.bind(1,setid);
+  while (st.step() != SQLITE_DONE){
+    int n = sqlite3_column_int(st.ptr(),0);
+    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+    for (int i = 0; i < n; i++){
+      ststr.bind(1,str[i]);
+      ststr.step();
+      smap[str[i]] = sqlite3_column_int(ststr.ptr(),0);
+      ststr.reset();
+    }
+  }
+
+  // write the inputs
+  write_many_structures(template_m,template_c,smap,dir,npack);
+}
+
+// Write the structures with IDs given by the keys in smap. dir:
 // output directory. npack = package and compress in packets of
-// npack files (0 = no packing). a: ACP to use in the inputs.
-// zat, l, exp: details for term inputs.
-void sqldb::write_many_structures(const std::unordered_map<int,std::string> &smap,
-                                  const std::unordered_map<std::string,std::string> &gmap/*={}*/,
-                                  const std::string &dir/*="./"*/, int npack/*=0*/,
-                                  const acp &a/*={}*/,
-                                  const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
+// npack files (0 = no packing). Use molecule (template_m) and crystal
+// (template_c) templates.
+void sqldb::write_many_structures(const std::string &template_m, const std::string &template_c,
+                                  const std::unordered_map<int,int> &smap,
+                                  const std::string &dir/*="./"*/, int npack/*=0*/){
+
+  // build the templates
+  strtemplate tm(template_m);
+  strtemplate tc(template_c);
 
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(it->first,it->second,gmap,dir,a,zat,lmax,exp);
+      write_one_structure(it->first, (it->second?tm:tc), dir);
   } else {
-    unsigned long div = smap.size() / (unsigned long) npack;
-    if (smap.size() % npack != 0) div++;
-    int slen = digits((int) div);
+  //   unsigned long div = smap.size() / (unsigned long) npack;
+  //   if (smap.size() % npack != 0) div++;
+  //   int slen = digits((int) div);
 
-    // build the random vector
-    int n = 0;
-    std::vector<int> srand;
-    srand.resize(smap.size());
-    for (auto it = smap.begin(); it != smap.end(); it++)
-      srand[n++] = it->first;
-    std::random_shuffle(srand.begin(),srand.end());
+  //   // build the random vector
+  //   int n = 0;
+  //   std::vector<int> srand;
+  //   srand.resize(smap.size());
+  //   for (auto it = smap.begin(); it != smap.end(); it++)
+  //     srand[n++] = it->first;
+  //   std::random_shuffle(srand.begin(),srand.end());
 
-    n = 0;
-    int ipack = 0;
-    std::list<fs::path> written;
-    for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(srand[i],smap.at(srand[i]),gmap,dir,a,zat,lmax,exp)));
+  //   n = 0;
+  //   int ipack = 0;
+  //   std::list<fs::path> written;
+  //   for (int i = 0; i < srand.size(); i++){
+  //     written.push_back(fs::path(write_one_structure(srand[i],smap.at(srand[i]),gmap,dir,a,zat,lmax,exp)));
 
-      // create a new package if written has npack items or we are about to finish
-      if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
-        std::string tarcmd = std::to_string(++ipack);
-        tarcmd.insert(0,slen-tarcmd.size(),'0');
-        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-        for (auto iw = written.begin(); iw != written.end(); iw++)
-          tarcmd = tarcmd + " " + iw->string();
+  //     // create a new package if written has npack items or we are about to finish
+  //     if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
+  //       std::string tarcmd = std::to_string(++ipack);
+  //       tarcmd.insert(0,slen-tarcmd.size(),'0');
+  //       tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+  //       for (auto iw = written.begin(); iw != written.end(); iw++)
+  //         tarcmd = tarcmd + " " + iw->string();
 
-        if (system(tarcmd.c_str()))
-          throw std::runtime_error("Error running tar command on input files");
-        for (auto iw = written.begin(); iw != written.end(); iw++)
-          remove(dir / *iw);
-        written.clear();
-      }
-    }
+  //       if (system(tarcmd.c_str()))
+  //         throw std::runtime_error("Error running tar command on input files");
+  //       for (auto iw = written.begin(); iw != written.end(); iw++)
+  //         remove(dir / *iw);
+  //       written.clear();
+  //     }
+  //   }
   }
 }
 
 // Write the structure id in the database. Options have the same
 // meaning as in write_many_structures. Returns filename of the
 // written file.
-std::string sqldb::write_one_structure(int id, const std::string type, const std::unordered_map<std::string,std::string> gmap/*={}*/,
-                                       const std::string &dir/*="./"*/,
-                                       const acp &a/*={}*/,
-                                       const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
+std::string sqldb::write_one_structure(int id, const strtemplate &tmpl, const std::string &dir/*="./"*/){
 
-  // get the structure and build the file name
+  // get the structure from the database
   statement st(db,statement::STMT_CUSTOM,R"SQL(
 SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
 FROM Structures WHERE id = ?1;
 )SQL");
   st.bind(1,id);
   st.step();
-  std::string fileroot = std::string((char *) sqlite3_column_text(st.ptr(), 1));
-  std::string name = dir + "/";
-  name += fileroot;
-  bool ismolecule = sqlite3_column_int(st.ptr(), 3);
-
-  // decisions, decisions
-  bool isxyz = equali_strings(type,"xyz");
-  bool isterms = equali_strings(type,"terms");
-  bool isgaussian = ismolecule && (isterms || equali_strings(type,"energy_difference") && gmap.at("PROGRAM") == "GAUSSIAN");
-  bool ispsi4 = ismolecule && !isterms && (equali_strings(type,"energy_difference") && gmap.at("PROGRAM") == "PSI4");
-  if ((!isgaussian && !ispsi4) || (isgaussian && ispsi4))
-    throw std::runtime_error("Unknown combination of property, structure, and program");
 
   // build the molecule/crystal structure
   structure s;
   s.readdbrow(st.ptr());
 
-  // append the extension and open the file stream
-  std::string ext;
-  if (ismolecule) {
-    if (isxyz)
-      ext = ".xyz";
-    else if (isgaussian)
-      ext = ".gjf";
-    else if (ispsi4)
-      ext = ".inp";
-  } else {
-    throw std::runtime_error("Cannot do crystals yet");
-  }
-  name += ext;
+  // filename, extension
+  std::string name = dir + "/" + s.get_name();
+  std::string ext = "xyz";
+  name += ("." + ext);
 
-  // write the input file to a memory stream for efficiency
-  std::stringstream oss;
-  if (isxyz) {
-    s.writexyz(oss);
-  } else if (isgaussian) {
-    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method does not have an associated Gaussian method keyword");
-    std::string methodk = gmap.at("METHOD");
-    std::string gbsk = "";
-    if (gmap.find("GBS") != gmap.end()) gbsk = gmap.at("GBS");
-
-    if (isterms){
-      if (s.writegjf_terms(oss,methodk,gbsk,fileroot,zat,lmax,exp))
-        throw std::runtime_error("Error writing input file: " + name);
-    } else {
-      if (s.writegjf(oss,methodk,gbsk,fileroot,a))
-        throw std::runtime_error("Error writing input file: " + name);
-    }
-  } else if (ispsi4) {
-    if (gmap.find("METHOD") == gmap.end()) throw std::runtime_error("This method does not have an associated psi4 method keyword");
-    if (a) throw std::runtime_error("Cannot write psi4 inputs with ACPs");
-    std::string method = gmap.at("METHOD");
-    std::string basis = gmap.at("BASIS");
-    if (s.writepsi4(oss,method,basis,fileroot))
-      throw std::runtime_error("Error writing input file: " + name);
-
-  } else {
-    throw std::runtime_error("Unknown combination of structure, property type, and program");
-  }
+  // write the substitution of the template to a string
+  std::string content = tmpl.apply(s);
 
   // write the actual file and exit
   std::ofstream ofile(name,std::ios::trunc);
-  ofile << oss.rdbuf();
+  ofile << content;
   ofile.close();
-  return (fileroot + ext);
+
+  return (s.get_name() + "." + ext);
 }

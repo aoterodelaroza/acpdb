@@ -90,6 +90,13 @@ int structure::readxyz(const std::string &filename){
   // this is a molecule
   ismol = true;
 
+  // name of the structure
+  size_t pos = filename.find_last_of('.');
+  if (pos != std::string::npos && filename.substr(pos) == ".xyz")
+    name = filename.substr(0,pos);
+  else
+    name = filename;
+
   return 0;
 }
 
@@ -176,6 +183,13 @@ int structure::readposcar(const std::string &filename){
   // copy over the lattice vectors
   for (int i=0; i<9; i++)
     r[i] = raux[i];
+
+  // name of the structure
+  size_t pos = filename.find_last_of("._");
+  if (pos != std::string::npos && filename.substr(pos+1) == "POSCAR")
+    name = filename.substr(0,pos);
+  else
+    name = filename;
 
   return 0;
 }
@@ -372,6 +386,7 @@ int structure::writegjf_terms(std::ostream &os, const std::string &keyw, const s
 int structure::readdbrow(sqlite3_stmt *stmt){
   if (!stmt) return 1;
 
+  name = std::string((char *) sqlite3_column_text(stmt, 1));
   ismol = sqlite3_column_int(stmt, 3);
   charge = sqlite3_column_int(stmt, 4);
   mult = sqlite3_column_int(stmt, 5);

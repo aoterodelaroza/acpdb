@@ -296,7 +296,7 @@ int main(int argc, char *argv[]) {
     } else if (keyw == "WRITE") {
       *os << "* WRITE: write input files for database structures" << std::endl << std::endl;
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      db.write_structures(kmap,kmap_to_acp(kmap));
+      db.write_structures(kmap);
 
       ///////////////////////////////////////////////////
 
