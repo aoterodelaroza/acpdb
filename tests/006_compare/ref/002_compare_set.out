@@ -536,7 +536,7 @@ Creating skeleton database
 # s22              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 # ALL              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 #
-Id Name                                                        File              test2         difference
+Id Name                                                File              test2         difference
 1  s22.h2o_h2o                               -4518.0681840000   -4392.5662900000    -125.5018940000
 2  s22.h2co2_h2co2                           -6275.0947000000   -6275.0947000000       0.0000000000
 3  s22.formamide_formamide                   -8283.1250040000   -8157.6231100000    -125.5018940000
@@ -594,7 +594,7 @@ Id Name                                                        File             
 # s22              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 # ALL              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 #
-Id Name                                                        File              test2         difference
+Id Name                                                File              test2         difference
 1  s22.h2o_h2o                               -4518.0681840000   -4392.5662900000    -125.5018940000
 2  s22.h2co2_h2co2                           -6275.0947000000   -6275.0947000000       0.0000000000
 3  s22.formamide_formamide                   -8283.1250040000   -8157.6231100000    -125.5018940000
@@ -631,7 +631,7 @@ Id Name                                                        File             
 # s22b             rms = 155.61728792   mae = 141.18963075   mse = -141.18963075  wrms = 695.94166852  ndat = 20
 # ALL              rms = 156.31320355   mae = 141.59188041   mse = -141.59188041  wrms = 976.17564329  ndat = 39
 #
-Id Name                                                        File              test2         difference
+Id Name                                                File              test2         difference
 1  s22.h2o_h2o                               -4518.0681840000   -4392.5662900000    -125.5018940000
 2  s22.h2co2_h2co2                           -6275.0947000000   -6275.0947000000       0.0000000000
 3  s22.formamide_formamide                   -8283.1250040000   -8157.6231100000    -125.5018940000

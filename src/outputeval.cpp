@@ -42,7 +42,7 @@ void output_eval(std::ostream &os,
 
   // write the header
   os << std::setw(idwidth) << std::left << "Id" << " "
-     << std::setw(45) << std::left << "Name" << " ";
+     << std::setw(37) << std::left << "Name" << " ";
 
   if (!w.empty())
     os << std::setw(10) << std::right << "weight" << " ";
