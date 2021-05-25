@@ -1,4 +1,3 @@
-// -*- c++-mode -*-
 /*
 Copyright (c) 2020 Alberto Otero de la Roza <aoterodelaroza@gmail.com>
 
@@ -16,23 +15,19 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#include "globals.h"
 
-namespace globals {
-  // universal constants and conversion factors
-  extern const double ha_to_kcal; // Hartree to kcal/mol
-  extern const double ang_to_bohr; // angstrom to bohr
+// conversion factors
+const double globals::ha_to_kcal = 627.50947;
+const double globals::ang_to_bohr = 1. / 0.529177210903; // angstrom to bohr
 
-  // property type IDs
-  extern const int ppty_energy_difference;
-  extern const int ppty_energy;
-  extern const int ppty_dipole;
-  extern const int ppty_stress;
-  extern const int ppty_d1e;
-  extern const int ppty_d2e;
-  extern const int ppty_homo;
-  extern const int ppty_lumo;
-}
+// global variables and constants
+const int globals::ppty_energy_difference = 1;
+const int globals::ppty_energy = 2;
+const int globals::ppty_dipole = 3;
+const int globals::ppty_stress = 4;
+const int globals::ppty_d1e = 5;
+const int globals::ppty_d2e = 6;
+const int globals::ppty_homo = 7;
+const int globals::ppty_lumo = 8;
 
-#endif

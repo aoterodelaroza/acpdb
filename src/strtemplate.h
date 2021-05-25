@@ -31,15 +31,19 @@ class strtemplate {
 
   // Token types for the template. These need to be coordinated with
   // tokenname and tokenstr in the implementation file.
-  enum tokentypes { t_string, t_basename, t_cell, t_charge, t_mult, t_nat, t_vaspxyz, t_xyz };
+  enum tokentypes { t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp,
+    t_xyz, t_vaspxyz, t_qexyz };
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
-  // t_cell (%cell%): a 3x3 matrix with the lattice vectors (POSCAR format)
+  // t_cell (%cell%): a 3x3 matrix with the lattice vectors (angstrom)
+  // t_cellbohr (%cellbohr%): a 3x3 matrix with the lattice vectors (bohr)
   // t_charge (%charge%): the molecular charge.
   // t_mult (%mult%): the molecular multiplicity.
   // t_nat (%nat%): the number of atoms.
-  // t_vaspxyz (%vaspxyz%): the species list (atomic symbols + number of atoms) followed by coordinate block.
+  // t_ntyp (%ntyp%): the number of atomic species.
   // t_xyz (%xyz%): the coordinate block, as "atom x y z" lines.
+  // t_vaspxyz (%vaspxyz%): the species list (atomic symbols + number of atoms) followed by coordinate block.
+  // t_qexyz (%qexyz%): the ATOMIC_SPECIES and ATOMIC_COORDINATES block in QE format.
 
   strtemplate(const std::string &source); // construct from string
 

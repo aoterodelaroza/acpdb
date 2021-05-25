@@ -1,5 +1,5 @@
 ## sources
-set(SOURCES acp.cpp acpdb.cpp outputeval.cpp parseutils.cpp statement.cpp
+set(SOURCES acp.cpp acpdb.cpp globals.cpp outputeval.cpp parseutils.cpp statement.cpp
             sqldb.cpp strtemplate.cpp structure.cpp trainset.cpp)
 
 ## C++ standards

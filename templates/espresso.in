@@ -1,0 +1,30 @@
+&control
+ prefix='crystal',
+ pseudo_dir='.',
+ calculation='vc-relax',
+ etot_conv_thr=1.0D-5,
+ forc_conv_thr=1.0D-4,
+/
+&system
+ ibrav = 0,
+ celldm(1) = 1.d0,
+ nat = %nat%,
+ ntyp = %ntyp%,
+ ecutwfc=80.0,
+ ecutrho=800.0,
+ xdm=.true.,
+/
+&electrons
+ conv_thr = 1d-8,
+/
+&ions
+/
+&cell
+/
+%qexyz%
+
+K_POINTS automatic
+4 4 4 1 1 1
+
+CELL_PARAMETERS cubic
+%cellbohr%

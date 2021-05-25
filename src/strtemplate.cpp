@@ -21,13 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include "strtemplate.h"
 #include "parseutils.h"
+#include "globals.h"
 
-// 1: t_string, t_basename, t_cell, t_charge, t_mult, t_nat, t_vaspxyz, t_xyz
+// t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp, t_xyz, t_vaspxyz, t_qexyz
 static const std::vector<std::string> tokenname = { // keyword names for printing
-  "string","basename","cell","charge","mult","nat","vaspxyz","xyz"
+  "string","basename","cell","cellbohr","charge","mult","nat","ntyp","xyz","vaspxyz","qexyz"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords
-  "","%basename%","%cell%","%charge%","%mult%","%nat%","%vaspxyz%","%xyz%"
+  "","%basename%","%cell%","%cellbohr%","%charge%","%mult%","%nat%","%ntyp%","%xyz%","%vaspxyz%","%qexyz%"
 };
 static const int ntoken = tokenstr.size();
 
@@ -73,13 +74,18 @@ std::string strtemplate::apply(const structure &s) const {
     } else if (it->token == t_basename){
       result.append(s.get_name());
 
-    } else if (it->token == t_cell){
+    } else if (it->token == t_cell || it->token == t_cellbohr){
       const double *r = s.get_r();
+
+      double scale = 1.;
+      if (it->token == t_cellbohr) scale = globals::ang_to_bohr;
 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
-      for (int i = 0; i < 3; i++)
-        ss << r[3*i+0] << " " << r[3*i+1] << " " << r[3*i+2] << std::endl;
+      for (int i = 0; i < 3; i++){
+        ss << r[3*i+0]*scale << " " << r[3*i+1]*scale << " " << r[3*i+2]*scale;
+        if (i < 2) ss << std::endl;
+      }
       result.append(ss.str());
 
     } else if (it->token == t_charge){
@@ -90,6 +96,28 @@ std::string strtemplate::apply(const structure &s) const {
 
     } else if (it->token == t_nat){
       result.append(std::to_string(s.get_nat()));
+
+    } else if (it->token == t_ntyp){
+      std::map<unsigned char,int> ntyp;
+      int nat = s.get_nat();
+      const unsigned char *z = s.get_z();
+      for (int i = 0; i < nat; i++)
+        ntyp[z[i]] = 1;
+
+      result.append(std::to_string(ntyp.size()));
+
+    } else if (it->token == t_xyz){
+      int nat = s.get_nat();
+      const unsigned char *z = s.get_z();
+      const double *x = s.get_x();
+
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(8);
+      for (int i = 0; i < nat; i++){
+        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
+        if (i < nat-1) ss << std::endl;
+      }
+      result.append(ss.str());
 
     } else if (it->token == t_vaspxyz){
       int nat = s.get_nat();
@@ -116,26 +144,43 @@ std::string strtemplate::apply(const structure &s) const {
       ss << "Direct" << std::endl;
 
       // write the atomic coordinates
+      ss << std::fixed << std::setprecision(8);
       for (auto it = ityp.begin(); it != ityp.end(); it++){
         for (auto ia = it->second.begin(); ia != it->second.end(); ia++){
           ss << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2];
-          if (std::next(ia) != it->second.end()) ss << std::endl;
+          if (std::next(ia) != it->second.end() || std::next(it) != ityp.end()) ss << std::endl;
         }
       }
 
       result.append(ss.str());
 
-    } else if (it->token == t_xyz){
+    } else if (it->token == t_qexyz){
       int nat = s.get_nat();
       const unsigned char *z = s.get_z();
       const double *x = s.get_x();
 
+      std::map<unsigned char,int> ntyp;
+      for (int i = 0; i < nat; i++)
+        ntyp[z[i]] = 1;
+
       std::stringstream ss;
+
+      // write the atomic species block
+      ss << "ATOMIC_SPECIES" << std::endl;
+      for (auto it = ntyp.begin(); it != ntyp.end(); it++){
+        std::string atsym = nameguess(it->first);
+        ss << atsym << " " << 1.0 << " " << atsym << ".UPF" << std::endl;
+      }
+      ss << std::endl;
+
+      // write the atomic positions block
+      ss << "ATOMIC_POSITIONS" << std::endl;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++){
         ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
         if (i < nat-1) ss << std::endl;
       }
+
       result.append(ss.str());
     }
   }

@@ -1,0 +1,24 @@
+## check: 004_write_crystemplate.out -a1e-10
+## delete: 004_write_crystemplate.db
+## labels: regression quick
+
+system rm -f 004_write_crystemplate.db
+connect 004_write_crystemplate.db
+
+insert method test
+end
+insert litref bibtex ../zz_source/bsip2.bib
+insert set x23diff
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/x23diff.din
+ directory ../zz_source/x23_expt
+ method test
+end
+
+write
+ template_mol ../../templates/vasp.POSCAR
+end
+write
+ template ../../templates/espresso.in
+end

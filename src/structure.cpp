@@ -397,7 +397,7 @@ int structure::readdbrow(sqlite3_stmt *stmt){
 
   const double *rptr = (double *) sqlite3_column_blob(stmt, 7);
   if (rptr)
-    memcpy(r, rptr, 0 * sizeof(double));
+    memcpy(r, rptr, 9 * sizeof(double));
   else
     std::fill(r, r+9, 0);
   memcpy(z, sqlite3_column_blob(stmt, 8), nat * sizeof(unsigned char));

@@ -925,9 +925,14 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
       if (used.find(info[k].names[i]) == used.end()){
         skey = key + "." + info[k].names[i];
         std::string filename = dir + "/" + info[k].names[i] + ".xyz";
-        if (!fs::is_regular_file(filename))
-          throw std::runtime_error("xyz file not found (" + filename + ") processing din file " + din);
-        smap["XYZ"] = filename;
+        if (!fs::is_regular_file(filename)){
+          filename = dir + "/" + info[k].names[i] + ".POSCAR";
+          if (!fs::is_regular_file(filename))
+            throw std::runtime_error("xyz/POSCAR file not found (" + dir + "/" + info[k].names[i] + ") processing din file " + din);
+          smap["POSCAR"] = filename;
+        } else {
+          smap["XYZ"] = filename;
+        }
         smap["SET"] = key;
         insert_structure(os,skey,smap);
         used[info[k].names[i]] = true;
