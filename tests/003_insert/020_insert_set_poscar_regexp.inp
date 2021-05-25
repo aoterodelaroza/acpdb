@@ -1,0 +1,14 @@
+## check: 020_insert_set_poscar_regexp.out -a1e-10
+## delete: 020_insert_set_poscar_regexp.db
+## labels: regression quick
+
+system rm -f 020_insert_set_poscar_regexp.db
+connect 020_insert_set_poscar_regexp.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ description A description.
+ litrefs bsip1 boys1970
+ xyz ../zz_source/s22_xyz/ .*\.xyz
+ poscar ../zz_source/x23_expt/ .*[\._]POSCAR
+end

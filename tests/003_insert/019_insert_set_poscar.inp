@@ -1,0 +1,15 @@
+## check: 019_insert_set_poscar.out -a1e-10
+## delete: 019_insert_set_poscar.db
+## labels: regression quick
+
+system rm -f 019_insert_set_poscar.db
+connect 019_insert_set_poscar.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22x5
+ description A description.
+ litrefs bsip1 boys1970
+ xyz ../zz_source/s22_xyz/ch4_ch4.xyz ../zz_source/s22_xyz/ch4_ch4_1.xyz \
+     ../zz_source/s22_xyz/ch4_ch4_2.xyz
+ poscar ../zz_source/x23_expt/urea.POSCAR ../zz_source/x23_expt/imidazole.POSCAR
+end

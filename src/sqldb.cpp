@@ -247,7 +247,7 @@ INSERT INTO Sets (key,litrefs,description)
   st.step();
 
   // interpret the xyz keyword
-  if (kmap.find("XYZ") != kmap.end())
+  if (kmap.find("XYZ") != kmap.end() || kmap.find("POSCAR") != kmap.end())
     insert_set_xyz(os, key, kmap);
 
   // interpret the din/directory/method keyword combination
@@ -773,14 +773,9 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 #endif
 }
 
-// Insert additional info from an INSERT SET command (xyz keyword)
+// Insert additional info from an INSERT SET command (xyz and POSCAR keywords)
 void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
-  if (!db) throw std::runtime_error("A database file must be connected before using INSERT");
-
-  // tokenize the line following the xyz keyword
-  std::list<std::string> tokens(list_all_words(kmap.at("XYZ")));
-  if (tokens.empty())
-    throw std::runtime_error("Need arguments after XYZ");
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
 
   // prepare
   std::string skey;
@@ -789,48 +784,69 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
   // begin the transaction
   begin_transaction();
 
-  if (fs::is_directory(tokens.front())){
-    // add a directory //
+  for (int ixyz = 0; ixyz < 2; ixyz++){
+    // tokenize the line following the xyz keyword
+    std::list<std::string> tokens;
+    if (ixyz == 0 && (kmap.find("XYZ") != kmap.end()))
+      tokens = list_all_words(kmap.at("XYZ"));
+    else if (kmap.find("POSCAR") != kmap.end())
+      tokens = list_all_words(kmap.at("POSCAR"));
+    if (tokens.empty())
+      continue;
 
-    // interpret the input and build the regex
-    auto it = tokens.begin();
-    std::string dir = *it, rgx_s;
-    if (std::next(it) != tokens.end())
-      rgx_s = *(std::next(it));
-    else
-      rgx_s = ".*\\.xyz$";
-    std::regex rgx(rgx_s, std::regex::awk | std::regex::icase | std::regex::optimize);
+    if (fs::is_directory(tokens.front())){
+      // add a directory //
 
-    // run over directory files and add the structures
-    for (const auto& file : fs::directory_iterator(dir)){
-      std::string filename = file.path().filename();
-      if (std::regex_match(filename.begin(),filename.end(),rgx)){
-        skey = key + "." + std::string(file.path().stem());
-
-        smap.clear();
-        smap["XYZ"] = file.path().string();
-        smap["SET"] = key;
-        insert_structure(os,skey,smap);
+      // interpret the input and build the regex
+      auto it = tokens.begin();
+      std::string dir = *it, rgx_s;
+      if (std::next(it) != tokens.end())
+        rgx_s = *(std::next(it));
+      else{
+        if (ixyz == 0)
+          rgx_s = ".*\\.xyz$";
+        else
+          rgx_s = ".*\\.POSCAR";
       }
-    }
+      std::regex rgx(rgx_s, std::regex::awk | std::regex::icase | std::regex::optimize);
 
-  } else if (fs::is_regular_file(tokens.front())) {
-    // add a list of files //
+      // run over directory files and add the structures
+      for (const auto& file : fs::directory_iterator(dir)){
+        std::string filename = file.path().filename();
+        if (std::regex_match(filename.begin(),filename.end(),rgx)){
+          skey = key + "." + std::string(file.path().stem());
 
-    for (auto it = tokens.begin(); it != tokens.end(); it++){
-      if (fs::is_regular_file(*it)){
-        skey = key + "." + std::string(fs::path(*it).stem());
-
-        smap.clear();
-        smap["XYZ"] = *it;
-        smap["SET"] = key;
-        insert_structure(os,skey,smap);
-      } else {
-        throw std::runtime_error("File or directory not found: " + *it);
+          smap.clear();
+          if (ixyz == 0)
+            smap["XYZ"] = file.path().string();
+          else
+            smap["POSCAR"] = file.path().string();
+          smap["SET"] = key;
+          insert_structure(os,skey,smap);
+        }
       }
+
+    } else if (fs::is_regular_file(tokens.front())) {
+      // add a list of files //
+
+      for (auto it = tokens.begin(); it != tokens.end(); it++){
+        if (fs::is_regular_file(*it)){
+          skey = key + "." + std::string(fs::path(*it).stem());
+
+          smap.clear();
+          if (ixyz == 0)
+            smap["XYZ"] = *it;
+          else
+            smap["POSCAR"] = *it;
+          smap["SET"] = key;
+          insert_structure(os,skey,smap);
+        } else {
+          throw std::runtime_error("File or directory not found: " + *it);
+        }
+      }
+    } else {
+      throw std::runtime_error("File or directory not found: " + tokens.front());
     }
-  } else {
-    throw std::runtime_error("File or directory not found: " + tokens.front());
   }
 
   // commit the transaction

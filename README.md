@@ -235,6 +235,9 @@ INSERT SET name.s
   XYZ xyz1.s [xyz2.s] [xyz3.s] ...
   ... or ...
   XYZ directory.s [regexp.s]
+  POSCAR poscar1.s [poscar2.s] [poscar3.s] ...
+  ... or ...
+  POSCAR directory.s [regexp.s]
 END
 ~~~
 Add the set with name `name.s` in the same way as above. In addition,
@@ -242,7 +245,11 @@ belonging to this set, add structures corresponding to XYZ files
 `xyz1.s`, etc. Alternatively, add all files in directory `directory.s`
 that match the regular expression `regexp.s` (awk style). If
 `regexp.s` is not given, add all files in the directory with xyz
-extension.
+extension. If the keyword POSCAR is present, also add structures
+corresponding to POSCAR files `poscar1.s`, etc. Alternatively, add all
+POSCAR files in directory `directory.s` that match the regular
+expression `regexp.s` (awk style). If `regexp.s` is not given, add all
+files in the directory with POSCAR extension.
 
 ~~~
 INSERT SET name.s

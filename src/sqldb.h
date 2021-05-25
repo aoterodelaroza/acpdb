@@ -80,7 +80,7 @@ class sqldb {
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::ostream &os, const std::list<std::string> &tokens);
 
-  // Insert additional info from an INSERT SET command (xyz keyword)
+  // Insert additional info from an INSERT SET command (xyz and POSCAR keywords)
   void insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
 
   // Insert additional info from an INSERT SET command (din keyword)
