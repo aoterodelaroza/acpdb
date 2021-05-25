@@ -514,6 +514,14 @@ by the database program. The available keywords are:
 - `%xyz%`: the block with the atomic coordinates. The format of each
   line is the atomic symbol followed by the x, y, and z coordinates.
 
+- `%xyzatnum%`: the block with the atomic coordinates. The format of
+  each line is the atomic number followed by the x, y, and z
+  coordinates.
+
+- `%xyzatnum200%`: the block with the atomic coordinates. The format
+  of each line is the atomic number plus 200 followed by the x, y, and
+  z coordinates. (Useful for crystal inputs with ACPs.)
+
 - `%vaspxyz%`: the coordinates block in POSCAR format. The first line
   is the atomic symbols for the species in the system. The second line
   is the number of atoms belonging to each species. Lastly, the

@@ -22,3 +22,9 @@ end
 write
  template ../../templates/espresso.in
 end
+write
+ template ../../templates/crystal.34
+end
+write
+ template ../../templates/crystalecp.34
+end

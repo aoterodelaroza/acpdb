@@ -23,12 +23,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include "globals.h"
 
-// t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp, t_xyz, t_vaspxyz, t_qexyz
+// t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp,
+// t_xyz, t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz
 static const std::vector<std::string> tokenname = { // keyword names for printing
-  "string","basename","cell","cellbohr","charge","mult","nat","ntyp","xyz","vaspxyz","qexyz"
+  "string","basename","cell","cellbohr","charge","mult","nat","ntyp","xyz",
+  "xyzatnum","xyzatnum200","vaspxyz","qexyz"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords
-  "","%basename%","%cell%","%cellbohr%","%charge%","%mult%","%nat%","%ntyp%","%xyz%","%vaspxyz%","%qexyz%"
+  "","%basename%","%cell%","%cellbohr%","%charge%","%mult%","%nat%","%ntyp%","%xyz%",
+  "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%"
 };
 static const int ntoken = tokenstr.size();
 
@@ -106,7 +109,7 @@ std::string strtemplate::apply(const structure &s) const {
 
       result.append(std::to_string(ntyp.size()));
 
-    } else if (it->token == t_xyz){
+    } else if (it->token == t_xyz || it->token == t_xyzatnum || it->token == t_xyzatnum200){
       int nat = s.get_nat();
       const unsigned char *z = s.get_z();
       const double *x = s.get_x();
@@ -114,7 +117,13 @@ std::string strtemplate::apply(const structure &s) const {
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++){
-        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
+        if (it->token == t_xyz)
+          ss << nameguess(z[i]);
+        else if (it->token == t_xyzatnum)
+          ss << (int) z[i];
+        else if (it->token == t_xyzatnum200)
+          ss << ((int) z[i]+200);
+        ss << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
         if (i < nat-1) ss << std::endl;
       }
       result.append(ss.str());
