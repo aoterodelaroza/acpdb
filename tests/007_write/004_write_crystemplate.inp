@@ -28,3 +28,9 @@ end
 write
  template ../../templates/crystalecp.34
 end
+write
+ template ../../templates/crystal.d12
+end
+write
+ template ../../templates/crystalecp.d12
+end

@@ -272,3 +272,13 @@ Creating skeleton database
 # WRITE file ./x23diff.oxalic_acid_beta.34
 # WRITE file ./x23diff.oxalic_acid_alpha.34
 
+* WRITE: write input files for database structures
+
+# WRITE file ./x23diff.oxalic_acid_beta.d12
+# WRITE file ./x23diff.oxalic_acid_alpha.d12
+
+* WRITE: write input files for database structures
+
+# WRITE file ./x23diff.oxalic_acid_beta.d12
+# WRITE file ./x23diff.oxalic_acid_alpha.d12
+

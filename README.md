@@ -503,6 +503,10 @@ by the database program. The available keywords are:
 
 - `%cellbohr%`: a 3x3 matrix with the lattice vectors in bohr.
 
+- `%cell_lengths%`: the cell lengths in angstrom.
+
+- `%cell_angles%`: the cell angles in degrees.
+
 - `%charge%`: the molecular charge.
 
 - `%mult%`: the molecular multiplicity.

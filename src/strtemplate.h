@@ -31,11 +31,15 @@ class strtemplate {
 
   // Token types for the template. These need to be coordinated with
   // tokenname and tokenstr in the implementation file.
-  enum tokentypes { t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp,
-    t_xyz, t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz };
+  enum tokentypes {
+    t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
+    t_charge, t_mult, t_nat, t_ntyp, t_xyz,
+    t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz };
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
   // t_cell (%cell%): a 3x3 matrix with the lattice vectors (angstrom)
+  // t_cell_lengths (%cell_lengths%): cell lengths in bohr.
+  // t_cell_angles (%cell_angles%): cell angles in bohr.
   // t_cellbohr (%cellbohr%): a 3x3 matrix with the lattice vectors (bohr)
   // t_charge (%charge%): the molecular charge.
   // t_mult (%mult%): the molecular multiplicity.

@@ -1,0 +1,15 @@
+Title
+CRYSTAL
+0 0 0
+1
+%cell_lengths% %cell_angles%
+%nat%
+%xyzatnum%
+END
+HF3C
+END
+TOLDEE
+10
+SHRINK
+4 4
+END

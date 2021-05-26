@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#define M_PI 3.14159265358979323846
+
 namespace globals {
   // universal constants and conversion factors
   extern const double ha_to_kcal; // Hartree to kcal/mol

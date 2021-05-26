@@ -19,18 +19,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include <cmath>
 #include "strtemplate.h"
 #include "parseutils.h"
 #include "globals.h"
 
-// t_string, t_basename, t_cell, t_cellbohr, t_charge, t_mult, t_nat, t_ntyp,
-// t_xyz, t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz
+// t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
+// t_charge, t_mult, t_nat, t_ntyp, t_xyz,
+// t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz
 static const std::vector<std::string> tokenname = { // keyword names for printing
-  "string","basename","cell","cellbohr","charge","mult","nat","ntyp","xyz",
+  "string","basename","cell","cellbohr","cell_lengths","cell_angles",
+  "charge","mult","nat","ntyp","xyz",
   "xyzatnum","xyzatnum200","vaspxyz","qexyz"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords
-  "","%basename%","%cell%","%cellbohr%","%charge%","%mult%","%nat%","%ntyp%","%xyz%",
+  "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
+  "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%"
 };
 static const int ntoken = tokenstr.size();
@@ -89,6 +93,43 @@ std::string strtemplate::apply(const structure &s) const {
         ss << r[3*i+0]*scale << " " << r[3*i+1]*scale << " " << r[3*i+2]*scale;
         if (i < 2) ss << std::endl;
       }
+      result.append(ss.str());
+
+    } else if (it->token == t_cell_lengths) {
+      const double *r = s.get_r();
+
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(8);
+      for (int i = 0; i < 3; i++){
+        double len2 = 0;
+        for (int j = 0; j < 3; j++)
+          len2 += r[3*i+j] * r[3*i+j];
+        ss << std::sqrt(len2);
+        if (i < 2) ss << " ";
+      }
+      result.append(ss.str());
+
+    } else if (it->token == t_cell_angles) {
+      const double *r = s.get_r();
+
+      double len[3] = {0.0, 0.0, 0.0};
+      for (int i = 0; i < 3; i++){
+        for (int j = 0; j < 3; j++)
+          len[i] += r[3*i+j] * r[3*i+j];
+        len[i] = std::sqrt(len[i]);
+      }
+      double ang[3];
+      ang[0] = acos((r[3*1+0] * r[3*2+0] + r[3*1+1] * r[3*2+1] + r[3*1+2] * r[3*2+2]) / len[1] / len[2]) * 180. / M_PI;
+      ang[1] = acos((r[3*0+0] * r[3*2+0] + r[3*0+1] * r[3*2+1] + r[3*0+2] * r[3*2+2]) / len[0] / len[2]) * 180. / M_PI;
+      ang[2] = acos((r[3*0+0] * r[3*1+0] + r[3*0+1] * r[3*1+1] + r[3*0+2] * r[3*1+2]) / len[0] / len[1]) * 180. / M_PI;
+
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(8);
+      for (int i = 0; i < 3; i++){
+        ss << ang[i];
+        if (i < 2) ss << " ";
+      }
+
       result.append(ss.str());
 
     } else if (it->token == t_charge){
