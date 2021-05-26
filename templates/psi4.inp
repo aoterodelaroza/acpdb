@@ -1,0 +1,33 @@
+import os
+import psi4
+import psi4.core
+
+memory 2 GB
+set_num_threads(4)
+
+psi4_io.set_specific_path(180, './')
+psi4_io.set_specific_retention(180, True)
+psi4_io.print_out()
+
+molecule mol {
+%charge% %mult%
+%xyz%
+units angstrom
+}
+
+filename = core.get_writer_file_prefix("mol") + '.180.npy'
+os.rename("%basename%.180.npy", filename)
+
+
+set {
+  basis pcseg-4
+  scf_type df
+  dft_spherical_points 590
+  dft_radial_points 99
+  reference rks
+  guess read
+}
+
+E, wfn = energy("pbe", return_wfn=True)
+molden(wfn, "%basename%.molden", dovirtual=False)
+

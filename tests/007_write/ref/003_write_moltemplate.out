@@ -276,3 +276,12 @@ Creating skeleton database
 # WRITE file ./s22partial.nh3_nh3_1.inp
 # WRITE file ./s22partial.nh3_nh3.inp
 
+* WRITE: write input files for database structures
+
+# WRITE file ./s22partial.h2o_h2o_2.inp
+# WRITE file ./s22partial.h2o_h2o_1.inp
+# WRITE file ./s22partial.h2o_h2o.inp
+# WRITE file ./s22partial.nh3_nh3_2.inp
+# WRITE file ./s22partial.nh3_nh3_1.inp
+# WRITE file ./s22partial.nh3_nh3.inp
+

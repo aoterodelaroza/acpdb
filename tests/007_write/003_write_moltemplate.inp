@@ -1,17 +1,16 @@
 ## check: 003_write_moltemplate.out -a1e-10
-## delete: s22partial.h2o_h2o_1.gjf -a1e-10
-## delete: s22partial.h2o_h2o_2.gjf -a1e-10
-## delete: s22partial.h2o_h2o.gjf -a1e-10
-## delete: s22partial.nh3_nh3_1.gjf -a1e-10
-## delete: s22partial.nh3_nh3_2.gjf -a1e-10
-## delete: s22partial.nh3_nh3.gjf -a1e-10
-## delete: s22partial.h2o_h2o_1.inp -a1e-10
-## delete: s22partial.h2o_h2o_2.inp -a1e-10
-## delete: s22partial.h2o_h2o.inp -a1e-10
-## delete: s22partial.nh3_nh3_1.inp -a1e-10
-## delete: s22partial.nh3_nh3_2.inp -a1e-10
-## delete: s22partial.nh3_nh3.inp -a1e-10
-## delete: 003_write_moltemplate.db
+## delete: s22partial.h2o_h2o_1.gjf
+## delete: s22partial.h2o_h2o_1.inp
+## delete: s22partial.h2o_h2o_2.gjf
+## delete: s22partial.h2o_h2o_2.inp
+## delete: s22partial.h2o_h2o.gjf
+## delete: s22partial.h2o_h2o.inp
+## delete: s22partial.nh3_nh3_1.gjf
+## delete: s22partial.nh3_nh3_1.inp
+## delete: s22partial.nh3_nh3_2.gjf
+## delete: s22partial.nh3_nh3_2.inp
+## delete: s22partial.nh3_nh3.gjf
+## delete: s22partial.nh3_nh3.inp
 ## labels: regression quick
 
 system rm -f 003_write_moltemplate.db
@@ -35,4 +34,8 @@ end
 write
  set s22partial
  template ../../templates/orca.inp
+end
+write
+ set s22partial
+ template ../../templates/psi4.inp
 end
