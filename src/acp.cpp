@@ -198,7 +198,7 @@ void acp::info(std::ostream &os) const{
 
   std::streamsize prec = os.precision(5);
   os << std::scientific;
-  os << "* Information for ACP " + name << std::endl;
+  os << "* INFO for ACP: " + name << std::endl;
   os << "+ Atoms (lmax) : ";
   for (auto it = lmax.begin(); it != lmax.end(); it++)
     os << nameguess(it->first) << "(" << inttol[it->second] << ") ";
@@ -233,7 +233,7 @@ void acp::split(const std::string &templ, std::list<std::string> &tokens){
   int d0 = digits(t.size()+1);
   for (int i = 0; i < t.size(); i++){
     int dd = digits(i+1);
-    std::string name_ = name + "-" + std::string(d0-dd,'0') + std::to_string(i+1);
+    std::string name_ = templ + "-" + std::string(d0-dd,'0') + std::to_string(i+1);
     std::string filename_ = name_ + ".acp";
 
     if (havecoef){

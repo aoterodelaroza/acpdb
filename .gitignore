@@ -13,5 +13,8 @@ tests/zz_source/
 # emacs backups
 *~
 
+# acps
+*.acp
+
 # cmake build
 build/

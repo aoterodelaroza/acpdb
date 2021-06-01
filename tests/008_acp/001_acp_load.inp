@@ -1,0 +1,12 @@
+## check: 001_acp_load.out -a1e-10
+## labels: regression quick
+
+acp load bleh ../zz_source/minis.bsip
+acp load bleh2
+ C l 0.2 40.0
+ N l 0.2 42.0
+ N s 0.3 43.0
+ N p 0.4 44.0
+end
+acp info bleh
+acp info bleh2

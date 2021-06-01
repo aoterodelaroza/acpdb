@@ -46,22 +46,6 @@ static std::unordered_map<std::string,acp> nacp;
 static sqldb db;
 static trainset ts;
 
-// some utility functions
-static acp string_to_acp(const std::string &str){
-  acp res;
-  if (nacp.find(str) != nacp.end())
-    res = nacp[str];
-  else
-    res = acp(str,str);
-  return res;
-}
-static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
-  if (kmap.find("ACP") != kmap.end())
-    return string_to_acp(kmap.at("ACP"));
-  else
-    return acp();
-}
-
 int main(int argc, char *argv[]) {
 
   // Initial banner
@@ -287,7 +271,68 @@ int main(int argc, char *argv[]) {
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
       db.write_structures(*os,kmap);
 
+      //// ACP
+    } else if (keyw == "ACP") {
+      std::string category = popstring(tokens,true);
+      std::string name = popstring(tokens);
+
+      if (category == "LOAD"){
+        *os << "* ACP LOAD " << name << std::endl << std::endl;
+        if (tokens.empty())
+          nacp[name] = acp(name,*is);
+        else
+          nacp[name] = acp(name,tokens.front());
+
+      } else if (category == "INFO") {
+        if (nacp.find(name) != nacp.end())
+          nacp[name].info(*os);
+        else {
+          acp a = acp(name,name);
+          a.info(*os);
+        }
+
+      } else if (category == "WRITE") {
+        if (name.empty() || nacp.find(name) == nacp.end())
+          throw std::runtime_error("Unknown ACP name: " + name);
+
+        std::string file = popstring(tokens);
+        if (file.empty())
+          nacp[name].writeacp_text(*os);
+        else{
+          *os << "* ACP WRITE: writing ACP " << name << " to file " << file << std::endl << std::endl;
+          nacp[name].writeacp_gaussian(file);
+        }
+      } else if (category == "SPLIT") {
+        std::string prefix = popstring(tokens);
+        if (prefix.empty())
+          throw std::runtime_error("Empty prefix string for ACP SPLIT");
+
+        *os << "* ACP SPLIT " << name << " creates files " << prefix << "-*.acp" << std::endl << std::endl;
+        if (nacp.find(name) != nacp.end())
+          nacp[name].split(prefix,tokens);
+        else {
+          acp a = acp(name,name);
+          a.split(prefix,tokens);
+        }
+      }
+
       ///////////////////////////////////////////////////
+
+// // some utility functions
+// static acp string_to_acp(const std::string &str){
+//   acp res;
+//   if (nacp.find(str) != nacp.end())
+//     res = nacp[str];
+//   else
+//     res = acp(str,str);
+//   return res;
+// }
+// static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
+//   if (kmap.find("ACP") != kmap.end())
+//     return string_to_acp(kmap.at("ACP"));
+//   else
+//     return acp();
+// }
 
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);
@@ -296,151 +341,112 @@ int main(int argc, char *argv[]) {
       //   ts.write_din(tokens);
 
       //
-    } else if (keyw == "ACP") {
-      std::string name = popstring(tokens);
-      if (tokens.empty())
-        nacp[name] = acp(name,*is);
-      else
-        nacp[name] = acp(name,tokens.front());
-
       //
-    } else if (keyw == "WRITEX") {
-      std::string category = popstring(tokens,true);
-      if (category == "ACP"){
-        // WRITE ACP keyword
-        std::string key = popstring(tokens);
-        if (key.empty() || nacp.find(key) == nacp.end())
-          throw std::runtime_error("Unknown ACP name: " + key);
-
-        std::string file = popstring(tokens);
-        if (file.empty())
-          nacp[key].writeacp_text(*os);
-        else
-          nacp[key].writeacp_gaussian(file);
-      } else if (category == "TERMS"){
-        // WRITE TERMS keyword
-        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-        ts.write_structures(kmap,{},true);
-      } else if (category.empty()) {
-        // WRITE environment
-        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-        acp a = kmap_to_acp(kmap);
-        if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
-          ts.write_structures(kmap,a,false);
-      } else {
-        throw std::runtime_error("Unknown syntax in WRITE: " + category);
-      }
-
-    } else if (keyw == "READ") {
-      std::string file = popstring(tokens);
-      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      if (equali_strings(file,"TERMS")){
-        file = popstring(tokens);
-        ts.read_terms(file,kmap);
-      } else {
-        if (file.empty())
-          throw std::runtime_error("A data file is required for READ");
-        acp a = kmap_to_acp(kmap);
-        if (kmap.find("COMPARE") != kmap.end()){
-          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
-            ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
-          }
-        }
-      }
-
-      //
-    } else if (keyw == "ACPINFO") {
-      acp a = string_to_acp(popstring(tokens));
-      if (!a)
-        throw std::runtime_error("Unknown ACP: " + a.get_name());
-      else
-        a.info(*os);
-
-      //
-    } else if (keyw == "ACPSPLIT") {
-      std::string key = popstring(tokens);
-      std::string templ = popstring(tokens);
-      if (templ.empty())
-        throw std::runtime_error("Empty template string for ACPSPLIT");
-
-      acp a = string_to_acp(key);
-      if (!a)
-        throw std::runtime_error("Unknown ACP: " + a.get_name());
-      else
-        a.split(templ, tokens);
-
-      //
-    } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
-      acp a;
-      if (keyw == "ACPEVAL"){
-        a = string_to_acp(popstring(tokens));
-        if (!a)
-          throw std::runtime_error("Unknown ACP: " + a.get_name());
-      }
-
-      if (!tokens.empty()){
-        std::ofstream of(tokens.front(),std::ios::trunc);
-        if (of.fail())
-          throw std::runtime_error("Error opening file: " + tokens.front());
-        ts.eval_acp(of,a);
-      } else {
-        ts.eval_acp(*os,a);
-      }
-
-      //
-    } else if (keyw == "ATOM" || keyw == "ATOMS") {
-      if (tokens.empty())
-        ts.clearatoms();
-      else
-        ts.addatoms(tokens);
-
-      //
-    } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
-      ts.addexp(tokens);
-
-      //
-    } else if (keyw == "REFERENCE") {
-      ts.setreference(tokens);
-
-      //
-    } else if (keyw == "EMPTY") {
-      ts.setempty(tokens);
-
-      //
-    } else if (keyw == "ADD") {
-      ts.addadditional(tokens);
-
-      //
-    } else if (keyw == "SUBSET") {
-      std::string alias = popstring(tokens);
-      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      ts.addsubset(alias,kmap);
-
-      //
-    } else if (keyw == "DESCRIBE") {
-      ts.describe(*os,false,true);
-
-      //
-    } else if (keyw == "TRAINING") {
-      std::string key = popstring(tokens,true);
-      std::string name = popstring(tokens);
-      if (key == "SAVE")
-        ts.savedb(name);
-      else if (key == "LOAD")
-        ts.loaddb(name);
-      else if (key == "DELETE")
-        ts.deletedb(name);
-      else if (key == "LIST")
-        ts.listdb(*os);
-      else if (key == "CLEAR"){
-        ts = trainset();
-        ts.setdb(&db);
-      } else
-        throw std::runtime_error("Unknown command in TRAINING");
-
-      //
-    } else if (keyw == "DUMP") {
-      ts.dump();
+//    } else if (keyw == "WRITEX") {
+//      std::string category = popstring(tokens,true);
+//      if (category == "TERMS"){
+//        // WRITE TERMS keyword
+//        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+//        ts.write_structures(kmap,{},true);
+//      } else if (category.empty()) {
+//        // WRITE environment
+//        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+//        acp a = kmap_to_acp(kmap);
+//        if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
+//          ts.write_structures(kmap,a,false);
+//      } else {
+//        throw std::runtime_error("Unknown syntax in WRITE: " + category);
+//      }
+//
+//    } else if (keyw == "READ") {
+//      std::string file = popstring(tokens);
+//      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+//      if (equali_strings(file,"TERMS")){
+//        file = popstring(tokens);
+//        ts.read_terms(file,kmap);
+//      } else {
+//        if (file.empty())
+//          throw std::runtime_error("A data file is required for READ");
+//        acp a = kmap_to_acp(kmap);
+//        if (kmap.find("COMPARE") != kmap.end()){
+//          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
+//            ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
+//          }
+//        }
+//      }
+//
+//      //
+//    } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
+//      acp a;
+//      if (keyw == "ACPEVAL"){
+//        a = string_to_acp(popstring(tokens));
+//        if (!a)
+//          throw std::runtime_error("Unknown ACP: " + a.get_name());
+//      }
+//
+//      if (!tokens.empty()){
+//        std::ofstream of(tokens.front(),std::ios::trunc);
+//        if (of.fail())
+//          throw std::runtime_error("Error opening file: " + tokens.front());
+//        ts.eval_acp(of,a);
+//      } else {
+//        ts.eval_acp(*os,a);
+//      }
+//
+//      //
+//    } else if (keyw == "ATOM" || keyw == "ATOMS") {
+//      if (tokens.empty())
+//        ts.clearatoms();
+//      else
+//        ts.addatoms(tokens);
+//
+//      //
+//    } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
+//      ts.addexp(tokens);
+//
+//      //
+//    } else if (keyw == "REFERENCE") {
+//      ts.setreference(tokens);
+//
+//      //
+//    } else if (keyw == "EMPTY") {
+//      ts.setempty(tokens);
+//
+//      //
+//    } else if (keyw == "ADD") {
+//      ts.addadditional(tokens);
+//
+//      //
+//    } else if (keyw == "SUBSET") {
+//      std::string alias = popstring(tokens);
+//      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+//      ts.addsubset(alias,kmap);
+//
+//      //
+//    } else if (keyw == "DESCRIBE") {
+//      ts.describe(*os,false,true);
+//
+//      //
+//    } else if (keyw == "TRAINING") {
+//      std::string key = popstring(tokens,true);
+//      std::string name = popstring(tokens);
+//      if (key == "SAVE")
+//        ts.savedb(name);
+//      else if (key == "LOAD")
+//        ts.loaddb(name);
+//      else if (key == "DELETE")
+//        ts.deletedb(name);
+//      else if (key == "LIST")
+//        ts.listdb(*os);
+//      else if (key == "CLEAR"){
+//        ts = trainset();
+//        ts.setdb(&db);
+//      } else
+//        throw std::runtime_error("Unknown command in TRAINING");
+//
+//      //
+//    } else if (keyw == "DUMP") {
+//      ts.dump();
 
       //
     } else {

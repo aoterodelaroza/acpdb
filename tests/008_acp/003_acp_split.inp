@@ -1,0 +1,14 @@
+## check: 003_acp_split.out -a1e-10
+## delete: 003_acp_split_a-1.acp
+## delete: 003_acp_split_a-2.acp
+## delete: 003_acp_split_b-1.acp
+## delete: 003_acp_split_b-2.acp
+## labels: regression quick
+
+acp load bleh
+ C l 0.2 40.0
+ N l 0.2 42.0
+end
+acp split bleh 003_acp_split_a
+acp split bleh 003_acp_split_b coef 1.0
+

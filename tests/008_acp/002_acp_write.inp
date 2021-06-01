@@ -1,0 +1,7 @@
+## check: 002_acp_write.out -a1e-10
+## check: 002_acp_write.acp -a1e-10
+## labels: regression quick
+
+acp load bleh ../zz_source/minis.bsip
+acp write bleh
+acp write bleh 002_acp_write.acp

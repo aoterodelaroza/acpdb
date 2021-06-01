@@ -9,6 +9,7 @@ set(TESTDIRS
   005_delete        ## deleting
   006_compare       ## comparing
   007_write         ## writing inputs
+  008_acp           ## working with ACPs
   )
 
 ## define the macro that will run the tests

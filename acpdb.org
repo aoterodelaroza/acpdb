@@ -99,34 +99,6 @@ LIST DIN_TRAINING [directory.s]
   Write din files for all subsets of the current training set. If
   directory.s is given, write them in that directory.
 
-* ACP operations
-
-ACP name.s file.acp
-ACP name.s
- atom.s l.s exp.r coef.r
- ...
-END
-
-  Define a named ACP from file file.acp (in Gaussian-style
-  format). Alternatively, give all ACP terms one by one.
-
-WRITE ACP name.s [file.s]
-
-  Write the ACP name.s to file file.s (Gaussian-style format). If no
-  file is given, write it in human-readable format to the output.
-
-ACPINFO name.s
-
-  Print information about the given ACP, such as the 1-norm, 2-norm,
-  etc.
-
-ACPSPLIT name.s template.s [COEF value.r]
-
-  Split the ACP name.s into several ACPs, with names given by
-  template.s followed by an integer and the extension .acp. Each new
-  ACP contains only one term from the original ACP. If COEF is given,
-  set the coefficients for the new ACPs to value.r.
-
 * Evaluations
 
 ACPEVAL name.s [output.s]

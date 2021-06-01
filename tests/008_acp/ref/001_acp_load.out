@@ -1,0 +1,30 @@
+* ACP LOAD bleh
+
+* ACP LOAD bleh2
+
+* INFO for ACP: bleh
++ Atoms (lmax) : H(s) B(p) C(p) N(p) O(p) F(p) Si(p) P(p) S(p) Cl(p) 
++ Number of terms : 
+H: l=7 s=5 
+B: l=6 s=3 p=2 
+C: l=8 s=3 p=3 
+N: l=6 s=2 p=3 
+O: l=6 s=3 p=5 
+F: l=7 s=2 p=1 
+Si: l=3 s=1 p=2 
+P: l=4 s=1 p=2 
+S: l=5 s=2 p=3 
+Cl: l=4 s=1 p=2 
+1-norm = 1.50000e+01
+2-norm = 2.92727e+00
+inf-norm (max. abs(coef)) = 1.86200e+00
+
+* INFO for ACP: bleh2
++ Atoms (lmax) : C(l) N(p) 
++ Number of terms : 
+C: l=1 
+N: l=1 s=1 p=1 
+1-norm = 1.69000e+02
+2-norm = 8.45518e+01
+inf-norm (max. abs(coef)) = 4.40000e+01
+
