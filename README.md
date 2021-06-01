@@ -12,7 +12,7 @@ atom-centered potentials (ACPs).
 | [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
 | [Writing Input and Structure Files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
-| [Working with ACPs](#working-with-acps)                                             | ACP                                                                                                                                                                                   |
+| [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp)                                                                                   |
 
 ## Command-Line Syntax
 ~~~
@@ -567,7 +567,7 @@ ACP WRITE name.s [file.s]
 Write the ACP `name.s` to file `file.s` (Gaussian-style format). If no
 file is given, write it in human-readable form to the output.
 
-### Split an ACP
+#### Split an ACP
 ~~~
 ACP SPLIT name.s prefix.s [COEF value.r]
 ~~~
