@@ -5,7 +5,7 @@ atom-centered potentials (ACPs).
 
 | Section                                                                             | Keywords                                                                                                                                                                              |
 |-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Global variables and commands](#global-variables-and-commands)                     | NCPU, MEM, SOURCE, SYSTEM, ECHO, END                                                                                                                                                  |
+| [Global commands](#global-variables-and-commands)                                   | SOURCE, SYSTEM, ECHO, END                                                                                                                                                             |
 | [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
 | [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                           |
 | [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
@@ -87,19 +87,7 @@ number of values they comprise:
 
 ## Syntax
 
-### Global Variables and Commands
-
-These variables control the global behavior of ACPDB.
-
-~~~
-NCPU ncpu.i
-~~~
-Set the number of processors in all the input writers.
-
-~~~
-MEM mem.i
-~~~
-Set the amount of available memory (in GB) in all the input writers.
+### Global Commands
 
 ~~~
 SOURCE file.s
