@@ -1,13 +1,13 @@
-## check: 004_write_with_acp.out -a1e-10
+## check: 004_write_with_acpgau.out -a1e-10
 ## labels: regression quick
 
-system rm -f 004_write_with_acp.db
-connect 004_write_with_acp.db
+system rm -f 004_write_with_acpgau.db
+connect 004_write_with_acpgau.db
 
 insert method test
 end
 insert litref bibtex ../zz_source/bsip2.bib
-insert set 004_write_with_acp-set
+insert set 004_write_with_acpgau-set
  description A description.
  litrefs bsip1 boys1970
  din ../zz_source/s22partial.din
@@ -16,12 +16,12 @@ insert set 004_write_with_acp-set
 end
 
 write
- set 004_write_with_acp-set
+ set 004_write_with_acpgau-set
  template_mol ../../templates/gaussian_pseudo.gjf
  acp ../zz_source/minis.bsip
 end
 write
- set 004_write_with_acp-set
+ set 004_write_with_acpgau-set
  template_mol ../zz_source/templates/gau1.gjf
  acp ../zz_source/minis.bsip
 end

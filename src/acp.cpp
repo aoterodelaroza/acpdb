@@ -128,7 +128,8 @@ void acp::writeacp_gaussian(const std::string &filename) const{
     throw std::runtime_error("Error writing ACP file: " + filename);
 }
 
-// Write the ACP to a stream (Gaussian-style version).
+// Write the ACP to an output stream (Gaussian-style version). If zat is
+// given, write only the ACP for that atom. Final newline is omitted.
 void acp::writeacp_gaussian(std::ostream &os, unsigned char zat/*=0*/) const{
   if (t.empty()) return;
 
@@ -167,6 +168,65 @@ void acp::writeacp_gaussian(std::ostream &os, unsigned char zat/*=0*/) const{
         os << std::endl << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef;
     }
   }
+  os.precision(prec);
+  os << std::defaultfloat;
+}
+
+// Write the ACP to an output stream (crystal-style version). If zat is
+// given, write only the ACP for that atom. Final newline is omitted.
+void acp::writeacp_crystal(std::ostream &os, unsigned char zat/*=0*/) const{
+  if (t.empty()) return;
+
+  // run over the terms in the ACP and write the atom types, lmax, and number of terms
+  std::map<unsigned char,unsigned char> lmax;
+  std::unordered_map<unsigned char,std::vector< std::vector<int> > > iterm;
+
+  // classify the terms
+  for (int i=0; i<t.size(); i++){
+    if (lmax.find(t[i].atom) == lmax.end())
+      lmax[t[i].atom] = t[i].l;
+    else
+      lmax[t[i].atom] = std::max(lmax[t[i].atom],t[i].l);
+    if (iterm.find(t[i].atom) == iterm.end())
+      iterm[t[i].atom] = {};
+    if (iterm[t[i].atom].size() <= t[i].l)
+      iterm[t[i].atom].resize(t[i].l+1,{});
+    iterm[t[i].atom][t[i].l].push_back(i);
+  }
+
+  // write the acp
+  os << std::scientific;
+  std::streamsize prec = os.precision(14);
+
+  for (auto it = lmax.begin(); it != lmax.end(); it++){
+    if (zat > 0 && it->first != zat)
+      continue;
+    // header
+    os << (int) it->first << ".";
+    for (int i = 0; i < 6; i++){
+      if (i <= it->second){
+        if (iterm[it->first][i].size() > 0)
+          os << " " << iterm[it->first][i].size();
+        else {
+          iterm[it->first][i].push_back(-1);
+          os << " " << 1;
+        }
+      } else
+        os << " 0";
+    }
+
+    // body
+    for (int l = 0; l <= it->second; l++){
+      for (int i = 0; i < iterm[it->first][l].size(); i++){
+        int idx = iterm[it->first][l][i];
+        if (idx < 0)
+          os << std::endl << 1.0 << " " << 0.0 << " " << 0;
+        else
+          os << std::endl << t[idx].exp << " " << t[idx].coef << " " << 0;
+      }
+    }
+  }
+
   os.precision(prec);
   os << std::defaultfloat;
 }

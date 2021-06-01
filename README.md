@@ -532,7 +532,12 @@ by the database program. The available keywords are:
 - `%acpgau%`, `%acpgau:xx%`: the ACP block in Gaussian format. If
   `%acpgau%` is used, print the whole ACP. Otherwise, print the ACP
   corresponding to atom with symbol `xx` only. Requires using the
-  `ACP` keyword in write for a correct expansion.
+  `ACP` keyword in `WRITE` for a correct expansion.
+
+- `%acpcrys%`, `%acpcrys:xx%`: the ACP block in crystal format. If
+  `%acpcrys%` is used, print the whole ACP. Otherwise, print the ACP
+  corresponding to atom with symbol `xx` only. Requires using the
+  `ACP` keyword in `WRITE` for a correct expansion.
 
 Some template examples can be found in the `templates/` directory.
 

@@ -244,7 +244,7 @@ std::string strtemplate::apply(const structure &s, const acp& a) const {
       }
 
       result.append(ss.str());
-    } else if (it->token == t_acpgau){
+    } else if (it->token == t_acpgau || it->token == t_acpcrys){
       unsigned char zat;
       if (it->str.empty())
         zat = 0;
@@ -254,7 +254,10 @@ std::string strtemplate::apply(const structure &s, const acp& a) const {
           throw std::runtime_error("Unknown atom expanding %acpgau% template");
       }
       std::stringstream ss;
-      a.writeacp_gaussian(ss,zat);
+      if (it->token == t_acpgau)
+        a.writeacp_gaussian(ss,zat);
+      else
+        a.writeacp_crystal(ss,zat);
       result.append(ss.str());
     }
   }
