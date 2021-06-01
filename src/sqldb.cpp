@@ -1718,7 +1718,7 @@ ORDER BY Properties.id;)SQL";
 }
 
 // Write input files for a database set or the whole database
-void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a){
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
@@ -1794,7 +1794,7 @@ FROM Properties)SQL";
   }
 
   // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,smap,dir,npack);
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,dir,npack);
   os << std::endl;
 }
 
@@ -1807,6 +1807,7 @@ FROM Properties)SQL";
 void sqldb::write_many_structures(std::ostream &os,
                                   const std::string &template_m, const std::string &template_c,
                                   const std::string &ext_m, const std::string &ext_c,
+                                  const acp &a,
                                   const std::unordered_map<int,int> &smap,
                                   const std::string &dir/*="./"*/, int npack/*=0*/){
 
@@ -1816,7 +1817,7 @@ void sqldb::write_many_structures(std::ostream &os,
 
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), dir);
+      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a, dir);
   } else {
     unsigned long div = smap.size() / (unsigned long) npack;
     if (smap.size() % npack != 0) div++;
@@ -1834,7 +1835,7 @@ void sqldb::write_many_structures(std::ostream &os,
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), dir)));
+      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), a, dir)));
 
       // create a new package if written has npack items or we are about to finish
       if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
@@ -1857,7 +1858,7 @@ void sqldb::write_many_structures(std::ostream &os,
 // Write the structure id in the database with template tmpl and
 // extension ext. dir: output directory.
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-                                       const std::string &ext, const std::string &dir/*="./"*/){
+                                       const std::string &ext, const acp& a, const std::string &dir/*="./"*/){
 
   // get the structure from the database
   statement st(db,statement::STMT_CUSTOM,R"SQL(
@@ -1875,7 +1876,7 @@ FROM Structures WHERE id = ?1;
   std::string name = s.get_name() + "." + ext;
 
   // write the substitution of the template to a string
-  std::string content = tmpl.apply(s);
+  std::string content = tmpl.apply(s,a);
 
   // write the actual file and exit
   os << "# WRITE file " << dir << "/" << name << std::endl;

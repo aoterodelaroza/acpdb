@@ -456,6 +456,7 @@ WRITE
   [SET {set.s|set.i}]
   [DIRECTORY dir.s]
   [PACK ipack.i]
+  [ACP {name.s|file.s}]
 END
 ~~~
 Write the structures in the database to input or structure files. If
@@ -478,6 +479,10 @@ present, create `tar.xz` compressed archives with at most `ipack.i`
 structures each (this only works if the number of structures is
 greater than `ipack.i`). The `PACK` keyword invokes the `tar` utility
 through a `system()` call.
+
+If the `ACP` keyword is present, use the ACP in file `file.s` or the
+ACP with name `name.s` from the internal ACP database to substitute
+the ACP-related template expansions (`%acpgau%`, etc.).
 
 #### Description of the Template Format
 
@@ -523,6 +528,11 @@ by the database program. The available keywords are:
 
 - `%qexyz%`: a combination of the `ATOMIC_SPECIES` and
   `ATOMIC_COORDINATES` blocks in QE format.
+
+- `%acpgau%`, `%acpgau:xx%`: the ACP block in Gaussian format. If
+  `%acpgau%` is used, print the whole ACP. Otherwise, print the ACP
+  corresponding to atom with symbol `xx` only. Requires using the
+  `ACP` keyword in write for a correct expansion.
 
 Some template examples can be found in the `templates/` directory.
 

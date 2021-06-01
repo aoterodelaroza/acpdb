@@ -54,10 +54,11 @@ class acp {
   // Write the ACP to output stream os (human-readable version).
   void writeacp_text(std::ostream &os) const;
 
-  // Write the ACP to an output stream (Gaussian-style version).
-  void writeacp_gaussian(std::ostream &os) const;
+  // Write the ACP to an output stream (Gaussian-style version). If zat is
+  // given, write only the ACP for that atom.
+  void writeacp_gaussian(std::ostream &os, unsigned char zat=0) const;
 
-  // Write the ACP to a file (Gaussian-style version).
+  // Write the ACP to a file (Gaussian-style version). Final newline is omitted.
   void writeacp_gaussian(const std::string &filename) const;
 
   // Write info about the ACP to os

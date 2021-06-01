@@ -26,16 +26,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
-// t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz
+// t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
+// t_acpgau, t_acpcrys
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
-  "xyzatnum","xyzatnum200","vaspxyz","qexyz"
+  "xyzatnum","xyzatnum200","vaspxyz","qexyz",
+  "acpgau", "acpcrys"
 };
-static const std::vector<std::string> tokenstr = { // strings for the keywords
+static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
   "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
   "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
-  "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%"
+  "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
+  "%acpgau","%acpcrys"
 };
 static const int ntoken = tokenstr.size();
 
@@ -53,23 +56,32 @@ strtemplate::strtemplate(const std::string &source){
     for (it = tl.begin(); it != tl.end(); it++){
       if (it->token != t_string) continue;
 
-      size_t pos;
-      while ((pos = it->str.find(keyw)) != std::string::npos){
-        if (pos > 0)
-          tl.emplace(it,template_token({t_string,it->str.substr(0,pos)}));
-        tl.emplace(it,template_token({(tokentypes) i,""}));
-        if (it->str.size() == pos+keyw.size()){
+      size_t pos0, pos1;
+      while ((pos0 = it->str.find(keyw)) != std::string::npos){
+        pos1 = pos0 + keyw.size();
+        if (pos0 > 0)
+          tl.emplace(it,template_token({t_string,it->str.substr(0,pos0)}));
+
+        std::string arg = "";
+        if (tokenstr[i][tokenstr[i].size()-1] != '%' && it->str[pos1] == ':'){
+          size_t pos2 = it->str.find('%',pos1);
+          arg = it->str.substr(pos1+1,pos2-pos1-1);
+          pos1 = pos2+1;
+        }
+
+        tl.emplace(it,template_token({(tokentypes) i,arg}));
+        if (it->str.size() == pos1){
           it = tl.erase(it);
           break;
         } else
-          it->str.erase(0,pos+keyw.size());
+          it->str.erase(0,pos1);
       }
     }
   }
 }
 
 // Apply a string to the template and write to an output stream
-std::string strtemplate::apply(const structure &s) const {
+std::string strtemplate::apply(const structure &s, const acp& a) const {
 
   std::string result;
 
@@ -231,6 +243,18 @@ std::string strtemplate::apply(const structure &s) const {
         if (i < nat-1) ss << std::endl;
       }
 
+      result.append(ss.str());
+    } else if (it->token == t_acpgau){
+      unsigned char zat;
+      if (it->str.empty())
+        zat = 0;
+      else{
+        zat = zatguess(it->str);
+        if (zat <= 0)
+          throw std::runtime_error("Unknown atom expanding %acpgau% template");
+      }
+      std::stringstream ss;
+      a.writeacp_gaussian(ss,zat);
       result.append(ss.str());
     }
   }

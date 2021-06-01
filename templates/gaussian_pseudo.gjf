@@ -1,0 +1,14 @@
+%nprocs=4
+%mem=2GB
+%chk=%basename%.chk
+#p b3lyp 6-31+G* pseudo=read output=wfx scf=(conver=6) int=(grid=ultrafine)
+
+title
+
+%charge% %mult%
+%xyz%
+
+%acpgau%
+
+%basename%.wfx
+

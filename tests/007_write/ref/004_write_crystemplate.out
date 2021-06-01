@@ -246,39 +246,39 @@ Creating skeleton database
 # INSERT LITREF bsip2
 
 * INSERT: insert data into the database (SET)
-# INSERT SET x23diff
-# INSERT STRUCTURE x23diff.oxalic_acid_alpha
-# INSERT STRUCTURE x23diff.oxalic_acid_beta
-# INSERT PROPERTY x23diff.oxalic_acid_alpha_oxalic_acid_beta
-# INSERT EVALUATION (method=test;property=x23diff.oxalic_acid_alpha_oxalic_acid_beta)
+# INSERT SET 004_write_crystemplate-set
+# INSERT STRUCTURE 004_write_crystemplate-set.oxalic_acid_alpha
+# INSERT STRUCTURE 004_write_crystemplate-set.oxalic_acid_beta
+# INSERT PROPERTY 004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta
+# INSERT EVALUATION (method=test;property=004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta)
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.POSCAR
-# WRITE file ./x23diff.oxalic_acid_alpha.POSCAR
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.POSCAR
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.POSCAR
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.in
-# WRITE file ./x23diff.oxalic_acid_alpha.in
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.in
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.in
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.34
-# WRITE file ./x23diff.oxalic_acid_alpha.34
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.34
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.34
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.34
-# WRITE file ./x23diff.oxalic_acid_alpha.34
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.34
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.34
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.d12
-# WRITE file ./x23diff.oxalic_acid_alpha.d12
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.d12
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.d12
 
 * WRITE: write input files for database structures
 
-# WRITE file ./x23diff.oxalic_acid_beta.d12
-# WRITE file ./x23diff.oxalic_acid_alpha.d12
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.d12
+# WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.d12
 

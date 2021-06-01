@@ -46,6 +46,22 @@ static std::unordered_map<std::string,acp> nacp;
 static sqldb db;
 static trainset ts;
 
+// some utility functions
+static acp string_to_acp(const std::string &str){
+  acp res;
+  if (nacp.find(str) != nacp.end())
+    res = nacp[str];
+  else
+    res = acp(str,str);
+  return res;
+}
+static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
+  if (kmap.find("ACP") != kmap.end())
+    return string_to_acp(kmap.at("ACP"));
+  else
+    return acp();
+}
+
 int main(int argc, char *argv[]) {
 
   // Initial banner
@@ -269,7 +285,8 @@ int main(int argc, char *argv[]) {
     } else if (keyw == "WRITE") {
       *os << "* WRITE: write input files for database structures" << std::endl << std::endl;
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      db.write_structures(*os,kmap);
+      acp a = kmap_to_acp(kmap);
+      db.write_structures(*os,kmap,a);
 
       //// ACP
     } else if (keyw == "ACP") {
@@ -317,22 +334,6 @@ int main(int argc, char *argv[]) {
       }
 
       ///////////////////////////////////////////////////
-
-// // some utility functions
-// static acp string_to_acp(const std::string &str){
-//   acp res;
-//   if (nacp.find(str) != nacp.end())
-//     res = nacp[str];
-//   else
-//     res = acp(str,str);
-//   return res;
-// }
-// static acp kmap_to_acp(const std::unordered_map<std::string,std::string> &kmap){
-//   if (kmap.find("ACP") != kmap.end())
-//     return string_to_acp(kmap.at("ACP"));
-//   else
-//     return acp();
-// }
 
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);

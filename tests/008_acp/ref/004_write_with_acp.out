@@ -1,10 +1,13 @@
-* SYSTEM: rm -f 002_set.db
+* SYSTEM: rm -f 004_write_with_acp.db
 
 * CONNECT 
 
 Disconnecting previous database (if connected) 
-Connecting database file 002_set.db
+Connecting database file 004_write_with_acp.db
 Creating skeleton database 
+
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD test
 
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
@@ -243,18 +246,33 @@ Creating skeleton database
 # INSERT LITREF bsip2
 
 * INSERT: insert data into the database (SET)
-# INSERT SET s22x5
+# INSERT SET 004_write_with_acp-set
+# INSERT STRUCTURE 004_write_with_acp-set.nh3_nh3
+# INSERT STRUCTURE 004_write_with_acp-set.nh3_nh3_1
+# INSERT STRUCTURE 004_write_with_acp-set.nh3_nh3_2
+# INSERT PROPERTY 004_write_with_acp-set.nh3_nh3
+# INSERT EVALUATION (method=test;property=004_write_with_acp-set.nh3_nh3)
+# INSERT STRUCTURE 004_write_with_acp-set.h2o_h2o
+# INSERT STRUCTURE 004_write_with_acp-set.h2o_h2o_1
+# INSERT STRUCTURE 004_write_with_acp-set.h2o_h2o_2
+# INSERT PROPERTY 004_write_with_acp-set.h2o_h2o
+# INSERT EVALUATION (method=test;property=004_write_with_acp-set.h2o_h2o)
 
-* PRINT: print the contents of the database 
+* WRITE: write input files for database structures
 
-| id| key| property_type| litrefs| description|
-| 1| s22x5| 1| bsip1 boys1970 | A description.|
+# WRITE file ./004_write_with_acp-set.h2o_h2o_2.gjf
+# WRITE file ./004_write_with_acp-set.h2o_h2o_1.gjf
+# WRITE file ./004_write_with_acp-set.h2o_h2o.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3_2.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3_1.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3.gjf
 
-* DELETE: delete data from the database (SET)
+* WRITE: write input files for database structures
 
-# DELETE SET s22x5
-
-* PRINT: print the contents of the database 
-
-| id| key| property_type| litrefs| description|
+# WRITE file ./004_write_with_acp-set.h2o_h2o_2.gjf
+# WRITE file ./004_write_with_acp-set.h2o_h2o_1.gjf
+# WRITE file ./004_write_with_acp-set.h2o_h2o.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3_2.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3_1.gjf
+# WRITE file ./004_write_with_acp-set.nh3_nh3.gjf
 

@@ -106,7 +106,7 @@ class sqldb {
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Write input files for a database set or the whole database
-  void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
+  void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Write the structures with IDs given by the keys in smap. The values
   // of smap should be 1 if the structures are molecules or zero if they
@@ -117,14 +117,14 @@ class sqldb {
   void write_many_structures(std::ostream &os,
                              const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
+                             const acp &a,
                              const std::unordered_map<int,int> &smap,
                              const std::string &dir="./", int npack=0);
 
   // Write the structure id in the database with template tmpl and
   // extension ext. dir: output directory.
-  std::string write_one_structure(std::ostream &os,
-                                  int id, const strtemplate &tmpl,
-                                  const std::string &ext, const std::string &dir="./");
+  std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
+                                  const std::string &ext, const acp& a, const std::string &dir="./");
 
   // Find the property type ID corresponding to the key in the database table.
   // If toupper, uppercase the key before fetching the ID from the table. If

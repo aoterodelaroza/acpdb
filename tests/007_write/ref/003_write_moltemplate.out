@@ -246,42 +246,42 @@ Creating skeleton database
 # INSERT LITREF bsip2
 
 * INSERT: insert data into the database (SET)
-# INSERT SET s22partial
-# INSERT STRUCTURE s22partial.nh3_nh3
-# INSERT STRUCTURE s22partial.nh3_nh3_1
-# INSERT STRUCTURE s22partial.nh3_nh3_2
-# INSERT PROPERTY s22partial.nh3_nh3
-# INSERT EVALUATION (method=test;property=s22partial.nh3_nh3)
-# INSERT STRUCTURE s22partial.h2o_h2o
-# INSERT STRUCTURE s22partial.h2o_h2o_1
-# INSERT STRUCTURE s22partial.h2o_h2o_2
-# INSERT PROPERTY s22partial.h2o_h2o
-# INSERT EVALUATION (method=test;property=s22partial.h2o_h2o)
+# INSERT SET 003_write_moltemplate-set
+# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3
+# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3_1
+# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3_2
+# INSERT PROPERTY 003_write_moltemplate-set.nh3_nh3
+# INSERT EVALUATION (method=test;property=003_write_moltemplate-set.nh3_nh3)
+# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o
+# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o_1
+# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o_2
+# INSERT PROPERTY 003_write_moltemplate-set.h2o_h2o
+# INSERT EVALUATION (method=test;property=003_write_moltemplate-set.h2o_h2o)
 
 * WRITE: write input files for database structures
 
-# WRITE file ./s22partial.h2o_h2o_2.gjf
-# WRITE file ./s22partial.h2o_h2o_1.gjf
-# WRITE file ./s22partial.h2o_h2o.gjf
-# WRITE file ./s22partial.nh3_nh3_2.gjf
-# WRITE file ./s22partial.nh3_nh3_1.gjf
-# WRITE file ./s22partial.nh3_nh3.gjf
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_2.gjf
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_1.gjf
+# WRITE file ./003_write_moltemplate-set.h2o_h2o.gjf
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_2.gjf
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_1.gjf
+# WRITE file ./003_write_moltemplate-set.nh3_nh3.gjf
 
 * WRITE: write input files for database structures
 
-# WRITE file ./s22partial.h2o_h2o_2.inp
-# WRITE file ./s22partial.h2o_h2o_1.inp
-# WRITE file ./s22partial.h2o_h2o.inp
-# WRITE file ./s22partial.nh3_nh3_2.inp
-# WRITE file ./s22partial.nh3_nh3_1.inp
-# WRITE file ./s22partial.nh3_nh3.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_2.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_1.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_2.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_1.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3.inp
 
 * WRITE: write input files for database structures
 
-# WRITE file ./s22partial.h2o_h2o_2.inp
-# WRITE file ./s22partial.h2o_h2o_1.inp
-# WRITE file ./s22partial.h2o_h2o.inp
-# WRITE file ./s22partial.nh3_nh3_2.inp
-# WRITE file ./s22partial.nh3_nh3_1.inp
-# WRITE file ./s22partial.nh3_nh3.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_2.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o_1.inp
+# WRITE file ./003_write_moltemplate-set.h2o_h2o.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_2.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3_1.inp
+# WRITE file ./003_write_moltemplate-set.nh3_nh3.inp
 

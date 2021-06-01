@@ -115,7 +115,7 @@ void acp::writeacp_text(std::ostream &os) const{
   os.precision(prec);
 }
 
-// Write the ACP to an output stream (Gaussian-style version).
+// Write the ACP to a file (Gaussian-style version). Final newline is omitted.
 void acp::writeacp_gaussian(const std::string &filename) const{
   if (t.empty()) return;
 
@@ -129,7 +129,7 @@ void acp::writeacp_gaussian(const std::string &filename) const{
 }
 
 // Write the ACP to a stream (Gaussian-style version).
-void acp::writeacp_gaussian(std::ostream &os) const{
+void acp::writeacp_gaussian(std::ostream &os, unsigned char zat/*=0*/) const{
   if (t.empty()) return;
 
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
@@ -154,15 +154,17 @@ void acp::writeacp_gaussian(std::ostream &os) const{
   std::streamsize prec = os.precision(15);
 
   for (auto it = lmax.begin(); it != lmax.end(); it++){
-    os << "-" << nameguess(it->first) << " 0" << std::endl;
-    os << nameguess(it->first) << " " << (int) it->second << " 0" << std::endl;
+    if (zat > 0 && it->first != zat)
+      continue;
+    os << "-" << nameguess(it->first) << " 0";
+    os << std::endl << nameguess(it->first) << " " << (int) it->second << " 0";
     for (int i = 0; i <= it->second; i++){
-      os << inttol[i] << std::endl;
-      os << iterm[it->first][i].size() << std::endl;
+      os << std::endl << inttol[i];
+      os << std::endl << iterm[it->first][i].size();
 
       std::vector<int> &xv = iterm[it->first][i];
       for (int j = 0; j < xv.size(); j++)
-        os << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef << std::endl;
+        os << std::endl << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef;
     }
   }
   os.precision(prec);
