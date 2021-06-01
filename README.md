@@ -12,7 +12,7 @@ atom-centered potentials (ACPs).
 | [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
 | [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
 | [Writing Input and Structure Files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
-| [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp)                                                                                   |
+| [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                  |
 
 ## Command-Line Syntax
 ~~~
