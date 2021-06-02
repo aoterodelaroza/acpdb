@@ -1,0 +1,32 @@
+## check: 001_define_ts.out -a1e-10
+## delete: 001_define_ts.db
+## labels: regression quick
+
+system rm -f 001_define_ts.db
+connect 001_define_ts.db
+
+insert method test
+end
+insert method test2
+end
+insert method test3
+end
+insert litref bibtex ../zz_source/bsip2.bib
+insert set 001_define_ts-set
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+training
+ atom H l C l N s O p
+ exp 0.1 0.2 0.3
+ empty test
+ reference test2
+ add test3
+ subset
+  set 001_define_ts-set
+ end
+end

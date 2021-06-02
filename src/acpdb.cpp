@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   // Parse the input file
+  bool intraining = false;
   while(!istack.empty()){
     // work on the most recent input stream & directory
     is = istack.top();
@@ -166,7 +167,12 @@ int main(int argc, char *argv[]) {
 
       //// END
     } else if (keyw == "END") {
-      break;
+      if (intraining){
+        intraining = false;
+        *os << "* TRAINING: fininshed defining the training set " << std::endl << std::endl;
+        ts.describe(*os,false,true);
+      } else
+        break;
 
       //// Global database operations ////
 
@@ -177,6 +183,7 @@ int main(int argc, char *argv[]) {
       // disconnect first
       *os << "Disconnecting previous database (if connected) " << std::endl;
       db.close();
+      ts = trainset();
       ts.setdb(nullptr);
 
       std::string file = popstring(tokens);
@@ -203,6 +210,7 @@ int main(int argc, char *argv[]) {
     } else if (keyw == "DISCONNECT") {
       *os << "* DISCONNECT: disconnect the current database " << std::endl << std::endl;
       db.close();
+      ts = trainset();
       ts.setdb(nullptr);
 
       //// VERIFY
@@ -332,8 +340,49 @@ int main(int argc, char *argv[]) {
           a.split(prefix,tokens);
         }
       }
+      //// TRAINING (start environment)
+    } else if (keyw == "TRAINING") {
+      if (!db)
+        throw std::runtime_error("The database needs to be defined before using TRAINING");
+      if (!db.checksane(true))
+        throw std::runtime_error("The database is not sane");
+      *os << "* TRAINING: started defining the training set " << std::endl << std::endl;
+      intraining = true;
+      ts = trainset();
+      ts.setdb(&db);
+
+      //// TRAINING -> ATOM
+    } else if (keyw == "ATOM") {
+      if (!intraining)
+        throw std::runtime_error("ATOM is not allowed outside the TRAINING environment");
+      ts.addatoms(tokens);
+
+      //// TRAINING -> EXP
+    } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
+      ts.addexp(tokens);
+
+      //// TRAINING -> REFERENCE
+    } else if (keyw == "REFERENCE") {
+      ts.setreference(tokens);
+
+      //// TRAINING -> EMPTY
+    } else if (keyw == "EMPTY") {
+      ts.setempty(tokens);
+
+      //// TRAINING -> ADD
+    } else if (keyw == "ADD") {
+      ts.addadditional(tokens);
+
+      //// TRAINING -> SUBSET
+    } else if (keyw == "SUBSET") {
+      std::string alias = popstring(tokens);
+      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+      ts.addsubset(alias,kmap);
 
       ///////////////////////////////////////////////////
+
+    // } else if (keyw == "DESCRIBE") {
+    //   ts.describe(*os,false,true);
 
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);
@@ -395,38 +444,7 @@ int main(int argc, char *argv[]) {
 //      }
 //
 //      //
-//    } else if (keyw == "ATOM" || keyw == "ATOMS") {
-//      if (tokens.empty())
-//        ts.clearatoms();
-//      else
-//        ts.addatoms(tokens);
-//
 //      //
-//    } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
-//      ts.addexp(tokens);
-//
-//      //
-//    } else if (keyw == "REFERENCE") {
-//      ts.setreference(tokens);
-//
-//      //
-//    } else if (keyw == "EMPTY") {
-//      ts.setempty(tokens);
-//
-//      //
-//    } else if (keyw == "ADD") {
-//      ts.addadditional(tokens);
-//
-//      //
-//    } else if (keyw == "SUBSET") {
-//      std::string alias = popstring(tokens);
-//      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-//      ts.addsubset(alias,kmap);
-//
-//      //
-//    } else if (keyw == "DESCRIBE") {
-//      ts.describe(*os,false,true);
-//
 //      //
 //    } else if (keyw == "TRAINING") {
 //      std::string key = popstring(tokens,true);

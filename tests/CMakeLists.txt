@@ -10,6 +10,7 @@ set(TESTDIRS
   006_compare       ## comparing
   007_write         ## writing inputs
   008_acp           ## working with ACPs
+  009_training      ## training set
   )
 
 ## define the macro that will run the tests

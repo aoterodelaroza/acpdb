@@ -579,3 +579,115 @@ Split the ACP `name.s` into several ACPs, with names given by
 ACP contains only one term from the original ACP. If COEF is given,
 set the coefficients for the new ACPs to `value.r`.
 
+### Defining the Training Set
+~~~
+TRAINING
+ ATOM|ATOMS [at1.s l1.i at2.s l2.i ... ]
+ EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
+ EMPTY method.s
+ REFERENCE method.s
+ [ADD method.s [FIT]]
+ SUBSET [alias.s]
+  SET name.s
+  NOFIT
+  MASK RANGE start.i [end.i [step.i]]
+  MASK ITEMS item1.i item2.i ...
+  MASK PATTERN 0/1 0/1 ...
+  MASK ATOMS
+  WEIGHT_GLOBAL w.r
+  WEIGHT_PATTERN w1.r w2.r w3.r w4.r...
+  NORM_REF
+  NORM_NITEM
+  NORM_NITEMSQRT
+  WEIGHT_ITEMS i1.i w1.r i2.i w2.r ...
+ END
+END
+~~~
+A training set in acpdb is composed of five elements: list of atoms,
+list of exponents, reference method, empty method, and a list of
+properties from the training set. Optionally, the training set can
+also include one or more additional methods. The purpose of defining a
+training set is to correct the empty method plus the additional
+methods to look like the reference method by applying ACPs on the
+given atoms. The ACPs have terms with exponents from the list. The
+training set for the ACPs is composed of all the listed properties,
+which are typically grouped by set. Each property has an associated
+weight that measures its importance in the fit.
+
+The `TRAINING` environment defines the training set for the current
+run. Any previous training set present is discarded. Each sub-keyword
+in the environment defines a component of the training set. To have a
+properly defined training set, `ATOM`, `EXP`, `REFERENCE`, `EMPTY`,
+and one or more `SUBSET` must be given. The meaning of these keywords
+is as follows:
+
+- `ATOM`: the atoms for which ACPs will be fitted, followed by the
+  maximum angular momentum number for each (l, s, p, d, etc.).
+
+- `EXP`: the list of exponents.
+
+- `EMPTY`: the key for the empty method, the approximate method we
+  want to fix with the ACPs.
+
+- `REFERENCE`: the key for the reference method, the method we want to
+  emulate.
+
+- `ADD`: define an additional constant contribution to the energy from
+  method with key `method.s`. If the `FIT` keyword follows the method
+  key, then the contribution enters the fitting procedure and is
+  treated as an additional scalable column in the least-squares
+  fit. More than one `ADD` keywords can be given to include different
+  additonal methods
+
+- `SUBSET`: Add a subset to the training set with alias
+  `alias.s`. The properties in this subset uses properties from
+  database set with key `name.s`. If no alias is provided, the name
+  from the corresponding database set (`name.s`) is used
+  instead. Multiple `SUBSET` blocks can be given.
+
+  If `NOFIT` is given, this subset is not passed on to the
+  least-squares fitting routine, and is used only for evaluation
+  purposes.
+
+  The `MASK` commands apply a mask to remove some items from the
+  database subset. The items indicated in the `MASK` command are used
+  in the training set and the others are deactivated. Four versions of
+  the `MASK` command exist. `RANGE` indicates a range starting at
+  `start.i` up to the end of the subset. If `end.i` is given, stop at
+  `end.i`. If `setp.i` is given, use that as step. `ITEMS` indicates
+  the items from the database set one by one. `PATTERN` repeats a
+  pattern over the items of the set. If `itemn.i` is 0, it means the
+  item is not used and 1 means it is used. `ATOMS` deactivates all
+  items in the subset that have atoms other than those that are target
+  of ACP development (requires using a previous `ATOM` command).
+
+  The remaining commands are used to set the weights of the items in
+  the subset. The keywords are:
+
+  * The global weight (`WEIGHT_GLOBAL`) applies equally to all
+    elements in the set. Default: 1.
+
+  * The `WEIGHT_PATTERN` is a pattern applied to the elements of the
+    set in sequence. For instance, a pattern of 1 5 4 applies a weight
+    of 1 to the first element, 5 to the second, 4 to the third, 1 to
+    the fourth, etc.
+
+  * `NORM_REF`: divide all weights by the mean absolute reference
+    value of each set.
+
+  * `NORM_NITEM`: divide all weights by the number of items in each
+    set.
+
+  * `NORM_NITEMSQRT`: divide all weights by the square root of the
+    number of items in each set.
+
+  * `WEIGHT_ITEM i1.i w1.r ...` gives specific weights to individual
+    items in the set (weight `w1.r` to item `i1.i`, etc.). Note that
+    if a mask is also given, the item numbers correspond to the
+    item indices after the mask is applied, in the order in which they
+    appear.
+
+  The final weight of an item is either the value given by the
+  `WEIGHT_ITEM` keyword or the product of the `GLOBAL` weight, times
+  the `PATTERN` weight corresponding to the item, divided by the
+  normalization factors indicated by the corresponding keywords.
