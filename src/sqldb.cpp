@@ -25,6 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <fstream>
 #include <string>
 #include <iterator>
+#include <set>
 #include "sqldb.h"
 #include "parseutils.h"
 #include "statement.h"
@@ -894,17 +895,22 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
       }
       std::regex rgx(rgx_s, std::regex::awk | std::regex::icase | std::regex::optimize);
 
+      // sort the list of files (for reproducible outputs)
+      std::set<fs::path> sortedfiles;
+      for (auto &f : fs::directory_iterator(dir))
+        sortedfiles.insert(f.path());
+
       // run over directory files and add the structures
-      for (const auto& file : fs::directory_iterator(dir)){
-        std::string filename = file.path().filename();
+      for (const auto& file : sortedfiles){
+        std::string filename = file.filename();
         if (std::regex_match(filename.begin(),filename.end(),rgx)){
-          skey = key + "." + std::string(file.path().stem());
+          skey = key + "." + std::string(file.stem());
 
           smap.clear();
           if (ixyz == 0)
-            smap["XYZ"] = file.path().string();
+            smap["XYZ"] = file.string();
           else
-            smap["POSCAR"] = file.path().string();
+            smap["POSCAR"] = file.string();
           smap["SET"] = key;
           insert_structure(os,skey,smap);
         }
