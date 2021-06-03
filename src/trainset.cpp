@@ -1025,7 +1025,7 @@ ORDER BY Training_set.id;
 void trainset::savedb(std::string &name) const{
 #ifdef CEREAL_FOUND
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING");
+    throw std::runtime_error("A database file must be connected before using TRAINING SAVE");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using TRAINING SAVE");
   if (name.empty())
@@ -1035,15 +1035,13 @@ void trainset::savedb(std::string &name) const{
   std::stringstream ss;
   cereal::BinaryOutputArchive oarchive(ss);
   oarchive(*this);
-  int nsize = ss.str().size();
 
   // insert into the database
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Training_set_repo (key,size,training_set) VALUES(:KEY,:SIZE,:TRAINING_SET);
+INSERT INTO Training_set_repo (key,training_set) VALUES(:KEY,:TRAINING_SET);
 )SQL");
  st.bind((char *) ":KEY",name);
- st.bind((char *) ":SIZE",nsize);
- st.bind((char *) ":TRAINING_SET",(void *) ss.str().data(),true,nsize);
+ st.bind((char *) ":TRAINING_SET",(void *) ss.str().data(),true,ss.str().size());
  if (st.step() != SQLITE_DONE)
    throw std::runtime_error("Failed inserting training set into the database (TRAINING SAVE)");
 #else
@@ -1055,13 +1053,13 @@ INSERT INTO Training_set_repo (key,size,training_set) VALUES(:KEY,:SIZE,:TRAININ
 void trainset::loaddb(std::string &name){
 #ifdef CEREAL_FOUND
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING");
+    throw std::runtime_error("A database file must be connected before using TRAINING LOAD");
   if (name.empty())
     throw std::runtime_error("TRAINING LOAD requires a name for the loaded training set");
 
   // fetch from the database
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT size, training_set
+SELECT length(training_set), training_set
 FROM Training_set_repo
 WHERE key = ?1;
 )SQL");
@@ -1090,7 +1088,7 @@ WHERE key = ?1;
 // Delete a training set from the database (or all the t.s.)
 void trainset::deletedb(std::string &name) const{
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING");
+    throw std::runtime_error("A database file must be connected before using TRAINING DELETE");
 
   statement st(db->ptr());
   if (name.empty()){
@@ -1110,12 +1108,9 @@ DELETE FROM Training_set_repo WHERE key = ?1;
 // List training sets from the database
 void trainset::listdb(std::ostream &os) const {
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING");
+    throw std::runtime_error("A database file must be connected before using TRAINING PRINT");
 
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT key,size,training_set
-FROM Training_set_repo;
-)SQL");
+  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Training_set_repo;");
   os << "## Table of saved training sets in the database" << std::endl;
   os << "| Name |" << std::endl;
   while (st.step() != SQLITE_DONE){

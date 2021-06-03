@@ -1,0 +1,60 @@
+## check: 003_saveload.out -a1e-10
+## delete: 003_saveload.db
+## labels: regression quick
+
+system rm -f 003_saveload.db
+connect 003_saveload.db
+
+insert method test
+end
+insert method test2
+end
+insert method test3
+end
+insert litref bibtex ../zz_source/bsip2.bib
+insert set 003_saveload-set-a
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+insert set 003_saveload-set-b
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+insert property strange-
+ property_type dipole
+ set 003_saveload-set-a
+end
+insert evaluation
+ method test
+ property strange-003_saveload-set-a.h2o_h2o
+ value 0.1 0.2 0.3
+end
+
+training
+ atom H l C l N s O p
+ exp 0.1 0.2 0.3
+ empty test2
+ reference test
+ add test3
+ subset
+  set 003_saveload-set-a
+ end
+ subset
+  set 003_saveload-set-b
+ end
+end
+
+training save bleh
+training print
+training clear
+training describe
+training load bleh
+training describe
+training delete bleh
+training print

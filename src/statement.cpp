@@ -98,7 +98,6 @@ CREATE TABLE Terms (
 );
 CREATE TABLE Training_set_repo (
   key TEXT PRIMARY KEY,
-  size INTEGER NOT NULL,
   training_set BLOB NOT NULL
 );
 INSERT INTO Property_types (id,key,description)

@@ -347,6 +347,7 @@ int main(int argc, char *argv[]) {
       if (!db.checksane(true))
         throw std::runtime_error("The database is not sane");
       std::string category = popstring(tokens,true);
+      std::string name = popstring(tokens);
 
       if (category.empty()){
         *os << "* TRAINING: started defining the training set " << std::endl << std::endl;
@@ -356,10 +357,16 @@ int main(int argc, char *argv[]) {
       } else if (category == "DESCRIBE") {
         ts.describe(*os,false,true);
       } else if (category == "SAVE") {
+        ts.savedb(name);
       } else if (category == "LOAD") {
+        ts.loaddb(name);
       } else if (category == "DELETE") {
+        ts.deletedb(name);
       } else if (category == "PRINT") {
+        ts.listdb(*os);
       } else if (category == "CLEAR") {
+        ts = trainset();
+        ts.setdb(&db);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
@@ -452,28 +459,6 @@ int main(int argc, char *argv[]) {
 //      } else {
 //        ts.eval_acp(*os,a);
 //      }
-//
-//      //
-//      //
-//      //
-//    } else if (keyw == "TRAINING") {
-//      std::string key = popstring(tokens,true);
-//      std::string name = popstring(tokens);
-//      if (key == "SAVE")
-//        ts.savedb(name);
-//      else if (key == "LOAD")
-//        ts.loaddb(name);
-//      else if (key == "DELETE")
-//        ts.deletedb(name);
-//      else if (key == "LIST")
-//        ts.listdb(*os);
-//      else if (key == "CLEAR"){
-//        ts = trainset();
-//        ts.setdb(&db);
-//      } else
-//        throw std::runtime_error("Unknown command in TRAINING");
-//
-//      //
 //    } else if (keyw == "DUMP") {
 //      ts.dump();
 
