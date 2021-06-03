@@ -403,11 +403,12 @@ int main(int argc, char *argv[]) {
 
       ///////////////////////////////////////////////////
 
+      //
+//    } else if (keyw == "WRITEX") {
+
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);
 
-      //
-//    } else if (keyw == "WRITEX") {
 //      std::string category = popstring(tokens,true);
 //      if (category == "TERMS"){
 //        // WRITE TERMS keyword

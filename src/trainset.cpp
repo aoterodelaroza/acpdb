@@ -310,7 +310,7 @@ WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Trai
       if (nblob == 0 || !res)
         throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
       ndat += nblob;
-      for (int i = 0; i < ndat; i++)
+      for (int i = 0; i < nblob; i++)
         dsum += std::abs(res[i]);
     }
     dsum = dsum / ndat;

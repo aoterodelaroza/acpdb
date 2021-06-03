@@ -15,11 +15,11 @@ atom-centered potentials (ACPs).
 | [Writing input and structure files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
 | [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                  |
 | [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                              |
-| [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR}                                                                                                                                 |
+| [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                       |
 
 ## Command-Line Syntax
 ~~~
-apcdb -h [inputfile [outputfile]]
+apcdb [-h] [inputfile [outputfile]]
 ~~~
 The input file is a keyword-driven case-insensitive text
 file. Comments start with # and continued lines end with a backslash
