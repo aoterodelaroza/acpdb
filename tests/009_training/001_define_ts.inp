@@ -30,6 +30,11 @@ insert property strange-
  property_type dipole
  set 001_define_ts-set-a
 end
+insert evaluation
+ method test
+ property strange-001_define_ts-set-a.h2o_h2o
+ value 0.1 0.2 0.3
+end
 
 training
  atom H l C l N s O p

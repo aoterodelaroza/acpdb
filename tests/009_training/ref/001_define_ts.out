@@ -291,6 +291,7 @@ Creating skeleton database
 | reference | test2 | 2 | n/a |
 | empty | test | 1 | n/a |
 | additional | test3 | 3 | no |
+
 # List of properties (2)
 | fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |
 | yes | 1 | 001_define_ts-set.nh3_nh3 | 1 | 001_define_ts-set | 001_define_ts-set | ENERGY_DIFFERENCE | 3 | 1 | n/a |

@@ -450,6 +450,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
   for (int i = 0; i < addname.size() ; i++){
     os << "| additional | " << addname[i] << " | " << addid[i] << " | " << (addisfit[i]?"yes":"no") << " |" << std::endl;
   }
+  os << std::endl;
 
   // the long lists
   if (full){
@@ -457,7 +458,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
     os << "# List of properties (" << ntot << ")" << std::endl;
     os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
     st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT Properties.id, Properties.key, Properties.nstructures, Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
+SELECT Properties.id, Properties.key, Properties.nstructures, length(Evaluations.value), Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
@@ -467,20 +468,26 @@ ORDER BY Training_set.id;
     st.bind((char *) ":METHOD",refid);
     int n = 0;
     while (st.step() != SQLITE_DONE){
+      int nval = sqlite3_column_int(st.ptr(),3) / sizeof(double);
+      double *val = (double *) sqlite3_column_blob(st.ptr(),4);
+
       std::string valstr;
-      if (sqlite3_column_type(st.ptr(),3) == SQLITE_NULL)
+      if (nval == 0)
         valstr = "n/a";
+      else if (nval == 1)
+        valstr = std::to_string(val[0]);
       else
-        valstr = std::to_string(sqlite3_column_double(st.ptr(), 3));
-      bool isfit = (sqlite3_column_type(st.ptr(),6) != SQLITE_NULL);
-      auto it = std::find(setid.begin(),setid.end(),sqlite3_column_type(st.ptr(),5));
+        valstr = "<" + std::to_string(nval) + ">";
+
+      bool isfit = (sqlite3_column_type(st.ptr(),7) != SQLITE_NULL);
+      auto it = std::find(setid.begin(),setid.end(),sqlite3_column_type(st.ptr(),6));
       if (it == setid.end())
         throw std::runtime_error("Could not find set id in DESCRIBE");
       int sid = it - setid.begin();
 
       os << "| " << (isfit?"yes":"no") << " | " << n+1 << " | " << sqlite3_column_text(st.ptr(), 1)
          << " | " << sqlite3_column_int(st.ptr(), 0)
-         << " | " << alias[sid] << " | " << setname[sid] << " | " << sqlite3_column_text(st.ptr(), 4)
+         << " | " << alias[sid] << " | " << setname[sid] << " | " << sqlite3_column_text(st.ptr(), 5)
          << " | " << sqlite3_column_int(st.ptr(), 2)
          << " | " << w[n] << " | " << valstr << " |" << std::endl;
       n++;
