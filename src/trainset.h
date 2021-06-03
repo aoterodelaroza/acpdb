@@ -39,16 +39,13 @@ class trainset {
  public:
 
   // Constructor
-  trainset() : db(nullptr), ntot(0) {};
+  trainset() : db(nullptr), ntot(0), refid(0), emptyid(0) {};
 
   // Register the database and create the Training_set table
   void setdb(sqldb *db_);
 
   // Add atoms and max. angular momentum
   void addatoms(const std::list<std::string> &tokens);
-
-  // Clear the atom list
-  void clearatoms() { zat.clear(); lmax.clear(); }
 
   // Add exponents
   void addexp(const std::list<std::string> &tokens);
@@ -78,7 +75,7 @@ class trainset {
 
   // Is the training set defined?
   inline bool isdefined() const{
-    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && 
+    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() &&
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
@@ -87,7 +84,7 @@ class trainset {
 
   // Evaluate an ACP on the current training set
   void eval_acp(std::ostream &os, const acp &a) const;
-  
+
   // Save the current training set to the database
   void savedb(std::string &name) const;
 
@@ -124,7 +121,7 @@ class trainset {
   // string, or empty string if no such alias exist.
   inline std::string alias_to_setname(const std::string &str) const{
     auto it = std::find(alias.begin(),alias.end(),str);
-    if (it == alias.end()) 
+    if (it == alias.end())
       return "";
     else
       return setname[it - alias.begin()];
@@ -153,7 +150,7 @@ class trainset {
 
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
-  std::vector<int> set_size; // size of each set
+  std::vector<int> set_size; // size of each set (properties)
   std::vector<bool> set_dofit; // whether this set will be used in the least-squares fit
   std::vector<double> w; // weights for the set elements
 

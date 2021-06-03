@@ -58,7 +58,7 @@ CREATE INDEX IF NOT EXISTS Training_set_idx ON Training_set (propid,isfit);
   }
 }
 
-// Add atoms and max. angular momentum
+// Add atoms and max. angular momentum.
 void trainset::addatoms(const std::list<std::string> &tokens){
 
   auto it = tokens.begin();
@@ -68,22 +68,22 @@ void trainset::addatoms(const std::list<std::string> &tokens){
 
     unsigned char zat_ = zatguess(at);
     if (zat_ == 0)
-      throw std::runtime_error("Invalid atom " + at);
+      throw std::runtime_error("Invalid atom " + at + " in TRAINING ATOM");
 
     if (ltoint.find(l) == ltoint.end())
-      throw std::runtime_error("Invalid lmax " + l);
+      throw std::runtime_error("Invalid lmax " + l + " in TRAINING ATOM");
     unsigned char lmax_ = ltoint.at(l);
     zat.push_back(zat_);
     lmax.push_back(lmax_);
   }
 }
 
-// Add exponents
+// Add exponents.
 void trainset::addexp(const std::list<std::string> &tokens){
   for (auto it = tokens.begin(); it != tokens.end(); it++){
     double e_ = std::stod(*it);
-    if (e_ < 0)
-      throw std::runtime_error("Invalid exponent " + *it);
+    if (e_ <= 0.)
+      throw std::runtime_error("Invalid exponent " + *it + " in TRAINING EXPONENT");
 
     exp.push_back(e_);
   }
@@ -92,9 +92,9 @@ void trainset::addexp(const std::list<std::string> &tokens){
 // Add a subset (combination of set, mask, weights)
 void trainset::addsubset(const std::string &key, std::unordered_map<std::string,std::string> &kmap){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using SUBSET");
+    throw std::runtime_error("A database file must be connected before in TRAINING SUBSET");
   if (kmap.find("SET") == kmap.end() || kmap["SET"].empty())
-    throw std::runtime_error("The keyword SET is required inside SUBSET");
+    throw std::runtime_error("The keyword SET is required in TRAINING SUBSET");
 
   // identify the set; add the name and the set index
   std::string name = kmap["SET"];
@@ -143,7 +143,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 
       // read the start, end, and step
       if (tokens.empty())
-        throw std::runtime_error("Empty range in SUBSET/MASK");
+        throw std::runtime_error("Empty range in TRAINING SUBSET/MASK");
       istart = std::stoi(popstring(tokens)) - 1;
       if (!tokens.empty()){
         iend = std::stoi(popstring(tokens));
@@ -151,7 +151,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
           istep = std::stoi(tokens.front());
       }
       if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0)
-        throw std::runtime_error("Invalid range in SUBSET/MASK");
+        throw std::runtime_error("Invalid range in TRAINING SUBSET/MASK");
 
       // reassign the mask and the size for this set
       for (int i = istart; i < iend; i+=istep)
@@ -159,17 +159,17 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 
     } else if (keyw == "ITEMS") {
       if (tokens.empty())
-        throw std::runtime_error("Empty item list in SUBSET/MASK");
+        throw std::runtime_error("Empty item list in TRAINING SUBSET/MASK");
       while (!tokens.empty()){
         int item = std::stoi(popstring(tokens)) - 1;
         if (item < 0 || item >= size)
-          throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in MASK");
+          throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING SUBSET/MASK");
         set_mask[item] = true;
       }
 
     } else if (keyw == "PATTERN") {
       if (tokens.empty())
-        throw std::runtime_error("Empty pattern in SUBSET/MASK");
+        throw std::runtime_error("Empty pattern in TRAINING SUBSET/MASK");
       std::vector<bool> pattern(tokens.size(),false);
       int n = 0;
       while (!tokens.empty())
@@ -179,7 +179,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 
     } else if (keyw == "ATOMS") {
       if (zat.empty())
-        throw std::runtime_error("ATOMS in SUBSET/MASK is not possible if no atoms have been defined");
+        throw std::runtime_error("ATOMS in TRAINING SUBSET/MASK is not possible if no atoms have been defined");
 
       // build the array of structures that contain only the atoms in the zat array
       std::unordered_map<int,bool> usest;
@@ -224,11 +224,11 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
         set_mask[n++] = !found;
       }
     } else {
-      throw std::runtime_error("Unknown category " + keyw + " in MASK");
+      throw std::runtime_error("Unknown category " + keyw + " in TRAINING SUBSET/MASK");
     }
   }
 
-  // build the propid, size, total size, and final index of the set
+  // build the propid, size, and final index of the set
   set_size.push_back(0);
   set_final_idx.push_back(ilast);
   st.recycle(statement::STMT_CUSTOM,R"SQL(
@@ -295,19 +295,30 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
     norm *= std::sqrt(set_size[sid]);
   if (norm_ref){
     statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT AVG(abs(value)) FROM Evaluations, Training_set, Properties
-WHERE Properties.id = Evaluations.propid AND Properties.setid = :SETID AND
-Evaluations.methodid = :METHOD AND
-Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
+SELECT length(value), value FROM Training_set, Properties
+LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
+WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;
 )SQL");
     st.bind((char *) ":SETID",setid[sid]);
     st.bind((char *) ":METHOD",refid);
-    st.step();
-    double res = sqlite3_column_double(st.ptr(),0);
-    if (std::abs(res) > 1e-40)
-      norm *= res;
+
+    int ndat = 0;
+    double dsum = 0.;
+    while (st.step() != SQLITE_DONE){
+      int nblob = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *res = (double *) sqlite3_column_blob(st.ptr(),1);
+      if (nblob == 0 || !res)
+        throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
+      ndat += nblob;
+      for (int i = 0; i < ndat; i++)
+        dsum += std::abs(res[i]);
+    }
+    dsum = dsum / ndat;
+
+    if (std::abs(dsum) > 1e-40)
+      norm *= dsum;
     else
-      throw std::runtime_error("In SUBSET, cannot use NORM_REF without known reference data");
+      throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
   }
 
   // apply the normalization factor
@@ -318,7 +329,7 @@ Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
   for (int i = 0; i < witem.size(); i++){
     int id = set_initial_idx[sid]+witem[i].first-1;
     if (id < set_initial_idx[sid] || id >= set_final_idx[sid])
-      throw std::runtime_error("In SUBSET, WEIGHT ITEM out of bounds");
+      throw std::runtime_error("Item weight out of bounds in TRAINING SUBSET");
     w[id] = witem[i].second;
   }
 }
@@ -326,29 +337,29 @@ Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 // Set the reference method
 void trainset::setreference(const std::list<std::string> &tokens){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using REFERENCE");
+    throw std::runtime_error("A database file must be connected before using TRAINING REFERENCE");
   if (tokens.empty())
-    throw std::runtime_error("Invalid REFEENCE command");
+    throw std::runtime_error("Need method key in TRAINING REFEENCE");
 
   // check if the method is known
   auto it = tokens.begin();
   refname = *it;
   refid = db->find_id_from_key(refname,"Methods");
   if (refid == 0)
-    throw std::runtime_error("METHOD identifier not found in database: " + refname);
+    throw std::runtime_error("METHOD identifier not found in database (" + refname + ") in TRAINING REFRENCE");
 }
 
 // Set the empty method
 void trainset::setempty(const std::list<std::string> &tokens){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using EMPTY");
+    throw std::runtime_error("A database file must be connected before using TRAINING EMPTY");
   if (tokens.empty())
-    throw std::runtime_error("Invalid EMPTY command");
+    throw std::runtime_error("Need method key in TRAINING EMPTYx");
 
   std::string name = tokens.front();
   int idx = db->find_id_from_key(name,"Methods");
   if (idx == 0)
-    throw std::runtime_error("METHOD identifier not found in database: " + name);
+    throw std::runtime_error("METHOD identifier not found in database (" + name + ") in TRAINING EMPTY");
 
   emptyname = name;
   emptyid = idx;
@@ -357,16 +368,16 @@ void trainset::setempty(const std::list<std::string> &tokens){
 // Add an additional method
 void trainset::addadditional(const std::list<std::string> &tokens){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using ADD");
+    throw std::runtime_error("A database file must be connected before using TRAINING ADD");
   if (tokens.empty())
-    throw std::runtime_error("Invalid ADD command");
+    throw std::runtime_error("Need method key in TRAINING ADD command");
 
   auto it = tokens.begin();
 
   std::string name = *it;
   int idx = db->find_id_from_key(name,"Methods");
   if (idx == 0)
-    throw std::runtime_error("METHOD identifier not found in database: " + name);
+    throw std::runtime_error("METHOD identifier not found in database (" + name + ") in TRAINING ADD");
 
   addname.push_back(name);
   addid.push_back(idx);

@@ -380,15 +380,13 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
   ststr.bind(1,setid);
 
   // whether we are inserting only one or prefixing; set the key and orderid
-  bool justone = (kmap.find("ORDER") != kmap.end());
+  bool justone = (kmap.find("ORDER") != kmap.end() && kmap.find("STRUCTURES") != kmap.end());
   if (justone){
     st.bind((char *) ":KEY",key,false);
     st.bind((char *) ":ORDERID",std::stoi(kmap.find("ORDER")->second));
 
     // parse structures and coefficients
     im1 = kmap.find("STRUCTURES");
-    if (im1 == kmap.end())
-      throw std::runtime_error("No structures given in INSERT PROPERTY");
     tok1 = list_all_words(im1->second);
     im2 = kmap.find("COEFFICIENTS");
     if (im2 != kmap.end())
@@ -410,7 +408,7 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
           idx = find_id_from_key(*it,"Structures");
 
         if (!idx)
-          throw std::runtime_error("Structure not found: " + *it);
+          throw std::runtime_error("Structure not found (" + *it + ") in INSERT PROPERTY");
         str[n++] = idx;
       }
       st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
@@ -429,6 +427,11 @@ SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
     // submit
     st.step();
   } else {
+    if (kmap.find("ORDER") != kmap.end())
+      throw std::runtime_error("ORDER is not allowed in bulk insertion, INSERT PROPERTY");
+    if (kmap.find("STRUCTURES") != kmap.end())
+      throw std::runtime_error("STRUCTURES is not allowed in bulk insertion, INSERT PROPERTY");
+
     // coefficients
     const double coef[1] = {1.0};
 

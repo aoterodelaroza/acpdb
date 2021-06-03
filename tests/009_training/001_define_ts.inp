@@ -12,21 +12,36 @@ end
 insert method test3
 end
 insert litref bibtex ../zz_source/bsip2.bib
-insert set 001_define_ts-set
+insert set 001_define_ts-set-a
  description A description.
  litrefs bsip1 boys1970
  din ../zz_source/s22partial.din
  directory ../zz_source/s22_xyz
  method test
 end
+insert set 001_define_ts-set-b
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+insert property strange-
+ property_type dipole
+ set 001_define_ts-set-a
+end
 
 training
  atom H l C l N s O p
  exp 0.1 0.2 0.3
- empty test
- reference test2
+ empty test2
+ reference test
  add test3
  subset
-  set 001_define_ts-set
+  set 001_define_ts-set-a
+ end
+ subset
+  set 001_define_ts-set-b
+  norm_ref
  end
 end
