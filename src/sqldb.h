@@ -35,7 +35,7 @@ class sqldb {
 
   // constructors
   sqldb() : db(nullptr) {}; // default constructor
-  sqldb(const std::string &file) : db(nullptr), stmt() { // constructor using file name
+  sqldb(const std::string &file) : db(nullptr) { // constructor using file name
     connect(file, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
     if (!checksane())
       create();
@@ -146,21 +146,25 @@ class sqldb {
                      std::string &key, int &id, bool toupperi=false, bool touppero=false);
 
   // Begin a transaction
-  void begin_transaction(){ stmt[statement::STMT_BEGIN_TRANSACTION]->execute(); }
-
+  void begin_transaction(){
+    statement st(db,"BEGIN TRANSACTION;");
+    st.execute();
+  }
   // Commit a transaction
-  void commit_transaction(){ stmt[statement::STMT_COMMIT_TRANSACTION]->execute(); }
-
+  void commit_transaction(){
+    statement st(db,"COMMIT TRANSACTION;");
+    st.execute();
+  }
   // Rollback a transaction
-  void rollback_transaction(){ stmt[statement::STMT_ROLLBACK_TRANSACTION]->execute(); }
+  void rollback_transaction(){
+    statement st(db,"ROLLBACK TRANSACTION;");
+    st.execute();
+  }
 
   // Return a pointer to the database
   sqlite3 *ptr() { return db; }
 
  private:
-
-  // prepared SQLite statments
-  statement *stmt[statement::number_stmt_types];
 
   // database info
   std::string dbfilename;

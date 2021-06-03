@@ -44,7 +44,7 @@ void trainset::setdb(sqldb *db_){
 
   // Drop the Training_set table if it exists, then create it
   if (db){
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+    statement st(db->ptr(),R"SQL(
 CREATE TABLE IF NOT EXISTS Training_set (
   id INTEGER PRIMARY KEY,
   propid INTEGER NOT NULL,
@@ -111,9 +111,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   alias.push_back(alias_);
 
   // find the set size
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT COUNT(id) FROM Properties WHERE setid = ?1;
-)SQL");
+  statement st(db->ptr(),"SELECT COUNT(id) FROM Properties WHERE setid = ?1;");
   st.bind(1,idx);
   st.step();
   int size = sqlite3_column_int(st.ptr(),0);
@@ -183,7 +181,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
 
       // build the array of structures that contain only the atoms in the zat array
       std::unordered_map<int,bool> usest;
-      statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+      statement st(db->ptr(),"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
       while (st.step() != SQLITE_DONE){
         int id = sqlite3_column_int(st.ptr(),0);
         int nat = sqlite3_column_int(st.ptr(),1);
@@ -207,7 +205,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
       }
 
       // run over the properties in this set and write the mask
-      st.recycle(statement::STMT_CUSTOM,"SELECT nstructures,structures FROM Properties WHERE setid = " +
+      st.recycle("SELECT nstructures,structures FROM Properties WHERE setid = " +
                  std::to_string(setid[sid]) + " ORDER BY orderid;");
       int n = 0;
       while (st.step() != SQLITE_DONE){
@@ -231,9 +229,7 @@ SELECT COUNT(id) FROM Properties WHERE setid = ?1;
   // build the propid, size, and final index of the set
   set_size.push_back(0);
   set_final_idx.push_back(ilast);
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
-)SQL");
+  st.recycle("SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;");
   st.bind(1,setid[sid]);
   for (int i = 0; i < set_mask.size(); i++){
     st.step();
@@ -294,7 +290,7 @@ SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;
   if (norm_nitemsqrt)
     norm *= std::sqrt(set_size[sid]);
   if (norm_ref){
-    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+    statement st(db->ptr(),R"SQL(
 SELECT length(value), value FROM Training_set, Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;
@@ -425,9 +421,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
   os << std::endl;
 
   // Sets //
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT litrefs, description FROM Sets WHERE id = ?1;
-)SQL");
+  statement st(db->ptr(),"SELECT litrefs, description FROM Sets WHERE id = ?1;");
   os << "# List of subsets (" << setname.size() << ")" << std::endl;
   os << "| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |" << std::endl;
   for (int i = 0; i < setname.size(); i++){
@@ -457,7 +451,7 @@ SELECT litrefs, description FROM Sets WHERE id = ?1;
     // Properties //
     os << "# List of properties (" << ntot << ")" << std::endl;
     os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
+    st.recycle(R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, length(Evaluations.value), Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
@@ -498,15 +492,13 @@ ORDER BY Training_set.id;
     os << "# Calculation completion for the current training set" << std::endl;
 
     // number of evaluations to be done
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT COUNT(DISTINCT Training_set.propid)
-FROM Training_set;)SQL");
+    st.recycle("SELECT COUNT(DISTINCT Training_set.propid) FROM Training_set;");
     st.step();
     int ncalc_all = sqlite3_column_int(st.ptr(), 0);
     st.reset();
 
     // count reference, empty, and additional values
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
+    st.recycle(R"SQL(
 SELECT COUNT(DISTINCT Training_set.propid)
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid;)SQL");
@@ -537,7 +529,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
       os << "# Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ncalc_all << (ncalc_add[j]==ncalc_all?" (complete)":" (missing)") << std::endl;
 
     // terms
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
+    st.recycle(R"SQL(
 SELECT COUNT(DISTINCT Training_set.propid)
 FROM Terms
 INNER JOIN Training_set ON Training_set.propid = Terms.propid
@@ -580,16 +572,14 @@ void trainset::write_din(const std::string &directory/*=""*/) const{
   if (dir.empty()) dir = ".";
 
   // define the query statements
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
 FROM Properties, Evaluations, Methods, Training_set
 WHERE Properties.id = Evaluations.propid AND Evaluations.methodid = Methods.id AND Properties.id = Training_set.id AND
       Properties.setid = :SET AND Methods.id = :METHOD AND Properties.property_type = 1 AND Evaluations.value IS NOT NULL
 ORDER BY Properties.orderid;
 )SQL");
-  statement stname(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-SELECT key FROM Structures WHERE id = ?1;
-)SQL");
+  statement stname(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
 
   for (int i = 0; i < setid.size(); i++){
     // open and write the din header
@@ -654,7 +644,7 @@ void trainset::insert_olddat(std::ostream &os, const std::string &directory, std
   if (ifile.fail())
     throw std::runtime_error("In INSERT OLDDAT, error reading names.dat file: " + name);
 
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),R"SQL(
 SELECT Properties.key, Properties.id
 FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid
@@ -904,7 +894,7 @@ void trainset::eval_acp(std::ostream &os, const acp &a) const{
   std::vector<std::string> names(ntot,"");
 
   // get the names
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),R"SQL(
 SELECT Properties.key
 FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid
@@ -917,7 +907,7 @@ ORDER BY Training_set.id;
     throw std::runtime_error("In ACPEVAL, unexpected end of the database column in names");
 
   // get the empty, reference, additional methods
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Evaluations.value
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid
@@ -948,7 +938,7 @@ ORDER BY Training_set.id;
   }
 
   // get the ACP contribution
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
@@ -1032,9 +1022,7 @@ void trainset::savedb(std::string &name) const{
   oarchive(*this);
 
   // insert into the database
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Training_set_repo (key,training_set) VALUES(:KEY,:TRAINING_SET);
-)SQL");
+  statement st(db->ptr(),"INSERT INTO Training_set_repo (key,training_set) VALUES(:KEY,:TRAINING_SET);");
  st.bind((char *) ":KEY",name);
  st.bind((char *) ":TRAINING_SET",(void *) ss.str().data(),true,ss.str().size());
  if (st.step() != SQLITE_DONE)
@@ -1053,7 +1041,7 @@ void trainset::loaddb(std::string &name){
     throw std::runtime_error("TRAINING LOAD requires a name for the loaded training set");
 
   // fetch from the database
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),R"SQL(
 SELECT length(training_set), training_set
 FROM Training_set_repo
 WHERE key = ?1;
@@ -1087,13 +1075,9 @@ void trainset::deletedb(std::string &name) const{
 
   statement st(db->ptr());
   if (name.empty()){
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
-DELETE FROM Training_set_repo;
-)SQL");
+    st.recycle("DELETE FROM Training_set_repo;");
   } else {
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
-DELETE FROM Training_set_repo WHERE key = ?1;
-)SQL");
+    st.recycle("DELETE FROM Training_set_repo WHERE key = ?1;");
     st.bind(1,name);
   }
  if (st.step() != SQLITE_DONE)
@@ -1105,7 +1089,7 @@ void trainset::listdb(std::ostream &os) const {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using TRAINING PRINT");
 
-  statement st(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Training_set_repo;");
+  statement st(db->ptr(),"SELECT key FROM Training_set_repo;");
   os << "## Table of saved training sets in the database" << std::endl;
   os << "| Name |" << std::endl;
   while (st.step() != SQLITE_DONE){
@@ -1184,7 +1168,7 @@ void trainset::dump() const {
   ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
 
   // write the x matrix
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement st(db->ptr(),R"SQL(
 SELECT Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
@@ -1213,7 +1197,7 @@ ORDER BY Training_set.id;
   }
 
   // write the yref, yempt, and yadd columns
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Evaluations.value
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD
@@ -1285,7 +1269,7 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
 //  std::unordered_map<int,std::string> smap;
 //  if (havemethod || terms){
 //    // if method or WRITE TERMS, write input files
-//    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+//    statement st(db->ptr(),R"SQL(
 //SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
 //FROM Properties, Property_types, Training_set
 //WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
@@ -1305,7 +1289,7 @@ void trainset::write_structures(std::unordered_map<std::string,std::string> &kma
 //    }
 //  } else {
 //    // if no method and not WRITE TERMS, write structure files
-//    statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+//    statement st(db->ptr(),R"SQL(
 //SELECT DISTINCT Properties.nstructures, Properties.structures
 //FROM Properties, Training_set
 //WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;)SQL");
@@ -1363,8 +1347,8 @@ void trainset::read_and_compare(std::ostream &os, const std::string &file, const
   std::vector<std::string> names_missing_fromdat;
   std::vector<double> refvalues, datvalues, ws;
   std::vector<int> ids;
-  statement stkey(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db->ptr(),R"SQL(
 SELECT Training_set.id, Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
 FROM Training_set
 INNER JOIN Properties ON (Training_set.propid = Properties.id)
@@ -1508,8 +1492,8 @@ void trainset::read_terms(const std::string &file, std::unordered_map<std::strin
 
   // build the property map
   std::unordered_map<int,std::vector<double> > propmap;
-  statement stkey(db->ptr(),statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
+  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db->ptr(),R"SQL(
 SELECT DISTINCT Properties.id, Properties.nstructures, Properties.structures, Properties.coefficients
 FROM Training_set, Properties
 WHERE Training_set.propid = Properties.id
@@ -1542,10 +1526,7 @@ ORDER BY Training_set.id;)SQL");
   // Start inserting data
   db->begin_transaction();
 
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Terms (methodid,atom,l,exponent,propid,value)
-       VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);
-)SQL");
+  st.recycle("INSERT INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);");
   for (auto it = propmap.begin(); it != propmap.end(); it++){
     if (it->second.size() != nterms) continue;
     int n = 0;
@@ -1574,7 +1555,7 @@ INSERT INTO Terms (methodid,atom,l,exponent,propid,value)
 // Insert a subset into the Training_set table
 void trainset::insert_subset_db(int sid){
   db->begin_transaction();
-  statement st(db->ptr(),statement::STMT_CUSTOM,"INSERT INTO Training_set (id,propid,isfit) VALUES (:ID,:PROPID,:ISFIT);");
+  statement st(db->ptr(),"INSERT INTO Training_set (id,propid,isfit) VALUES (:ID,:PROPID,:ISFIT);");
   for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++){
     st.reset();
     st.bind((char *) ":ID", i);

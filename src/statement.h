@@ -28,69 +28,18 @@ class statement {
 
  public:
 
-  //// Named constants ////
-
-  // enum: type of statement()
-  enum stmttype {
-             STMT_CUSTOM = -1, // no statement
-             STMT_CREATE_DATABASE = 0, // create the database
-             STMT_INIT_DATABASE = 1, // initialize the database
-             STMT_BEGIN_TRANSACTION = 2, // begin a transaction
-             STMT_COMMIT_TRANSACTION = 3, // commit a transaction
-             STMT_ROLLBACK_TRANSACTION = 4, // rollback a transaction
-             STMT_CHECK_DATABASE = 5, // create the database
-             STMT_QUERY_PROPTYPE = 6, // query propety types
-             STMT_LIST_LITREF = 7, // list literature references
-             STMT_DELETE_LITREF_ALL = 8, // delete literature references, all
-             STMT_DELETE_LITREF_WITH_KEY = 9, // delete literature references, with key
-             STMT_DELETE_LITREF_WITH_ID = 10, // delete literature references, with id
-             STMT_INSERT_LITREF = 11, // insert literature references
-             STMT_QUERY_LITREF = 12, // query literature references
-             STMT_LIST_SET = 13, // list sets
-             STMT_DELETE_SET_ALL = 14, // delete sets, all
-             STMT_DELETE_SET_WITH_KEY = 15, // delete sets, with key
-             STMT_DELETE_SET_WITH_ID = 16, // delete sets, with id
-             STMT_INSERT_SET = 17, // insert sets
-             STMT_QUERY_SET = 18, // query sets
-             STMT_LIST_METHOD = 19, // list methods
-             STMT_DELETE_METHOD_ALL = 20, // delete methods, all
-             STMT_DELETE_METHOD_WITH_KEY = 21, // delete methods, with key
-             STMT_DELETE_METHOD_WITH_ID = 22, // delete methods, with id
-             STMT_INSERT_METHOD = 23, // insert methods
-             STMT_QUERY_METHOD = 24, // query methods
-             STMT_LIST_STRUCTURE = 25, // list structures
-             STMT_DELETE_STRUCTURE_ALL = 26, // delete structures, all
-             STMT_DELETE_STRUCTURE_WITH_KEY = 27, // delete structures, with key
-             STMT_DELETE_STRUCTURE_WITH_ID = 28, // delete structures, with id
-             STMT_INSERT_STRUCTURE = 29, // insert structures
-             STMT_QUERY_STRUCTURE = 30, // query structures
-             STMT_LIST_PROPERTY = 31, // list properties
-             STMT_DELETE_PROPERTY_ALL = 32, // delete properties, all
-             STMT_DELETE_PROPERTY_WITH_KEY = 33, // delete properties, with key
-             STMT_DELETE_PROPERTY_WITH_ID = 34, // delete properties, with id
-             STMT_INSERT_PROPERTY = 35, // insert properties
-             STMT_QUERY_PROPERTY = 36, // query properties
-             STMT_LIST_EVALUATION = 37, // list evaluations
-             STMT_DELETE_EVALUATION_ALL = 38, // delete evaluations, all
-             STMT_INSERT_EVALUATION = 39, // insert evaluations
-             STMT_LIST_TERM = 40, // list terms
-             STMT_DELETE_TERM_ALL = 41, // delete terms, all
-             STMT_INSERT_TERM = 42, // insert terms
-  };
-  static const int number_stmt_types = 43; // number of statement types
-
   //// Operators ////
 
   // constructors
   // default and parametrized constructor
-  statement(sqlite3 *db_ = nullptr, const stmttype type_ = STMT_CUSTOM, std::string text_ = "");
+  statement(sqlite3 *db_ = nullptr, std::string text_ = ""):
+    prepared(false), db(db_), stmt(nullptr), text(text_), has_bind(false) {};
   statement(statement&& rhs) = delete; // move constructor
   statement(const statement& rhs) = delete; // copy constructor (deleted)
 
   // destructors
   ~statement() {
     finalize();
-    type = STMT_CUSTOM;
     text = "";
   };
 
@@ -100,7 +49,7 @@ class statement {
   //// Public methods ////
 
   // Recycle a statement in the same database
-  void recycle(const stmttype type_ = STMT_CUSTOM, std::string text_ = "");
+  void recycle(std::string text_ = "");
 
   // Execute a statment directly
   int execute();
@@ -152,7 +101,6 @@ class statement {
   bool prepared; // whether the statement has been prepared
   bool has_bind; // whether the statement has bindings
   sqlite3 *db; // the database pointer
-  stmttype type; // statement type
   sqlite3_stmt *stmt; // statement pointer
   std::string text; // text of a custom statement
 

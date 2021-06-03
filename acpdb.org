@@ -188,7 +188,6 @@ own implementation of LASSO in c++
 
 -------
 
-clean up prepared statements
 build all the databases
 automatic testing on github & upload zz_source
 
@@ -267,34 +266,6 @@ READ NONLIN [SET set.s] [DIRECTORY dir.s] [FILE file.s] [INSERT]
   maximum coefficient information into the database.
 
   This command flags failed calculations for the user.
-
-* ACP operations
-
-ACP name.s file.acp
-ACP name.s
- atom.s l.s exp.r value.r
- ...
-END
-  
-  Define a named ACP from file file.acp (in Gaussian-style
-  format). Alternatively, give all ACP terms one by one.
-
-WRITE ACP name.s file.acp
-
-  Write the ACP name.s to file file.acp (Gaussian-style format).
-
-INFO ACP name1.s [name2.s ...]
-
-  Print information about the ACP name.s, such as the 1-norm, 2-norm,
-  etc. If more than one ACP is given, print information about all of
-  them as well as ACP distances.
-
-ACP SPLIT name.s nametemplate.s [COEF value.r]
-
-  Split the ACP name.s into several ACPs, with names given by
-  nametemplate.s followed by an integer. Each new ACP contains only
-  one term from the original ACP. If COEF is given, set the
-  coefficients for the new ACPs to value.r
 
 ACP EVAL acp.s [SET set.s]
 

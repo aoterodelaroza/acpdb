@@ -37,6 +37,98 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "btparse.h"
 #endif
 
+//// database schema ////
+static const std::string database_schema = R"SQL(
+CREATE TABLE Literature_refs (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  key         TEXT UNIQUE NOT NULL,
+  authors     TEXT,
+  title       TEXT,
+  journal     TEXT,
+  volume      TEXT,
+  page        TEXT,
+  year        TEXT,
+  doi         TEXT UNIQUE,
+  description TEXT
+);
+CREATE TABLE Property_types (
+  id          INTEGER PRIMARY KEY,
+  key         TEXT UNIQUE NOT NULL,
+  description TEXT
+);
+CREATE TABLE Sets (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  litrefs       TEXT,
+  description   TEXT
+);
+CREATE TABLE Methods (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  key              TEXT UNIQUE NOT NULL,
+  litrefs          TEXT,
+  description      TEXT
+);
+CREATE TABLE Structures (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  setid         INTEGER NOT NULL,
+  ismolecule    INTEGER NOT NULL,
+  charge        INTEGER,
+  multiplicity  INTEGER,
+  nat           INTEGER NOT NULL,
+  cell          BLOB,
+  zatoms        BLOB NOT NULL,
+  coordinates   BLOB NOT NULL,
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
+);
+CREATE TABLE Properties (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  key           TEXT UNIQUE NOT NULL,
+  property_type INTEGER NOT NULL,
+  setid         INTEGER NOT NULL,
+  orderid       INTEGER NOT NULL,
+  nstructures   INTEGER NOT NULL,
+  structures    BLOB NOT NULL,
+  coefficients  BLOB,
+  FOREIGN KEY(property_type) REFERENCES Property_types(id) ON DELETE CASCADE,
+  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
+);
+CREATE TABLE Evaluations (
+  methodid      INTEGER NOT NULL,
+  propid        INTEGER NOT NULL,
+  value         BLOB NOT NULL,
+  PRIMARY KEY(methodid,propid)
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+);
+CREATE TABLE Terms (
+  methodid      INTEGER NOT NULL,
+  atom          INTEGER NOT NULL,
+  l             INTEGER NOT NULL,
+  exponent      REAL NOT NULL,
+  propid        INTEGER NOT NULL,
+  value         BLOB NOT NULL,
+  maxcoef       REAL,
+  PRIMARY KEY(methodid,atom,l,exponent,propid),
+  FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
+  FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
+);
+CREATE TABLE Training_set_repo (
+  key TEXT PRIMARY KEY,
+  training_set BLOB NOT NULL
+);
+INSERT INTO Property_types (id,key,description)
+       VALUES (1,'ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
+              (2,'ENERGY','The total energy of a molecule or crystal'),
+              (3,'DIPOLE','The electric dipole of a molecule'),
+              (4,'STRESS','The stress tensor in a crystal'),
+              (5,'D1E','The first derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+              (6,'D2E','The second derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+              (7,'HOMO','The orbital energy of the highest occupied molecular orbital'),
+              (8,'LUMO','The orbital energy of the lowest unoccupied molecular orbital');
+)SQL";
+//// end of database schema ////
+
 // essential information for a property
 struct propinfo {
   int fieldasrxn = 0;
@@ -51,7 +143,7 @@ namespace fs = std::filesystem;
 // If toupper, uppercase the key before fetching the ID from the table. If
 // no such key is found in the table, return 0.
 int sqldb::find_id_from_key(const std::string &key,const std::string &table,bool toupper/*=false*/){
-  statement st(db,statement::STMT_CUSTOM,"SELECT id FROM " + table + " WHERE key = ?1;");
+  statement st(db,"SELECT id FROM " + table + " WHERE key = ?1;");
   if (toupper){
     std::string ukey = key;
     uppercase(ukey);
@@ -69,7 +161,7 @@ int sqldb::find_id_from_key(const std::string &key,const std::string &table,bool
 // toupper, the key is returned in uppercase. If no such ID is found
 // in the table, return an empty string.
 std::string sqldb::find_key_from_id(const int id,const std::string &table,bool toupper/*=false*/){
-  statement st(db,statement::STMT_CUSTOM,"SELECT key FROM " + table + " WHERE id = ?1;");
+  statement st(db,"SELECT key FROM " + table + " WHERE id = ?1;");
   st.bind(1,id);
   st.step();
   const unsigned char *result = sqlite3_column_text(st.ptr(),0);
@@ -113,9 +205,13 @@ int sqldb::checksane(bool except_on_empty /*=false*/){
     throw std::runtime_error("Error reading connected database");
 
   // query the database
-  stmt[statement::STMT_CHECK_DATABASE]->reset();
-  int rc = stmt[statement::STMT_CHECK_DATABASE]->step();
-  int icol = sqlite3_column_int(stmt[statement::STMT_CHECK_DATABASE]->ptr(), 0);
+  statement st(db,R"SQL(
+SELECT COUNT(type)
+FROM sqlite_master
+WHERE type='table' AND name='Literature_refs';
+)SQL");
+  int rc = st.step();
+  int icol = sqlite3_column_int(st.ptr(), 0);
 
   // if we did not get a row, error
   if (rc != SQLITE_ROW)
@@ -149,12 +245,9 @@ void sqldb::connect(const std::string &filename, int flags/*=SQLITE_OPEN_READWRI
   // write down the file name
   dbfilename = filename;
 
-  // construct all statements
-  for (int i = 0; i < statement::number_stmt_types; i++)
-    stmt[i] = new statement(db,(statement::stmttype) i);
-
   // initialize the database
-  stmt[statement::STMT_INIT_DATABASE]->execute();
+  statement st(db,"PRAGMA foreign_keys = ON;");
+  st.execute();
 }
 
 // Create the database skeleton.
@@ -163,18 +256,13 @@ void sqldb::create(){
   if (!db) throw std::runtime_error("A database file must be connected before using CREATE");
 
   // Create the table
-  stmt[statement::STMT_CREATE_DATABASE]->execute();
+  statement st(db,database_schema);
+  st.execute();
 }
 
 // Close a database connection if open and reset the pointer to NULL
 void sqldb::close(){
   if (!db) return;
-
-  // finalize and deallocate all statements
-  for (int i = 0; i < statement::number_stmt_types; i++){
-    delete stmt[i];
-    stmt[i] = nullptr;
-  }
 
   // close the database
   if (sqlite3_close_v2(db))
@@ -190,7 +278,7 @@ void sqldb::insert_litref(std::ostream &os, const std::string &key, const std::u
     throw std::runtime_error("Empty key in INSERT LITREF");
 
   // statement
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
        VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL");
@@ -220,7 +308,7 @@ void sqldb::insert_set(std::ostream &os, const std::string &key, const std::unor
     throw std::runtime_error("XYZ and DIN options in SET are incompatible");
 
   // statement
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Sets (key,litrefs,description)
        VALUES(:KEY,:LITREFS,:DESCRIPTION);
 )SQL");
@@ -262,7 +350,7 @@ void sqldb::insert_method(std::ostream &os, const std::string &key, const std::u
     throw std::runtime_error("Empty key in INSERT METHOD");
 
   // statement
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Methods (key,litrefs,description)
        VALUES(:KEY,:LITREFS,:DESCRIPTION);
 )SQL");
@@ -307,7 +395,7 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, const std
   }
 
   // bind
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
        VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
@@ -350,13 +438,11 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, const std:
   std::vector<double> tok2;
 
   // prepared statements
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL");
-  statement ststr(db,statement::STMT_CUSTOM,R"SQL(
-SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;
-)SQL");
+  statement ststr(db,"SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;");
 
   // property type
   int ppid = -1;
@@ -469,10 +555,7 @@ void sqldb::insert_evaluation(std::ostream &os, const std::unordered_map<std::st
 
   // bind
   std::unordered_map<std::string,std::string>::const_iterator im;
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
-INSERT INTO Evaluations (methodid,propid,value)
-       VALUES(:METHODID,:PROPID,:VALUE)
-)SQL");
+  statement st(db,"INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHODID,:PROPID,:VALUE)");
 
   std::string methodkey;
   int methodid;
@@ -512,17 +595,15 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   // build command
   std::string cmd;
   if (kmap.find("VALUE") != kmap.end())
-    cmd = R"SQL(INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef)
-       VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF))SQL";
+    cmd = "INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)";
   else if (kmap.find("MAXCOEF") != kmap.end())
-    cmd = R"SQL(UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID
-                AND atom = :ATOM AND l = :L AND exponent = :EXPONENT)SQL";
+    cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
   else
     throw std::runtime_error("A VALUE or MAXCOEF must be given in INSERT TERM");
 
   // bind
   std::unordered_map<std::string,std::string>::const_iterator im;
-  statement st(db,statement::STMT_CUSTOM,cmd);
+  statement st(db,cmd);
 
   std::string methodkey;
   int methodid;
@@ -625,8 +706,8 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
 
   // build the property map
   std::unordered_map<int,std::vector<double>> propmap;
-  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement stkey(db,"SELECT key FROM Structures WHERE id = ?1;");
+  statement st(db,R"SQL(
 SELECT id, nstructures, structures, coefficients
 FROM Properties
 WHERE property_type = ?1
@@ -670,7 +751,7 @@ ORDER BY id;)SQL");
   // begin the transaction
   begin_transaction();
 
-  st.recycle(statement::STMT_CUSTOM,"INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);");
+  st.recycle("INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);");
   for (auto it = propmap.begin(); it != propmap.end(); it++){
     st.reset();
     st.bind((char *) ":METHOD",methodid);
@@ -710,7 +791,7 @@ void sqldb::insert_litref_bibtex(std::ostream &os, const std::list<std::string> 
   begin_transaction();
 
   // prepare the statement
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,description)
        VALUES(:KEY,:AUTHORS,:TITLE,:JOURNAL,:VOLUME,:PAGE,:YEAR,:DOI,:DESCRIPTION);
 )SQL");
@@ -1018,12 +1099,10 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
 
   // execute
   if (tokens.empty()){
-    statement st(db,statement::STMT_CUSTOM,"DELETE FROM " + table + ";");
+    statement st(db,"DELETE FROM " + table + ";");
     st.execute();
   } else if (category == "EVALUATION") {
-    statement st(db,statement::STMT_CUSTOM,R"SQL(
-DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1) AND propid = (SELECT id FROM Properties WHERE key = ?2);
-)SQL");
+    statement st(db,"DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1) AND propid = (SELECT id FROM Properties WHERE key = ?2);");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       os << "# DELETE " << category << " (method=" << *it;
       st.bind(1,*it++);
@@ -1032,7 +1111,7 @@ DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1)
       st.step();
     }
   } else if (category == "TERM") {
-    statement st(db,statement::STMT_CUSTOM,R"SQL(
+    statement st(db,R"SQL(
 DELETE FROM Terms WHERE
   methodid = (SELECT id FROM Methods WHERE key = ?1) AND
   propid = (SELECT id FROM Properties WHERE key = ?2) AND
@@ -1052,8 +1131,8 @@ DELETE FROM Terms WHERE
       st.step();
     }
   } else {
-    statement st_id(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE id = ?1;");
-    statement st_key(db,statement::STMT_CUSTOM,"DELETE FROM " + table + " WHERE key = ?1;");
+    statement st_id(db,"DELETE FROM " + table + " WHERE id = ?1;");
+    statement st_key(db,"DELETE FROM " + table + " WHERE key = ?1;");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       os << "# DELETE " << category << " " << *it << std::endl;
       if (isinteger(*it)){
@@ -1146,7 +1225,7 @@ FROM Terms;
   }
 
   // make the statement
-  statement st(db,statement::STMT_CUSTOM,stmt);
+  statement st(db,stmt);
 
   // print table header
   int n = headers.size();
@@ -1194,7 +1273,7 @@ FROM Terms;
 // info about the evaluations and terms available.
 void sqldb::printsummary(std::ostream &os, bool full){
   // property types
-  statement st(db,statement::STMT_CUSTOM,"SELECT id, key, description FROM Property_types;");
+  statement st(db,"SELECT id, key, description FROM Property_types;");
   os << "# Table of property types" << std::endl;
   os << "| id | key | description |" << std::endl;
   while (st.step() != SQLITE_DONE){
@@ -1206,7 +1285,7 @@ void sqldb::printsummary(std::ostream &os, bool full){
   os << std::endl;
 
   // literature references
-  st.recycle(statement::STMT_CUSTOM,"SELECT COUNT(id) FROM Literature_refs;");
+  st.recycle("SELECT COUNT(id) FROM Literature_refs;");
   st.step();
   int num = sqlite3_column_int(st.ptr(),0);
   os << "# Number of literature references: " << num << std::endl;
@@ -1222,7 +1301,7 @@ void sqldb::printsummary(std::ostream &os, bool full){
 
   // properties and structures in each set
   os << "# Number of properties and structures in each set" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Sets.id, Sets.key, prdx.cnt, srdx.cnt
 FROM Sets
 LEFT OUTER JOIN (SELECT setid, count(id) AS cnt FROM Properties GROUP BY setid) AS prdx ON prdx.setid = Sets.id
@@ -1242,7 +1321,7 @@ ORDER BY Sets.id;
   // evaluations and terms
   if (full){
     os << "# Evaluations and terms for each combination of set & method" << std::endl;
-    st.recycle(statement::STMT_CUSTOM,R"SQL(
+    st.recycle(R"SQL(
 SELECT Sets.id, Sets.key, Methods.id, Methods.key, eva.cnt, trm.cnt
 FROM Methods, Sets
 LEFT OUTER JOIN(
@@ -1295,7 +1374,7 @@ void sqldb::print_din(std::ostream &os, const std::unordered_map<std::string,std
         throw std::runtime_error("Invalid set " + *it + " in PRINT DIN");
     }
   } else {
-    statement st(db,statement::STMT_CUSTOM,"SELECT id, key FROM Sets ORDER BY id;");
+    statement st(db,"SELECT id, key FROM Sets ORDER BY id;");
     while (st.step() != SQLITE_DONE){
       idset.push_back(sqlite3_column_int(st.ptr(), 0));
       std::string name = (char *) sqlite3_column_text(st.ptr(), 1);
@@ -1321,7 +1400,7 @@ INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
 INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
 WHERE Properties.property_type = 1 AND Properties.setid = :SET AND Methods.id = )SQL";
     sttext = sttext + std::to_string(methodid) + " ORDER BY Properties.orderid;";
-    st.recycle(statement::STMT_CUSTOM,sttext);
+    st.recycle(sttext);
   } else {
     // no method was given - zeros as reference values
     std::string sttext = R"SQL(
@@ -1330,7 +1409,7 @@ FROM Properties
 WHERE Properties.property_type = 1 AND Properties.setid = :SET
 ORDER BY Properties.orderid;
 )SQL";
-    st.recycle(statement::STMT_CUSTOM,sttext);
+    st.recycle(sttext);
   }
 
   // the statement to fetch a structure name
@@ -1380,9 +1459,7 @@ void sqldb::verify(std::ostream &os){
 
   // check litrefs in sets
   os << "Checking the litrefs in sets are known" << std::endl;
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
-SELECT litrefs,key FROM Sets;
-)SQL");
+  statement st(db,"SELECT litrefs,key FROM Sets;");
   while (st.step() != SQLITE_DONE){
     const char *field_s = (char *) sqlite3_column_text(st.ptr(), 0);
     if (!field_s) continue;
@@ -1397,9 +1474,7 @@ SELECT litrefs,key FROM Sets;
 
   // check litrefs in methods
   os << "Checking the litrefs in methods are known" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT litrefs,key FROM Methods;
-)SQL");
+  st.recycle("SELECT litrefs,key FROM Methods;");
   while (st.step() != SQLITE_DONE){
     const char *field_s = (char *) sqlite3_column_text(st.ptr(), 0);
     if (!field_s) continue;
@@ -1414,12 +1489,8 @@ SELECT litrefs,key FROM Methods;
 
   // check structures in properties
   os << "Checking the structures in properties are known" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT key,nstructures,structures FROM Properties;
-)SQL");
-  statement stcheck(db,statement::STMT_CUSTOM,R"SQL(
-SELECT id FROM Structures WHERE id = ?1;
-)SQL");
+  st.recycle("SELECT key,nstructures,structures FROM Properties;");
+  statement stcheck(db,"SELECT id FROM Structures WHERE id = ?1;");
   while (st.step() != SQLITE_DONE){
     int n = sqlite3_column_int(st.ptr(), 1);
 
@@ -1435,14 +1506,12 @@ SELECT id FROM Structures WHERE id = ?1;
 
   // check the number of values and structures in evaluations
   os << "Checking the number of values and structures in the evaluations table" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Evaluations.methodid, Evaluations.propid, Properties.property_type, length(Evaluations.value), Properties.nstructures, Properties.structures
 FROM Evaluations, Properties
 WHERE Evaluations.propid = Properties.id
 )SQL");
-  stcheck.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT nat FROM Structures WHERE id = ?1;
-)SQL");
+  stcheck.recycle("SELECT nat FROM Structures WHERE id = ?1;");
   while (st.step() != SQLITE_DONE){
     int methodid = sqlite3_column_int(st.ptr(), 0);
     int propid = sqlite3_column_int(st.ptr(), 1);
@@ -1479,14 +1548,12 @@ SELECT nat FROM Structures WHERE id = ?1;
 
   // check the number of values and structures in terms
   os << "Checking the number of values and structures in the terms table" << std::endl;
-  st.recycle(statement::STMT_CUSTOM,R"SQL(
+  st.recycle(R"SQL(
 SELECT Terms.methodid, Terms.atom, Terms.l, Terms.exponent, Terms.propid, Properties.property_type, length(Terms.value), Properties.nstructures, Properties.structures
 FROM Terms, Properties
 WHERE Terms.propid = Properties.id
 )SQL");
-  stcheck.recycle(statement::STMT_CUSTOM,R"SQL(
-SELECT nat FROM Structures WHERE id = ?1;
-)SQL");
+  stcheck.recycle("SELECT nat FROM Structures WHERE id = ?1;");
   while (st.step() != SQLITE_DONE){
     int methodid = sqlite3_column_int(st.ptr(), 0);
     int atom = sqlite3_column_int(st.ptr(), 1);
@@ -1584,7 +1651,7 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   std::vector<int> numvalues, setid;
   std::vector<double> refvalues, datvalues;
   std::map<int,std::string> setname;
-  statement stkey(db,statement::STMT_CUSTOM,"SELECT key FROM Structures WHERE id = ?1;");
+  statement stkey(db,"SELECT key FROM Structures WHERE id = ?1;");
   std::string sttext;
   if (sid > 0){
     sttext = R"SQL(
@@ -1601,7 +1668,7 @@ LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluatio
 WHERE Properties.property_type = :PROPERTY_TYPE AND Sets.id = Properties.setid
 ORDER BY Properties.id;)SQL";
   }
-  statement st(db,statement::STMT_CUSTOM,sttext);
+  statement st(db,sttext);
   if (sid > 0)
     st.bind((char *) ":SET",sid);
   st.bind((char *) ":METHOD",refm);
@@ -1775,14 +1842,12 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
   // Collect the structure indices for this set
   std::unordered_map<int,int> smap;
-  std::string sttext=R"SQL(
-SELECT Properties.nstructures, Properties.structures
-FROM Properties)SQL";
+  std::string sttext="SELECT Properties.nstructures, Properties.structures FROM Properties";
   if (setid > 0)
     sttext += " WHERE Properties.setid = ?1";
   sttext += ";";
-  statement st(db,statement::STMT_CUSTOM,sttext);
-  statement ststr(db,statement::STMT_CUSTOM,"SELECT ismolecule FROM Structures WHERE id = ?1;");
+  statement st(db,sttext);
+  statement ststr(db,"SELECT ismolecule FROM Structures WHERE id = ?1;");
   if (setid > 0)
     st.bind(1,setid);
   while (st.step() != SQLITE_DONE){
@@ -1864,7 +1929,7 @@ std::string sqldb::write_one_structure(std::ostream &os, int id, const strtempla
                                        const std::string &ext, const acp& a, const std::string &dir/*="./"*/){
 
   // get the structure from the database
-  statement st(db,statement::STMT_CUSTOM,R"SQL(
+  statement st(db,R"SQL(
 SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
 FROM Structures WHERE id = ?1;
 )SQL");
