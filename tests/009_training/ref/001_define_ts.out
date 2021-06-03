@@ -252,17 +252,141 @@ Creating skeleton database
 # INSERT LITREF bsip2
 
 * INSERT: insert data into the database (SET)
-# INSERT SET 001_define_ts-set
-# INSERT STRUCTURE 001_define_ts-set.nh3_nh3
-# INSERT STRUCTURE 001_define_ts-set.nh3_nh3_1
-# INSERT STRUCTURE 001_define_ts-set.nh3_nh3_2
-# INSERT PROPERTY 001_define_ts-set.nh3_nh3
-# INSERT EVALUATION (method=test;property=001_define_ts-set.nh3_nh3)
-# INSERT STRUCTURE 001_define_ts-set.h2o_h2o
-# INSERT STRUCTURE 001_define_ts-set.h2o_h2o_1
-# INSERT STRUCTURE 001_define_ts-set.h2o_h2o_2
-# INSERT PROPERTY 001_define_ts-set.h2o_h2o
-# INSERT EVALUATION (method=test;property=001_define_ts-set.h2o_h2o)
+# INSERT SET 001_define_ts-set-a
+# INSERT STRUCTURE 001_define_ts-set-a.nh3_nh3
+# INSERT STRUCTURE 001_define_ts-set-a.nh3_nh3_1
+# INSERT STRUCTURE 001_define_ts-set-a.nh3_nh3_2
+# INSERT PROPERTY 001_define_ts-set-a.nh3_nh3
+# INSERT EVALUATION (method=test;property=001_define_ts-set-a.nh3_nh3)
+# INSERT STRUCTURE 001_define_ts-set-a.h2o_h2o
+# INSERT STRUCTURE 001_define_ts-set-a.h2o_h2o_1
+# INSERT STRUCTURE 001_define_ts-set-a.h2o_h2o_2
+# INSERT PROPERTY 001_define_ts-set-a.h2o_h2o
+# INSERT EVALUATION (method=test;property=001_define_ts-set-a.h2o_h2o)
+
+* INSERT: insert data into the database (SET)
+# INSERT SET 001_define_ts-set-b
+# INSERT STRUCTURE 001_define_ts-set-b.nh3_nh3
+# INSERT STRUCTURE 001_define_ts-set-b.nh3_nh3_1
+# INSERT STRUCTURE 001_define_ts-set-b.nh3_nh3_2
+# INSERT PROPERTY 001_define_ts-set-b.nh3_nh3
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.nh3_nh3)
+# INSERT STRUCTURE 001_define_ts-set-b.h2o_h2o
+# INSERT STRUCTURE 001_define_ts-set-b.h2o_h2o_1
+# INSERT STRUCTURE 001_define_ts-set-b.h2o_h2o_2
+# INSERT PROPERTY 001_define_ts-set-b.h2o_h2o
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.h2o_h2o)
+# INSERT STRUCTURE 001_define_ts-set-b.h2co2_h2co2
+# INSERT STRUCTURE 001_define_ts-set-b.h2co2_h2co2_1
+# INSERT STRUCTURE 001_define_ts-set-b.h2co2_h2co2_2
+# INSERT PROPERTY 001_define_ts-set-b.h2co2_h2co2
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.h2co2_h2co2)
+# INSERT STRUCTURE 001_define_ts-set-b.formamide_formamide
+# INSERT STRUCTURE 001_define_ts-set-b.formamide_formamide_1
+# INSERT STRUCTURE 001_define_ts-set-b.formamide_formamide_2
+# INSERT PROPERTY 001_define_ts-set-b.formamide_formamide
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.formamide_formamide)
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_hb
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_hb_1
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_hb_2
+# INSERT PROPERTY 001_define_ts-set-b.uracil_uracil_hb
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.uracil_uracil_hb)
+# INSERT STRUCTURE 001_define_ts-set-b.pyridoxine_aminopyridine
+# INSERT STRUCTURE 001_define_ts-set-b.pyridoxine_aminopyridine_1
+# INSERT STRUCTURE 001_define_ts-set-b.pyridoxine_aminopyridine_2
+# INSERT PROPERTY 001_define_ts-set-b.pyridoxine_aminopyridine
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.pyridoxine_aminopyridine)
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_wcc1
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_wcc1_1
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_wcc1_2
+# INSERT PROPERTY 001_define_ts-set-b.adenine_thymine_wcc1
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.adenine_thymine_wcc1)
+# INSERT STRUCTURE 001_define_ts-set-b.ch4_ch4
+# INSERT STRUCTURE 001_define_ts-set-b.ch4_ch4_1
+# INSERT STRUCTURE 001_define_ts-set-b.ch4_ch4_2
+# INSERT PROPERTY 001_define_ts-set-b.ch4_ch4
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.ch4_ch4)
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h4
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h4_1
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h4_2
+# INSERT PROPERTY 001_define_ts-set-b.c2h4_c2h4
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c2h4_c2h4)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_ch4
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_ch4_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_ch4_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_ch4
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_ch4)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_pd
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_pd_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_pd_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_c6h6_pd
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_c6h6_pd)
+# INSERT STRUCTURE 001_define_ts-set-b.pyrazine_pyrazine
+# INSERT STRUCTURE 001_define_ts-set-b.pyrazine_pyrazine_1
+# INSERT STRUCTURE 001_define_ts-set-b.pyrazine_pyrazine_2
+# INSERT PROPERTY 001_define_ts-set-b.pyrazine_pyrazine
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.pyrazine_pyrazine)
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_stack
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_stack_1
+# INSERT STRUCTURE 001_define_ts-set-b.uracil_uracil_stack_2
+# INSERT PROPERTY 001_define_ts-set-b.uracil_uracil_stack
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.uracil_uracil_stack)
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_stack
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_stack_1
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_stack_2
+# INSERT PROPERTY 001_define_ts-set-b.indole_c6h6_stack
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.indole_c6h6_stack)
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_stack
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_stack_1
+# INSERT STRUCTURE 001_define_ts-set-b.adenine_thymine_stack_2
+# INSERT PROPERTY 001_define_ts-set-b.adenine_thymine_stack
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.adenine_thymine_stack)
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h2
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h2_1
+# INSERT STRUCTURE 001_define_ts-set-b.c2h4_c2h2_2
+# INSERT PROPERTY 001_define_ts-set-b.c2h4_c2h2
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c2h4_c2h2)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_h2o
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_h2o_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_h2o_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_h2o
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_h2o)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_nh3
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_nh3_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_nh3_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_nh3
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_nh3)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_hcn
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_hcn_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_hcn_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_hcn
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_hcn)
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_t
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_t_1
+# INSERT STRUCTURE 001_define_ts-set-b.c6h6_c6h6_t_2
+# INSERT PROPERTY 001_define_ts-set-b.c6h6_c6h6_t
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.c6h6_c6h6_t)
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_t
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_t_1
+# INSERT STRUCTURE 001_define_ts-set-b.indole_c6h6_t_2
+# INSERT PROPERTY 001_define_ts-set-b.indole_c6h6_t
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.indole_c6h6_t)
+# INSERT STRUCTURE 001_define_ts-set-b.phenol_phenol
+# INSERT STRUCTURE 001_define_ts-set-b.phenol_phenol_1
+# INSERT STRUCTURE 001_define_ts-set-b.phenol_phenol_2
+# INSERT PROPERTY 001_define_ts-set-b.phenol_phenol
+# INSERT EVALUATION (method=test;property=001_define_ts-set-b.phenol_phenol)
+
+* INSERT: insert data into the database (PROPERTY)
+# INSERT PROPERTY strange-001_define_ts-set-a.nh3_nh3
+# INSERT PROPERTY strange-001_define_ts-set-a.nh3_nh3_1
+# INSERT PROPERTY strange-001_define_ts-set-a.nh3_nh3_2
+# INSERT PROPERTY strange-001_define_ts-set-a.h2o_h2o
+# INSERT PROPERTY strange-001_define_ts-set-a.h2o_h2o_1
+# INSERT PROPERTY strange-001_define_ts-set-a.h2o_h2o_2
+
+* INSERT: insert data into the database (EVALUATION)
+# INSERT EVALUATION (method=test;property=strange-001_define_ts-set-a.h2o_h2o)
 
 * TRAINING: started defining the training set 
 
@@ -282,46 +406,75 @@ Creating skeleton database
 | 1 | 0.2 |
 | 2 | 0.3 |
 
-# List of subsets (1)
+# List of subsets (2)
 | id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |
-| 0 | 001_define_ts-set | 001_define_ts-set | 1 | 1 | 2 | 2 | 1 | bsip1 boys1970  | A description. |
+| 0 | 001_define_ts-set-a | 001_define_ts-set-a | 1 | 1 | 8 | 8 | 1 | bsip1 boys1970  | A description. |
+| 1 | 001_define_ts-set-b | 001_define_ts-set-b | 2 | 9 | 30 | 22 | 1 | bsip1 boys1970  | A description. |
 
 # List of methods
 | type | name | id | for fit? |
-| reference | test2 | 2 | n/a |
-| empty | test | 1 | n/a |
+| reference | test | 1 | n/a |
+| empty | test2 | 2 | n/a |
 | additional | test3 | 3 | no |
 
-# List of properties (2)
+# List of properties (30)
 | fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |
-| yes | 1 | 001_define_ts-set.nh3_nh3 | 1 | 001_define_ts-set | 001_define_ts-set | ENERGY_DIFFERENCE | 3 | 1 | n/a |
-| yes | 2 | 001_define_ts-set.h2o_h2o | 2 | 001_define_ts-set | 001_define_ts-set | ENERGY_DIFFERENCE | 3 | 1 | n/a |
+| yes | 1 | 001_define_ts-set-a.nh3_nh3 | 1 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -3.133000 |
+| yes | 2 | strange-001_define_ts-set-a.nh3_nh3 | 25 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | n/a |
+| yes | 3 | 001_define_ts-set-a.h2o_h2o | 2 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -4.989000 |
+| yes | 4 | strange-001_define_ts-set-a.nh3_nh3_1 | 26 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | n/a |
+| yes | 5 | strange-001_define_ts-set-a.nh3_nh3_2 | 27 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | n/a |
+| yes | 6 | strange-001_define_ts-set-a.h2o_h2o | 28 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | <3> |
+| yes | 7 | strange-001_define_ts-set-a.h2o_h2o_1 | 29 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | n/a |
+| yes | 8 | strange-001_define_ts-set-a.h2o_h2o_2 | 30 | 001_define_ts-set-a | 001_define_ts-set-a | DIPOLE | 1 | 1 | n/a |
+| yes | 9 | 001_define_ts-set-b.nh3_nh3 | 3 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -3.133000 |
+| yes | 10 | 001_define_ts-set-b.h2o_h2o | 4 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -4.989000 |
+| yes | 11 | 001_define_ts-set-b.h2co2_h2co2 | 5 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -18.753000 |
+| yes | 12 | 001_define_ts-set-b.formamide_formamide | 6 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -16.062000 |
+| yes | 13 | 001_define_ts-set-b.uracil_uracil_hb | 7 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -20.641000 |
+| yes | 14 | 001_define_ts-set-b.pyridoxine_aminopyridine | 8 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -16.934000 |
+| yes | 15 | 001_define_ts-set-b.adenine_thymine_wcc1 | 9 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -16.660000 |
+| yes | 16 | 001_define_ts-set-b.ch4_ch4 | 10 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -0.527000 |
+| yes | 17 | 001_define_ts-set-b.c2h4_c2h4 | 11 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -1.472000 |
+| yes | 18 | 001_define_ts-set-b.c6h6_ch4 | 12 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -1.448000 |
+| yes | 19 | 001_define_ts-set-b.c6h6_c6h6_pd | 13 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -2.654000 |
+| yes | 20 | 001_define_ts-set-b.pyrazine_pyrazine | 14 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -4.255000 |
+| yes | 21 | 001_define_ts-set-b.uracil_uracil_stack | 15 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -9.805000 |
+| yes | 22 | 001_define_ts-set-b.indole_c6h6_stack | 16 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -4.524000 |
+| yes | 23 | 001_define_ts-set-b.adenine_thymine_stack | 17 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -11.730000 |
+| yes | 24 | 001_define_ts-set-b.c2h4_c2h2 | 18 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -1.496000 |
+| yes | 25 | 001_define_ts-set-b.c6h6_h2o | 19 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -3.275000 |
+| yes | 26 | 001_define_ts-set-b.c6h6_nh3 | 20 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -2.312000 |
+| yes | 27 | 001_define_ts-set-b.c6h6_hcn | 21 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -4.541000 |
+| yes | 28 | 001_define_ts-set-b.c6h6_c6h6_t | 22 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -2.717000 |
+| yes | 29 | 001_define_ts-set-b.indole_c6h6_t | 23 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -5.627000 |
+| yes | 30 | 001_define_ts-set-b.phenol_phenol | 24 | 001_define_ts-set-a | 001_define_ts-set-a | ENERGY_DIFFERENCE | 3 | 1 | -7.097000 |
 
 # Calculation completion for the current training set
-# Reference: 0/2 (missing)
-# Empty: 2/2 (complete)
-# Additional (test3): 0/2 (missing)
+# Reference: 25/30 (missing)
+# Empty: 0/30 (missing)
+# Additional (test3): 0/30 (missing)
 # Terms: 
-| H | l | 0.1 | 0/2 | (missing)
-| H | l | 0.2 | 0/2 | (missing)
-| H | l | 0.3 | 0/2 | (missing)
-| C | l | 0.1 | 0/2 | (missing)
-| C | l | 0.2 | 0/2 | (missing)
-| C | l | 0.3 | 0/2 | (missing)
-| N | l | 0.1 | 0/2 | (missing)
-| N | l | 0.2 | 0/2 | (missing)
-| N | l | 0.3 | 0/2 | (missing)
-| N | s | 0.1 | 0/2 | (missing)
-| N | s | 0.2 | 0/2 | (missing)
-| N | s | 0.3 | 0/2 | (missing)
-| O | l | 0.1 | 0/2 | (missing)
-| O | l | 0.2 | 0/2 | (missing)
-| O | l | 0.3 | 0/2 | (missing)
-| O | s | 0.1 | 0/2 | (missing)
-| O | s | 0.2 | 0/2 | (missing)
-| O | s | 0.3 | 0/2 | (missing)
-| O | p | 0.1 | 0/2 | (missing)
-| O | p | 0.2 | 0/2 | (missing)
-| O | p | 0.3 | 0/2 | (missing)
-# Total terms: 0/42 (missing)
+| H | l | 0.1 | 0/30 | (missing)
+| H | l | 0.2 | 0/30 | (missing)
+| H | l | 0.3 | 0/30 | (missing)
+| C | l | 0.1 | 0/30 | (missing)
+| C | l | 0.2 | 0/30 | (missing)
+| C | l | 0.3 | 0/30 | (missing)
+| N | l | 0.1 | 0/30 | (missing)
+| N | l | 0.2 | 0/30 | (missing)
+| N | l | 0.3 | 0/30 | (missing)
+| N | s | 0.1 | 0/30 | (missing)
+| N | s | 0.2 | 0/30 | (missing)
+| N | s | 0.3 | 0/30 | (missing)
+| O | l | 0.1 | 0/30 | (missing)
+| O | l | 0.2 | 0/30 | (missing)
+| O | l | 0.3 | 0/30 | (missing)
+| O | s | 0.1 | 0/30 | (missing)
+| O | s | 0.2 | 0/30 | (missing)
+| O | s | 0.3 | 0/30 | (missing)
+| O | p | 0.1 | 0/30 | (missing)
+| O | p | 0.2 | 0/30 | (missing)
+| O | p | 0.3 | 0/30 | (missing)
+# Total terms: 0/630 (missing)
 

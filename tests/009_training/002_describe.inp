@@ -1,9 +1,9 @@
-## check: 001_define_ts.out -a1e-10
-## delete: 001_define_ts.db
+## check: 002_describe.out -a1e-10
+## delete: 002_describe.db
 ## labels: regression quick
 
-system rm -f 001_define_ts.db
-connect 001_define_ts.db
+system rm -f 002_describe.db
+connect 002_describe.db
 
 insert method test
 end
@@ -12,14 +12,14 @@ end
 insert method test3
 end
 insert litref bibtex ../zz_source/bsip2.bib
-insert set 001_define_ts-set-a
+insert set 002_describe-set-a
  description A description.
  litrefs bsip1 boys1970
  din ../zz_source/s22partial.din
  directory ../zz_source/s22_xyz
  method test
 end
-insert set 001_define_ts-set-b
+insert set 002_describe-set-b
  description A description.
  litrefs bsip1 boys1970
  din ../zz_source/s22.din
@@ -28,11 +28,11 @@ insert set 001_define_ts-set-b
 end
 insert property strange-
  property_type dipole
- set 001_define_ts-set-a
+ set 002_describe-set-a
 end
 insert evaluation
  method test
- property strange-001_define_ts-set-a.h2o_h2o
+ property strange-002_describe-set-a.h2o_h2o
  value 0.1 0.2 0.3
 end
 
@@ -43,9 +43,12 @@ training
  reference test
  add test3
  subset
-  set 001_define_ts-set-a
+  set 002_describe-set-a
  end
  subset
-  set 001_define_ts-set-b
+  set 002_describe-set-b
+  norm_ref
  end
 end
+
+training describe

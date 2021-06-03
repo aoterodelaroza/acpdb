@@ -346,10 +346,23 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("The database needs to be defined before using TRAINING");
       if (!db.checksane(true))
         throw std::runtime_error("The database is not sane");
-      *os << "* TRAINING: started defining the training set " << std::endl << std::endl;
-      intraining = true;
-      ts = trainset();
-      ts.setdb(&db);
+      std::string category = popstring(tokens,true);
+
+      if (category.empty()){
+        *os << "* TRAINING: started defining the training set " << std::endl << std::endl;
+        intraining = true;
+        ts = trainset();
+        ts.setdb(&db);
+      } else if (category == "DESCRIBE") {
+        ts.describe(*os,false,true);
+      } else if (category == "SAVE") {
+      } else if (category == "LOAD") {
+      } else if (category == "DELETE") {
+      } else if (category == "PRINT") {
+      } else if (category == "CLEAR") {
+      } else {
+        throw std::runtime_error("Unknown keyword after TRAINING");
+      }
 
       //// TRAINING -> ATOM
     } else if (keyw == "ATOM") {
@@ -380,9 +393,6 @@ int main(int argc, char *argv[]) {
       ts.addsubset(alias,kmap);
 
       ///////////////////////////////////////////////////
-
-    // } else if (keyw == "DESCRIBE") {
-    //   ts.describe(*os,false,true);
 
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);

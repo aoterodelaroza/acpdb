@@ -1,11 +1,6 @@
 #+STARTUP: showeverything
 
 
-DESCRIBE
-
-  Describe the training set. Calculate the number of calculations
-  still missing from the database for ACP development.
-
 LIST DIN_TRAINING [directory.s]
 
   Write din files for all subsets of the current training set. If
@@ -189,31 +184,6 @@ DUMP
 
   Write the octavedump.dat file for the LASSO fit corresponding to the
   current dataset.
-
-* Quality of life keywords
-
-TRAINING SAVE name.s
-
-  Save the current training set definition to the connected database
-  under name name.s.
-
-TRAINING LOAD name.s
-
-  Load the training set definition with name name.s from the connected
-  database.
-
-TRAINING DELETE [name.s]
-
-  Delete the training set with name name.s from the database. If no
-  name is given, delete all training sets.
-
-TRAINING LIST
-
-  List training sets from the database.
-
-TRAINING CLEAR
-
-  Clear the current training set.
 
 * Database schema
 

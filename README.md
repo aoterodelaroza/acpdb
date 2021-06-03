@@ -15,6 +15,7 @@ atom-centered potentials (ACPs).
 | [Writing input and structure files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
 | [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                  |
 | [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                              |
+| [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR}                                                                                                                                 |
 
 ## Command-Line Syntax
 ~~~
@@ -652,7 +653,7 @@ is as follows:
   purposes.
 
   The `MASK` commands apply a mask to remove some items from the
-  database subset. The items indicated in the `MASK` command are used
+  database set. The items indicated in the `MASK` command are used
   in the training set and the others are deactivated. Four versions of
   the `MASK` command exist. `RANGE` indicates a range starting at
   `start.i` up to the end of the subset. If `end.i` is given, stop at
@@ -693,3 +694,35 @@ is as follows:
   `WEIGHT_ITEM` keyword or the product of the `GLOBAL` weight, times
   the `PATTERN` weight corresponding to the item, divided by the
   normalization factors indicated by the corresponding keywords.
+
+### Simple Training Set Operations
+~~~
+TRAINING DESCRIBE
+~~~
+Describe the current training set. This keyword calculates the number
+of calculations still missing from the training set information to
+carry out the ACP fit.
+~~~
+TRAINING SAVE name.s
+~~~
+Save the current training set to the connected database under name
+`name.s`. Can be loaded in future sessions.
+~~~
+TRAINING LOAD name.s
+~~~
+Load the training set definition with name `name.s` from the connected
+database.
+~~~
+TRAINING DELETE [name.s]
+~~~
+Delete the training set with name `name.s` from the connected
+database. If no name is given, delete all training sets.
+~~~
+TRAINING PRINT
+~~~
+Print training sets from the database.
+~~~
+TRAINING CLEAR
+~~~
+Clear the current training set.
+
