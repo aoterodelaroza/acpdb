@@ -570,26 +570,21 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 }
 
 // Write the din files in the training set
-void trainset::write_din(const std::list<std::string> &tokens) const{
+void trainset::write_din(const std::string &directory/*=""*/) const{
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using WRITE DIN");
+    throw std::runtime_error("A database file must be connected before using TRAINING WRITEDIN");
   if (setid.empty())
-    throw std::runtime_error("Training set subsets must be defined before using WRITE DIN");
+    throw std::runtime_error("Training set subsets must be defined before using TRAINING WRITEDIN");
 
-  // check dir
-  std::string dir = ".";
-  if (!tokens.empty()) dir = tokens.front();
-  if (!fs::is_directory(tokens.front()))
-    throw std::runtime_error("In WRITE DIN, directory not found: " + dir);
+  std::string dir = directory;
+  if (dir.empty()) dir = ".";
 
   // define the query statements
   statement st(db->ptr(),statement::STMT_CUSTOM,R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients, Evaluations.value
-FROM Properties
-INNER JOIN Evaluations ON (Properties.id = Evaluations.propid)
-INNER JOIN Methods ON (Evaluations.methodid = Methods.id)
-INNER JOIN Training_set ON (Properties.id = Training_set.id)
-WHERE Properties.setid = :SET AND Methods.id = :METHOD
+FROM Properties, Evaluations, Methods, Training_set
+WHERE Properties.id = Evaluations.propid AND Evaluations.methodid = Methods.id AND Properties.id = Training_set.id AND
+      Properties.setid = :SET AND Methods.id = :METHOD AND Properties.property_type = 1 AND Evaluations.value IS NOT NULL
 ORDER BY Properties.orderid;
 )SQL");
   statement stname(db->ptr(),statement::STMT_CUSTOM,R"SQL(
@@ -620,7 +615,7 @@ SELECT key FROM Structures WHERE id = ?1;
       int nstr = sqlite3_column_int(st.ptr(),0);
       int *str = (int *) sqlite3_column_blob(st.ptr(),1);
       double *coef = (double *) sqlite3_column_blob(st.ptr(),2);
-      double value = sqlite3_column_double(st.ptr(),3);
+      double value = ((double *) sqlite3_column_blob(st.ptr(),3))[0];
 
       for (int j = 0; j < nstr; j++){
         stname.bind(1,str[j]);

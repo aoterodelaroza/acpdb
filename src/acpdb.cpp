@@ -367,6 +367,8 @@ int main(int argc, char *argv[]) {
       } else if (category == "CLEAR") {
         ts = trainset();
         ts.setdb(&db);
+      } else if (category == "WRITEDIN") {
+        ts.write_din(name);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
@@ -404,10 +406,6 @@ int main(int argc, char *argv[]) {
       // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
       //   ts.write_structures(kmap,a,false);
 
-      // if (category == "DIN_TRAINING")
-      //   ts.write_din(tokens);
-
-      //
       //
 //    } else if (keyw == "WRITEX") {
 //      std::string category = popstring(tokens,true);

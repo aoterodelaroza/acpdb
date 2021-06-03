@@ -725,4 +725,10 @@ Print training sets from the database.
 TRAINING CLEAR
 ~~~
 Clear the current training set.
+~~~
+TRAINING WRITEDIN [directory.s]
+~~~
+Write din files for all subsets of the current training set (only the
+properties that have `ENERGY_DIFFERENCE` type). If `directory.s` is
+given, write the din files in this directory.
 

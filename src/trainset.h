@@ -79,8 +79,8 @@ class trainset {
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
-  // Write the din files in the training set
-  void write_din(const std::list<std::string> &tokens) const;
+  // Write the din files in the training set, in the given directory.
+  void write_din(const std::string &directory="") const;
 
   // Evaluate an ACP on the current training set
   void eval_acp(std::ostream &os, const acp &a) const;
