@@ -1,0 +1,33 @@
+## check: 005_writetrain.out -a1e-10
+## delete: 005_writetrain.db
+## labels: regression quick
+
+system rm -f 005_writetrain.db
+connect 005_writetrain.db
+
+insert method m_empty
+end
+insert method m_ref
+end
+insert set 005_writetrain-set
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method m_ref
+end
+# insert evaluation
+#  method m_empty
+#  property strange-005_writetrain-set-a.h2o_h2o
+#  value 0.1 0.2 0.3
+# end
+
+training
+ atom H l
+ exp 0.1 0.2
+ empty m_empty
+ reference m_ref
+ subset
+  set 005_writetrain-set
+ end
+end
+
+

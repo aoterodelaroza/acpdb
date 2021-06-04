@@ -428,11 +428,14 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
     st.reset();
     st.bind(1,setid[i]);
     st.step();
+    const char *litref = (const char *) sqlite3_column_text(st.ptr(), 0);
+    const char *description = (const char *) sqlite3_column_text(st.ptr(), 1);
+
     os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i]
        << " | " << set_initial_idx[i]+1
        << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i]
-       << " | " << sqlite3_column_text(st.ptr(), 0) << " | " << sqlite3_column_text(st.ptr(), 1)
-       << " |" << std::endl;
+       << " | " << (litref?litref:"") << " | " 
+       << (description?description:"") << " |" << std::endl;
   }
   os << std::endl;
 

@@ -1284,9 +1284,9 @@ void sqldb::printsummary(std::ostream &os, bool full){
   os << "| id | key | description |" << std::endl;
   while (st.step() != SQLITE_DONE){
     int id = sqlite3_column_int(st.ptr(),0);
-    std::string key = (char *) sqlite3_column_text(st.ptr(),1);
-    std::string desc = (char *) sqlite3_column_text(st.ptr(),2);
-    os << "| " << id << " | " << key << " | " << desc << " |" << std::endl;
+    const char *key = sqlite3_column_text(st.ptr(),1);
+    const char *desc = (char *) sqlite3_column_text(st.ptr(),2);
+    os << "| " << id << " | " << key << " | " << (desc?desc:"") << " |" << std::endl;
   }
   os << std::endl;
 

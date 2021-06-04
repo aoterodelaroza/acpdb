@@ -457,6 +457,7 @@ WRITE
   [TEMPLATE_MOL filemol.s]
   [TEMPLATE_CRYS filecrys.s]
   [SET {set.s|set.i}]
+  [TRAINING [alias.s]]
   [DIRECTORY dir.s]
   [PACK ipack.i]
   [ACP {name.s|file.s}]
@@ -473,9 +474,14 @@ crystals. The extensions of the generated input files are the same as
 the extension of the template. Some template examples can be found in
 the `templates/` directory.
 
-If SET is not present, write all the structures in the database. If
-SET is present, write the structures in the database set with that
-name (`set.s`) or ID (`set.i`).
+Two different kinds of behavior are obtained depending on whether the
+TRAINING or SET keywords are used. These two keywords are
+incompatible. If neither SET nor TRAINING are present, write all the
+structures in the database. If SET is present, write the structures in
+the database set with that name (`set.s`) or ID (`set.i`). If TRAINING
+is present, the training set must be defined, and the structures
+belonging to the training set with alias `alias.s` are written. If no
+alias is given, write all the structures in the training set.
 
 The files are written to directory `dir.s` (default: `./`). If PACK is
 present, create `tar.xz` compressed archives with at most `ipack.i`
