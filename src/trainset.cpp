@@ -1280,155 +1280,26 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
 
 // Read data for the training set or one of its subsets from a file,
 // then compare to reference method refm.
-void trainset::read_and_compare(std::ostream &os, const std::string &file, const std::string &refm, std::unordered_map<std::string,std::string> &kmap){
+void trainset::read_and_compare(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using READ");
+    throw std::runtime_error("A database file must be connected before using COMPARE");
   if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using READ");
-
-  // verify that we have a reference method
-  if (refm.empty())
-    throw std::runtime_error("The COMPARE keyword in READ must be followed by a known method");
-  int methodid = db->find_id_from_key(refm,"Methods");
-  if (!methodid)
-    throw std::runtime_error("Unknown method in READ/COMPARE: " + refm);
+    throw std::runtime_error("The training set needs to be defined before using COMPARE with TRAINING");
 
   // set
-  bool haveset = (kmap.find("SET") != kmap.end());
-  int idini, idfin;
-  if (haveset){
-    std::string setname = kmap["SET"];
-    auto it = std::find(alias.begin(),alias.end(),setname);
+  int sid = 0;
+  auto im = kmap.find("TRAINING");
+  if (im == kmap.end())
+    throw std::runtime_error("write_structures in trainset called but no TRAINING keyword");
+  if (!im->second.empty()){
+    auto it = std::find(alias.begin(),alias.end(),im->second);
     if (it == alias.end())
-      throw std::runtime_error("Unknown SET in write_structures (no alias found)");
-    int sid = it - alias.begin();
-    idini = set_initial_idx[sid];
-    idfin = set_final_idx[sid]-1;
-  } else {
-    idini = 0;
-    idfin = ntot-1;
+      throw std::runtime_error("Unknown set alias passed to TRAINING in WRITE");
+    sid = setid[it - alias.begin()];
   }
-
-  // get the data from the file
-  auto datmap = read_data_file(file,globals::ha_to_kcal);
-
-  // fetch the reference method values from the DB and populate vectors
-  std::vector<std::string> names_found;
-  std::vector<std::string> names_missing_fromdb;
-  std::vector<std::string> names_missing_fromdat;
-  std::vector<double> refvalues, datvalues, ws;
-  std::vector<int> ids;
-  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db->ptr(),R"SQL(
-SELECT Training_set.id, Properties.key, Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients
-FROM Training_set
-INNER JOIN Properties ON (Training_set.propid = Properties.id)
-LEFT OUTER JOIN  Evaluations ON (Evaluations.propid = Training_set.propid AND Evaluations.methodid = :METHOD)
-WHERE Training_set.id BETWEEN :INI AND :END
-ORDER BY Training_set.id;
-)SQL");
-  st.bind((char *) ":METHOD",methodid);
-  st.bind((char *) ":INI",idini);
-  st.bind((char *) ":END",idfin);
-  while (st.step() != SQLITE_DONE){
-    // check if the evaluation is available in the database
-    int id = sqlite3_column_int(st.ptr(),0);
-    std::string key = (char *) sqlite3_column_text(st.ptr(),1);
-    if (sqlite3_column_type(st.ptr(),2) == SQLITE_NULL){
-      names_missing_fromdb.push_back(key);
-      continue;
-    }
-
-    // check if the components are in the data file
-    int nstr = sqlite3_column_int(st.ptr(),3);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
-    double value = 0;
-    bool found = true;
-    for (int i = 0; i < nstr; i++){
-      stkey.reset();
-      stkey.bind(1,istr[i]);
-      stkey.step();
-      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-      if (datmap.find(strname) == datmap.end()){
-        found = false;
-        break;
-      }
-      value += coef[i] * datmap[strname];
-    }
-
-    // populate the vectors
-    if (!found){
-      names_missing_fromdat.push_back(key);
-    } else {
-      names_found.push_back(key);
-      ids.push_back(id);
-      refvalues.push_back(sqlite3_column_double(st.ptr(),2));
-      datvalues.push_back(value);
-      ws.push_back(w[id]);
-    }
-  }
-  datmap.clear();
-
-  // output the header and the statistics
-  os << "# Evaluation: " << file << std::endl
-     << "# Reference: " << refm << std::endl;
-  if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
-    os << "# Statistics: " << "(partial, missing: "
-       << names_missing_fromdat.size() << " from file, "
-       << names_missing_fromdb.size() << " from database)" << std::endl;
-  else
-    os << "# Statistics: " << std::endl;
-  std::streamsize prec = os.precision(7);
-  os << std::fixed;
-  os.precision(8);
-  if (ids.empty())
-    os << "#   (not enough data for statistics)" << std::endl;
-  else if (haveset){
-    // calculate the statistics for the given set
-    double wrms, rms, mae, mse;
-    calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse);
-
-    os << "# " << std::left << std::setw(10) << "all"
-       << std::left << "  rms = " << std::right << std::setw(12) << rms
-       << std::left << "  mae = " << std::right << std::setw(12) << mae
-       << std::left << "  mse = " << std::right << std::setw(12) << mse
-       << std::left << " wrms = " << std::right << std::setw(12) << wrms
-       << std::endl;
-  } else {
-    // calculate the statistics for all sets
-    double wrms, rms, mae, mse;
-    for (int i = 0; i < setid.size(); i++){
-      int n = calc_stats(datvalues,refvalues,ws,wrms,rms,mae,mse,-1,-1,ids,set_initial_idx[i],set_final_idx[i]);
-      if (n == 0){
-        os << "# " << std::left << std::setw(10) << alias[i] << "   (no data)" << std::endl;
-      } else{
-        os << "# " << std::left << std::setw(10) << alias[i]
-           << std::left << "  rms = " << std::right << std::setw(12) << rms
-           << std::left << "  mae = " << std::right << std::setw(12) << mae
-           << std::left << "  mse = " << std::right << std::setw(12) << mse
-           << std::left << " wrms = " << std::right << std::setw(12) << wrms;
-        if (n < set_size[i])
-          os << "   (partial: " << n << " of " << set_size[i] << ")";
-        os << std::endl;
-      }
-    }
-  }
-  os.precision(prec);
-
-  // output the results
-  // FIXME
-  // output_eval(os,ids,names_found,ws,datvalues,file,refvalues,refm);
-  if (!names_missing_fromdb.empty()){
-    os << "## The following properties are missing from the DATABASE:" << std::endl;
-    for (int i = 0; i < names_missing_fromdb.size(); i++)
-      os << "## " << names_missing_fromdb[i] << std::endl;
-  }
-  if (!names_missing_fromdat.empty()){
-    os << "## The following properties are missing from the FILE:" << std::endl;
-    for (int i = 0; i < names_missing_fromdat.size(); i++)
-      os << "## " << names_missing_fromdat[i] << std::endl;
-  }
+ 
+  // run the comparison with training set restriction
+  db->read_and_compare(os,kmap,sid);
 }
 
 // Read data for the training set or one of its subsets from a file,

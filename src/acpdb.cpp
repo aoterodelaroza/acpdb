@@ -287,7 +287,13 @@ int main(int argc, char *argv[]) {
     } else if (keyw == "COMPARE") {
       *os << "* COMPARE: compare data to database evaluations" << std::endl << std::endl;
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-      db.read_and_compare(*os,kmap);
+
+      if ((kmap.find("SET") != kmap.end()) && (kmap.find("TRAINING") != kmap.end()))
+        throw std::runtime_error("SET and TRAINING are incompatible keywords in COMPARE");
+      else if (kmap.find("TRAINING") != kmap.end())
+        ts.read_and_compare(*os,kmap);
+      else
+        db.read_and_compare(*os,kmap);
 
       //// WRITE
     } else if (keyw == "WRITE") {

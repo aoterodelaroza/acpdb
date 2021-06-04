@@ -1,39 +1,5 @@
 #+STARTUP: showeverything
 
-WRITE
-  METHOD method.s
-  ACP acp.s
-  SET set.s
-  DIRECTORY dir.s
-  PACK ipack.i
-  PROGRAM {gaussian|psi4}
-END
-
-  Write the structures in the given set to input or structure
-  files. If no METHOD is given, write structure files (xyz format for
-  molecules). Otherwise, write input files appropriate for evaluating
-  that method according to the database. If ACP is present, use the
-  ACP in the input files (no effect if writing structure files).
-
-  If SET is not present, write all the structures in the training
-  set. If no SET is present and the training set has not been defined,
-  write all the structures in the database. If SET is present and is
-  one of the training set alias, write the training set structures
-  under that alias. If SET is present but it is not a traning set
-  alias (or the training set has not been defined), write the
-  structures in the database set with that name.
-
-  The files are written to directory dir.s (default: ./). If PACK is
-  present, create tar.xz compressed archives with at most ipack.i
-  structures each (only if the number of structures is greater than
-  ipack.i). The PACK keyword invokes the tar utility through a
-  system() call.
-
-  The PROGRAM keyword selects the program for which the inputs are
-  written. Only Gaussian and psi4 are available for now. psi4 cannot
-  be used with ACPs.
-
-
 * Evaluations
 
 ACPEVAL name.s [output.s]
@@ -49,40 +15,6 @@ EMPTYEVAL [output.s]
   given, write the output to that file instead of the standard output
 
 * Structure writers and result readers
-
-READ file.s
-  SET set.s
-  COMPARE method.s
-  INSERT method.s
-END
-
-  Read calculated properties from file.s. This file must have lines of
-  the form:
-
-    structure1.s value1.r
-    structure2.s value2.r
-    ...
-
-  where structurex.s are structure identifiers from the database and
-  valuex.r are the calculated values (typically, energies) for those
-  structures. The structure names are the same as the root of the file
-  names generated using WRITE, so this file can be easily generated
-  with utilities such as grep or awk. Blank lines and comments (#) are
-  ignored. Only the first two fields in each line are read; the rest
-  are ignored.
-
-  If no SET is present, the input data corresponds to the whole
-  training set. If no SET is present and the training set has not been
-  defined, the data corresponds to the whole database.  If SET is
-  present and is one of the training set alias, the data corresponds
-  to the entries under that alias. If SET is present but it is not a
-  traning set alias (or the training set has not been defined), the
-  data corresponds to the database set with that name.
-
-  If COMPARE is present, compare the data in file.s against method
-  method.s, which is taken as reference for the comparison. If INSERT
-  is present, insert the calculated properties into the database as
-  evaluations of method method.s (SET is not used by INSERT).
 
 WRITE TERMS
   METHOD method.s

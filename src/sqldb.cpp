@@ -1606,9 +1606,12 @@ WHERE Terms.propid = Properties.id
   os << std::endl;
 }
 
-// Read data for the database or one of its subsets from a file, then
-// compare to a reference method.
-void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+// Read data from a file, and compare to the whole database data or
+// one of its subsets. If usetrain = 0, assume the training set is
+// defined and compare to the whole training set. If usetrain > 0,
+// compare to the training set and restrict to set usetrain.
+void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
+                             int usetrain/*=-1*/){
   if (!db)
     throw std::runtime_error("A database file must be connected before using COMPARE");
 
@@ -1659,7 +1662,26 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   std::map<int,std::string> setname;
   statement stkey(db,"SELECT key FROM Structures WHERE id = ?1;");
   std::string sttext;
-  if (sid > 0){
+  if (usetrain > 0) {
+    // to the whole training set or a subset
+    sid = usetrain;
+    sttext = R"SQL(
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
+FROM Properties, Sets, Training_set
+LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+WHERE Properties.setid = :SET AND Properties.property_type = :PROPERTY_TYPE AND Sets.id = :SET AND Training_set.propid = Properties.id
+ORDER BY Properties.id;)SQL";
+  } else if (usetrain == 0) {
+    // to the whole training set
+    sid = 0;
+    sttext = R"SQL(
+SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
+FROM Properties, Sets, Training_set
+LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+WHERE Properties.property_type = :PROPERTY_TYPE AND Sets.id = Properties.setid AND Training_set.propid = Properties.id
+ORDER BY Properties.id;)SQL";
+  } else if (sid > 0){
+    // to set with ID sid
     sttext = R"SQL(
 SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
 FROM Properties, Sets
@@ -1667,6 +1689,7 @@ LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluatio
 WHERE Properties.setid = :SET AND Properties.property_type = :PROPERTY_TYPE AND Sets.id = :SET
 ORDER BY Properties.id;)SQL";
   } else {
+    // to the whole database
     sttext = R"SQL(
 SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
 FROM Properties, Sets
@@ -1679,6 +1702,7 @@ ORDER BY Properties.id;)SQL";
     st.bind((char *) ":SET",sid);
   st.bind((char *) ":METHOD",refm);
   st.bind((char *) ":PROPERTY_TYPE",ppid);
+
   while (st.step() != SQLITE_DONE){
     // check if the evaluation is available in the database
     std::string key = (char *) sqlite3_column_text(st.ptr(),0);

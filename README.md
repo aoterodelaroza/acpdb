@@ -425,6 +425,7 @@ COMPARE
   PROPERTY_TYPE {prop.s|prop.i}
   METHOD {method.s|method.i}
   [SET {set.s|set.i}]
+  [TRAINING [alias.s]]
 END
 ~~~
 Read calculated properties from `file.s` and compare them against the
@@ -445,10 +446,18 @@ values are appended to the same vector.
 
 The data in the file are compared against the evaluations from method
 `method.s` (key) or `method.i` (ID). The evaluations are for property
-type `prop.s` (key) or `prop.i` (ID). If SET is present, restrict the
-comparison to the properties that belong in set `set.s` (key) or
-`set.i` (ID). Otherwise, compare to all evaluations available for the
-chosen method regardless of set.
+type `prop.s` (key) or `prop.i` (ID).
+
+Two different kinds of behavior are obtained depending on whether the
+TRAINING or SET keywords are used. These two keywords are
+incompatible. If neither SET nor TRAINING are present, compare to all
+evaluations available for the chosen method regardless of set.  If SET
+is present, restrict the comparison to the properties that belong in
+set `set.s` (key) or `set.i` (ID). If TRAINING is present, the
+training set must be defined, and the comparison is restricted to the
+properties that belong in the training set. If a set alias `alias.s`
+from the training set is given, compare only to the properties that
+belong in that alias.
 
 ### Writing Input and Structure Files
 ~~~
