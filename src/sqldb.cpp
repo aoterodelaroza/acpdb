@@ -1636,9 +1636,9 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
     throw std::runtime_error("A METHOD is required when using COMPARE");
 
   // file
-  im = kmap.find("FILE");
+  im = kmap.find("SOURCE");
   if (im == kmap.end())
-    throw std::runtime_error("A FILE is necessary when using COMPARE");
+    throw std::runtime_error("A SOURCE is necessary when using COMPARE");
   std::string file = im->second;
 
   // set

@@ -1,5 +1,13 @@
 #+STARTUP: showeverything
 
+COMPARE
+  SOURCE {file.s|method.s}
+  PROPERTY_TYPE {prop.s|prop.i}
+  METHOD {method.s|method.i}
+  [SET {set.s|set.i}]
+  [TRAINING [alias.s]]
+END
+
 * Evaluations
 
 ACPEVAL name.s [output.s]

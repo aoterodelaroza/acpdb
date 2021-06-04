@@ -421,15 +421,17 @@ keyword. If no entries are passed to DELETE, all entries are deleted.
 ### Comparing to the Database Contents
 ~~~
 COMPARE
-  FILE file.s
+  SOURCE {file.s|method.s}
   PROPERTY_TYPE {prop.s|prop.i}
   METHOD {method.s|method.i}
   [SET {set.s|set.i}]
   [TRAINING [alias.s]]
 END
 ~~~
-Read calculated properties from `file.s` and compare them against the
-database contents. The file must have lines of the form:
+Read calculated properties from the source indicated by the SOURCE
+keyword and compare them against the database contents. If the
+argument to SOURCE is a file with name `file.s`, read them from the
+file. The file must have lines of the form:
 ~~~
 structure1.s value1.r value2.r ...
 structure2.s value3.r value4.r ...
@@ -444,9 +446,13 @@ these calculated values must be consistent with the corresponding
 property types. If a structure name is repeated in several lines, the
 values are appended to the same vector.
 
-The data in the file are compared against the evaluations from method
-`method.s` (key) or `method.i` (ID). The evaluations are for property
-type `prop.s` (key) or `prop.i` (ID).
+If the SOURCE argument is not a file, then acpdb assumes it is a
+method key. The data is read from the available evaluations for that
+method in the database.
+
+The data from the source are compared against the evaluations from
+method `method.s` (key) or `method.i` (ID). The evaluations are for
+property type `prop.s` (key) or `prop.i` (ID).
 
 Two different kinds of behavior are obtained depending on whether the
 TRAINING or SET keywords are used. These two keywords are

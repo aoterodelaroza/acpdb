@@ -79,13 +79,13 @@ training
 end
 
 compare
- file ../zz_source/s22b.list
+ source ../zz_source/s22b.list
  property_type energy_difference
  method m_ref
  training s22b
 end
 compare
- file ../zz_source/s22b.list
+ source ../zz_source/s22b.list
  property_type energy_difference
  method m_ref
  training
