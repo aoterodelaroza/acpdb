@@ -1,5 +1,11 @@
 ## check: 005_writetrain.out -a1e-10
 ## delete: 005_writetrain.db
+## delete: 005_writetrain-set.h2o_h2o_1.xyz
+## delete: 005_writetrain-set.h2o_h2o_2.xyz
+## delete: 005_writetrain-set.h2o_h2o.xyz
+## delete: 005_writetrain-set.nh3_nh3_1.xyz
+## delete: 005_writetrain-set.nh3_nh3_2.xyz
+## delete: 005_writetrain-set.nh3_nh3.xyz
 ## labels: regression quick
 
 system rm -f 005_writetrain.db
@@ -14,11 +20,48 @@ insert set 005_writetrain-set
  directory ../zz_source/s22_xyz
  method m_ref
 end
-# insert evaluation
-#  method m_empty
-#  property strange-005_writetrain-set-a.h2o_h2o
-#  value 0.1 0.2 0.3
-# end
+insert evaluation
+ method m_empty
+ property 005_writetrain-set.nh3_nh3
+ value 0.2
+end
+insert evaluation
+ method m_empty
+ property 005_writetrain-set.h2o_h2o
+ value 0.3
+end
+insert term
+ method m_empty
+ property 005_writetrain-set.h2o_h2o
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property 005_writetrain-set.h2o_h2o
+ atom H
+ L 0
+ exponent 0.2
+ value 0.3
+end
+insert term
+ method m_empty
+ property 005_writetrain-set.nh3_nh3
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property 005_writetrain-set.nh3_nh3
+ atom H
+ L 0
+ exponent 0.2
+ value 0.3
+end
 
 training
  atom H l
@@ -30,4 +73,10 @@ training
  end
 end
 
+write
+ training 
+end
 
+write
+ training 005_writetrain-set
+end

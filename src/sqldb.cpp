@@ -1793,20 +1793,17 @@ ORDER BY Properties.id;)SQL";
   os << std::endl;
 }
 
-// Write input files for a database set or the whole database
-void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a){
+// Write input files for a database set or the whole database. The
+// options go in map kmap. If the ACP is present, it is passed down
+// to the structure writer. If smapin is present, write only the
+// structures that are keys in the map (the value of the map is 0 if
+// crystal or 1 if molecule).
+void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
+                             const std::unordered_map<int,int> &smapin/*={}*/){
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
   std::unordered_map<std::string,std::string>::const_iterator im;
-
-  // set
-  int setid = 0;
-  std::string setkey;
-  if ((im = kmap.find("SET")) != kmap.end()){
-    if (!get_key_and_id(im->second,"Sets",setkey,setid))
-      throw std::runtime_error("Invalid SET in WRITE");
-  }
 
   // directory and pack number
   std::string dir = fetch_directory(kmap);
@@ -1848,22 +1845,34 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
   // Collect the structure indices for this set
   std::unordered_map<int,int> smap;
-  std::string sttext="SELECT Properties.nstructures, Properties.structures FROM Properties";
-  if (setid > 0)
-    sttext += " WHERE Properties.setid = ?1";
-  sttext += ";";
-  statement st(db,sttext);
-  statement ststr(db,"SELECT ismolecule FROM Structures WHERE id = ?1;");
-  if (setid > 0)
-    st.bind(1,setid);
-  while (st.step() != SQLITE_DONE){
-    int n = sqlite3_column_int(st.ptr(),0);
-    const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
-    for (int i = 0; i < n; i++){
-      ststr.bind(1,str[i]);
-      ststr.step();
-      smap[str[i]] = sqlite3_column_int(ststr.ptr(),0);
-      ststr.reset();
+  if (!smapin.empty())
+    smap = smapin;
+  else{
+    // set
+    int setid = 0;
+    std::string setkey;
+    if ((im = kmap.find("SET")) != kmap.end()){
+      if (!get_key_and_id(im->second,"Sets",setkey,setid))
+        throw std::runtime_error("Invalid SET in WRITE");
+    }
+
+    std::string sttext="SELECT Properties.nstructures, Properties.structures FROM Properties";
+    if (setid > 0)
+      sttext += " WHERE Properties.setid = ?1";
+    sttext += ";";
+    statement st(db,sttext);
+    statement ststr(db,"SELECT ismolecule FROM Structures WHERE id = ?1;");
+    if (setid > 0)
+      st.bind(1,setid);
+    while (st.step() != SQLITE_DONE){
+      int n = sqlite3_column_int(st.ptr(),0);
+      const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
+      for (int i = 0; i < n; i++){
+        ststr.bind(1,str[i]);
+        ststr.step();
+        smap[str[i]] = sqlite3_column_int(ststr.ptr(),0);
+        ststr.reset();
+      }
     }
   }
 

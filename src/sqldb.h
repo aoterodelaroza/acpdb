@@ -105,8 +105,13 @@ class sqldb {
   // compare to a reference method.
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
-  // Write input files for a database set or the whole database
-  void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a);
+  // Write input files for a database set or the whole database. The
+  // options go in map kmap. If the ACP is present, it is passed down
+  // to the structure writer. If smapin is present, write only the
+  // structures that are keys in the map (the value of the map is 0 if
+  // crystal or 1 if molecule).
+  void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
+                        const std::unordered_map<int,int> &smapin={});
 
   // Write the structures with IDs given by the keys in smap. The values
   // of smap should be 1 if the structures are molecules or zero if they

@@ -101,9 +101,9 @@ class trainset {
   void dump() const;
 
   // Write input files or structure files for the training set
-  // structures. If the ACP is present, use the ACP in the input
-  // files. If terms is present, write input files for term evaluations.
-  void write_structures(std::unordered_map<std::string,std::string> &kmap, const acp &a, bool terms);
+  // structures. Pass the options other than TRAINING and the ACP to the
+  // structure writers.
+  void write_structures(std::ostream &os, std::unordered_map<std::string,std::string> &kmap, const acp &a);
 
   // Read data for the training set or one of its subsets from a file,
   // then compare to reference method refm.
