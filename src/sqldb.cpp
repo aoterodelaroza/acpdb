@@ -1674,24 +1674,25 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   std::string sttext;
 
   // the statement text
-    sttext = R"SQL(
-SELECT Properties.key, length(Evaluations.value), Evaluations.value, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key
+  sttext = R"SQL(
+SELECT Properties.key, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key,
+       length(Evaluations.value), Evaluations.value
 FROM Properties
 INNER JOIN Sets ON Properties.setid = Sets.id
 )SQL";
-    if (usetrain >= 0)
-      sttext += R"SQL(
+  if (usetrain >= 0)
+    sttext += R"SQL(
 INNER JOIN Training_Set ON Training_set.propid = Properties.id
 )SQL";
-    sttext += R"SQL(
+  sttext += R"SQL(
 LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
 WHERE Properties.property_type = :PROPERTY_TYPE 
 )SQL";
-    if (sid > 0)
-      sttext += R"SQL(
+  if (sid > 0)
+    sttext += R"SQL(
 AND Properties.setid = :SET
 )SQL";
-    sttext += R"SQL(
+  sttext += R"SQL(
 ORDER BY Properties.id
 )SQL";
 
@@ -1704,19 +1705,19 @@ ORDER BY Properties.id
   while (st.step() != SQLITE_DONE){
     // check if the evaluation is available in the database
     std::string key = (char *) sqlite3_column_text(st.ptr(),0);
-    if (sqlite3_column_type(st.ptr(),2) == SQLITE_NULL){
+    if (sqlite3_column_type(st.ptr(),8) == SQLITE_NULL){
       names_missing_fromdb.push_back(key);
       continue;
     }
 
     // check if the components are in the data file
-    int nvalue = sqlite3_column_int(st.ptr(),1) / sizeof(double);
-    int nstr = sqlite3_column_int(st.ptr(),3);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),4);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),5);
-    int ptid = sqlite3_column_int(st.ptr(),6);
-    int thissetid = sqlite3_column_int(st.ptr(),7);
-    std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 8);
+    int nvalue = sqlite3_column_int(st.ptr(),7) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
+    int ptid = sqlite3_column_int(st.ptr(),4);
+    int thissetid = sqlite3_column_int(st.ptr(),5);
+    std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 6);
     std::vector<double> value(nvalue,0.0);
     bool found = true;
     for (int i = 0; i < nstr; i++){
@@ -1745,7 +1746,7 @@ ORDER BY Properties.id
       numvalues.push_back(nvalue);
       setid.push_back(thissetid);
       setname[thissetid] = thissetname;
-      double *rval = (double *) sqlite3_column_blob(st.ptr(),2);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
       for (int j = 0; j < nvalue; j++){
         refvalues.push_back(rval[j]);
         datvalues.push_back(value[j] * scal);
