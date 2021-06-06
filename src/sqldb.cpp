@@ -1723,7 +1723,7 @@ ORDER BY Properties.id
       continue;
     }
 
-    // check if the components are in the data file
+    // check if the components are in the data file or in the approximate method
     int nvalue = sqlite3_column_int(st.ptr(),7) / sizeof(double);
     int nstr = sqlite3_column_int(st.ptr(),1);
     int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
@@ -1733,17 +1733,29 @@ ORDER BY Properties.id
     std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 6);
     std::vector<double> value(nvalue,0.0);
     bool found = true;
-    for (int i = 0; i < nstr; i++){
-      stkey.reset();
-      stkey.bind(1,istr[i]);
-      stkey.step();
-      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-      if (datmap.find(strname) == datmap.end()){
+
+    if (approxm > 0){
+      int nvalue_a = sqlite3_column_int(st.ptr(),9) / sizeof(double);
+      double *rval_a = (double *) sqlite3_column_blob(st.ptr(),10);
+      if (!rval_a || nvalue_a != nvalue){
         found = false;
-        break;
+      } else {
+        for (int j = 0; j < nvalue; j++)
+          value[j] = rval_a[j];
       }
-      for (int j = 0; j < nvalue; j++)
-        value[j] += coef[i] * datmap[strname][j];
+    } else {
+      for (int i = 0; i < nstr; i++){
+        stkey.reset();
+        stkey.bind(1,istr[i]);
+        stkey.step();
+        std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+        if (datmap.find(strname) == datmap.end()){
+          found = false;
+          break;
+        }
+        for (int j = 0; j < nvalue; j++)
+          value[j] += coef[i] * datmap[strname][j];
+      }
     }
 
     // conversion factor
@@ -1819,13 +1831,14 @@ ORDER BY Properties.id
   os.precision(prec);
 
   // output the results
-  std::string approxname;
+  std::string approxname, refname;
   if (isfile)
     approxname = "File";
   else
     approxname = "Approx_method";
+  refname = "Ref_method";
 
-  output_eval(os,{},names_found,numvalues,{},datvalues,approxname,refvalues,refmethodname);
+  output_eval(os,{},names_found,numvalues,{},datvalues,approxname,refvalues,refname);
   if (!names_missing_fromdb.empty()){
     os << "## The following properties are missing from the DATABASE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)
