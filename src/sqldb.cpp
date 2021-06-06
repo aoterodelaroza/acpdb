@@ -1676,7 +1676,7 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   // the statement text
   sttext = R"SQL(
 SELECT Properties.key, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key,
-       length(Evaluations.value), Evaluations.value
+       length(ref.value), ref.value
 FROM Properties
 INNER JOIN Sets ON Properties.setid = Sets.id
 )SQL";
@@ -1685,7 +1685,9 @@ INNER JOIN Sets ON Properties.setid = Sets.id
 INNER JOIN Training_Set ON Training_set.propid = Properties.id
 )SQL";
   sttext += R"SQL(
-LEFT OUTER JOIN Evaluations ON (Evaluations.propid = Properties.id AND Evaluations.methodid = :METHOD)
+LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.methodid = :METHOD)
+)SQL";
+  sttext += R"SQL(
 WHERE Properties.property_type = :PROPERTY_TYPE 
 )SQL";
   if (sid > 0)
