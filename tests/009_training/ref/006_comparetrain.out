@@ -102,7 +102,7 @@ Creating skeleton database
 # s22b             rms = 3573.19230892   mae = 3447.24108500   mse = -3447.24108500  wrms = 5053.25702425  ndat = 2
 # ALL              rms = 3573.19230892   mae = 3447.24108500   mse = -3447.24108500  wrms = 5053.25702425  ndat = 2
 #
-Id Name                                                File              m_ref         difference
+Id Name                                                File         Ref_method         difference
 1 s22b.nh3_nh3                              -2510.0378800000      -3.1330000000   -2506.9048800000
 2 s22b.h2o_h2o                              -4392.5662900000      -4.9890000000   -4387.5772900000
 
@@ -116,7 +116,7 @@ Id Name                                                File              m_ref  
 # s22b             rms = 3573.19230892   mae = 3447.24108500   mse = -3447.24108500  wrms = 5053.25702425  ndat = 2
 # ALL              rms = 3573.19230892   mae = 3447.24108500   mse = -3447.24108500  wrms = 5053.25702425  ndat = 2
 #
-Id Name                                                File              m_ref         difference
+Id Name                                                File         Ref_method         difference
 1 s22b.nh3_nh3                              -2510.0378800000      -3.1330000000   -2506.9048800000
 2 s22b.h2o_h2o                              -4392.5662900000      -4.9890000000   -4387.5772900000
 
