@@ -531,7 +531,7 @@ Creating skeleton database
 # File: ../zz_source/s22.list2
 # Property type: ENERGY_DIFFERENCE
 # Reference method: test2
-# Statistics: (partial, missing: 2 from source, 1 from database)
+# Statistics: (partial, missing: 2 from source, 1 from reference)
 # s22              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 # ALL              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 #
@@ -555,7 +555,7 @@ Id Name                                                File         Ref_method  
 17 s22.c6h6_c6h6_t                          -38403.5795640000  -38278.0776700000    -125.5018940000
 18 s22.indole_c6h6_t                        -40411.6098680000  -40160.6060800000    -251.0037880000
 19 s22.phenol_phenol                        -42168.6363840000  -42043.1344900000    -125.5018940000
-## The following properties are missing from the DATABASE:
+## The following properties are missing from the REFERENCE:
 ## s22.nh3_nh3
 ## The following properties are missing from the FILE:
 ## s22.adenine_thymine_stack

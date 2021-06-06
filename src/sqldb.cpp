@@ -1756,12 +1756,11 @@ ORDER BY Properties.id
         for (int j = 0; j < nvalue; j++)
           value[j] += coef[i] * datmap[strname][j];
       }
+      if (ptid == globals::ppty_energy_difference){
+        for (int j = 0; j < nvalue; j++)
+          value[j] *= globals::ha_to_kcal;
+      }
     }
-
-    // conversion factor
-    double scal = 1.0;
-    if (ptid == globals::ppty_energy_difference)
-      scal = globals::ha_to_kcal;
 
     // populate the vectors
     if (!found){
@@ -1774,7 +1773,7 @@ ORDER BY Properties.id
       double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
       for (int j = 0; j < nvalue; j++){
         refvalues.push_back(rval[j]);
-        datvalues.push_back(value[j] * scal);
+        datvalues.push_back(value[j]);
       }
     }
   }
@@ -1793,7 +1792,7 @@ ORDER BY Properties.id
   if (!names_missing_fromdat.empty() || !names_missing_fromdat.empty())
     os << "# Statistics: " << "(partial, missing: "
        << names_missing_fromdat.size() << " from source, "
-       << names_missing_fromdb.size() << " from database)" << std::endl;
+       << names_missing_fromdb.size() << " from reference)" << std::endl;
   else
     os << "# Statistics: " << std::endl;
 
@@ -1840,7 +1839,7 @@ ORDER BY Properties.id
 
   output_eval(os,{},names_found,numvalues,{},datvalues,approxname,refvalues,refname);
   if (!names_missing_fromdb.empty()){
-    os << "## The following properties are missing from the DATABASE:" << std::endl;
+    os << "## The following properties are missing from the REFERENCE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)
       os << "## " << names_missing_fromdb[i] << std::endl;
   }

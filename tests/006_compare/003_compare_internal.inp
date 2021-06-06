@@ -37,10 +37,11 @@ insert calc
  method test2
 end
 
+delete evaluation test s22.h2o_h2o
 delete evaluation test2 s22.nh3_nh3
 
 compare
- source test
+ source test2
  property_type energy_difference
- method test2
+ method test
 end
