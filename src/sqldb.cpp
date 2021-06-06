@@ -1652,16 +1652,16 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   }
 
   // read the file and build the data file
+  int approxm = 0;
   std::unordered_map<std::string,std::vector<double>> datmap;
   bool isfile = fs::is_regular_file(source);
   if (isfile)
     datmap = read_data_file_vector(source,1.);
   else {
-    printf("bleh!\n");
-    exit(1);
+    approxm = find_id_from_key(source,"Methods");
+    if (!approxm)
+      throw std::runtime_error("Invalid SOURCE in COMPARE (not a file or a method key)");
   }
-
-  // gather the information from the data source
 
   // fetch the reference method values from the DB and populate vectors
   std::vector<std::string> names_found;
@@ -1677,6 +1677,10 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
   sttext = R"SQL(
 SELECT Properties.key, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key,
        length(ref.value), ref.value
+)SQL";
+  if (approxm > 0)
+    sttext += ", length(approx.value), approx.value";
+  sttext += R"SQL(
 FROM Properties
 INNER JOIN Sets ON Properties.setid = Sets.id
 )SQL";
@@ -1687,6 +1691,11 @@ INNER JOIN Training_Set ON Training_set.propid = Properties.id
   sttext += R"SQL(
 LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.methodid = :METHOD)
 )SQL";
+  if (approxm > 0){
+    sttext += R"SQL(
+LEFT OUTER JOIN Evaluations AS approx ON (approx.propid = Properties.id AND approx.methodid = :AMETHOD)
+)SQL";
+  }
   sttext += R"SQL(
 WHERE Properties.property_type = :PROPERTY_TYPE 
 )SQL";
@@ -1701,6 +1710,8 @@ ORDER BY Properties.id
   statement st(db,sttext);
   if (sid > 0)
     st.bind((char *) ":SET",sid);
+  if (approxm > 0)
+    st.bind((char *) ":AMETHOD",approxm);
   st.bind((char *) ":METHOD",refm);
   st.bind((char *) ":PROPERTY_TYPE",ppid);
 
