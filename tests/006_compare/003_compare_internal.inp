@@ -1,0 +1,46 @@
+## check: 003_compare_internal.out -a1e-10
+## delete: 003_compare_internal.db
+## labels: regression quick
+
+system rm -f 003_compare_internal.db
+connect 003_compare_internal.db
+
+insert method test
+end
+insert method test2
+end
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+insert set s22b
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+ method test
+end
+
+insert calc
+ property_type energy_difference
+ file ../zz_source/s22.list
+ method test2
+end
+insert calc
+ property_type energy_difference
+ file ../zz_source/s22b.list
+ method test2
+end
+
+delete evaluation test2 s22.nh3_nh3
+
+compare
+ source test
+ property_type energy_difference
+ method test2
+end
