@@ -1,26 +1,7 @@
 #+STARTUP: showeverything
 
-COMPARE
-  SOURCE {file.s|method.s}
-  PROPERTY_TYPE {prop.s|prop.i}
-  METHOD {method.s|method.i}
-  [SET {set.s|set.i}]
-  [TRAINING [alias.s]]
-END
-
-* Evaluations
-
-ACPEVAL name.s [output.s]
-
-  Evaluate the ACP with name name.s on the current training set. If an
-  ACP with that name does not exist, try to find an ACP file with that
-  name and evaluate it. If output.s is given, write the output to that
-  file instead of the standard output
-
-EMPTYEVAL [output.s]
-
-  Evaluate the empty for the current training set. If output.s is
-  given, write the output to that file instead of the standard output
+TRAINING EVAL EMPTY [output.s]
+TRAINING EVAL acp.s [output.s]
 
 * Structure writers and result readers
 
@@ -139,55 +120,6 @@ automatic testing on github & upload zz_source
 
 ----- db-design.org
 
-* Generate input files, read output files
-
-WRITE [METHOD method.s] [ACP acp.s] [SET set.s] [DIRECTORY dir.s] 
-
-  Write the input files corresponding to the current training set and
-  current approximate method (EMPTY). If METHOD is given, use method.s
-  instead of the empty. If SET is given, use set set.s
-  only. If ACP is given, include the ACP in the input files. If
-  DIRECTORY is given, place the input files in directory dir.s.
-
-READ [SET set.s] [COMPARE method.s] [FILE file.s] [DIRECTORY dir.s] 
-                 [INSERT method.s] [ACP acp.s]
-
-  Read the outputs corresponding to the current training set and
-  compare to the original data. If SET is given, consider only set
-  set.s. If COMPARE is given, compare to method.s instead of the
-  original reference data. If DIRECTORY is given, read them from
-  directory dir.s. If FILE is given, read them from summary file
-  file.s. If INSERT is given, enter the corresponding items into table
-  7 using method method.s. If the entries already exist, verify the
-  value is within an acceptable threshold.  If ACP is given,
-  compare the results to the linear model given by the current dataset
-  applied to ACP acp.s.
-
-  This command flags failed calculations for the user.
-
-WRITE TERMS [SET set.s] [DIRECTORY dir.s]
-
-  Write the input files corresponding to the ACP term calculations for
-  set.s using the current dataset. If SET is given, use only set.s;
-  otherwise, use the whole training set. If DIRECTORY is given, place
-  the input files in directory dir.s.
-
-READ TERMS [SET set.s] [FILE file.s] [DIRECTORY dir.s] [INSERT]
-
-  Read the ACP term outputs corresponding to the current dataset. If
-  SET is given, use set set.s instead of the whole training set. If
-  DIRECTORY is given, read them from directory dir.s. If FILE is
-  given, read them from summary file file.s. If INSERT is given, enter
-  the corresponding ACP term information into table 8. If the entries
-  already exist, verify the value is within an acceptable threshold.
-
-  This command flags failed calculations for the user.
-
-DUMP
-
-  Write the octavedump.m file for the LASSO fit corresponding to the
-  current dataset.
-
 WRITE NONLIN [SET set.s] [METHOD method.s] [DIRECTORY dir.s]
 
   Write input files for the evaluation of non-linearity error in the
@@ -207,82 +139,7 @@ READ NONLIN [SET set.s] [DIRECTORY dir.s] [FILE file.s] [INSERT]
 
   This command flags failed calculations for the user.
 
-ACP EVAL acp.s [SET set.s]
-
-  Evaluate ACP acp.s using the linear model specified by the current
-  dataset. If SET is given, only for set set.s.
-
 --- Operations to implement ---
-
-* Dataset definition
-
-1. Define target atoms for the ACP
-2. Define the subsets/items of the training set
-3. Define ACP exponent values
-4. Define reference data level
-5. Define weights, perhaps with weight scheme suggestions
-6. Define approximate method that is the target for the ACP
-7. Define additional energy contributions, maybe marked as active for the fit
-
-* Subsets:
-
-1. Define named sets from items of the database and subsets of the training set
-
-* Database: entry and subset definitions
-
-9. Write xyz/cif files corresponding to an item/subset
-
-* Database: reference data
-
-1. Register a new reference calculation method
-2. Delete a reference calculation method
-3. Generate input files for reference calculations (item/subset)
-4. Read output files and calculate reference data (item/subset)
-5. Read user-formatted reference data (item/subset)
-6. Insert reference data into the database (item/subset)
-7. Verify entry in the database (item/subset)
-8. List reference data (item/subset)
-9. Validate the templates for a calculation method entry in database
-
-* Database: approximate methods & additional energy contributions
-
-1.  Register a new approximate method as target for ACP development
-2.  Register a new additional energy contribution
-3.  Delete an approximate method
-4.  Delete an additional energy contribution
-5.  Generate input files for empty calculations (item/subset)
-6.  Generate input files for additional energy contributions (item/subset)
-7.  Read output files and calculate empty stats, maybe w additional contributions (item/subset)
-8.  Read user-formatted data for empty or additoinal contributions (item/subset)
-9.  Insert empty data into the database (item/subset)
-10. Insert additional contribution data into the database (item/subset)
-11. Verify approximate method entry in the database (item/subset)
-12. Verify additional contribution entry in the database (item/subset)
-13. List empty/additional contribution data (item/subset)
-14. Validate the templates for a calculation method entry in database
-
-* Database: ACP term evaluations
-
-1. Generate input files for ACP term evaluations (item/subset)
-2. Read output files and calculate ACP terms (item/subset)
-3. Read user-formatted ACP term data (item/subset)
-4. Insert ACP term data into the database (item/subset)
-5. Verify ACP term data (item/subset)
-6. List known ACP terms (item/subset)
-
-* Database: ACP fitting
-
-1. Write the octavedump.m file for the LASSO fit
-
-* ACP operations (basic)
-
-1. Read an ACP in Gaussian-style format
-2. Read an ACP from a Gaussian/crystal input file
-3. Read an ACP from user-formatted specification
-4. Write an ACP in Gaussian-style format
-5. Calculate the 1-norm, etc. of an ACP
-6. Calculate the 1-distance, etc. of two or more ACPs
-7. Separate an ACP with n terms into n ACPS with 1 term each
 
 * ACP operations (require dataset)
 
@@ -301,8 +158,3 @@ ACP EVAL acp.s [SET set.s]
 
 1. Process a list of calculations and flag failed calcs (item/subset)
 2. Generate data set table for training set, with references
-
-* Topics to examine
-
-- Robust running of Gaussian and other inputs
-

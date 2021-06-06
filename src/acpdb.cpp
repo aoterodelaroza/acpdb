@@ -412,6 +412,23 @@ int main(int argc, char *argv[]) {
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
       ts.addsubset(alias,kmap);
 
+//    } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
+//      acp a;
+//      if (keyw == "ACPEVAL"){
+//        a = string_to_acp(popstring(tokens));
+//        if (!a)
+//          throw std::runtime_error("Unknown ACP: " + a.get_name());
+//      }
+//
+//      if (!tokens.empty()){
+//        std::ofstream of(tokens.front(),std::ios::trunc);
+//        if (of.fail())
+//          throw std::runtime_error("Error opening file: " + tokens.front());
+//        ts.eval_acp(of,a);
+//      } else {
+//        ts.eval_acp(*os,a);
+//      }
+
       ///////////////////////////////////////////////////
 
       //// from write_structures in trainset.cpp
@@ -474,22 +491,6 @@ int main(int argc, char *argv[]) {
 //      }
 //
 //      //
-//    } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
-//      acp a;
-//      if (keyw == "ACPEVAL"){
-//        a = string_to_acp(popstring(tokens));
-//        if (!a)
-//          throw std::runtime_error("Unknown ACP: " + a.get_name());
-//      }
-//
-//      if (!tokens.empty()){
-//        std::ofstream of(tokens.front(),std::ios::trunc);
-//        if (of.fail())
-//          throw std::runtime_error("Error opening file: " + tokens.front());
-//        ts.eval_acp(of,a);
-//      } else {
-//        ts.eval_acp(*os,a);
-//      }
 //    } else if (keyw == "DUMP") {
 //      ts.dump();
 

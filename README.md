@@ -16,6 +16,7 @@ atom-centered potentials (ACPs).
 | [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                  |
 | [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                              |
 | [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                       |
+| [Training set evaluations](#training-set-evaluations)                               | TRAINING EVAL                                                                                                                                                                         |
 
 ## Command-Line Syntax
 ~~~
@@ -752,4 +753,22 @@ TRAINING WRITEDIN [directory.s]
 Write din files for all subsets of the current training set (only the
 properties that have `ENERGY_DIFFERENCE` type). If `directory.s` is
 given, write the din files in this directory.
+
+### Training Set Evaluations
+~~~
+TRAINING EVAL EMPTY [output.s]
+~~~
+Compare the empty method against the reference method for the current
+training set. For this operation to work, the training set must be
+defined. If `output.s` is given, write the output to that file instead
+of the standard output.
+~~~
+TRAINING EVAL acp.s [output.s]
+~~~
+Evaluate the ACP with name `acp.s` against the reference method using
+the linear model on the current training set. If an ACP with this name
+does not exist, try to find an ACP file with that name and use it
+instead. For this operation to work, the training set must be defined. 
+If `output.s` is given, write the output to that file instead
+of the standard output.
 
