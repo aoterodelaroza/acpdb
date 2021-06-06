@@ -531,7 +531,7 @@ Creating skeleton database
 # File: ../zz_source/s22.list2
 # Property type: ENERGY_DIFFERENCE
 # Reference method: test2
-# Statistics: (partial, missing: 2 from file, 1 from database)
+# Statistics: (partial, missing: 2 from source, 1 from database)
 # s22              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 # ALL              rms = 157.04241475   mae = 142.01530111   mse = -142.01530111  wrms = 684.53201574  ndat = 19
 #

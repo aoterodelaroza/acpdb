@@ -1661,6 +1661,8 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
     exit(1);
   }
 
+  // gather the information from the data source
+
   // fetch the reference method values from the DB and populate vectors
   std::vector<std::string> names_found;
   std::vector<std::string> names_missing_fromdb;
