@@ -84,26 +84,17 @@ void output_eval(std::ostream &os,
   os.precision(prec);
 }
 
-// Calculate the statistics from columns x1 and x2 with weights w and
-// ids id. Return the wrms, rms, mae, and mse. If istart and iend are
-// given, restrict the stats calculation to the range istart:iend-1.
-// If ids, idini and idend are given, restrict the stats calculation
-// to the items with id between idini and idend-1. If setids and
-// thissetid are present, process only the items i whose setid[i] is
-// equal to thissetid. If w is empty, all weights are assumed to be
+// Calculate the statistics from columns x1 and x2 with weights
+// w. Return the wrms, rms, mae, and mse. If setids and thissetid are
+// present, process only the items i whose setid[i] is equal to
+// thissetid. If w is empty, all weights are assumed to be
 // one. Returns the number of items processed.
 int calc_stats(const std::vector<double> &x1, const std::vector<double> &x2, const std::vector<double> &w,
                double &wrms, double &rms, double &mae, double &mse,
-               const int istart/*=-1*/, const int iend/*=-1*/,
-               const std::vector<int> &ids/*={}*/, const int idini/*=-1*/, const int idend/*=-1*/,
                const std::vector<int> &setids/*={}*/, const int thissetid/*=-1*/){
 
   // set the range and initialize
   int i0 = 0, i1 = x1.size();
-  if (istart >= 0 && iend >= 0){
-    i0 = istart;
-    i1 = iend;
-  }
   wrms = 0;
   rms = 0;
   mae = 0;
@@ -112,8 +103,6 @@ int calc_stats(const std::vector<double> &x1, const std::vector<double> &x2, con
   // calculate statistics
   int n = 0;
   for (int i = i0; i < i1; i++){
-    if (idini >= 0 && idend >= 0 && (ids[i] < idini || ids[i] >= idend))
-      continue;
     if (thissetid > 0 && !setids.empty() && setids[i] != thissetid)
       continue;
     n++;

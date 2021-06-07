@@ -1008,7 +1008,7 @@ ORDER BY Training_set.id;
   double rmst, maet, mset, wrmst, wrms_total_nofit = 0;
   int maxsetl = 0;
   for (int i = 0; i < setid.size(); i++){
-    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],-1,-1,{},-1,-1,nsetid,setid[i]);
+    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
