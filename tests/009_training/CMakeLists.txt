@@ -5,6 +5,7 @@ set(TESTS
   004_writedin     ## write din files
   005_writetrain   ## write input files from the training set
   006_comparetrain ## compare results to the training set
+  007_eval         ## training eval empty/acp
 )
 
 runtests(${TESTS})

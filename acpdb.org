@@ -3,6 +3,10 @@
 TRAINING EVAL EMPTY [output.s]
 TRAINING EVAL acp.s [output.s]
 
+---
+
+build energy differences from total energies
+
 * Structure writers and result readers
 
 WRITE TERMS

@@ -380,6 +380,28 @@ int main(int argc, char *argv[]) {
         ts.setdb(&db);
       } else if (category == "WRITEDIN") {
         ts.write_din(name);
+      } else if (category == "EVAL") {
+        std::string output = popstring(tokens);
+        std::string uname = name;
+        uppercase(uname);
+
+        acp a;
+        if (uname != "EMPTY"){
+          *os << "* TRAINING: evaluating ACP " << name << std::endl << std::endl;
+          a = string_to_acp(name);
+          if (!a)
+            throw std::runtime_error("Unknown ACP " + name + " in TRAINING EVAL");
+        } else {
+          *os << "* TRAINING: evaluating the EMPTY method " << std::endl << std::endl;
+        }
+
+        if (!tokens.empty()){
+          std::ofstream of(tokens.front(),std::ios::trunc);
+          if (of.fail())
+            throw std::runtime_error("Error opening file: " + tokens.front());
+          ts.eval_acp(of,a);
+        } else
+          ts.eval_acp(*os,a);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
@@ -411,23 +433,6 @@ int main(int argc, char *argv[]) {
       std::string alias = popstring(tokens);
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
       ts.addsubset(alias,kmap);
-
-//    } else if (keyw == "ACPEVAL" || keyw == "EMPTYEVAL") {
-//      acp a;
-//      if (keyw == "ACPEVAL"){
-//        a = string_to_acp(popstring(tokens));
-//        if (!a)
-//          throw std::runtime_error("Unknown ACP: " + a.get_name());
-//      }
-//
-//      if (!tokens.empty()){
-//        std::ofstream of(tokens.front(),std::ios::trunc);
-//        if (of.fail())
-//          throw std::runtime_error("Error opening file: " + tokens.front());
-//        ts.eval_acp(of,a);
-//      } else {
-//        ts.eval_acp(*os,a);
-//      }
 
       ///////////////////////////////////////////////////
 

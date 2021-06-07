@@ -1697,7 +1697,7 @@ LEFT OUTER JOIN Evaluations AS approx ON (approx.propid = Properties.id AND appr
 )SQL";
   }
   sttext += R"SQL(
-WHERE Properties.property_type = :PROPERTY_TYPE 
+WHERE Properties.property_type = :PROPERTY_TYPE
 )SQL";
   if (sid > 0)
     sttext += R"SQL(
@@ -1806,8 +1806,7 @@ ORDER BY Properties.id
 
     for (auto it = setname.begin(); it != setname.end(); it++){
       // calculate the statistics for the given set
-      int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse,-1,-1,{},-1,-1,
-                            setid,it->first);
+      int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse,-1,-1,{},-1,-1,setid,it->first);
       os << "# " << std::left << std::setw(15) << it->second
          << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
          << std::left << "  mae = " << std::right << std::setw(12) << mae << " "

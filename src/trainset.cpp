@@ -885,19 +885,38 @@ void trainset::insert_dat(std::ostream &os, std::unordered_map<std::string,std::
   db->commit_transaction();
 }
 
-// Evaluate an ACP on the current training set
+// Evaluate an ACP on the current training set.
 void trainset::eval_acp(std::ostream &os, const acp &a) const{
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using ACPEVAL");
+    throw std::runtime_error("A database file must be connected before using TRAINING EVAL");
   if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see what is missing)");
+    throw std::runtime_error("The training set needs to be defined before using TRAINING EVAL");
+
+  // get the number of items
+  int nall = 0;
+  std::vector<int> num, nsetid;
+  statement st(db->ptr(),R"SQL(
+SELECT length(Evaluations.value), Properties.setid
+FROM Evaluations, Training_set, Properties
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid AND
+      Evaluations.propid = Properties.id
+ORDER BY Training_set.id;
+)SQL");
+  st.bind((char *) ":METHOD",refid);
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    int sid = sqlite3_column_int(st.ptr(),1);
+    num.push_back(nitem);
+    nsetid.push_back(sid);
+    nall += nitem;
+  }
 
   // initialize container vectors
-  std::vector<double> yempty(ntot,0.0), yacp(ntot,0.0), yadd(ntot,0.0), ytotal(ntot,0.0), yref(ntot,0.0);
+  std::vector<double> yempty(nall,0.0), yacp(nall,0.0), yadd(nall,0.0), ytotal(nall,0.0), yref(nall,0.0);
   std::vector<std::string> names(ntot,"");
 
   // get the names
-  statement st(db->ptr(),R"SQL(
+  st.recycle(R"SQL(
 SELECT Properties.key
 FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid
@@ -906,12 +925,12 @@ ORDER BY Training_set.id;
   int n = 0;
   while (st.step() != SQLITE_DONE)
     names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
-  if (n != ntot)
-    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in names");
+  if (n != nall)
+    throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in names");
 
   // get the empty, reference, additional methods
   st.recycle(R"SQL(
-SELECT Evaluations.value
+SELECT length(Evaluations.value), Evaluations.value
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid
 ORDER BY Training_set.id;
@@ -919,30 +938,42 @@ ORDER BY Training_set.id;
 
   n = 0;
   st.bind((char *) ":METHOD",emptyid);
-  while (st.step() != SQLITE_DONE)
-    yempty[n++] = sqlite3_column_double(st.ptr(),0);
-  if (n != ntot)
-    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in empty");
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+    for (int i = 0; i < nitem; i++)
+      yempty[n++] = rval[i];
+  }
+  if (n != nall)
+    throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in empty");
 
   n = 0;
   st.bind((char *) ":METHOD",refid);
-  while (st.step() != SQLITE_DONE)
-    yref[n++] = sqlite3_column_double(st.ptr(),0);
-  if (n != ntot)
-    throw std::runtime_error("In ACPEVAL, unexpected end of the database column in reference");
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+    for (int i = 0; i < nitem; i++)
+      yref[n++] = rval[i];
+  }
+  if (n != nall)
+    throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in empty");
 
   for (int j = 0; j < addid.size(); j++){
     n = 0;
     st.bind((char *) ":METHOD",addid[j]);
-    while (st.step() != SQLITE_DONE)
-      yadd[n++] += sqlite3_column_double(st.ptr(),0);
-    if (n != ntot)
-      throw std::runtime_error("In ACPEVAL, unexpected end of the database column in additional method " + addname[j]);
+    while (st.step() != SQLITE_DONE){
+      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+      for (int i = 0; i < nitem; i++)
+        yadd[n++] = rval[i];
+    }
+    if (n != nall)
+      throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in empty");
   }
 
   // get the ACP contribution
   st.recycle(R"SQL(
-SELECT Terms.value
+SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
 ORDER BY Training_set.id;
@@ -956,21 +987,28 @@ ORDER BY Training_set.id;
     st.bind((char *) ":EXP",t.exp);
 
     n = 0;
-    while (st.step() != SQLITE_DONE)
-      yacp[n++] += sqlite3_column_double(st.ptr(),0) * t.coef;
-    if (n != ntot)
-      throw std::runtime_error("In ACPEVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
+    while (st.step() != SQLITE_DONE){
+      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+      for (int j = 0; j < nitem; j++)
+        yacp[n++] += rval[j] * t.coef;
+    }
+    if (n != nall){
+      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
+                << " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
+      throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
+    }
   }
 
   // calculate statistics
-  for (int i = 0; i < ntot; i++)
+  for (int i = 0; i < nall; i++)
     ytotal[i] = yempty[i] + yacp[i] + yadd[i];
   int nset = setid.size();
   std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0), wrms(nset,0.0);
   double rmst, maet, mset, wrmst, wrms_total_nofit = 0;
   int maxsetl = 0;
   for (int i = 0; i < setid.size(); i++){
-    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],set_initial_idx[i],set_final_idx[i]);
+    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],-1,-1,{},-1,-1,nsetid,setid[i]);
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
@@ -978,6 +1016,7 @@ ORDER BY Training_set.id;
   wrms_total_nofit = std::sqrt(wrms_total_nofit);
   calc_stats(ytotal,yref,w,wrmst,rmst,maet,mset);
 
+  // write the stats
   std::streamsize prec = os.precision(7);
   os << std::fixed;
   os << "# Evaluation: " << (a?a.get_name():emptyname) << std::endl;
@@ -1005,8 +1044,9 @@ ORDER BY Training_set.id;
      << std::left << "  mse = " << std::right << std::setw(14) << mset
      << std::endl;
 
-  //// FIXME
-  // output_eval(os,{},names,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
+  // write the table of results
+  output_eval(os,{},names,num,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
+  os << std::endl;
 }
 
 // Save the current training set to the database
