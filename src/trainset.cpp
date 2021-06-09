@@ -1005,6 +1005,11 @@ void trainset::listdb(std::ostream &os) const {
 
 // Write the octavedump.dat file
 void trainset::dump() const {
+  if (!db || !(*db))
+    throw std::runtime_error("A database file must be connected before using DUMP");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using DUMP");
+
   std::ofstream ofile("octavedump.dat",std::ios::trunc | std::ios::binary);
 
   // permutation for the additional methods (first fit, then nofit)
@@ -1020,14 +1025,27 @@ void trainset::dump() const {
     if (!addisfit[i]) iaddperm.push_back(i);
 
   // calculate the number of rows and the weights with only the dofit sets
+  // write the yref, yempt, and yadd columns
+  statement st(db->ptr(),R"SQL(
+SELECT length(Evaluations.value)
+FROM Evaluations
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
+)SQL");
   std::vector<double> wtrain;
-  unsigned long int nrows = 0;
-  int n = 0;
+  unsigned long int nrows = 0, n = 0;
   for (int i = 0; i < setid.size(); i++){
     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
       if (set_dofit[i]){
-        wtrain.push_back(w[n]);
-        nrows++;
+        st.reset();
+        st.bind((char *) ":METHOD",refid);
+        st.bind((char *) ":PROPID",propid[j]);
+        if (st.step() != SQLITE_ROW)
+          throw std::runtime_error("Invalid evaluation in octave dump");
+
+        int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+        for (int k = 0; k < len; k++)
+          wtrain.push_back(w[n]);
+        nrows += len;
       }
       n++;
     }
@@ -1072,8 +1090,8 @@ void trainset::dump() const {
   ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
 
   // write the x matrix
-  statement st(db->ptr(),R"SQL(
-SELECT Terms.value
+  st.recycle(R"SQL(
+SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
@@ -1091,8 +1109,9 @@ ORDER BY Training_set.id;
         while (st.step() != SQLITE_DONE){
           if (n++ >= nrows)
             throw std::runtime_error("Too many rows dumping terms data");
-          double value = sqlite3_column_double(st.ptr(),0);
-          ofile.write((const char *) &value,sizeof(double));
+          int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+          double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+          ofile.write((const char *) value,len * sizeof(double));
         }
         if (n != nrows)
           throw std::runtime_error("Too few rows dumping terms data");
@@ -1102,7 +1121,7 @@ ORDER BY Training_set.id;
 
   // write the yref, yempt, and yadd columns
   st.recycle(R"SQL(
-SELECT Evaluations.value
+SELECT length(Evaluations.value), Evaluations.value
 FROM Evaluations, Training_set
 WHERE Evaluations.methodid = :METHOD
       AND Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
@@ -1117,8 +1136,9 @@ ORDER BY Training_set.id;
     while (st.step() != SQLITE_DONE){
       if (n++ >= nrows)
         throw std::runtime_error("Too many rows dumping y data");
-      double value = sqlite3_column_double(st.ptr(),0);
-      ofile.write((const char *) &value,sizeof(double));
+      int len = sqlite3_column_int(st.ptr(),0);
+      double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+      ofile.write((const char *) value,len * sizeof(double));
     }
     if (n != nrows)
       throw std::runtime_error("Too few rows dumping y data");

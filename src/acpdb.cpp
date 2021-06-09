@@ -357,6 +357,7 @@ int main(int argc, char *argv[]) {
       std::string category = popstring(tokens,true);
       std::string name = popstring(tokens);
 
+      // TRAINING subkeywords
       if (category.empty()){
         *os << "* TRAINING: started defining the training set " << std::endl << std::endl;
         intraining = true;
@@ -401,6 +402,9 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(*os,a);
       } else if (category == "INSERT_OLD"){
         ts.insert_olddat(*os,name);
+      } else if (category == "DUMP") {
+        *os << "* TRAINING: dumping to an octave file " << std::endl << std::endl;
+        ts.dump();
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
@@ -433,13 +437,6 @@ int main(int argc, char *argv[]) {
       std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
       ts.addsubset(alias,kmap);
 
-      ///////////////////////////////////////////////////
-
-//      //
-//    } else if (keyw == "DUMP") {
-//      ts.dump();
-
-      //
     } else {
       throw std::runtime_error("Unknown keyword: " + keyw);
     }

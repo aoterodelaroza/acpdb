@@ -18,6 +18,7 @@ atom-centered potentials (ACPs).
 | [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                       |
 | [Training set evaluations](#training-set-evaluations)                               | TRAINING EVAL                                                                                                                                                                         |
 | [Insert training set data in old format](#insert-training-set-data-in-old-format)   | TRAINING INSERT_OLD                                                                                                                                                                   |
+| [Dumping the training set](#dumping-the-training-set)                               | TRAINING DUMP                                                                                                                                                                         |
 
 ## Command-Line Syntax
 ~~~
@@ -829,4 +830,11 @@ inserted:
   angular momentum (lowercase symbol), and `z` is the exponent integer
   index. Insert the corresponding ACP term. This file contains the
   empty energy plus 0.001 times the term slope contribution.
+
+### Dumping the Training Set
+~~~
+TRAINING DUMP
+~~~
+Write the octavedump.dat file for the LASSO fit corresponding to the
+current dataset.
 

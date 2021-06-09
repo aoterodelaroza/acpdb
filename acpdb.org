@@ -2,14 +2,6 @@
 
 -- do the reduction, coef0? -> in the dump
    It has to be the slope or ACPeval will not work.
-
-DUMP
-
-  Write the octavedump.dat file for the LASSO fit corresponding to the
-  current dataset.
-
-  trainset -> dump
-
 -- automatic testing on github & upload zz_source
 -- clean up extra keywords and code in trainset and acpdb --
 -- copy over from the code --

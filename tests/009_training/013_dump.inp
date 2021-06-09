@@ -1,0 +1,76 @@
+## check: 013_dump.out -a1e-10
+## delete: 013_dump.db
+## delete: octavedump.dat
+## labels: regression quick
+
+system rm -f 013_dump.db
+connect 013_dump.db
+
+insert method m_empty
+end
+insert method m_ref
+end
+insert set s22b
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method m_ref
+end
+insert set s22b-b
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method m_ref
+end
+insert evaluation
+ method m_empty
+ property s22b.nh3_nh3
+ value 0.2
+end
+insert evaluation
+ method m_empty
+ property s22b.h2o_h2o
+ value 0.3
+end
+insert term
+ method m_empty
+ property s22b.h2o_h2o
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property s22b.h2o_h2o
+ atom H
+ L 0
+ exponent 0.2
+ value 0.001
+end
+insert term
+ method m_empty
+ property s22b.nh3_nh3
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property s22b.nh3_nh3
+ atom H
+ L 0
+ exponent 0.2
+ value 0.3
+end
+
+training
+ atom H l
+ exp 0.1 0.2
+ empty m_empty
+ reference m_ref
+ subset
+  set s22b
+ end
+end
+
+training dump
