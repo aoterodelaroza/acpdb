@@ -1941,10 +1941,21 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   bool rename = false;
   if ((im = kmap.find("TERM")) != kmap.end()){
     std::list<std::string> words = list_all_words(im->second);
-    if (words.size() == 1){
+    if (words.size() == 0){
+      if (zat.empty() || lmax.empty() || exp.empty())
+        throw std::runtime_error("The training set must be defined if using WRITE TERM with no additonal options");
+
       rename = true;
-      printf("FIXME!!\n");
-      exit(1);
+      exp_ = exp;
+      zat_.clear();
+      l_.clear();
+      for (int izat = 0; izat < zat.size(); izat++){
+        for (unsigned char il = 0; il <= lmax[izat]; il++){
+          zat_.push_back(zat[izat]);
+          l_.push_back(il);
+        }
+      }
+
     } else if (words.size() == 3){
       rename = false;
       std::string str = words.front();
@@ -1974,7 +1985,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   }
 
   // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,l_,exp_,false,dir,npack);
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,l_,exp_,rename,dir,npack);
   os << std::endl;
 }
 
@@ -2077,7 +2088,7 @@ FROM Structures WHERE id = ?1;
   if (rename){
     std::string atom = nameguess(zat);
     lowercase(atom);
-    name = s.get_name() + "_" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp) + "." + ext;
+    name = s.get_name() + "-" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
   } else {
     name = s.get_name() + "." + ext;
   }

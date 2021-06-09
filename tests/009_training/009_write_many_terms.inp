@@ -1,11 +1,17 @@
 ## check: 009_write_many_terms.out -a1e-10
 ## delete: 009_write_many_terms.db
-## delete: 009_write_many_terms-set.h2o_h2o_1.gjf
-## delete: 009_write_many_terms-set.h2o_h2o_2.gjf
-## delete: 009_write_many_terms-set.h2o_h2o.gjf
-## delete: 009_write_many_terms-set.nh3_nh3_1.gjf
-## delete: 009_write_many_terms-set.nh3_nh3_2.gjf
-## delete: 009_write_many_terms-set.nh3_nh3.gjf
+## delete: 009_write_many_terms-set.h2o_h2o_1-h_l_1.gjf
+## delete: 009_write_many_terms-set.h2o_h2o_1-h_l_2.gjf
+## delete: 009_write_many_terms-set.h2o_h2o_2-h_l_1.gjf
+## delete: 009_write_many_terms-set.h2o_h2o_2-h_l_2.gjf
+## delete: 009_write_many_terms-set.h2o_h2o-h_l_1.gjf
+## delete: 009_write_many_terms-set.h2o_h2o-h_l_2.gjf
+## delete: 009_write_many_terms-set.nh3_nh3_1-h_l_1.gjf
+## delete: 009_write_many_terms-set.nh3_nh3_1-h_l_2.gjf
+## delete: 009_write_many_terms-set.nh3_nh3_2-h_l_1.gjf
+## delete: 009_write_many_terms-set.nh3_nh3_2-h_l_2.gjf
+## delete: 009_write_many_terms-set.nh3_nh3-h_l_1.gjf
+## delete: 009_write_many_terms-set.nh3_nh3-h_l_2.gjf
 ## labels: regression quick
 
 system rm -f 009_write_many_terms.db
@@ -76,5 +82,5 @@ end
 write
  template ../zz_source/templates/gau2.gjf
  training
- term H l 0.1
+ term
 end
