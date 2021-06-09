@@ -4,10 +4,7 @@ INSERT CALC
   PROPERTY_TYPE {prop.s|prop.i}
   FILE file.s
   METHOD {method.s|method.i}
-  [TERM [{zat.i|zat.s} {l.i|l.s} exp.r]]
 END
-
-reserved character!
 
 ----
 
@@ -87,6 +84,7 @@ DUMP
 
 * Database schema
 
+-- clean up extra keywords and code in trainset and acpdb --
 -- copy over from the code --
 -- build energy differences from total energies --
 -- own implementation of LASSO in c++ --

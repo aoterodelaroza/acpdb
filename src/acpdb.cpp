@@ -271,7 +271,7 @@ int main(int argc, char *argv[]) {
         else if (category == "TERM")
           db.insert_term(*os,kmap);
         else if (category == "CALC")
-          db.insert_calc(*os,kmap);
+          db.insert_calc(*os,kmap,ts.get_zat(),ts.get_lmax(),ts.get_exp());
         // else if (category == "DAT")
         //   ts.insert_dat(*os,kmap);
       }

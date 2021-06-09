@@ -8,6 +8,7 @@ set(TESTS
   007_eval             ## training eval empty/acp
   008_write_one_term   ## write term, only one
   009_write_many_terms ## write term, many
+  010_insert_one_term  ## insert calc term, only one
 )
 
 runtests(${TESTS})

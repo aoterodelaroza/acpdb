@@ -677,8 +677,10 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   st.step();
 }
 
-// Read data from a file, then insert as evaluation of the argument method.
-void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+// Bulk insert: read data from a file, then insert as evaluation or terms.
+void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
+                        const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/,
+                        const std::vector<double> &exp/*={}*/){
   if (!db)
     throw std::runtime_error("A database file must be connected before using INSERT CALC");
 
@@ -710,72 +712,147 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
   else
     throw std::runtime_error("The FILE must be given in INSERT CALC");
 
-  // get the data from the file
- std::unordered_map<std::string,std::vector<double>> datmap;
- if (ptid == globals::ppty_energy_difference)
-   datmap = read_data_file_vector(file,globals::ha_to_kcal);
- else
-   datmap = read_data_file_vector(file,1.);
+  // get the term
+  bool doterm = false, changename = false;
+  std::vector<unsigned char> zat_ = {0}, l_ = {0};
+  std::vector<double> exp_ = {0.0};
+  if ((im = kmap.find("TERM")) != kmap.end()){
+    doterm = true;
+    std::list<std::string> words = list_all_words(im->second);
 
-  // build the property map
-  std::unordered_map<int,std::vector<double>> propmap;
+    if (words.size() == 0){
+      changename = true;
+      printf("FIXME!");
+      exit(1);
+    } else if (words.size() == 3){
+      changename = false;
+      std::string str = words.front();
+      words.pop_front();
+      if (isinteger(str))
+        zat_[0] = std::stoi(str);
+      else
+        zat_[0] = zatguess(str);
+
+      str = words.front();
+      words.pop_front();
+      if (isinteger(str))
+        l_[0] = std::stoi(str);
+      else{
+        lowercase(str);
+        if (globals::ltoint.find(str) == globals::ltoint.end())
+          throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
+        l_[0] = globals::ltoint.at(str);
+      }
+
+      str = words.front();
+      words.pop_front();
+      exp_[0] = std::stod(str);
+    } else {
+      throw std::runtime_error("Invalid number of tokens in INSERT/TERM");
+    }
+  }
+
+  // get all the data from the file
+  std::unordered_map<std::string,std::vector<double>> datmap;
+  if (ptid == globals::ppty_energy_difference)
+    datmap = read_data_file_vector(file,globals::ha_to_kcal);
+  else
+    datmap = read_data_file_vector(file,1.);
+
+  // consistency check
+  if (zat_.size() != l_.size())
+    throw std::runtime_error("Inconsistent zat and l arrays in insert_calc");
+
+  // begin the transaction and prepare the statements
+  begin_transaction();
   statement stkey(db,"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db,R"SQL(
+  statement ststruct(db,R"SQL(
 SELECT id, nstructures, structures, coefficients
 FROM Properties
 WHERE property_type = ?1
 ORDER BY id;)SQL");
-  st.bind(1,ptid);
-
-  while (st.step() != SQLITE_DONE){
-    int propid = sqlite3_column_int(st.ptr(),0);
-    int nstr = sqlite3_column_int(st.ptr(),1);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
-    std::vector<double> value;
-    bool found = true;
-    for (int i = 0; i < nstr; i++){
-      stkey.reset();
-      stkey.bind(1,istr[i]);
-      stkey.step();
-      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-      if (datmap.find(strname) == datmap.end()){
-        found = false;
-        break;
-      }
-      if (i == 0)
-        value.resize(datmap[strname].size(), 0.);
-      else if (datmap[strname].size() != value.size())
-        throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
-
-      if (coef) {
-        for (int j = 0; j < value.size(); j++)
-          value[j] += coef[i] * datmap[strname][j];
-      } else {
-        for (int j = 0; j < value.size(); j++)
-          value[j] += datmap[strname][j];
-      }
-    }
-    if (found)
-      propmap[propid] = value;
+  statement stinsert(db,"");
+  if (doterm){
+    stinsert.recycle(R"SQL(
+INSERT INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);
+)SQL");
+  } else {
+    stinsert.recycle(R"SQL(
+INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
+)SQL");
   }
-  datmap.clear();
 
-  // begin the transaction
-  begin_transaction();
+  // run over all possible combinations of atom, l, and exponent
+  for (int ii = 0; ii < zat_.size(); ii++){
+    for (int iexp = 0; iexp < exp_.size(); iexp++){
 
-  st.recycle("INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);");
-  for (auto it = propmap.begin(); it != propmap.end(); it++){
-    st.reset();
-    st.bind((char *) ":METHOD",methodid);
-    st.bind((char *) ":PROPID",it->first);
-    st.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
-    os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
-    if (st.step() != SQLITE_DONE){
-      std::cout << "method = " << methodkey << std::endl;
-      std::cout << "propid = " << it->first << std::endl;
-      std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
-      throw std::runtime_error("Failed inserting data in the database (READ CALC)");
+      // build the property map
+      std::unordered_map<int,std::vector<double>> propmap;
+      ststruct.reset();
+      ststruct.bind(1,ptid);
+      while (ststruct.step() != SQLITE_DONE){
+        int propid = sqlite3_column_int(ststruct.ptr(),0);
+        int nstr = sqlite3_column_int(ststruct.ptr(),1);
+        int *istr = (int *) sqlite3_column_blob(ststruct.ptr(),2);
+        double *coef = (double *) sqlite3_column_blob(ststruct.ptr(),3);
+        std::vector<double> value;
+        bool found = true;
+        for (int i = 0; i < nstr; i++){
+          stkey.reset();
+          stkey.bind(1,istr[i]);
+          stkey.step();
+          std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+
+          if (doterm && changename){
+            printf("FIXME!");
+            exit(1);
+          }
+
+          if (datmap.find(strname) == datmap.end()){
+            found = false;
+            break;
+          }
+          if (i == 0)
+            value.resize(datmap[strname].size(), 0.);
+          else if (datmap[strname].size() != value.size())
+            throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
+
+          if (coef) {
+            for (int j = 0; j < value.size(); j++)
+              value[j] += coef[i] * datmap[strname][j];
+          } else {
+            for (int j = 0; j < value.size(); j++)
+              value[j] += datmap[strname][j];
+          }
+        }
+        if (found)
+          propmap[propid] = value;
+      }
+      datmap.clear();
+
+      // insert into the database
+      for (auto it = propmap.begin(); it != propmap.end(); it++){
+        stinsert.reset();
+        stinsert.bind((char *) ":METHOD",methodid);
+        stinsert.bind((char *) ":PROPID",it->first);
+        stinsert.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
+        if (doterm){
+          stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
+          stinsert.bind((char *) ":L",(int) l_[ii]);
+          stinsert.bind((char *) ":EXP",exp[iexp]);
+          os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
+             << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
+             << ")" << std::endl;
+        } else {
+          os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
+        }
+        if (stinsert.step() != SQLITE_DONE){
+          std::cout << "method = " << methodkey << std::endl;
+          std::cout << "propid = " << it->first << std::endl;
+          std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
+          throw std::runtime_error("Failed inserting data in the database (READ CALC)");
+        }
+      }
     }
   }
 
@@ -2016,18 +2093,20 @@ void sqldb::write_many_structures(std::ostream &os,
                                   const bool rename,
                                   const std::string &dir/*="./"*/, int npack/*=0*/){
 
+  // consistency check
+  if (zat.size() != l.size())
+    throw std::runtime_error("Inconsistent atom and l arrays in write_many_structures");
+
   // build the templates
   strtemplate tm(template_m);
   strtemplate tc(template_c);
 
   if (npack <= 0 || npack >= smap.size()){
-    for (int izat = 0; izat < zat.size(); izat++){
-      for (int il = 0; il < l.size(); il++){
-        for (int iexp = 0; iexp < exp.size(); iexp++){
-          for (auto it = smap.begin(); it != smap.end(); it++){
-            write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
-                                zat[izat], l[il], exp[iexp], iexp, rename, dir);
-          }
+    for (int ii = 0; ii < zat.size(); ii++){
+      for (int iexp = 0; iexp < exp.size(); iexp++){
+        for (auto it = smap.begin(); it != smap.end(); it++){
+          write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
+                              zat[ii], l[ii], exp[iexp], iexp, rename, dir);
         }
       }
     }
@@ -2048,26 +2127,24 @@ void sqldb::write_many_structures(std::ostream &os,
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      for (int izat = 0; izat < zat.size(); izat++){
-        for (int il = 0; il < l.size(); il++){
-          for (int iexp = 0; iexp < exp.size(); iexp++){
-            written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
-                                                           a, zat[izat], l[il], exp[iexp], iexp, rename, dir)));
+      for (int ii = 0; ii < zat.size(); ii++){
+        for (int iexp = 0; iexp < exp.size(); iexp++){
+          written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
+                                                         a, zat[ii], l[ii], exp[iexp], iexp, rename, dir)));
 
-            // create a new package if written has npack items or we are about to finish
-            if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
-              std::string tarcmd = std::to_string(++ipack);
-              tarcmd.insert(0,slen-tarcmd.size(),'0');
-              tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-              for (auto iw = written.begin(); iw != written.end(); iw++)
-                tarcmd = tarcmd + " " + iw->string();
+          // create a new package if written has npack items or we are about to finish
+          if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
+            std::string tarcmd = std::to_string(++ipack);
+            tarcmd.insert(0,slen-tarcmd.size(),'0');
+            tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+            for (auto iw = written.begin(); iw != written.end(); iw++)
+              tarcmd = tarcmd + " " + iw->string();
 
-              if (system(tarcmd.c_str()))
-                throw std::runtime_error("Error running tar command on input files");
-              for (auto iw = written.begin(); iw != written.end(); iw++)
-                remove(dir / *iw);
-              written.clear();
-            }
+            if (system(tarcmd.c_str()))
+              throw std::runtime_error("Error running tar command on input files");
+            for (auto iw = written.begin(); iw != written.end(); iw++)
+              remove(dir / *iw);
+            written.clear();
           }
         }
       }

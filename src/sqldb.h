@@ -74,8 +74,10 @@ class sqldb {
   void insert_evaluation(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
   void insert_term(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
-  // Bulk insert
-  void insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
+  // Bulk insert: read data from a file, then insert as evaluation or terms.
+  void insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
+                   const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
+                   const std::vector<double> &exp={});
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::ostream &os, const std::list<std::string> &tokens);
