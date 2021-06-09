@@ -1,0 +1,72 @@
+* SYSTEM: rm -f 012_insert_old.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 012_insert_old.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD m_empty
+
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD m_ref
+
+* INSERT: insert data into the database (SET)
+# INSERT SET 012_insert_old-set
+# INSERT STRUCTURE 012_insert_old-set.nh3_nh3
+# INSERT STRUCTURE 012_insert_old-set.nh3_nh3_1
+# INSERT STRUCTURE 012_insert_old-set.nh3_nh3_2
+# INSERT PROPERTY 012_insert_old-set.nh3_nh3
+# INSERT STRUCTURE 012_insert_old-set.h2o_h2o
+# INSERT STRUCTURE 012_insert_old-set.h2o_h2o_1
+# INSERT STRUCTURE 012_insert_old-set.h2o_h2o_2
+# INSERT PROPERTY 012_insert_old-set.h2o_h2o
+
+* TRAINING: started defining the training set 
+
+* TRAINING: fininshed defining the training set 
+
+## Description of the training set
+# List of atoms and maximum angular momentum channels (1)
+| Atom | lmax |
+| H | l |
+
+# List of exponents (2)
+| id | exp |
+| 0 | 0.1 |
+| 1 | 0.2 |
+
+# List of subsets (1)
+| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |
+| 0 | 012_insert_old-set | 012_insert_old-set | 1 | 1 | 2 | 2 | 1 |  |  |
+
+# List of methods
+| type | name | id | for fit? |
+| reference | m_ref | 2 | n/a |
+| empty | m_empty | 1 | n/a |
+
+# List of properties (2)
+| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |
+| yes | 1 | 012_insert_old-set.nh3_nh3 | 1 | 012_insert_old-set | 012_insert_old-set | ENERGY_DIFFERENCE | 3 | 1 | n/a |
+| yes | 2 | 012_insert_old-set.h2o_h2o | 2 | 012_insert_old-set | 012_insert_old-set | ENERGY_DIFFERENCE | 3 | 1 | n/a |
+
+# Calculation completion for the current training set
+# Reference: 0/2 (missing)
+# Empty: 0/2 (missing)
+# Terms: 
+| H | l | 0.1 | 0/2 | (missing)
+| H | l | 0.2 | 0/2 | (missing)
+# Total terms: 0/4 (missing)
+
+* TRAINING: insert data in the old format 
+
+# INSERT EVALUATION (method=m_ref;property=012_insert_old-set.h2o_h2o)
+# INSERT EVALUATION (method=m_ref;property=012_insert_old-set.nh3_nh3)
+# INSERT EVALUATION (method=m_empty;property=012_insert_old-set.h2o_h2o)
+# INSERT EVALUATION (method=m_empty;property=012_insert_old-set.nh3_nh3)
+# INSERT TERM (method=m_empty;property=012_insert_old-set.h2o_h2o;atom=1;l=0;exponent=1.0000000000000001e-01)
+# INSERT TERM (method=m_empty;property=012_insert_old-set.nh3_nh3;atom=1;l=0;exponent=1.0000000000000001e-01)
+# INSERT TERM (method=m_empty;property=012_insert_old-set.h2o_h2o;atom=1;l=0;exponent=2.0000000000000001e-01)
+# INSERT TERM (method=m_empty;property=012_insert_old-set.nh3_nh3;atom=1;l=0;exponent=2.0000000000000001e-01)
+

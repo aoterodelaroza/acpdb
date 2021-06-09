@@ -17,6 +17,7 @@ atom-centered potentials (ACPs).
 | [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                              |
 | [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                       |
 | [Training set evaluations](#training-set-evaluations)                               | TRAINING EVAL                                                                                                                                                                         |
+| [Insert training set data in old format](#insert-training-set-data-in-old-format)   | TRAINING INSERT_OLD                                                                                                                                                                   |
 
 ## Command-Line Syntax
 ~~~
@@ -804,3 +805,28 @@ does not exist, try to find an ACP file with that name and use it
 instead. For this operation to work, the training set must be defined.
 If `output.s` is given, write the output to that file instead
 of the standard output.
+
+### Insert Training Set Data in Old Format
+~~~
+TRAINING INSERT_OLD [directory.s]
+~~~
+Insert data in bulk from old-style ACP data files. Using this keyword
+requires the training set being defined.
+
+The data files to be inserted all reside in the directory
+`directory.s` (`./` if not given). This command first searches for the
+file called `names.dat`, and verifies that the names in it match with
+the property names currently in the training set. This is done to
+ensure the integrity of the database. After this operation is
+complete, the following data is read from the corresponding files and
+inserted:
+
+- `ref.dat`: evaluation of the reference method.
+
+- `empty.dat`: evaluation of the empty method.
+
+- `x_y_z.dat`, where `x` is the atom (lowercase symbol), `y` is the
+  angular momentum (lowercase symbol), and `z` is the exponent integer
+  index. Insert the corresponding ACP term. This file contains the
+  empty energy plus 0.001 times the term slope contribution.
+

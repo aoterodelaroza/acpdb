@@ -622,49 +622,44 @@ ORDER BY Properties.orderid;
 // Insert data in bulk into the database using data files from
 // previous ACP development programs using this training set as
 // template
-void trainset::insert_olddat(std::ostream &os, const std::string &directory, std::list<std::string> &tokens){
+void trainset::insert_olddat(std::ostream &os, const std::string &directory/*="./"*/){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using INSERT OLDDAT");
+    throw std::runtime_error("A database file must be connected before using TRAINING INSERT_OLD");
   if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using INSERT OLDDAT (use DESCRIBE to see missing data)");
+    throw std::runtime_error("The training set needs to be defined before using TRAINING INSERT_OLD");
+
+  os << "* TRAINING: insert data in the old format " << std::endl << std::endl;
 
   // Check directory
   std::string dir = ".";
   if (!directory.empty()) dir = directory;
   if (!fs::is_directory(dir))
-    throw std::runtime_error("In INSERT OLDDAT, directory not found: " + dir);
+    throw std::runtime_error("In TRAINING INSERT_OLD, directory not found: " + dir);
 
   // Check that the names.dat matches and write down the property ids
   std::string name = dir + "/names.dat";
   if (!fs::is_regular_file(name))
-    throw std::runtime_error("In INSERT OLDDAT, names.dat file found: " + name);
+    throw std::runtime_error("In TRAINING INSERT_OLD, names.dat file found: " + name);
   std::ifstream ifile(name,std::ios::in);
   if (ifile.fail())
-    throw std::runtime_error("In INSERT OLDDAT, error reading names.dat file: " + name);
+    throw std::runtime_error("In TRAINING INSERT_OLD, error reading names.dat file: " + name);
 
+  // build the mapping
   statement st(db->ptr(),R"SQL(
-SELECT Properties.key, Properties.id
+SELECT Properties.id
 FROM Properties, Training_set
-WHERE Properties.id = Training_set.propid
-ORDER BY Training_set.id;
+WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
 )SQL");
-  while (st.step() != SQLITE_DONE){
-    // check the name
-    std::string namedb = (char *) sqlite3_column_text(st.ptr(), 0);
-    std::string namedat;
-    std::getline(ifile,namedat);
+  std::string namedat;
+  std::vector<long> pid;
+  while (std::getline(ifile,namedat)){
     deblank(namedat);
-    if (namedb != namedat){
-      std::cout << "In INSERT OLDDAT, names.dat and names for the training set do not match." << std::endl;
-      std::cout << "The mismatch is:" << std::endl;
-      std::cout << "  Database name: " << namedb << std::endl;
-      std::cout << "  names.dat name: " << namedat << std::endl;
-      throw std::runtime_error("In INSERT OLDDAT, non-matching names were found");
-    }
+    st.reset();
+    st.bind(1,namedat);
+    if (st.step() != SQLITE_ROW)
+      throw std::runtime_error("In TRAINING INSERT_OLD, property name not found in training set: " + namedat);
+    pid.push_back(sqlite3_column_int(st.ptr(),0));
   }
-  ifile.peek();
-  if (!ifile.eof())
-    throw std::runtime_error("In INSERT OLDDAT, the names.dat file contains extra lines: " + name);
   ifile.close();
 
   // Start inserting data
@@ -672,30 +667,24 @@ ORDER BY Training_set.id;
 
   // Insert data for reference method in ref.dat
   std::string knext = "";
-  if (!tokens.empty()) knext = popstring(tokens,true);
-  if (knext != "NOREFERENCE"){
-    name = dir + "/ref.dat";
-    ifile = std::ifstream(name,std::ios::in);
+  name = dir + "/ref.dat";
+  ifile = std::ifstream(name,std::ios::in);
+  if (ifile.fail())
+    throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
+
+  for (int i = 0; i < pid.size(); i++){
+    std::unordered_map<std::string,std::string> smap;
+    std::string valstr;
+    std::getline(ifile,valstr);
     if (ifile.fail())
-      throw std::runtime_error("In INSERT OLDDAT, error reading ref.dat file: " + name);
+      throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in ref.dat file: " + name);
 
-    for (int i = 0; i < propid.size(); i++){
-      std::unordered_map<std::string,std::string> smap;
-      std::string valstr;
-      std::getline(ifile,valstr);
-      if (ifile.fail())
-        throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in ref.dat file: " + name);
-
-      smap["METHOD"] = std::to_string(refid);
-      smap["PROPERTY"] = std::to_string(propid[i]);
-      smap["VALUE"] = valstr;
-      db->insert_evaluation(os,smap);
-    }
-    ifile.peek();
-    if (!ifile.eof())
-      throw std::runtime_error("In INSERT OLDDAT, the ref.dat file contains extra lines: " + name);
-    ifile.close();
+    smap["METHOD"] = std::to_string(refid);
+    smap["PROPERTY"] = std::to_string(pid[i]);
+    smap["VALUE"] = valstr;
+    db->insert_evaluation(os,smap);
   }
+  ifile.close();
 
   // Insert data for empty method in empty.dat; save the empty for insertion of ACP terms
   int n = 0;
@@ -703,24 +692,21 @@ ORDER BY Training_set.id;
   name = dir + "/empty.dat";
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail())
-    throw std::runtime_error("In INSERT OLDDAT, error reading empty.dat file: " + name);
+    throw std::runtime_error("In TRAINING INSERT_OLD, error reading empty.dat file: " + name);
 
-  for (int i = 0; i < propid.size(); i++){
+  for (int i = 0; i < pid.size(); i++){
     std::unordered_map<std::string,std::string> smap;
     std::string valstr;
     std::getline(ifile,valstr);
     if (ifile.fail())
-      throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in empty.dat file: " + name);
+      throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in empty.dat file: " + name);
 
     smap["METHOD"] = std::to_string(emptyid);
-    smap["PROPERTY"] = std::to_string(propid[i]);
+    smap["PROPERTY"] = std::to_string(pid[i]);
     smap["VALUE"] = valstr;
     db->insert_evaluation(os,smap);
     yempty[n++] = std::stod(valstr);
   }
-  ifile.peek();
-  if (!ifile.eof())
-    throw std::runtime_error("In INSERT OLDDAT, the empty.dat file contains extra lines: " + name);
   ifile.close();
 
   // Insert data for ACP terms
@@ -732,28 +718,24 @@ ORDER BY Training_set.id;
         name = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
         ifile = std::ifstream(name,std::ios::in);
         if (ifile.fail())
-          throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
+          throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
 
         n = 0;
-        for (int i = 0; i < propid.size(); i++){
+        for (int i = 0; i < pid.size(); i++){
           std::unordered_map<std::string,std::string> smap;
           std::string valstr;
           std::getline(ifile,valstr);
           if (ifile.fail())
-            throw std::runtime_error("In INSERT OLDDAT, unexpected error or end of file in term file: " + name);
+            throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in term file: " + name);
 
           smap["METHOD"] = std::to_string(emptyid);
-          smap["PROPERTY"] = std::to_string(propid[i]);
+          smap["PROPERTY"] = std::to_string(pid[i]);
           smap["ATOM"] = std::to_string(zat[iat]);
           smap["L"] = std::to_string(il);
           smap["EXPONENT"] = to_string_precise(exp[iexp]);
           smap["VALUE"] = to_string_precise((std::stod(valstr)-yempty[n++])/0.001);
           db->insert_term(os,smap);
         }
-
-        ifile.peek();
-        if (!ifile.eof())
-          throw std::runtime_error("In INSERT OLDDAT, the term file contains extra lines: " + name);
         ifile.close();
       }
     }
@@ -761,6 +743,7 @@ ORDER BY Training_set.id;
 
   // Commit the transaction
   db->commit_transaction();
+  os << std::endl;
 }
 
 // Evaluate an ACP on the current training set.

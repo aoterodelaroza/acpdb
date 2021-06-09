@@ -252,8 +252,6 @@ int main(int argc, char *argv[]) {
 
       if ((category == "LITREF") && equali_strings(key,"BIBTEX")) {
         db.insert_litref_bibtex(*os,tokens);
-        // } else if (category == "OLDDAT"){
-        //   ts.insert_olddat(*os,key,tokens);
       } else {
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
         if (category == "LITREF")
@@ -401,6 +399,8 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(of,a);
         } else
           ts.eval_acp(*os,a);
+      } else if (category == "INSERT_OLD"){
+        ts.insert_olddat(*os,name);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }

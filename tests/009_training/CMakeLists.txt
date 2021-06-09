@@ -10,6 +10,7 @@ set(TESTS
   009_write_many_terms  ## write term, many
   010_insert_one_term   ## insert calc term, only one
   011_insert_many_terms ## insert calc term, many terms
+  012_insert_old        ## insert calc, old dat
 )
 
 runtests(${TESTS})

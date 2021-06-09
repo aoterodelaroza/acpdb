@@ -1,0 +1,29 @@
+## check: 012_insert_old.out -a1e-10
+## delete: 012_insert_old.db
+## labels: regression quick
+
+system rm -f 012_insert_old.db
+connect 012_insert_old.db
+
+insert method m_empty
+end
+insert method m_ref
+end
+insert set 012_insert_old-set
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+end
+
+training
+ atom H l
+ exp 0.1 0.2
+ empty m_empty
+ reference m_ref
+ subset
+  set 012_insert_old-set
+ end
+end
+
+training insert_old ../zz_source/olddat
+
+
