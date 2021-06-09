@@ -127,6 +127,11 @@ class trainset {
       return setname[it - alias.begin()];
   }
 
+  // accesors
+  const std::vector<unsigned char> &get_zat() const { return zat; };
+  const std::vector<unsigned char> &get_lmax() const { return lmax; };
+  const std::vector<double> &get_exp() const { return exp; };
+
  private:
 
   // Insert a subset into the Training_set table

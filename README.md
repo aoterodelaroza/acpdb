@@ -473,10 +473,11 @@ WRITE
   [TEMPLATE_MOL filemol.s]
   [TEMPLATE_CRYS filecrys.s]
   [SET {set.s|set.i}]
-  [TRAINING [alias.s]]
   [DIRECTORY dir.s]
   [PACK ipack.i]
   [ACP {name.s|file.s}]
+  [TRAINING [alias.s]]
+  [TERM [prefix.s|{zat.i|zat.s} {l.i|l.s} exp.r]]
 END
 ~~~
 Write the structures in the database to input or structure files. If
@@ -508,6 +509,17 @@ through a `system()` call.
 If the `ACP` keyword is present, use the ACP in file `file.s` or the
 ACP with name `name.s` from the internal ACP database to substitute
 the ACP-related template expansions (`%acpgau%`, etc.).
+
+If the keyword TERM is present, write input files for the term
+calculations. There are two possible ways of doing this. If the atom
+(atomic number `zat.i` or symbol `zat.s`), angular momentum (symbol
+`l.s` or value `l.i`), and exponent (`exp.r`) are given, then simply
+pass this information to the template. Instead, if `prefix.s` is
+given, the training set must be defined. This creates files with name
+`prefix_atom_l_expid.ext` where `atom` is the atomic symbol, `l`, is
+the angular momentum symbol, and `expid` is the exponent integer
+ID. The number of files generated corresponds to all possible
+combinations of atom, l, and exponent from the training set.
 
 #### Description of the Template Format
 
@@ -768,7 +780,6 @@ TRAINING EVAL acp.s [output.s]
 Evaluate the ACP with name `acp.s` against the reference method using
 the linear model on the current training set. If an ACP with this name
 does not exist, try to find an ACP file with that name and use it
-instead. For this operation to work, the training set must be defined. 
+instead. For this operation to work, the training set must be defined.
 If `output.s` is given, write the output to that file instead
 of the standard output.
-

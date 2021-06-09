@@ -33,11 +33,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace fs = std::filesystem;
 
-const static std::unordered_map<std::string, int> ltoint {
-   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6},
-};
-const static std::vector<char> inttol = {'l','s','p','d','f','g','h'};
-
 // Register the database and create the Training_set table
 void trainset::setdb(sqldb *db_){
   db = db_;
@@ -70,9 +65,9 @@ void trainset::addatoms(const std::list<std::string> &tokens){
     if (zat_ == 0)
       throw std::runtime_error("Invalid atom " + at + " in TRAINING ATOM");
 
-    if (ltoint.find(l) == ltoint.end())
+    if (globals::ltoint.find(l) == globals::ltoint.end())
       throw std::runtime_error("Invalid lmax " + l + " in TRAINING ATOM");
-    unsigned char lmax_ = ltoint.at(l);
+    unsigned char lmax_ = globals::ltoint.at(l);
     zat.push_back(zat_);
     lmax.push_back(lmax_);
   }
@@ -408,7 +403,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
   os << "# List of atoms and maximum angular momentum channels (" << zat.size() << ")" << std::endl;
   os << "| Atom | lmax |" << std::endl;
   for (int i = 0; i < zat.size(); i++){
-    os << "| " << nameguess(zat[i]) << " | " << inttol[lmax[i]] << " |" << std::endl;
+    os << "| " << nameguess(zat[i]) << " | " << globals::inttol[lmax[i]] << " |" << std::endl;
   }
   os << std::endl;
 
@@ -549,7 +544,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
           st.bind((char *) ":EXP",exp[ie]);
           st.step();
           int ncalc = sqlite3_column_int(st.ptr(), 0);
-          os << "| " << nameguess(zat[iz]) << " | " << inttol[il] << " | "
+          os << "| " << nameguess(zat[iz]) << " | " << globals::inttol[il] << " | "
              << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
           ncall += ncalc;
           ntall += ncalc_all;
@@ -734,7 +729,7 @@ ORDER BY Training_set.id;
       for (int iexp = 0; iexp < exp.size(); iexp++){
         std::string atom = nameguess(zat[iat]);
         lowercase(atom);
-        name = dir + "/" + atom + "_" + inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
+        name = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
         ifile = std::ifstream(name,std::ios::in);
         if (ifile.fail())
           throw std::runtime_error("In INSERT OLDDAT, error reading term file: " + name);
@@ -1294,7 +1289,6 @@ void trainset::write_structures(std::ostream &os, std::unordered_map<std::string
 
   // collect the structure indices for the training set
   std::unordered_map<int,int> smap;
-  // if no method and not WRITE TERMS, write structure files
   statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures
 FROM Properties, Training_set
@@ -1315,7 +1309,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap);
+  db->write_structures(os,kmap,a,smap,zat,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,

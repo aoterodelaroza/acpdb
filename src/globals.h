@@ -19,6 +19,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
+#include <vector>
+#include <string>
+#include <unordered_map>
+
 #define M_PI 3.14159265358979323846
 
 namespace globals {
@@ -38,6 +42,10 @@ namespace globals {
 
   // atomic properties
   extern const double atmass[];
+
+  // angular momentum conversion maps
+  extern const std::unordered_map<std::string, int> ltoint;
+  extern const std::vector<char> inttol;
 }
 
 #endif

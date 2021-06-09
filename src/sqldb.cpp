@@ -1854,9 +1854,11 @@ ORDER BY Properties.id
 // options go in map kmap. If the ACP is present, it is passed down
 // to the structure writer. If smapin is present, write only the
 // structures that are keys in the map (the value of the map is 0 if
-// crystal or 1 if molecule).
+// crystal or 1 if molecule). zat, lmax, and exp are used to interpret
+// the TERMS keyword.
 void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
-                             const std::unordered_map<int,int> &smapin/*={}*/){
+                             const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
+                             const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
@@ -1933,8 +1935,46 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     }
   }
 
+  // Terms
+  std::vector<unsigned char> zat_ = {0}, l_ = {0};
+  std::vector<double> exp_ = {0.0};
+  bool rename = false;
+  if ((im = kmap.find("TERM")) != kmap.end()){
+    std::list<std::string> words = list_all_words(im->second);
+    if (words.size() == 1){
+      rename = true;
+      printf("FIXME!!\n");
+      exit(1);
+    } else if (words.size() == 3){
+      rename = false;
+      std::string str = words.front();
+      words.pop_front();
+      if (isinteger(str))
+        zat_[0] = std::stoi(str);
+      else
+        zat_[0] = zatguess(str);
+
+      str = words.front();
+      words.pop_front();
+      if (isinteger(str))
+        l_[0] = std::stoi(str);
+      else{
+        lowercase(str);
+        if (globals::ltoint.find(str) == globals::ltoint.end())
+          throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
+        l_[0] = globals::ltoint.at(str);
+      }
+
+      str = words.front();
+      words.pop_front();
+      exp_[0] = std::stod(str);
+    } else {
+      throw std::runtime_error("Invalid number of tokens in WRITE/TERM");
+    }
+  }
+
   // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,dir,npack);
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,l_,exp_,false,dir,npack);
   os << std::endl;
 }
 
@@ -1949,6 +1989,8 @@ void sqldb::write_many_structures(std::ostream &os,
                                   const std::string &ext_m, const std::string &ext_c,
                                   const acp &a,
                                   const std::unordered_map<int,int> &smap,
+                                  const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l, const std::vector<double> &exp,
+                                  const bool rename,
                                   const std::string &dir/*="./"*/, int npack/*=0*/){
 
   // build the templates
@@ -1956,8 +1998,16 @@ void sqldb::write_many_structures(std::ostream &os,
   strtemplate tc(template_c);
 
   if (npack <= 0 || npack >= smap.size()){
-    for (auto it = smap.begin(); it != smap.end(); it++)
-      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a, dir);
+    for (int izat = 0; izat < zat.size(); izat++){
+      for (int il = 0; il < l.size(); il++){
+        for (int iexp = 0; iexp < exp.size(); iexp++){
+          for (auto it = smap.begin(); it != smap.end(); it++){
+            write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
+                                zat[izat], l[il], exp[iexp], iexp, rename, dir);
+          }
+        }
+      }
+    }
   } else {
     unsigned long div = smap.size() / (unsigned long) npack;
     if (smap.size() % npack != 0) div++;
@@ -1975,21 +2025,28 @@ void sqldb::write_many_structures(std::ostream &os,
     int ipack = 0;
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c), a, dir)));
+      for (int izat = 0; izat < zat.size(); izat++){
+        for (int il = 0; il < l.size(); il++){
+          for (int iexp = 0; iexp < exp.size(); iexp++){
+            written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
+                                                           a, zat[izat], l[il], exp[iexp], iexp, rename, dir)));
 
-      // create a new package if written has npack items or we are about to finish
-      if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
-        std::string tarcmd = std::to_string(++ipack);
-        tarcmd.insert(0,slen-tarcmd.size(),'0');
-        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-        for (auto iw = written.begin(); iw != written.end(); iw++)
-          tarcmd = tarcmd + " " + iw->string();
+            // create a new package if written has npack items or we are about to finish
+            if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
+              std::string tarcmd = std::to_string(++ipack);
+              tarcmd.insert(0,slen-tarcmd.size(),'0');
+              tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+              for (auto iw = written.begin(); iw != written.end(); iw++)
+                tarcmd = tarcmd + " " + iw->string();
 
-        if (system(tarcmd.c_str()))
-          throw std::runtime_error("Error running tar command on input files");
-        for (auto iw = written.begin(); iw != written.end(); iw++)
-          remove(dir / *iw);
-        written.clear();
+              if (system(tarcmd.c_str()))
+                throw std::runtime_error("Error running tar command on input files");
+              for (auto iw = written.begin(); iw != written.end(); iw++)
+                remove(dir / *iw);
+              written.clear();
+            }
+          }
+        }
       }
     }
   }
@@ -1998,7 +2055,10 @@ void sqldb::write_many_structures(std::ostream &os,
 // Write the structure id in the database with template tmpl and
 // extension ext. dir: output directory.
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-                                       const std::string &ext, const acp& a, const std::string &dir/*="./"*/){
+                                       const std::string &ext, const acp& a,
+                                       const unsigned char zat, const unsigned char l, const double exp, const int iexp,
+                                       const bool rename,
+                                       const std::string &dir/*="./"*/){
 
   // get the structure from the database
   statement st(db,R"SQL(
@@ -2013,10 +2073,17 @@ FROM Structures WHERE id = ?1;
   s.readdbrow(st.ptr());
 
   // filename, extension
-  std::string name = s.get_name() + "." + ext;
+  std::string name;
+  if (rename){
+    std::string atom = nameguess(zat);
+    lowercase(atom);
+    name = s.get_name() + "_" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp) + "." + ext;
+  } else {
+    name = s.get_name() + "." + ext;
+  }
 
   // write the substitution of the template to a string
-  std::string content = tmpl.apply(s,a);
+  std::string content = tmpl.apply(s,a,zat,l,exp);
 
   // write the actual file and exit
   os << "# WRITE file " << dir << "/" << name << std::endl;

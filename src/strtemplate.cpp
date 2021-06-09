@@ -28,17 +28,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
 // t_acpgau, t_acpcrys
+// t_term_atsymbol, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
-  "acpgau", "acpcrys"
+  "acpgau", "acpcrys",
+  "term_atsymbol", "term_atnum", "term_lstr", "term_lnum", "term_exp"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
   "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
   "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
-  "%acpgau","%acpcrys"
+  "%acpgau","%acpcrys",
+  "%term_atsymbol%","%term_atnum%","%term_lstr%","%term_lnum%","%term_exp%",
 };
 static const int ntoken = tokenstr.size();
 
@@ -81,7 +84,7 @@ strtemplate::strtemplate(const std::string &source){
 }
 
 // Apply a string to the template and write to an output stream
-std::string strtemplate::apply(const structure &s, const acp& a) const {
+std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, const double exp) const {
 
   std::string result;
 
@@ -258,6 +261,18 @@ std::string strtemplate::apply(const structure &s, const acp& a) const {
         a.writeacp_gaussian(ss,zat);
       else
         a.writeacp_crystal(ss,zat);
+      result.append(ss.str());
+    } else if (it->token == t_term_atnum) {
+      result.append(std::to_string(zat));
+    } else if (it->token == t_term_atsymbol) {
+      result.append(nameguess(zat));
+    } else if (it->token == t_term_lnum) {
+      result.append(std::to_string(l));
+    } else if (it->token == t_term_lstr) {
+      result += globals::inttol[l];
+    } else if (it->token == t_term_exp) {
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(8) << exp;
       result.append(ss.str());
     }
   }

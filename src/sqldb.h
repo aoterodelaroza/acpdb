@@ -112,27 +112,36 @@ class sqldb {
   // options go in map kmap. If the ACP is present, it is passed down
   // to the structure writer. If smapin is present, write only the
   // structures that are keys in the map (the value of the map is 0 if
-  // crystal or 1 if molecule).
+  // crystal or 1 if molecule). zat, lmax, and exp are used to interpret
+  // the TERMS keyword.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
-                        const std::unordered_map<int,int> &smapin={});
+                        const std::unordered_map<int,int> &smapin={},
+                        const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
+                        const std::vector<double> &exp={});
 
   // Write the structures with IDs given by the keys in smap. The values
   // of smap should be 1 if the structures are molecules or zero if they
   // are crystals. Use template_m and template_c as templates for
   // molecules and crystals. Use ext_m and ext_c as file extensions for
   // molecules and crystals. dir: output directory. npack = package and
-  // compress in packets of npack files (0 = no packing).
+  // compress in packets of npack files (0 = no packing). zat, l, exp =
+  // information for the term substitution in the template.
   void write_many_structures(std::ostream &os,
                              const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
                              const acp &a,
                              const std::unordered_map<int,int> &smap,
+                             const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l, const std::vector<double> &exp,
+                             const bool rename,
                              const std::string &dir="./", int npack=0);
 
   // Write the structure id in the database with template tmpl and
   // extension ext. dir: output directory.
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-                                  const std::string &ext, const acp& a, const std::string &dir="./");
+                                  const std::string &ext, const acp& a,
+                                  const unsigned char zat, const unsigned char l, const double exp, const int iexp,
+                                  const bool rename,
+                                  const std::string &dir="./");
 
   // Find the property type ID corresponding to the key in the database table.
   // If toupper, uppercase the key before fetching the ID from the table. If

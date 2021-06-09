@@ -36,7 +36,8 @@ class strtemplate {
     t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
     t_charge, t_mult, t_nat, t_ntyp, t_xyz,
     t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
-    t_acpgau, t_acpcrys };
+    t_acpgau, t_acpcrys,
+    t_term_atnum, t_term_atsymbol, t_term_lstr, t_term_lnum, t_term_exp};
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
   // t_cell (%cell%): a 3x3 matrix with the lattice vectors (angstrom)
@@ -54,11 +55,16 @@ class strtemplate {
   // t_qexyz (%qexyz%): the ATOMIC_SPECIES and ATOMIC_COORDINATES block in QE format.
   // t_acpgau (%acpgau[%xx]%): the ACP in Gaussian format; optionally for only one atom.
   // t_acpcrys (%acpcrys[%xx]%): the ACP in crystal format; optionally for only one atom.
+  // t_term_atsymbol (%term_atsymbol%): ACP term, atomic symbol
+  // t_term_atnum (%term_atnum%): ACP term, atomic number
+  // t_term_lstr (%term_lstr%): ACP term, angular momentum label
+  // t_term_lnum (%term_lnum%): ACP term, angular momentum value
+  // t_term_exp (%term_exp%): ACP term, exponent
 
   strtemplate(const std::string &source); // construct from string
 
   // Apply a string to the template and write to an output stream
-  std::string apply(const structure &s, const acp& a) const;
+  std::string apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, const double exp) const;
 
   // Print the contents of the template to stdout. For debugging purposes.
   void print();

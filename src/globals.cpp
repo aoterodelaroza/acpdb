@@ -43,3 +43,9 @@ const double globals::atmass[] = {
  200.59,  204.3833,    207.2, 208.98038,      209,       210,     222,       223,     226,        227,
  232.04,       231,   238.03,       237,      244,       243,     247,       247,     251,        254,
     257,       258,      255,       260};
+
+const std::unordered_map<std::string, int> globals::ltoint {
+   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6},
+};
+const std::vector<char> globals::inttol = {'l','s','p','d','f','g','h'};
+

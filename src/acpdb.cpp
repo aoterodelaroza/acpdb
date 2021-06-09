@@ -302,10 +302,11 @@ int main(int argc, char *argv[]) {
       acp a = kmap_to_acp(kmap);
       if ((kmap.find("SET") != kmap.end()) && (kmap.find("TRAINING") != kmap.end()))
         throw std::runtime_error("SET and TRAINING are incompatible keywords in WRITE");
-      else if (kmap.find("TRAINING") != kmap.end())
+
+      if (kmap.find("TRAINING") != kmap.end())
         ts.write_structures(*os,kmap,a);
       else
-        db.write_structures(*os,kmap,a);
+        db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_lmax(),ts.get_exp());
 
       //// ACP
     } else if (keyw == "ACP") {
