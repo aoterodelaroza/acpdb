@@ -1,10 +1,6 @@
 #+STARTUP: showeverything
 
-INSERT CALC
-  PROPERTY_TYPE {prop.s|prop.i}
-  FILE file.s
-  METHOD {method.s|method.i}
-END
+-- do the reduction, coef0?
 
 ----
 

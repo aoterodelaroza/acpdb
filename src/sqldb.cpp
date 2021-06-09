@@ -722,8 +722,15 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
 
     if (words.size() == 0){
       changename = true;
-      printf("FIXME!");
-      exit(1);
+      exp_ = exp;
+      zat_.clear();
+      l_.clear();
+      for (int izat = 0; izat < zat.size(); izat++){
+        for (unsigned char il = 0; il <= lmax[izat]; il++){
+          zat_.push_back(zat[izat]);
+          l_.push_back(il);
+        }
+      }
     } else if (words.size() == 3){
       changename = false;
       std::string str = words.front();
@@ -804,14 +811,16 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
           std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
 
           if (doterm && changename){
-            printf("FIXME!");
-            exit(1);
+            std::string atom = nameguess(zat_[ii]);
+            lowercase(atom);
+            strname += "@" + atom + "_" + globals::inttol[l_[ii]] + "_" + std::to_string(iexp+1);
           }
 
           if (datmap.find(strname) == datmap.end()){
             found = false;
             break;
           }
+
           if (i == 0)
             value.resize(datmap[strname].size(), 0.);
           else if (datmap[strname].size() != value.size())
@@ -828,7 +837,6 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
         if (found)
           propmap[propid] = value;
       }
-      datmap.clear();
 
       // insert into the database
       for (auto it = propmap.begin(); it != propmap.end(); it++){
@@ -839,7 +847,7 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
         if (doterm){
           stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
           stinsert.bind((char *) ":L",(int) l_[ii]);
-          stinsert.bind((char *) ":EXP",exp[iexp]);
+          stinsert.bind((char *) ":EXP",exp_[iexp]);
           os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
              << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
              << ")" << std::endl;
@@ -855,6 +863,7 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
       }
     }
   }
+  datmap.clear();
 
   // commit the transaction
   commit_transaction();
