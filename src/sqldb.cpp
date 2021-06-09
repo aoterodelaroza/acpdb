@@ -308,6 +308,10 @@ void sqldb::insert_set(std::ostream &os, const std::string &key, const std::unor
   if (kmap.find("XYZ") != kmap.end() && kmap.find("DIN") != kmap.end())
     throw std::runtime_error("XYZ and DIN options in SET are incompatible");
 
+  // check the key
+  if (key.find('@') != std::string::npos)
+    throw std::runtime_error("Character @ is not allowed in set keys, in INSERT SET");
+
   // statement
   statement st(db,R"SQL(
 INSERT INTO Sets (key,litrefs,description)
@@ -395,6 +399,10 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, const std
     throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
   }
 
+  // check the key
+  if (key.find('@') != std::string::npos)
+    throw std::runtime_error("Character @ is not allowed in structure keys, in INSERT STRUCTURE");
+
   // bind
   statement st(db,R"SQL(
 INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
@@ -437,6 +445,10 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, const std:
   std::unordered_map<std::string,std::string>::const_iterator im1, im2;
   std::list<std::string> tok1;
   std::vector<double> tok2;
+
+  // check the key
+  if (key.find('@') != std::string::npos)
+    throw std::runtime_error("Character @ is not allowed in property keys, in INSERT PROPERTY");
 
   // prepared statements
   statement st(db,R"SQL(
@@ -2088,7 +2100,7 @@ FROM Structures WHERE id = ?1;
   if (rename){
     std::string atom = nameguess(zat);
     lowercase(atom);
-    name = s.get_name() + "-" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
+    name = s.get_name() + "@" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
   } else {
     name = s.get_name() + "." + ext;
   }

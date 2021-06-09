@@ -1,5 +1,15 @@
 #+STARTUP: showeverything
 
+INSERT CALC
+  PROPERTY_TYPE {prop.s|prop.i}
+  FILE file.s
+  METHOD {method.s|method.i}
+  [TERM [{zat.i|zat.s} {l.i|l.s} exp.r]]
+END
+
+reserved character!
+
+----
 
 TRAINING INSERT datfile.s [EMPTY|TERM zat.i l.i exp.r]
 (insert_dat)
@@ -16,14 +26,6 @@ TRAINING INSERT datfile.s [EMPTY|TERM zat.i l.i exp.r]
   INSERT DAT.
 
 insert_dat
-
-----
-
-INSERT TERMS
-  PROPERTY_TYPE {prop.s|prop.i}
-  FILE file.s
-  METHOD {method.s|method.i}
-END
 
 ---
 
