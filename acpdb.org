@@ -1,49 +1,7 @@
 #+STARTUP: showeverything
 
--- do the reduction, coef0?
-
-----
-
-TRAINING INSERT datfile.s [EMPTY|TERM zat.i l.i exp.r]
-(insert_dat)
-
-  Insert the data file datfile.s. To do this, the training set must be
-  defined and the data file must contain exactly the same number of
-  lines as properties in the training set, with one numerical value
-  per line. If only METHOD is present, the data is inserted as an
-  evaluation for that method on the training set. If TERM is given
-  with valid atomic number (zat.i), angular momentum (l.i), and
-  exponent (exp.r) from the training set, then the data is inserted as
-  that term for the corresponding method. Due to the nature of this
-  operation, avoid having NOFIT subsets in the training set when using
-  INSERT DAT.
-
-insert_dat
-
----
-
-READ TERMS file.s
-  METHOD method.s
-END
-
-  Read calculated ACP terms from file.s for method method.s. If no
-  method is given, the empty method for the current training set is
-  used. The file must have lines of the form:
-
-    structure1.s value1.r
-    structure2.s value2.r
-    ...
-
-  where structurex.s are structure identifiers from the database and
-  valuex.r are the calculated values (typically, energies) for those
-  structures. Several values must be given for each structure. To be
-  inserted into the terms table in the database, the number of values
-  given by the file for a structure must be the same as the number of
-  ACP terms in the training set. The structure names are the same as
-  the root of the file names generated using WRITE, so this file can
-  be easily generated with utilities such as grep or awk. Blank lines
-  and comments (#) are ignored. Only the first two fields in each line
-  are read; the rest are ignored.
+-- do the reduction, coef0? -> in the dump
+   It has to be the slope or ACPeval will not work.
 
 * High-level operations
 
@@ -73,66 +31,20 @@ INSERT OLDDAT [directory.s] [NOREFERENCE]
   nature of this operation, avoid having NOFIT subsets in the training
   set when using INSERT OLDDAT.
 
+  trainset -> insert_olddat
+
 DUMP
 
   Write the octavedump.dat file for the LASSO fit corresponding to the
   current dataset.
 
-* Database schema
+  trainset -> dump
 
+-- automatic testing on github & upload zz_source
 -- clean up extra keywords and code in trainset and acpdb --
 -- copy over from the code --
 -- build energy differences from total energies --
 -- own implementation of LASSO in c++ --
+-- how to maxcoef, nonlinearity, critic2 to run ECPs with the libecp
+-- build all the databases
 
--------
-
-build all the databases
-automatic testing on github & upload zz_source
-
--------
-
-- Robust running of Gaussian and other inputs?
-
-2. Generate data set table for training set, with references
-
------ db-design.org
-
-WRITE NONLIN [SET set.s] [METHOD method.s] [DIRECTORY dir.s]
-
-  Write input files for the evaluation of non-linearity error in the
-  current dataset. If SET is given, use set set.s instead of the whole
-  tranining set. If METHOD is given, use approximate method
-  method.s. If DIRECTORY is given, write the files to directory dir.s.
-
-READ NONLIN [SET set.s] [DIRECTORY dir.s] [FILE file.s] [INSERT]
-
-  Read the output files for the evaluation of non-linearity error in
-  the current dataset. If SET is given, use set set.s instead of the
-  whole training set. If DIRECTORY is given, read the output files
-  from directory dir.s. If FILE is given, read the output data summary
-  from file file.s. The maximum coefficients for each ACP terms are
-  calculated with this command. If INSERT is present, insert the
-  maximum coefficient information into the database.
-
-  This command flags failed calculations for the user.
-
---- Operations to implement ---
-
-* ACP operations (require dataset)
-
-1. Evaluate an ACP using the linear model from the current dataset
-2. Generate input files for self-consistent evaluation of an ACP (item/subset)
-3. Read output files and calculate self-consistent ACP stats (item/subset)
-4. Compare self-consistent ACP to linear model stats (item/subset)
-5. Generate input files for non-linearity error evaluation in individual ACP terms
-6. Process output for non-linearity error evaluation and generate maxcoef file
-7. Enter maximum coefficient information into the database
-8. List maximum coefficient information in the database
-9. Delete maximum coefficient information from the database
-??10. Sensitivity analysis/cross-validation of an ACP using the linear model : reqs' lasso.m??
-
-* Miscellaneous auxiliary operations
-
-1. Process a list of calculations and flag failed calcs (item/subset)
-2. Generate data set table for training set, with references

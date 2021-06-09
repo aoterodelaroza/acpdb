@@ -272,8 +272,6 @@ int main(int argc, char *argv[]) {
           db.insert_term(*os,kmap);
         else if (category == "CALC")
           db.insert_calc(*os,kmap,ts.get_zat(),ts.get_lmax(),ts.get_exp());
-        // else if (category == "DAT")
-        //   ts.insert_dat(*os,kmap);
       }
       *os << std::endl;
 
@@ -437,65 +435,6 @@ int main(int argc, char *argv[]) {
 
       ///////////////////////////////////////////////////
 
-      //// from write_structures in trainset.cpp
-//   if (havemethod || terms){
-//     // if method or WRITE TERMS, write input files
-//     statement st(db->ptr(),R"SQL(
-// SELECT DISTINCT Property_types.key, Properties.nstructures, Properties.structures
-// FROM Properties, Property_types, Training_set
-// WHERE Properties.property_type = Property_types.id AND Properties.id = Training_set.propid
-//       AND Training_set.id BETWEEN ?1 AND ?2;
-// )SQL");
-//     st.bind(1,idini);
-//     st.bind(2,idfin);
-//     while (st.step() != SQLITE_DONE){
-//       int n = sqlite3_column_int(st.ptr(),1);
-//       const int *str = (int *)sqlite3_column_blob(st.ptr(), 2);
-//       for (int i = 0; i < n; i++){
-//         if (terms)
-//           smap[str[i]] = "terms";
-//         else
-//           smap[str[i]] = (char *) sqlite3_column_text(st.ptr(), 0);
-//       }
-//     }
-//   } else {
-
-      //
-//    } else if (keyw == "WRITEX") {
-
-      // if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
-//      std::string category = popstring(tokens,true);
-//      if (category == "TERMS"){
-//        // WRITE TERMS keyword
-//        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-//        ts.write_structures(kmap,{},true);
-//      } else if (category.empty()) {
-//        // WRITE environment
-//        std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-//        acp a = kmap_to_acp(kmap);
-//        if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"])))
-//          ts.write_structures(kmap,a,false);
-//      } else {
-//        throw std::runtime_error("Unknown syntax in WRITE: " + category);
-//      }
-//
-//    } else if (keyw == "READ") {
-//      std::string file = popstring(tokens);
-//      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-//      if (equali_strings(file,"TERMS")){
-//        file = popstring(tokens);
-//        ts.read_terms(file,kmap);
-//      } else {
-//        if (file.empty())
-//          throw std::runtime_error("A data file is required for READ");
-//        acp a = kmap_to_acp(kmap);
-//        if (kmap.find("COMPARE") != kmap.end()){
-//          if (ts.isdefined() && (kmap.find("SET") == kmap.end() || ts.isalias(kmap["SET"]))){
-//            ts.read_and_compare(*os,file,kmap["COMPARE"],kmap);
-//          }
-//        }
-//      }
-//
 //      //
 //    } else if (keyw == "DUMP") {
 //      ts.dump();

@@ -70,9 +70,6 @@ class trainset {
   // template
   void insert_olddat(std::ostream &os, const std::string &directory, std::list<std::string> &tokens);
 
-  // Insert data from a dat file into the database
-  void insert_dat(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
-
   // Is the training set defined?
   inline bool isdefined() const{
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() &&
@@ -108,9 +105,6 @@ class trainset {
   // Read data for the training set or one of its subsets from a file,
   // then compare to reference method refm.
   void read_and_compare(std::ostream &os, std::unordered_map<std::string,std::string> &kmap);
-
-  // Read data for the training set terms from a file.
-  void read_terms(const std::string &file, std::unordered_map<std::string,std::string> &kmap);
 
   // Returns true if the argument is a known set alias
   inline bool isalias(const std::string &str) const{

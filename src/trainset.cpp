@@ -429,7 +429,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
     os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i]
        << " | " << set_initial_idx[i]+1
        << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i]
-       << " | " << (litref?litref:"") << " | " 
+       << " | " << (litref?litref:"") << " | "
        << (description?description:"") << " |" << std::endl;
   }
   os << std::endl;
@@ -757,123 +757,6 @@ ORDER BY Training_set.id;
         ifile.close();
       }
     }
-  }
-
-  // Commit the transaction
-  db->commit_transaction();
-}
-
-// Insert data from a dat file into the database
-void trainset::insert_dat(std::ostream &os, std::unordered_map<std::string,std::string> &kmap){
-  if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using INSERT DAT");
-  if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using INSERT DAT (use DESCRIBE to see missing data)");
-
-  if (kmap.find("FILE") == kmap.end() || kmap["FILE"].empty())
-    throw std::runtime_error("INSERT DAT requires a data file (use the FILE keyword)");
-  std::string name = kmap["FILE"];
-
-  if (kmap.find("METHOD") == kmap.end() || kmap["METHOD"].empty())
-    throw std::runtime_error("INSERT DAT requires a method (use the METHOD keyword)");
-  int methodid = db->find_id_from_key(kmap["METHOD"],"Methods");
-  if (!methodid)
-    throw std::runtime_error("Unknown method in INSERT DAT: " + kmap["METHOD"]);
-
-  // Start inserting data
-  db->begin_transaction();
-
-  if (kmap.find("TERM") == kmap.end()){
-    // The data file corresponds to an evaluation //
-    std::ifstream ifile(name,std::ios::in);
-    if (ifile.fail())
-      throw std::runtime_error("In INSERT DAT, error reading data file: " + name);
-
-    for (int i = 0; i < propid.size(); i++){
-      std::unordered_map<std::string,std::string> smap;
-      std::string valstr;
-      std::getline(ifile,valstr);
-      if (ifile.fail())
-        throw std::runtime_error("In INSERT DAT, unexpected error or end of file in data file: " + name);
-
-      smap["METHOD"] = std::to_string(methodid);
-      smap["PROPERTY"] = std::to_string(propid[i]);
-      smap["VALUE"] = valstr;
-      db->insert_evaluation(os,smap);
-    }
-    ifile.peek();
-    if (!ifile.eof())
-      throw std::runtime_error("In INSERT DAT, the data file contains extra lines: " + name);
-    ifile.close();
-  } else {
-    // The data file corresponds to a term //
-    std::list<std::string> tokens(list_all_words(kmap["TERM"]));
-
-    // check the atom
-    int izat_ = zatguess(popstring(tokens));
-    if (izat_ == 0)
-      throw std::runtime_error("In INSERT DAT, TERM keyword, unknown atom");
-    int iat_ = -1;
-    for (int i = 0; i < zat.size(); i++){
-      if (izat_ == zat[i]){
-        iat_ = i;
-        break;
-      }
-    }
-    if (iat_ < 0)
-      throw std::runtime_error("In INSERT DAT, TERM keyword, atom not in training set");
-
-    // check the l
-    std::string l_ = popstring(tokens);
-    if (!isinteger(l_))
-      throw std::runtime_error("In INSERT DAT, TERM keyword, invalid angular momentum: " + l_ + " (should be an integer)");
-    int il_ = std::stoi(l_);
-    if (il_ < 0 || il_ >= lmax[iat_])
-      throw std::runtime_error("In INSERT DAT, TERM keyword, lmax " + l_ + " not in range for given atom");
-
-    // check the exponent
-    std::string exp_ = popstring(tokens);
-    if (exp_.empty())
-      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent not found");
-    double xexp;
-    try {
-      xexp = std::stod(exp_);
-    } catch (const std::exception &e) {
-      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent is not a number");
-    }
-    int iexp_ = -1;
-    for (int i = 0; i < exp.size(); i++){
-      if (std::abs(xexp - exp[i]) < 1e-20){
-        iexp_ = i;
-        break;
-      }
-    }
-    if (iexp_ < 0)
-      throw std::runtime_error("In INSERT DAT, TERM keyword, exponent not in training set");
-
-    std::ifstream ifile(name,std::ios::in);
-    if (ifile.fail())
-      throw std::runtime_error("In INSERT DAT, error reading data file: " + name);
-
-    for (int i = 0; i < propid.size(); i++){
-      std::unordered_map<std::string,std::string> smap;
-      std::string valstr;
-      std::getline(ifile,valstr);
-      if (ifile.fail())
-        throw std::runtime_error("In INSERT DAT, unexpected error or end of file in data file: " + name);
-
-      smap["METHOD"] = std::to_string(methodid);
-      smap["PROPERTY"] = std::to_string(propid[i]);
-      smap["ATOM"] = std::to_string(izat_);
-      smap["L"] = l_;
-      smap["EXPONENT"] = to_string_precise(exp[iexp_]);
-      smap["VALUE"] = valstr;
-      db->insert_term(os,smap);
-    }
-    ifile.peek();
-    if (!ifile.eof())
-      throw std::runtime_error("In INSERT DAT, the term file contains extra lines: " + name);
-    ifile.close();
   }
 
   // Commit the transaction
@@ -1331,100 +1214,9 @@ void trainset::read_and_compare(std::ostream &os, std::unordered_map<std::string
       throw std::runtime_error("Unknown set alias passed to TRAINING in WRITE");
     sid = setid[it - alias.begin()];
   }
- 
+
   // run the comparison with training set restriction
   db->read_and_compare(os,kmap,sid);
-}
-
-// Read data for the training set or one of its subsets from a file,
-// then compare to reference method refm.
-void trainset::read_terms(const std::string &file, std::unordered_map<std::string,std::string> &kmap){
-  if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using READ TERMS");
-  if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using READ TERMS");
-
-  // file
-  if (!fs::is_regular_file(file))
-    throw std::runtime_error("In READ TERMS, file found: " + file);
-
-  // method
-  int methodid = emptyid;
-  if (kmap.find("METHOD") != kmap.end()){
-    methodid = db->find_id_from_key(kmap["METHOD"],"Methods");
-    if (!methodid)
-      throw std::runtime_error("Unknown method in READ TERMS: " + kmap["METHOD"]);
-  }
-
-  // get the data from the file
-  auto datmap = read_data_file_vector(file,globals::ha_to_kcal);
-
-  // erase the terms for which the number of entries is not correct
-  int nterms = 0;
-  for (int iz = 0; iz < zat.size(); iz++)
-    for (int il = 0; il <= lmax[iz]; il++)
-      for (int ie = 0; ie < exp.size(); ie++)
-        nterms++;
-
-  // build the property map
-  std::unordered_map<int,std::vector<double> > propmap;
-  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
-  statement st(db->ptr(),R"SQL(
-SELECT DISTINCT Properties.id, Properties.nstructures, Properties.structures, Properties.coefficients
-FROM Training_set, Properties
-WHERE Training_set.propid = Properties.id
-ORDER BY Training_set.id;)SQL");
-  while (st.step() != SQLITE_DONE){
-    int propid = sqlite3_column_int(st.ptr(),0);
-    int nstr = sqlite3_column_int(st.ptr(),1);
-    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
-    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
-    std::vector<double> value(nterms,0.0);
-    bool found = true;
-    for (int i = 0; i < nstr; i++){
-      stkey.reset();
-      stkey.bind(1,istr[i]);
-      stkey.step();
-      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-      if (datmap.find(strname) == datmap.end()){
-        found = false;
-        break;
-      }
-      for (int j = 0; j < nterms; j++)
-        value[j] += coef[i] * (datmap[strname][j+1] - datmap[strname][0]) / 0.001;
-    }
-    if (found){
-      propmap[propid] = value;
-    }
-  }
-  datmap.clear();
-
-  // Start inserting data
-  db->begin_transaction();
-
-  st.recycle("INSERT INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);");
-  for (auto it = propmap.begin(); it != propmap.end(); it++){
-    if (it->second.size() != nterms) continue;
-    int n = 0;
-    for (int iz = 0; iz < zat.size(); iz++){
-      for (int il = 0; il <= lmax[iz]; il++){
-        for (int ie = 0; ie < exp.size(); ie++){
-          st.reset();
-          st.bind((char *) ":METHOD",methodid);
-          st.bind((char *) ":ATOM",(int) zat[iz]);
-          st.bind((char *) ":L",il);
-          st.bind((char *) ":EXP",exp[ie]);
-          st.bind((char *) ":PROPID",it->first);
-          st.bind((char *) ":VALUE",it->second[n++]);
-          if (st.step() != SQLITE_DONE)
-            throw std::runtime_error("Failed inserting training set into the database (READ TERMS)");
-        }
-      }
-    }
-  }
-
-  // Commit the transaction
-  db->commit_transaction();
 }
 
 
