@@ -1,0 +1,46 @@
+## check: 021_insert_term_calcslope.out -a1e-10
+## delete: 021_insert_term_calcslope.db
+## labels: regression quick
+
+system rm -f 021_insert_term_calcslope.db
+connect 021_insert_term_calcslope.db
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert method b3lyp/6-31+G*
+ litrefs bsip1 boys1970
+ description This is a method.
+end
+insert set s22x5
+ description A description.
+ litrefs bsip1 boys1970
+end
+insert structure urea
+ file ../zz_source/x23_expt/urea.POSCAR
+ set s22x5
+end
+insert structure c6h6_ch4
+ file ../zz_source/s22_xyz/c6h6_ch4.xyz
+ set s22x5
+end
+insert property strange
+ property_type energy_difference
+ set s22x5
+ order 1
+ structures urea c6h6_ch4
+ coefficients 1.5 -1.2
+end
+insert evaluation
+ method b3lyp/6-31+G*
+ property strange
+ value 1.0
+end
+insert term
+ method b3lyp/6-31+G*
+ property strange
+ atom C
+ l 0
+ exponent 0.1
+ value 11.0
+ calcslope 10.0
+end
+print term

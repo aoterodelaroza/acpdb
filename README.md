@@ -335,6 +335,7 @@ INSERT TERM
   L l.i
   EXPONENT exp.r
   VALUE value1.r [value2.r ...]
+  [CALCSLOPE c0.r]
   MAXCOEF maxcoef.r
 END
 ~~~
@@ -355,6 +356,16 @@ available.
 - If no VALUE is given but MAXCOEF is, then the term corresponding to
 the given method, property, atom, l, and exponent is updated with the
 MAXCOEF value (`maxcoef.r`).
+
+By default, acpdb assumes that the term value is the slope of the ACP
+contribution, i.e., the derivative of the property wrt the ACP
+coefficient value. Sometimes, it is more convenient to calculate the
+property when the ACP term is present and has certain coefficient. If
+this data is available, you can have acpdb calculate the slope by
+using CALCSLOPE `c0.r`. The term value is calculated as the numbers
+given in VALUE minus the evaluation of method `method.s` in property
+`prop.s`, and the result divided by `c0.r`. Using CALCSLOPE requires
+having the corresponding evaluation in the database.
 
 ### Inserting Data (bulk)
 

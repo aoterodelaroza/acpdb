@@ -664,6 +664,27 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
     throw std::runtime_error("An exponent must be given in INSERT TERM");
   if ((im = kmap.find("VALUE")) != kmap.end()){
     std::vector<double> tok = list_all_doubles(im->second);
+
+    if ((im = kmap.find("CALCSLOPE")) != kmap.end()){
+      double c0 = std::stod(im->second);
+      statement st2(db,R"SQL(
+SELECT length(Evaluations.value), Evaluations.value
+FROM Evaluations
+WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
+)SQL");
+      st2.bind(1,propid);
+      st2.bind(2,methodid);
+      st2.step();
+      int len = sqlite3_column_int(st2.ptr(),0) / sizeof(double);
+      double *rval = (double *) sqlite3_column_blob(st2.ptr(),1);
+      if (!rval)
+        throw std::runtime_error("To use CALCSLOPE in INSERT TERM, the evaluation for the corresponding method and property must be available");
+      if (len != tok.size())
+        throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT TERM");
+      for (int i = 0; i < tok.size(); i++)
+        tok[i] = (tok[i] - rval[i]) / c0;
+    }
+
     st.bind((char *) ":VALUE",(void *) &tok.front(),true,tok.size() * sizeof(double));
   }
   if ((im = kmap.find("MAXCOEF")) != kmap.end())

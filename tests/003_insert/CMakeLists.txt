@@ -19,6 +19,7 @@ set(TESTS
   018_insert_property_fullset  ## insert property, for all structures in a set
   019_insert_set_poscar        ## insert a set with poscar files
   020_insert_set_poscar_regexp ## insert a set with poscar files, regexp
+  021_insert_term_calcslope    ## insert a term, calcslope
   )
 
 runtests(${TESTS})

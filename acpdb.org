@@ -2,11 +2,8 @@
 
 -- do the reduction, coef0? -> in the dump
    It has to be the slope or ACPeval will not work.
--- automatic testing on github & upload zz_source
--- clean up extra keywords and code in trainset and acpdb --
--- copy over from the code --
+-- how to maxcoef, nonlinearity
+-- build all the databases
 -- build energy differences from total energies --
 -- own implementation of LASSO in c++ --
--- how to maxcoef, nonlinearity, critic2 to run ECPs with the libecp
--- build all the databases
-
+-- critic2 to run ECPs with the libecp
