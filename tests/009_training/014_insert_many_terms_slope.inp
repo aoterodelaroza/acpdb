@@ -1,0 +1,46 @@
+## check: 014_insert_many_terms_slope.out -a1e-10
+## delete: 014_insert_many_terms_slope.db
+## labels: regression quick
+
+system rm -f 014_insert_many_terms_slope.db
+connect 014_insert_many_terms_slope.db
+
+insert method m_empty
+end
+insert method m_ref
+end
+insert set 014_insert_many_terms_slope-set
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method m_ref
+end
+insert evaluation
+ method m_empty
+ property 014_insert_many_terms_slope-set.nh3_nh3
+ value 0.2
+end
+insert evaluation
+ method m_empty
+ property 014_insert_many_terms_slope-set.h2o_h2o
+ value 0.3
+end
+
+training
+ atom H l
+ exp 0.1 0.2
+ empty m_empty
+ reference m_ref
+ subset
+  set 014_insert_many_terms_slope-set
+ end
+end
+
+insert calc
+ property_type energy_difference
+ file ../zz_source/terms2.dat
+ method m_empty
+ term
+ calcslope 0.1
+end
+print evaluation
+print term

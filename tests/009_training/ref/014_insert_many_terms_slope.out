@@ -1,0 +1,83 @@
+* SYSTEM: rm -f 014_insert_many_terms_slope.db
+
+* CONNECT 
+
+Disconnecting previous database (if connected) 
+Connecting database file 014_insert_many_terms_slope.db
+Creating skeleton database 
+
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD m_empty
+
+* INSERT: insert data into the database (METHOD)
+# INSERT METHOD m_ref
+
+* INSERT: insert data into the database (SET)
+# INSERT SET 014_insert_many_terms_slope-set
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.nh3_nh3
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.nh3_nh3_1
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.nh3_nh3_2
+# INSERT PROPERTY 014_insert_many_terms_slope-set.nh3_nh3
+# INSERT EVALUATION (method=m_ref;property=014_insert_many_terms_slope-set.nh3_nh3)
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.h2o_h2o
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.h2o_h2o_1
+# INSERT STRUCTURE 014_insert_many_terms_slope-set.h2o_h2o_2
+# INSERT PROPERTY 014_insert_many_terms_slope-set.h2o_h2o
+# INSERT EVALUATION (method=m_ref;property=014_insert_many_terms_slope-set.h2o_h2o)
+
+* INSERT: insert data into the database (EVALUATION)
+# INSERT EVALUATION (method=m_empty;property=014_insert_many_terms_slope-set.nh3_nh3)
+
+* INSERT: insert data into the database (EVALUATION)
+# INSERT EVALUATION (method=m_empty;property=014_insert_many_terms_slope-set.h2o_h2o)
+
+* TRAINING: started defining the training set 
+
+* TRAINING: fininshed defining the training set 
+
+## Description of the training set
+# List of atoms and maximum angular momentum channels (1)
+| Atom | lmax |
+| H | l |
+
+# List of exponents (2)
+| id | exp |
+| 0 | 0.1 |
+| 1 | 0.2 |
+
+# List of subsets (1)
+| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |
+| 0 | 014_insert_many_terms_slope-set | 014_insert_many_terms_slope-set | 1 | 1 | 2 | 2 | 1 |  |  |
+
+# List of methods
+| type | name | id | for fit? |
+| reference | m_ref | 2 | n/a |
+| empty | m_empty | 1 | n/a |
+
+# List of properties (2)
+| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |
+| yes | 1 | 014_insert_many_terms_slope-set.nh3_nh3 | 1 | 014_insert_many_terms_slope-set | 014_insert_many_terms_slope-set | ENERGY_DIFFERENCE | 3 | 1 | -3.133000 |
+| yes | 2 | 014_insert_many_terms_slope-set.h2o_h2o | 2 | 014_insert_many_terms_slope-set | 014_insert_many_terms_slope-set | ENERGY_DIFFERENCE | 3 | 1 | -4.989000 |
+
+# Calculation completion for the current training set
+# Reference: 2/2 (complete)
+# Empty: 2/2 (complete)
+# Terms: 
+| H | l | 0.1 | 0/2 | (missing)
+| H | l | 0.2 | 0/2 | (missing)
+# Total terms: 0/4 (missing)
+
+* INSERT: insert data into the database (CALC)
+
+* PRINT: print the contents of the database 
+
+| methodid| propid| #values| 1st value|
+| 2| 1| 1| -3.133|
+| 2| 2| 1| -4.989|
+| 1| 1| 1| 0.2|
+| 1| 2| 1| 0.3|
+
+* PRINT: print the contents of the database 
+
+| methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|
+

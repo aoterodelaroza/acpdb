@@ -734,7 +734,8 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
     throw std::runtime_error("The FILE must be given in INSERT CALC");
 
   // get the term
-  bool doterm = false, changename = false;
+  bool doterm = false, doslope = false, changename = false;
+  double c0 = 1.;
   std::vector<unsigned char> zat_ = {0}, l_ = {0};
   std::vector<double> exp_ = {0.0};
   if ((im = kmap.find("TERM")) != kmap.end()){
@@ -778,6 +779,11 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
     } else {
       throw std::runtime_error("Invalid number of tokens in INSERT/TERM");
     }
+
+    if ((im = kmap.find("CALCSLOPE")) != kmap.end()){
+      doslope = true;
+      c0 = std::stod(im->second);
+    }
   }
 
   // get all the data from the file
@@ -799,6 +805,11 @@ SELECT id, nstructures, structures, coefficients
 FROM Properties
 WHERE property_type = ?1
 ORDER BY id;)SQL");
+  statement steval(db,R"SQL(
+SELECT length(Evaluations.value), Evaluations.value
+FROM Evaluations
+WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
+)SQL");
   statement stinsert(db,"");
   if (doterm){
     stinsert.recycle(R"SQL(
@@ -855,8 +866,23 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
               value[j] += datmap[strname][j];
           }
         }
-        if (found)
+        if (found){
+          if (doterm && doslope){
+            steval.reset();
+            steval.bind(1,propid);
+            steval.bind(2,methodid);
+            steval.step();
+            int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
+            double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
+            if (!rval)
+              throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
+            if (len != value.size())
+              throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT CALC");
+            for (int i = 0; i < value.size(); i++)
+              value[i] = (value[i] - rval[i]) / c0;
+          }
           propmap[propid] = value;
+        }
       }
 
       // insert into the database
