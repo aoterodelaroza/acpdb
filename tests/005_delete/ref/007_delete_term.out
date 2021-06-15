@@ -340,7 +340,7 @@ Creating skeleton database
 
 # Evaluations and terms for each combination of set & method
 | set-id | set-key | method-id | method-key | #evaluations | #terms |
-| 1 | s22x5 | 1 | b3lyp/6-31+G* |0 | 1 |
+| 1 | s22x5 | 1 | b3lyp/6-31+G* |0 | 2 |
 
 ## Description of the training set
 # The TRAINING SET is NOT DEFINED

@@ -741,6 +741,28 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
     }
   }
 
+  // Insert maxcoef, if present
+  name = dir + "/maxcoef.dat";
+  if (ifile = std::ifstream(name,std::ios::in)){
+    std::string line;
+    while (std::getline(ifile,line)){
+      std::string atom, l, idum, exp, value;
+      std::istringstream iss(line);
+      iss >> atom >> l >> idum >> exp >> value;
+      if (iss.fail())
+        continue;
+
+      std::unordered_map<std::string,std::string> smap;
+      smap["METHOD"] = std::to_string(emptyid);
+      smap["ATOM"] = atom;
+      smap["L"] = l;
+      smap["EXPONENT"] = exp;
+      smap["MAXCOEF"] = value;
+      db->insert_term(os,smap);
+    }
+    ifile.close();
+  }
+
   // Commit the transaction
   db->commit_transaction();
   os << std::endl;

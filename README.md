@@ -57,9 +57,7 @@ stdout are used. If the output file is not present, stdout is used.
   angular momentum channels, etc. The dataset completely determines
   the ACP fitting problem.
 
-Whenver set names are required, an asterisk stands for the current
-training set. When a method name is required, an asterisk stands for
-the method used in the original reference.
+The angular momentum integer labels are l=0, s=1, p=2, etc.
 
 ## Libraries
 
@@ -331,8 +329,8 @@ property type.
 INSERT TERM
   METHOD {method.s|method.i}
   PROPERTY {prop.s|prop.i}
-  ATOM z.i
-  L l.i
+  ATOM {z.s|z.i}
+  L {l.s|l.i}
   EXPONENT exp.r
   VALUE value1.r [value2.r ...]
   [CALCSLOPE c0.r]
@@ -342,8 +340,8 @@ END
 Insert a term into the database. Corresponds to the ACP term
 calculated with method `method.s` (given by key) or `method.i` (by ID)
 on property `prop.s` (by key) or `prop.i` (by ID) for atom with atomic
-number `z.i`, angular momentum channel with l = `l.i`, and exponent
-`exp.r`.
+number `z.i` or symbol `z.s`, angular momentum channel with l = `l.i`
+(number) or `l.s` (symbol), and exponent `exp.r`.
 
 This insert command has two purposes:
 
@@ -355,7 +353,9 @@ available.
 
 - If no VALUE is given but MAXCOEF is, then the term corresponding to
 the given method, property, atom, l, and exponent is updated with the
-MAXCOEF value (`maxcoef.r`).
+MAXCOEF value (`maxcoef.r`). In addition, if no PROPERTY is present,
+insert the same MAXCOEF for all properties matching the rest of the
+criteria.
 
 By default, acpdb assumes that the term value is the slope of the ACP
 contribution, i.e., the derivative of the property wrt the ACP
@@ -853,6 +853,17 @@ inserted:
   angular momentum (lowercase symbol), and `z` is the exponent integer
   index. Insert the corresponding ACP term. This file contains the
   empty energy plus 0.001 times the term slope contribution.
+
+- `maxcoef.dat`: if this file is present, insert the maxcoefs for each
+  term. The file must have the rows with this structure:
+~~~
+atom l 2 exp.r maxcoef.r
+~~~
+  where `atom` is the atomic symbol or number, `l` is the angular
+  momentum symbol or number, `2` is a constant, `exp.r` is the
+  exponent, and `maxcoef.r` is the maximum coefficient. The maxcoeffs
+  are applied to all terms that match the combination of atom, l, and
+  exponent.
 
 ### Dumping the Training Set
 ~~~

@@ -603,15 +603,21 @@ void sqldb::insert_evaluation(std::ostream &os, const std::unordered_map<std::st
 void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT TERM");
 
-  const std::unordered_map<char,int> angmom = {{'s',0},{'p',1},{'d',2},{'f',3},{'g',4},{'h',5}};
-
   // build command
   std::string cmd;
-  if (kmap.find("VALUE") != kmap.end())
+  bool reqpropty = true, isterm;
+  if (kmap.find("VALUE") != kmap.end()) {
+    isterm = true;
     cmd = "INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)";
-  else if (kmap.find("MAXCOEF") != kmap.end())
-    cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
-  else
+  } else if (kmap.find("MAXCOEF") != kmap.end()){
+    isterm = false;
+    if (kmap.find("PROPERTY") != kmap.end())
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
+    else{
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
+      reqpropty = false;
+    }
+  } else
     throw std::runtime_error("A VALUE or MAXCOEF must be given in INSERT TERM");
 
   // bind
@@ -627,14 +633,14 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
     throw std::runtime_error("A METHOD is required in INSERT EVALUATION");
   st.bind((char *) ":METHODID",methodid);
 
-  std::string propkey;
-  int propid;
+  std::string propkey = "";
+  int propid = -1;
   if ((im = kmap.find("PROPERTY")) != kmap.end()){
     if (!get_key_and_id(im->second,"Properties",propkey,propid))
       throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
-  } else
+    st.bind((char *) ":PROPID",propid);
+  } else if (reqpropty)
     throw std::runtime_error("A PROPERTY is required in INSERT EVALUATION");
-  st.bind((char *) ":PROPID",propid);
 
   if ((im = kmap.find("ATOM")) != kmap.end())
     if (isinteger(im->second))
@@ -651,10 +657,11 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
     if (isinteger(im->second))
       st.bind((char *) ":L",std::stoi(im->second));
     else{
-      char l = std::tolower(im->second[0]);
-      if (angmom.find(l) == angmom.end())
+      std::string l = im->second;
+      lowercase(l);
+      if (globals::ltoint.find(l) == globals::ltoint.end())
         throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
-      st.bind((char *) ":L",angmom.at(l));
+      st.bind((char *) ":L",globals::ltoint.at(l));
     }
   else
     throw std::runtime_error("An angular momentum (l) must be given in INSERT TERM");
@@ -690,10 +697,20 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   if ((im = kmap.find("MAXCOEF")) != kmap.end())
     st.bind((char *) ":MAXCOEF",std::stod(im->second));
 
-  os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
-     << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-     << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
-
+  if (isterm){
+    os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
+       << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+       << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+  } else {
+    if (propid > 0)
+      os << "# INSERT MAXCOEF (method=" << methodkey << ";property=" << propkey
+         << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+         << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+    else
+      os << "# INSERT MAXCOEF (method=" << methodkey 
+         << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+         << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+  }
   // submit
   st.step();
 }

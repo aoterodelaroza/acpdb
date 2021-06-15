@@ -1,9 +1,7 @@
 #+STARTUP: showeverything
 
--- do the reduction, coef0? -> in the dump
-   It has to be the slope or ACPeval will not work.
 -- how to maxcoef, nonlinearity
--- build all the databases
 -- build energy differences from total energies --
+-- build all the databases
 -- own implementation of LASSO in c++ --
 -- critic2 to run ECPs with the libecp

@@ -264,11 +264,11 @@ Creating skeleton database
 # INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=1;l=P;exponent=0.1)
 
 * INSERT: insert data into the database (TERM)
-# INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
+# INSERT MAXCOEF (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
 
 * PRINT: print the contents of the database 
 
 | methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|
 | 1| 1| 6| 0| 0.1| 1| 12.2| 0.001|
-| 1| 1| 1| 1| 0.1| 1| -12.2| 10|
+| 1| 1| 1| 2| 0.1| 1| -12.2| 10|
 

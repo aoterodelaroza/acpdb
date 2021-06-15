@@ -261,5 +261,5 @@ Creating skeleton database
 # INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
 
 * INSERT: insert data into the database (TERM)
-# INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
+# INSERT MAXCOEF (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
 
