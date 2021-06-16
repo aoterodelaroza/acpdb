@@ -1,6 +1,9 @@
 #+STARTUP: showeverything
 
--- build energy differences from total energies --
--- build all the databases
+-- build all the databases --
+BSIP2
+Viki
+Emilian
+
 -- own implementation of LASSO in c++ --
--- critic2 to run ECPs with the libecp
+-- critic2 to run ECPs with the libecp --

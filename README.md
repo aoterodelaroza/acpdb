@@ -1,6 +1,6 @@
 # acpdb
 
-ACPDB is a database (SQLite) interface program for the development of
+Acpdb is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
 | Section                                                                                                 | Keywords                                                                                                                                                                                                             |
@@ -62,7 +62,7 @@ The angular momentum integer labels are l=0, s=1, p=2, etc.
 
 ## Libraries
 
-To get full functionality of out ACP, the following optional libraries
+To get full functionality out of acpdb, the following optional libraries
 are required:
 
 - btparse (`libbtparse-dev` package on debian): for reading the
@@ -71,7 +71,7 @@ are required:
 - cereal (`libcereal-dev` package on debian): a serialization library
   that is used to load and save training sets.
 
-ACPDB can work without these libraries, but it will be missing the
+Acpdb can work without these libraries, but it will be missing the
 coresponding functionalities.
 
 ## Property types
