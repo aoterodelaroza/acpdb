@@ -72,7 +72,7 @@ are required:
   that is used to load and save training sets.
 
 Acpdb can work without these libraries, but it will be missing the
-coresponding functionalities.
+corresponding functionalities.
 
 ## Property types
 
@@ -757,7 +757,7 @@ is as follows:
   key, then the contribution enters the fitting procedure and is
   treated as an additional scalable column in the least-squares
   fit. More than one `ADD` keywords can be given to include different
-  additonal methods
+  additional methods.
 
 - `SUBSET`: Add a subset to the training set with alias
   `alias.s`. The properties in this subset uses properties from
