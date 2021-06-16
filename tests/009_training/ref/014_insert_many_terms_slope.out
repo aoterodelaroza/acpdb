@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 014_insert_many_terms_slope.db
 * SYSTEM: rm -f 014_insert_many_terms_slope.db
 
+%% connect 014_insert_many_terms_slope.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 014_insert_many_terms_slope.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set 014_insert_many_terms_slope-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 014_insert_many_terms_slope-set
 # INSERT STRUCTURE 014_insert_many_terms_slope-set.nh3_nh3
@@ -25,14 +31,23 @@ Creating skeleton database
 # INSERT PROPERTY 014_insert_many_terms_slope-set.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=014_insert_many_terms_slope-set.h2o_h2o)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=014_insert_many_terms_slope-set.nh3_nh3)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=014_insert_many_terms_slope-set.h2o_h2o)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -67,8 +82,10 @@ Creating skeleton database
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 
+%% print evaluation
 * PRINT: print the contents of the database 
 
 | methodid| propid| #values| 1st value|
@@ -77,6 +94,7 @@ Creating skeleton database
 | 1| 1| 1| 0.2|
 | 1| 2| 1| 0.3|
 
+%% print term
 * PRINT: print the contents of the database 
 
 | methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|

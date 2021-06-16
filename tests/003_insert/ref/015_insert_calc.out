@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 015_insert_calc.db
 * SYSTEM: rm -f 015_insert_calc.db
 
+%% connect 015_insert_calc.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 015_insert_calc.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert method test2
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test2
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -248,6 +254,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22
 * INSERT: insert data into the database (SET)
 # INSERT SET s22
 # INSERT STRUCTURE s22.nh3_nh3
@@ -361,6 +368,7 @@ Creating skeleton database
 # INSERT PROPERTY s22.phenol_phenol
 # INSERT EVALUATION (method=test;property=s22.phenol_phenol)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 # INSERT EVALUATION (method=test2;property=22;nvalue=1)
 # INSERT EVALUATION (method=test2;property=21;nvalue=1)

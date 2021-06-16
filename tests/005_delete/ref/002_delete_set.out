@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 002_delete_set.db
 * SYSTEM: rm -f 002_delete_set.db
 
+%% connect 002_delete_set.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 002_delete_set.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,18 +246,22 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22x5
 * INSERT: insert data into the database (SET)
 # INSERT SET s22x5
 
+%% print set
 * PRINT: print the contents of the database 
 
 | id| key| litrefs| description|
 | 1| s22x5| bsip1 boys1970 | A description.|
 
+%% delete set s22x5
 * DELETE: delete data from the database (SET)
 
 # DELETE SET s22x5
 
+%% print set
 * PRINT: print the contents of the database 
 
 | id| key| litrefs| description|

@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 006_insert_din.db
 * SYSTEM: rm -f 006_insert_din.db
 
+%% connect 006_insert_din.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 006_insert_din.db
 Creating skeleton database 
 
+%% INSERT METHOD test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22
 * INSERT: insert data into the database (SET)
 # INSERT SET s22
 # INSERT STRUCTURE s22.nh3_nh3

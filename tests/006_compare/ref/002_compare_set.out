@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 002_compare_set.db
 * SYSTEM: rm -f 002_compare_set.db
 
+%% connect 002_compare_set.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 002_compare_set.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert method test2
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test2
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -248,6 +254,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22
 * INSERT: insert data into the database (SET)
 # INSERT SET s22
 # INSERT STRUCTURE s22.nh3_nh3
@@ -361,6 +368,7 @@ Creating skeleton database
 # INSERT PROPERTY s22.phenol_phenol
 # INSERT EVALUATION (method=test;property=s22.phenol_phenol)
 
+%% insert set s22b
 * INSERT: insert data into the database (SET)
 # INSERT SET s22b
 # INSERT STRUCTURE s22b.nh3_nh3
@@ -474,6 +482,7 @@ Creating skeleton database
 # INSERT PROPERTY s22b.phenol_phenol
 # INSERT EVALUATION (method=test;property=s22b.phenol_phenol)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 # INSERT EVALUATION (method=test2;property=22;nvalue=1)
 # INSERT EVALUATION (method=test2;property=21;nvalue=1)
@@ -498,6 +507,7 @@ Creating skeleton database
 # INSERT EVALUATION (method=test2;property=12;nvalue=1)
 # INSERT EVALUATION (method=test2;property=13;nvalue=1)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 # INSERT EVALUATION (method=test2;property=44;nvalue=1)
 # INSERT EVALUATION (method=test2;property=43;nvalue=1)
@@ -522,10 +532,12 @@ Creating skeleton database
 # INSERT EVALUATION (method=test2;property=34;nvalue=1)
 # INSERT EVALUATION (method=test2;property=35;nvalue=1)
 
+%% delete evaluation test2 s22.nh3_nh3
 * DELETE: delete data from the database (EVALUATION)
 
 # DELETE EVALUATION (method=test2;property=s22.nh3_nh3)
 
+%% compare
 * COMPARE: compare data to database evaluations
 
 # -- Evaluation of data from file -- 
@@ -584,6 +596,7 @@ Id Name                                                File         Ref_method  
 ## s22b.indole_c6h6_t
 ## s22b.phenol_phenol
 
+%% compare
 * COMPARE: compare data to database evaluations
 
 # -- Evaluation of data from file -- 
@@ -620,6 +633,7 @@ Id Name                                                File         Ref_method  
 ## s22.adenine_thymine_stack
 ## s22.c6h6_h2o
 
+%% compare
 * COMPARE: compare data to database evaluations
 
 # -- Evaluation of data from file -- 

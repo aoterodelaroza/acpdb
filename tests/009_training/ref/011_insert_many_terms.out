@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 011_insert_many_terms.db
 * SYSTEM: rm -f 011_insert_many_terms.db
 
+%% connect 011_insert_many_terms.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 011_insert_many_terms.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set 011_insert_many_terms-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 011_insert_many_terms-set
 # INSERT STRUCTURE 011_insert_many_terms-set.nh3_nh3
@@ -25,14 +31,23 @@ Creating skeleton database
 # INSERT PROPERTY 011_insert_many_terms-set.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=011_insert_many_terms-set.h2o_h2o)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=011_insert_many_terms-set.nh3_nh3)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=011_insert_many_terms-set.h2o_h2o)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -67,12 +82,14 @@ Creating skeleton database
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 # INSERT TERM (method=m_empty;property=2;nvalue=1;atom=1;l=0;exp=0.1)
 # INSERT TERM (method=m_empty;property=1;nvalue=1;atom=1;l=0;exp=0.1)
 # INSERT TERM (method=m_empty;property=2;nvalue=1;atom=1;l=0;exp=0.2)
 # INSERT TERM (method=m_empty;property=1;nvalue=1;atom=1;l=0;exp=0.2)
 
+%% training describe
 ## Description of the training set
 # List of atoms and maximum angular momentum channels (1)
 | Atom | lmax |

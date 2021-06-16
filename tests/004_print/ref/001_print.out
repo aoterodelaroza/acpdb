@@ -1,9 +1,12 @@
+%% verbose
+%% connect ../zz_source/bsip2-small/bsip2.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types
@@ -45,6 +48,7 @@ Connected database is sane
 ## Table of saved training sets in the database
 | Name |
 
+%% print full
 * PRINT: print the contents of the database 
 
 # Table of property types

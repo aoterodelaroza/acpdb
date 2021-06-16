@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 004_write_with_acpgau.db
 * SYSTEM: rm -f 004_write_with_acpgau.db
 
+%% connect 004_write_with_acpgau.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 004_write_with_acpgau.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set 004_write_with_acpgau-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 004_write_with_acpgau-set
 # INSERT STRUCTURE 004_write_with_acpgau-set.nh3_nh3
@@ -258,6 +264,7 @@ Creating skeleton database
 # INSERT PROPERTY 004_write_with_acpgau-set.h2o_h2o
 # INSERT EVALUATION (method=test;property=004_write_with_acpgau-set.h2o_h2o)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_with_acpgau-set.h2o_h2o_2.gjf
@@ -267,6 +274,7 @@ Creating skeleton database
 # WRITE file ./004_write_with_acpgau-set.nh3_nh3_1.gjf
 # WRITE file ./004_write_with_acpgau-set.nh3_nh3.gjf
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_with_acpgau-set.h2o_h2o_2.gjf

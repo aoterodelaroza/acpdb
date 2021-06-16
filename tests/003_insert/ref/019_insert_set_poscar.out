@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 019_insert_set_poscar.db
 * SYSTEM: rm -f 019_insert_set_poscar.db
 
+%% connect 019_insert_set_poscar.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 019_insert_set_poscar.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,6 +246,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22x5
 * INSERT: insert data into the database (SET)
 # INSERT SET s22x5
 # INSERT STRUCTURE s22x5.ch4_ch4

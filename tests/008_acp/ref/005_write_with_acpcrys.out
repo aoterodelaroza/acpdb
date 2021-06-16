@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 005_write_with_acpcrys.db
 * SYSTEM: rm -f 005_write_with_acpcrys.db
 
+%% connect 005_write_with_acpcrys.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 005_write_with_acpcrys.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set 005_write_with_acpcrys-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 005_write_with_acpcrys-set
 # INSERT STRUCTURE 005_write_with_acpcrys-set.oxalic_acid_alpha
@@ -252,6 +258,7 @@ Creating skeleton database
 # INSERT PROPERTY 005_write_with_acpcrys-set.oxalic_acid_alpha_oxalic_acid_beta
 # INSERT EVALUATION (method=test;property=005_write_with_acpcrys-set.oxalic_acid_alpha_oxalic_acid_beta)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./005_write_with_acpcrys-set.oxalic_acid_beta.d12

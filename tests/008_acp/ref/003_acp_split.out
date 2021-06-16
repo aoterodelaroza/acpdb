@@ -1,6 +1,10 @@
+%% verbose
+%% acp load bleh
 * ACP LOAD bleh
 
+%% acp split bleh 003_acp_split_a
 * ACP SPLIT bleh creates files 003_acp_split_a-*.acp
 
+%% acp split bleh 003_acp_split_b coef 1.0
 * ACP SPLIT bleh creates files 003_acp_split_b-*.acp
 

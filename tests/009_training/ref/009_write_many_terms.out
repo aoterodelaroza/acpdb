@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 009_write_many_terms.db
 * SYSTEM: rm -f 009_write_many_terms.db
 
+%% connect 009_write_many_terms.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 009_write_many_terms.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set 009_write_many_terms-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 009_write_many_terms-set
 # INSERT STRUCTURE 009_write_many_terms-set.nh3_nh3
@@ -25,26 +31,39 @@ Creating skeleton database
 # INSERT PROPERTY 009_write_many_terms-set.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=009_write_many_terms-set.h2o_h2o)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=009_write_many_terms-set.nh3_nh3)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=009_write_many_terms-set.h2o_h2o)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=009_write_many_terms-set.h2o_h2o;atom=H;l=0;exponent=0.1)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=009_write_many_terms-set.h2o_h2o;atom=H;l=0;exponent=0.2)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=009_write_many_terms-set.nh3_nh3;atom=H;l=0;exponent=0.1)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=009_write_many_terms-set.nh3_nh3;atom=H;l=0;exponent=0.2)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -79,6 +98,7 @@ Creating skeleton database
 | H | l | 0.2 | 2/2 | (complete)
 # Total terms: 4/4 (complete)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./009_write_many_terms-set.h2o_h2o_2@h_l_1.gjf

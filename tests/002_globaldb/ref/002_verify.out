@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 002_verify.db
 * SYSTEM: rm -f 002_verify.db
 
+%% connect 002_verify.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 002_verify.db
 Creating skeleton database 
 
+%% verify
 * VERIFY: verify the consistency of the database 
 
 Checking the litrefs in sets are known
@@ -14,12 +18,14 @@ Checking the structures in properties are known
 Checking the number of values and structures in the evaluations table
 Checking the number of values and structures in the terms table
 
+%% connect ../zz_source/bsip2-small/bsip2.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane
 
+%% verify
 * VERIFY: verify the consistency of the database 
 
 Checking the litrefs in sets are known

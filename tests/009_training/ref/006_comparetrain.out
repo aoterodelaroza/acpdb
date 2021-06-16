@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 006_comparetrain.db
 * SYSTEM: rm -f 006_comparetrain.db
 
+%% connect 006_comparetrain.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 006_comparetrain.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set s22b
 * INSERT: insert data into the database (SET)
 # INSERT SET s22b
 # INSERT STRUCTURE s22b.nh3_nh3
@@ -25,6 +31,7 @@ Creating skeleton database
 # INSERT PROPERTY s22b.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=s22b.h2o_h2o)
 
+%% insert set s22b-b
 * INSERT: insert data into the database (SET)
 # INSERT SET s22b-b
 # INSERT STRUCTURE s22b-b.nh3_nh3
@@ -38,26 +45,39 @@ Creating skeleton database
 # INSERT PROPERTY s22b-b.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=s22b-b.h2o_h2o)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=s22b.nh3_nh3)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=s22b.h2o_h2o)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=s22b.h2o_h2o;atom=H;l=0;exponent=0.1)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=s22b.h2o_h2o;atom=H;l=0;exponent=0.2)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=s22b.nh3_nh3;atom=H;l=0;exponent=0.1)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=m_empty;property=s22b.nh3_nh3;atom=H;l=0;exponent=0.2)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -92,6 +112,7 @@ Creating skeleton database
 | H | l | 0.2 | 2/2 | (complete)
 # Total terms: 4/4 (complete)
 
+%% compare
 * COMPARE: compare data to database evaluations
 
 # -- Evaluation of data from file -- 
@@ -106,6 +127,7 @@ Id Name                                                File         Ref_method  
 1 s22b.nh3_nh3                              -2510.0378800000      -3.1330000000   -2506.9048800000
 2 s22b.h2o_h2o                              -4392.5662900000      -4.9890000000   -4387.5772900000
 
+%% compare
 * COMPARE: compare data to database evaluations
 
 # -- Evaluation of data from file -- 

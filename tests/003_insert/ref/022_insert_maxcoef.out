@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 022_insert_maxcoef.db
 * SYSTEM: rm -f 022_insert_maxcoef.db
 
+%% connect 022_insert_maxcoef.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 022_insert_maxcoef.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set 022_insert_maxcoef-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 022_insert_maxcoef-set
 # INSERT STRUCTURE 022_insert_maxcoef-set.nh3_nh3
@@ -25,14 +31,23 @@ Creating skeleton database
 # INSERT PROPERTY 022_insert_maxcoef-set.h2o_h2o
 # INSERT EVALUATION (method=m_ref;property=022_insert_maxcoef-set.h2o_h2o)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=022_insert_maxcoef-set.nh3_nh3)
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=m_empty;property=022_insert_maxcoef-set.h2o_h2o)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -67,14 +82,17 @@ Creating skeleton database
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
 
+%% insert calc
 * INSERT: insert data into the database (CALC)
 # INSERT TERM (method=m_empty;property=2;nvalue=1;atom=1;l=0;exp=0.1)
 # INSERT TERM (method=m_empty;property=1;nvalue=1;atom=1;l=0;exp=0.1)
 # INSERT TERM (method=m_empty;property=2;nvalue=1;atom=1;l=0;exp=0.2)
 # INSERT TERM (method=m_empty;property=1;nvalue=1;atom=1;l=0;exp=0.2)
 
+%% insert maxcoef
 * INSERT: insert data into the database (MAXCOEF)
 
+%% print term
 * PRINT: print the contents of the database 
 
 | methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|

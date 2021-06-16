@@ -1,9 +1,12 @@
+%% verbose
+%% connect ../zz_source/bsip2-small/bsip2.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane
 
+%% print litref
 * PRINT: print the contents of the database 
 
 | id| key| authors| title| journal| volume| page| year| doi| description|
@@ -242,6 +245,7 @@ Connected database is sane
 | 233| hornak2006| Hornak, Viktor and Abel, Robert and Okur, Asim and Strockbine, Bentley and Roitberg, Adrian and Simmerling, Carlos| Comparison of multiple Amber force fields and development of improved protein backbone parameters| Proteins: Struct., Funct., Bioinf.| 65| 712--725| 2006| | |
 | 234| bsip2| {Otero-de-la-Roza}, Alberto and DiLabio, Gino A| Improved Basis-Set Incompleteness Potentials for Accurate Density-Functional Theory Calculations in Large Systems| J. Chem. Theory Comput.| 16| 4176--4191| 2020| | |
 
+%% print litref bibtex
 * PRINT: print the contents of the database 
 
 @article{bsip1

@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 007_delete_term.db
 * SYSTEM: rm -f 007_delete_term.db
 
+%% connect 007_delete_term.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 007_delete_term.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,27 +246,35 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert method b3lyp/6-31+G*
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD b3lyp/6-31+G*
 
+%% insert set s22x5
 * INSERT: insert data into the database (SET)
 # INSERT SET s22x5
 
+%% insert structure urea
 * INSERT: insert data into the database (STRUCTURE)
 # INSERT STRUCTURE urea
 
+%% insert structure c6h6_ch4
 * INSERT: insert data into the database (STRUCTURE)
 # INSERT STRUCTURE c6h6_ch4
 
+%% insert property strange
 * INSERT: insert data into the database (PROPERTY)
 # INSERT PROPERTY strange
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=C;l=0;exponent=0.1)
 
+%% insert term
 * INSERT: insert data into the database (TERM)
 # INSERT TERM (method=b3lyp/6-31+G*;property=strange;atom=1;l=P;exponent=0.1)
 
+%% print full
 * PRINT: print the contents of the database 
 
 # Table of property types
@@ -307,10 +319,12 @@ Creating skeleton database
 ## Table of saved training sets in the database
 | Name |
 
+%% delete term b3lyp/6-31+G* strange 1 1 0.1
 * DELETE: delete data from the database (TERM)
 
 # DELETE TERM (method=b3lyp/6-31+G*;property=strange;atom=1;l=1;exp=0.1)
 
+%% print full
 * PRINT: print the contents of the database 
 
 # Table of property types

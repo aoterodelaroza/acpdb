@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 004_delete_structure.db
 * SYSTEM: rm -f 004_delete_structure.db
 
+%% connect 004_delete_structure.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 004_delete_structure.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,15 +246,19 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22x5
 * INSERT: insert data into the database (SET)
 # INSERT SET s22x5
 
+%% insert structure urea
 * INSERT: insert data into the database (STRUCTURE)
 # INSERT STRUCTURE urea
 
+%% insert structure c6h6_ch4
 * INSERT: insert data into the database (STRUCTURE)
 # INSERT STRUCTURE c6h6_ch4
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types
@@ -290,14 +298,17 @@ Creating skeleton database
 ## Table of saved training sets in the database
 | Name |
 
+%% delete structure urea
 * DELETE: delete data from the database (STRUCTURE)
 
 # DELETE STRUCTURE urea
 
+%% delete structure c6h6_ch4
 * DELETE: delete data from the database (STRUCTURE)
 
 # DELETE STRUCTURE c6h6_ch4
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types

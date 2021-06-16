@@ -1,21 +1,28 @@
+%% verbose
+%% system rm -f 001_connect.db
 * SYSTEM: rm -f 001_connect.db
 
+%% disconnect
 * DISCONNECT: disconnect the current database 
 
+%% connect 001_connect.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 001_connect.db
 Creating skeleton database 
 
+%% disconnect
 * DISCONNECT: disconnect the current database 
 
+%% connect 001_connect.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 001_connect.db
 Connected database is sane
 
+%% connect ../zz_source/bsip2-small/bsip2.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 

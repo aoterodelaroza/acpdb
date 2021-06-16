@@ -1,9 +1,12 @@
+%% verbose
+%% connect ../zz_source/bsip2-small/bsip2.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file ../zz_source/bsip2-small/bsip2.db
 Connected database is sane
 
+%% print set
 * PRINT: print the contents of the database 
 
 | id| key| litrefs| description|

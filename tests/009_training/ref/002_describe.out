@@ -1,20 +1,27 @@
+%% verbose
+%% system rm -f 002_describe.db
 * SYSTEM: rm -f 002_describe.db
 
+%% connect 002_describe.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 002_describe.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert method test2
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test2
 
+%% insert method test3
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test3
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -251,6 +258,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set 002_describe-set-a
 * INSERT: insert data into the database (SET)
 # INSERT SET 002_describe-set-a
 # INSERT STRUCTURE 002_describe-set-a.nh3_nh3
@@ -264,6 +272,7 @@ Creating skeleton database
 # INSERT PROPERTY 002_describe-set-a.h2o_h2o
 # INSERT EVALUATION (method=test;property=002_describe-set-a.h2o_h2o)
 
+%% insert set 002_describe-set-b
 * INSERT: insert data into the database (SET)
 # INSERT SET 002_describe-set-b
 # INSERT STRUCTURE 002_describe-set-b.nh3_nh3
@@ -377,6 +386,7 @@ Creating skeleton database
 # INSERT PROPERTY 002_describe-set-b.phenol_phenol
 # INSERT EVALUATION (method=test;property=002_describe-set-b.phenol_phenol)
 
+%% insert property strange-
 * INSERT: insert data into the database (PROPERTY)
 # INSERT PROPERTY strange-002_describe-set-a.nh3_nh3
 # INSERT PROPERTY strange-002_describe-set-a.nh3_nh3_1
@@ -385,11 +395,21 @@ Creating skeleton database
 # INSERT PROPERTY strange-002_describe-set-a.h2o_h2o_1
 # INSERT PROPERTY strange-002_describe-set-a.h2o_h2o_2
 
+%% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
 # INSERT EVALUATION (method=test;property=strange-002_describe-set-a.h2o_h2o)
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l C l N s O p
+%% exp 0.1 0.2 0.3
+%% empty test2
+%% reference test
+%% add test3
+%% subset
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -478,6 +498,7 @@ Creating skeleton database
 | O | p | 0.3 | 0/30 | (missing)
 # Total terms: 0/630 (missing)
 
+%% training describe
 ## Description of the training set
 # List of atoms and maximum angular momentum channels (4)
 | Atom | lmax |

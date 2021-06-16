@@ -1,17 +1,23 @@
+%% verbose
+%% system rm -f 012_insert_old.db
 * SYSTEM: rm -f 012_insert_old.db
 
+%% connect 012_insert_old.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 012_insert_old.db
 Creating skeleton database 
 
+%% insert method m_empty
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_empty
 
+%% insert method m_ref
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD m_ref
 
+%% insert set 012_insert_old-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 012_insert_old-set
 # INSERT STRUCTURE 012_insert_old-set.nh3_nh3
@@ -23,8 +29,15 @@ Creating skeleton database
 # INSERT STRUCTURE 012_insert_old-set.h2o_h2o_2
 # INSERT PROPERTY 012_insert_old-set.h2o_h2o
 
+%% training
 * TRAINING: started defining the training set 
 
+%% atom H l
+%% exp 0.1 0.2
+%% empty m_empty
+%% reference m_ref
+%% subset
+%% end
 * TRAINING: fininshed defining the training set 
 
 ## Description of the training set
@@ -59,9 +72,11 @@ Creating skeleton database
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
 
+%% training insert_old ../zz_source/olddat
 * TRAINING: insert data in the old format 
 
 
+%% print evaluation
 * PRINT: print the contents of the database 
 
 | methodid| propid| #values| 1st value|
@@ -70,6 +85,7 @@ Creating skeleton database
 | 1| 2| 1| 1|
 | 1| 1| 1| 2|
 
+%% print term
 * PRINT: print the contents of the database 
 
 | methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|

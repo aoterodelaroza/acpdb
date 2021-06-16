@@ -1,7 +1,11 @@
+%% verbose
+%% acp load bleh ../zz_source/minis.bsip
 * ACP LOAD bleh
 
+%% acp load bleh2
 * ACP LOAD bleh2
 
+%% acp info bleh
 * INFO for ACP: bleh
 + Atoms (lmax) : H(s) B(p) C(p) N(p) O(p) F(p) Si(p) P(p) S(p) Cl(p) 
 + Number of terms : 
@@ -19,6 +23,7 @@ Cl: l=4 s=1 p=2
 2-norm = 2.92727e+00
 inf-norm (max. abs(coef)) = 1.86200e+00
 
+%% acp info bleh2
 * INFO for ACP: bleh2
 + Atoms (lmax) : C(l) N(p) 
 + Number of terms : 

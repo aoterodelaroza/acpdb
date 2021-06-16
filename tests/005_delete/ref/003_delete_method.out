@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 003_delete_method.db
 * SYSTEM: rm -f 003_delete_method.db
 
+%% connect 003_delete_method.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 003_delete_method.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,9 +246,11 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert method b3lyp/6-31+G*
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD b3lyp/6-31+G*
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types
@@ -283,10 +289,12 @@ Creating skeleton database
 ## Table of saved training sets in the database
 | Name |
 
+%% delete method b3lyp/6-31+G*
 * DELETE: delete data from the database (METHOD)
 
 # DELETE METHOD b3lyp/6-31+G*
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types

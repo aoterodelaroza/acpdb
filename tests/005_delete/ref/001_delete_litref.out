@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 001_delete_litref.db
 * SYSTEM: rm -f 001_delete_litref.db
 
+%% connect 001_delete_litref.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 001_delete_litref.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,11 +246,13 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% delete litref goerigk2013 galano2006
 * DELETE: delete data from the database (LITREF)
 
 # DELETE LITREF goerigk2013
 # DELETE LITREF galano2006
 
+%% print litref
 * PRINT: print the contents of the database 
 
 | id| key| authors| title| journal| volume| page| year| doi| description|
@@ -483,9 +489,11 @@ Creating skeleton database
 | 233| hornak2006| Hornak, Viktor and Abel, Robert and Okur, Asim and Strockbine, Bentley and Roitberg, Adrian and Simmerling, Carlos| Comparison of multiple Amber force fields and development of improved protein backbone parameters| Proteins: Struct., Funct., Bioinf.| 65| 712--725| 2006| | |
 | 234| bsip2| {Otero-de-la-Roza}, Alberto and DiLabio, Gino A| Improved Basis-Set Incompleteness Potentials for Accurate Density-Functional Theory Calculations in Large Systems| J. Chem. Theory Comput.| 16| 4176--4191| 2020| | |
 
+%% delete litref
 * DELETE: delete data from the database (LITREF)
 
 
+%% print litref
 * PRINT: print the contents of the database 
 
 | id| key| authors| title| journal| volume| page| year| doi| description|

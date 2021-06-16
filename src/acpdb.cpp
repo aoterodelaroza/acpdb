@@ -135,6 +135,9 @@ int main(int argc, char *argv[]) {
     if (is->fail())
       throw std::runtime_error("Error reading input");
 
+    // Print out
+    *os << "%% " << line << std::endl;
+
     // Tokenize the line
     std::list<std::string> tokens(list_all_words(line));
 

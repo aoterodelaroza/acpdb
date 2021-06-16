@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 004_write_crystemplate.db
 * SYSTEM: rm -f 004_write_crystemplate.db
 
+%% connect 004_write_crystemplate.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 004_write_crystemplate.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set 004_write_crystemplate-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 004_write_crystemplate-set
 # INSERT STRUCTURE 004_write_crystemplate-set.oxalic_acid_alpha
@@ -252,31 +258,37 @@ Creating skeleton database
 # INSERT PROPERTY 004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta
 # INSERT EVALUATION (method=test;property=004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.POSCAR
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.POSCAR
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.in
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.in
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.34
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.34
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.34
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.34
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.d12
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_alpha.d12
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./004_write_crystemplate-set.oxalic_acid_beta.d12

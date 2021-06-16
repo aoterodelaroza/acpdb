@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 001_write_db.db
 * SYSTEM: rm -f 001_write_db.db
 
+%% connect 001_write_db.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 001_write_db.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set 001_write_db-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 001_write_db-set
 # INSERT STRUCTURE 001_write_db-set.nh3_nh3
@@ -258,6 +264,7 @@ Creating skeleton database
 # INSERT PROPERTY 001_write_db-set.h2o_h2o
 # INSERT EVALUATION (method=test;property=001_write_db-set.h2o_h2o)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./001_write_db-set.h2o_h2o_2.xyz

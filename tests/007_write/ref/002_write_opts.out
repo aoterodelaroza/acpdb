@@ -1,14 +1,19 @@
+%% verbose
+%% system rm -f 002_write_opts.db
 * SYSTEM: rm -f 002_write_opts.db
 
+%% connect 002_write_opts.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 002_write_opts.db
 Creating skeleton database 
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -245,6 +250,7 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert set s22partial
 * INSERT: insert data into the database (SET)
 # INSERT SET s22partial
 # INSERT STRUCTURE s22partial.nh3_nh3
@@ -258,6 +264,7 @@ Creating skeleton database
 # INSERT PROPERTY s22partial.h2o_h2o
 # INSERT EVALUATION (method=test;property=s22partial.h2o_h2o)
 
+%% write
 * WRITE: write input files for database structures
 
 # WRITE file ./s22partial.nh3_nh3_1.xyz

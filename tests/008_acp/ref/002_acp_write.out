@@ -1,5 +1,8 @@
+%% verbose
+%% acp load bleh ../zz_source/minis.bsip
 * ACP LOAD bleh
 
+%% acp write bleh
 * Terms for ACP bleh
 | id | atom | l | exponent | coefficient |
 | 0 | H | l | 0.08 | -0.009602266107 |
@@ -105,5 +108,6 @@
 | 100 | Cl | p | 0.08 | -0.04737429474 |
 | 101 | Cl | p | 0.12 | 0.107433834 |
 
+%% acp write bleh 002_acp_write.acp
 * ACP WRITE: writing ACP bleh to file 002_acp_write.acp
 

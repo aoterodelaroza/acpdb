@@ -1,23 +1,31 @@
+%% verbose
+%% system rm -f 001_insert_litref.db
 * SYSTEM: rm -f 001_insert_litref.db
 
+%% connect 001_insert_litref.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 001_insert_litref.db
 Creating skeleton database 
 
+%% insert litref example
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF example
 
+%% insert litref example2
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF example2
 
+%% insert litref example3
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF example3
 
+%% insert litref example4
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF example4
 
+%% print
 * PRINT: print the contents of the database 
 
 # Table of property types

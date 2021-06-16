@@ -1,11 +1,15 @@
+%% verbose
+%% system rm -f 018_insert_property_fullset.db
 * SYSTEM: rm -f 018_insert_property_fullset.db
 
+%% connect 018_insert_property_fullset.db
 * CONNECT 
 
 Disconnecting previous database (if connected) 
 Connecting database file 018_insert_property_fullset.db
 Creating skeleton database 
 
+%% insert litref bibtex ../zz_source/bsip2.bib
 * INSERT: insert data into the database (LITREF)
 # INSERT LITREF bsip1
 # INSERT LITREF boys1970
@@ -242,12 +246,15 @@ Creating skeleton database
 # INSERT LITREF hornak2006
 # INSERT LITREF bsip2
 
+%% insert method b3lyp/6-31+G*
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD b3lyp/6-31+G*
 
+%% insert method test
 * INSERT: insert data into the database (METHOD)
 # INSERT METHOD test
 
+%% insert set s22
 * INSERT: insert data into the database (SET)
 # INSERT SET s22
 # INSERT STRUCTURE s22.nh3_nh3
@@ -361,6 +368,7 @@ Creating skeleton database
 # INSERT PROPERTY s22.phenol_phenol
 # INSERT EVALUATION (method=b3lyp/6-31+G*;property=s22.phenol_phenol)
 
+%% insert property strange-
 * INSERT: insert data into the database (PROPERTY)
 # INSERT PROPERTY strange-s22.nh3_nh3
 # INSERT PROPERTY strange-s22.nh3_nh3_1
@@ -429,6 +437,7 @@ Creating skeleton database
 # INSERT PROPERTY strange-s22.phenol_phenol_1
 # INSERT PROPERTY strange-s22.phenol_phenol_2
 
+%% print property
 * PRINT: print the contents of the database 
 
 | id| key| property_type| setid| orderid| nstructures|
