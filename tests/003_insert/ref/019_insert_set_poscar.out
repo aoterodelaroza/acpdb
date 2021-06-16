@@ -249,9 +249,4 @@ Creating skeleton database
 %% insert set s22x5
 * INSERT: insert data into the database (SET)
 # INSERT SET s22x5
-# INSERT STRUCTURE s22x5.ch4_ch4
-# INSERT STRUCTURE s22x5.ch4_ch4_1
-# INSERT STRUCTURE s22x5.ch4_ch4_2
-# INSERT STRUCTURE s22x5.urea
-# INSERT STRUCTURE s22x5.imidazole
 

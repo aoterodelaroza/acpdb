@@ -1110,9 +1110,11 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
 
-  // prepare
-  std::string skey;
-  std::unordered_map<std::string,std::string> smap;
+  // bind
+  statement st(db,R"SQL(
+INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+)SQL");
 
   // begin the transaction
   begin_transaction();
@@ -1122,7 +1124,7 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
     std::list<std::string> tokens;
     if (ixyz == 0 && (kmap.find("XYZ") != kmap.end()))
       tokens = list_all_words(kmap.at("XYZ"));
-    else if (kmap.find("POSCAR") != kmap.end())
+    if (ixyz == 1 && (kmap.find("POSCAR") != kmap.end()))
       tokens = list_all_words(kmap.at("POSCAR"));
     if (tokens.empty())
       continue;
@@ -1152,15 +1154,35 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
       for (const auto& file : sortedfiles){
         std::string filename = file.filename();
         if (std::regex_match(filename.begin(),filename.end(),rgx)){
-          skey = key + "." + std::string(file.stem());
+          std::string skey = key + "." + std::string(file.stem());
+          st.bind((char *) ":KEY",skey);
 
-          smap.clear();
-          if (ixyz == 0)
-            smap["XYZ"] = file.string();
+          std::string strdum;
+          int setid;
+          if (get_key_and_id(key,"Sets",strdum,setid))
+            st.bind((char *) ":SETID",setid);
           else
-            smap["POSCAR"] = file.string();
-          smap["SET"] = key;
-          insert_structure(os,skey,smap);
+            throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
+
+          structure s;
+          if (ixyz == 0) {
+            if (s.readxyz(file.string()))
+              throw std::runtime_error("Error reading file: " + *it);
+          } else if (ixyz == 1) {
+            if (s.readposcar(file.string()))
+              throw std::runtime_error("Error reading file: " + *it);
+          }
+          int nat = s.get_nat();
+          st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+          st.bind((char *) ":CHARGE",s.get_charge());
+          st.bind((char *) ":MULTIPLICITY",s.get_mult());
+          st.bind((char *) ":NAT",nat);
+          if (!s.ismolecule())
+            st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+          st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+          st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+          if (st.step() != SQLITE_DONE)
+            throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
         }
       }
 
@@ -1169,15 +1191,35 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
 
       for (auto it = tokens.begin(); it != tokens.end(); it++){
         if (fs::is_regular_file(*it)){
-          skey = key + "." + std::string(fs::path(*it).stem());
+          std::string skey = key + "." + std::string(fs::path(*it).stem());
+          st.bind((char *) ":KEY",skey);
 
-          smap.clear();
-          if (ixyz == 0)
-            smap["XYZ"] = *it;
+          std::string strdum;
+          int setid;
+          if (get_key_and_id(key,"Sets",strdum,setid))
+            st.bind((char *) ":SETID",setid);
           else
-            smap["POSCAR"] = *it;
-          smap["SET"] = key;
-          insert_structure(os,skey,smap);
+            throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
+
+          structure s;
+          if (ixyz == 0) {
+            if (s.readxyz(*it))
+              throw std::runtime_error("Error reading file: " + *it);
+          } else if (ixyz == 1) {
+            if (s.readposcar(*it))
+              throw std::runtime_error("Error reading file: " + *it);
+          }
+          int nat = s.get_nat();
+          st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+          st.bind((char *) ":CHARGE",s.get_charge());
+          st.bind((char *) ":MULTIPLICITY",s.get_mult());
+          st.bind((char *) ":NAT",nat);
+          if (!s.ismolecule())
+            st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+          st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+          st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+          if (st.step() != SQLITE_DONE)
+            throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
         } else {
           throw std::runtime_error("File or directory not found: " + *it);
         }
