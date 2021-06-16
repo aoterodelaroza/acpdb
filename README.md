@@ -882,7 +882,9 @@ ensure the integrity of the database. After this operation is
 complete, the following data is read from the corresponding files and
 inserted:
 
-- `ref.dat`: evaluation of the reference method.
+- `ref.dat`: evaluation of the reference method. This data is only
+  inserted if the evaluation is not already available in the
+  database. If it is, the data is ignored.
 
 - `empty.dat`: evaluation of the empty method.
 

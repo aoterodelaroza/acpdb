@@ -25,5 +25,5 @@ training
 end
 
 training insert_old ../zz_source/olddat
-
-
+print evaluation
+print term

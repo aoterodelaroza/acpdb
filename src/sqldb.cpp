@@ -918,6 +918,7 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
             strname += "@" + atom + "_" + globals::inttol[l_[ii]] + "_" + std::to_string(iexp+1);
           }
 
+          std::cout << strname << std::endl;
           if (datmap.find(strname) == datmap.end()){
             found = false;
             break;

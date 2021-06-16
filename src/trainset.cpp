@@ -651,7 +651,7 @@ FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
 )SQL");
   std::string namedat;
-  std::vector<long> pid;
+  std::vector<int> pid;
   while (std::getline(ifile,namedat)){
     deblank(namedat);
     st.reset();
@@ -666,6 +666,7 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   db->begin_transaction();
 
   // Insert data for reference method in ref.dat
+  statement st1(db->ptr(),"INSERT OR IGNORE INTO Evaluations (methodid,propid,value) VALUES(:METHODID,:PROPID,:VALUE)");
   std::string knext = "";
   name = dir + "/ref.dat";
   ifile = std::ifstream(name,std::ios::in);
@@ -673,16 +674,13 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
     throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
 
   for (int i = 0; i < pid.size(); i++){
-    std::unordered_map<std::string,std::string> smap;
     std::string valstr;
     std::getline(ifile,valstr);
-    if (ifile.fail())
-      throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in ref.dat file: " + name);
-
-    smap["METHOD"] = std::to_string(refid);
-    smap["PROPERTY"] = std::to_string(pid[i]);
-    smap["VALUE"] = valstr;
-    db->insert_evaluation(os,smap);
+    std::vector<double> value = list_all_doubles(valstr);
+    st1.bind((char *) ":METHODID",refid);
+    st1.bind((char *) ":PROPID",pid[i]);
+    st1.bind((char *) ":VALUE",(void *) &value[0],false,value.size()*sizeof(double));
+    st1.step();
   }
   ifile.close();
 
