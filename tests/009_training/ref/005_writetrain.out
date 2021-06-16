@@ -20,16 +20,6 @@ Creating skeleton database
 %% insert set 005_writetrain-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 005_writetrain-set
-# INSERT STRUCTURE 005_writetrain-set.nh3_nh3
-# INSERT STRUCTURE 005_writetrain-set.nh3_nh3_1
-# INSERT STRUCTURE 005_writetrain-set.nh3_nh3_2
-# INSERT PROPERTY 005_writetrain-set.nh3_nh3
-# INSERT EVALUATION (method=m_ref;property=005_writetrain-set.nh3_nh3)
-# INSERT STRUCTURE 005_writetrain-set.h2o_h2o
-# INSERT STRUCTURE 005_writetrain-set.h2o_h2o_1
-# INSERT STRUCTURE 005_writetrain-set.h2o_h2o_2
-# INSERT PROPERTY 005_writetrain-set.h2o_h2o
-# INSERT EVALUATION (method=m_ref;property=005_writetrain-set.h2o_h2o)
 
 %% insert evaluation
 * INSERT: insert data into the database (EVALUATION)

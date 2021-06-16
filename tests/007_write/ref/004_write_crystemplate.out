@@ -253,10 +253,6 @@ Creating skeleton database
 %% insert set 004_write_crystemplate-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 004_write_crystemplate-set
-# INSERT STRUCTURE 004_write_crystemplate-set.oxalic_acid_alpha
-# INSERT STRUCTURE 004_write_crystemplate-set.oxalic_acid_beta
-# INSERT PROPERTY 004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta
-# INSERT EVALUATION (method=test;property=004_write_crystemplate-set.oxalic_acid_alpha_oxalic_acid_beta)
 
 %% write
 * WRITE: write input files for database structures

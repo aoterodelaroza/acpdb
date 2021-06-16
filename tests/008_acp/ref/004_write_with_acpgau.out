@@ -253,16 +253,6 @@ Creating skeleton database
 %% insert set 004_write_with_acpgau-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 004_write_with_acpgau-set
-# INSERT STRUCTURE 004_write_with_acpgau-set.nh3_nh3
-# INSERT STRUCTURE 004_write_with_acpgau-set.nh3_nh3_1
-# INSERT STRUCTURE 004_write_with_acpgau-set.nh3_nh3_2
-# INSERT PROPERTY 004_write_with_acpgau-set.nh3_nh3
-# INSERT EVALUATION (method=test;property=004_write_with_acpgau-set.nh3_nh3)
-# INSERT STRUCTURE 004_write_with_acpgau-set.h2o_h2o
-# INSERT STRUCTURE 004_write_with_acpgau-set.h2o_h2o_1
-# INSERT STRUCTURE 004_write_with_acpgau-set.h2o_h2o_2
-# INSERT PROPERTY 004_write_with_acpgau-set.h2o_h2o
-# INSERT EVALUATION (method=test;property=004_write_with_acpgau-set.h2o_h2o)
 
 %% write
 * WRITE: write input files for database structures

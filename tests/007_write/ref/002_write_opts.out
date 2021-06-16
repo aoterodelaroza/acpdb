@@ -253,16 +253,6 @@ Creating skeleton database
 %% insert set s22partial
 * INSERT: insert data into the database (SET)
 # INSERT SET s22partial
-# INSERT STRUCTURE s22partial.nh3_nh3
-# INSERT STRUCTURE s22partial.nh3_nh3_1
-# INSERT STRUCTURE s22partial.nh3_nh3_2
-# INSERT PROPERTY s22partial.nh3_nh3
-# INSERT EVALUATION (method=test;property=s22partial.nh3_nh3)
-# INSERT STRUCTURE s22partial.h2o_h2o
-# INSERT STRUCTURE s22partial.h2o_h2o_1
-# INSERT STRUCTURE s22partial.h2o_h2o_2
-# INSERT PROPERTY s22partial.h2o_h2o
-# INSERT EVALUATION (method=test;property=s22partial.h2o_h2o)
 
 %% write
 * WRITE: write input files for database structures

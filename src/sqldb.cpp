@@ -1246,6 +1246,12 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   if (!fs::is_regular_file(din))
     throw std::runtime_error("din file " + din + " not found");
 
+  // set ID
+  std::string strdum;
+  int setid;
+  if (!get_key_and_id(key,"Sets",strdum,setid))
+    throw std::runtime_error("Invalid set ID or key in INSERT_SET_DIN");
+
   // open the din file
   std::ifstream ifile(din,std::ios::in);
   if (ifile.fail())
@@ -1310,32 +1316,53 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
 
   // process the entries
   std::unordered_map<std::string,boolean> used;
+  std::string skey;
   for (int k = 0; k < info.size(); k++){
-    std::unordered_map<std::string,std::string> smap;
-    std::string skey;
 
     // insert structures
+    statement st(db,R"SQL(
+INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+)SQL");
     int n = info[k].names.size();
     for (int i = 0; i < n; i++){
-      smap.clear();
       if (used.find(info[k].names[i]) == used.end()){
         skey = key + "." + info[k].names[i];
+        st.bind((char *) ":KEY",skey);
+        st.bind((char *) ":SETID",setid);
+
+        structure s;
         std::string filename = dir + "/" + info[k].names[i] + ".xyz";
         if (!fs::is_regular_file(filename)){
           filename = dir + "/" + info[k].names[i] + ".POSCAR";
           if (!fs::is_regular_file(filename))
             throw std::runtime_error("xyz/POSCAR file not found (" + dir + "/" + info[k].names[i] + ") processing din file " + din);
-          smap["POSCAR"] = filename;
+          if (s.readposcar(filename))
+            throw std::runtime_error("Error reading file: " + filename);
         } else {
-          smap["XYZ"] = filename;
+          if (s.readxyz(filename))
+            throw std::runtime_error("Error reading file: " + filename);
         }
-        smap["SET"] = key;
-        insert_structure(os,skey,smap);
+        int nat = s.get_nat();
+        st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+        st.bind((char *) ":CHARGE",s.get_charge());
+        st.bind((char *) ":MULTIPLICITY",s.get_mult());
+        st.bind((char *) ":NAT",nat);
+        if (!s.ismolecule())
+          st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+        st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+        st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+        if (st.step() != SQLITE_DONE)
+          throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
         used[info[k].names[i]] = true;
       }
     }
 
     // insert property
+    st.recycle(R"SQL(
+INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
+       VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+)SQL");
     if (fieldasrxn != 0)
       skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
     else{
@@ -1343,26 +1370,41 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
       for (int i = 1; i < info[k].names.size(); i++)
         skey += "_" + info[k].names[i];
     }
-    smap.clear();
-    smap["PROPERTY_TYPE"] = "ENERGY_DIFFERENCE";
-    smap["SET"] = key;
-    smap["ORDER"] = std::to_string(k+1);
-    smap["NSTRUCTURES"] = std::to_string(n);
-    smap["STRUCTURES"] = "";
-    smap["COEFFICIENTS"] = "";
+    st.bind((char *) ":KEY",skey);
+    st.bind((char *) ":PROPERTY_TYPE",1);
+    st.bind((char *) ":SETID",setid);
+    st.bind((char *) ":ORDERID",k+1);
+    st.bind((char *) ":NSTRUCTURES",n);
+    int strid[n];
+    double coef[n];
     for (int i = 0; i < n; i++){
-      smap["STRUCTURES"] = smap["STRUCTURES"] + key + "." + info[k].names[i] + " ";
-      smap["COEFFICIENTS"] = smap["COEFFICIENTS"] + to_string_precise(info[k].coefs[i]) + " ";
+      std::string strkey = key + "." + info[k].names[i];
+      strid[i] = find_id_from_key(strkey,"Structures");
+      coef[i] = info[k].coefs[i];
     }
-    insert_property(os,skey,smap);
+    st.bind((char *) ":STRUCTURES",(void *) &strid,false,n * sizeof(int));
+    st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,n * sizeof(double));
+    if (st.step() != SQLITE_DONE)
+      throw std::runtime_error("Failed inserting property in INSERT_SET_XYZ");
 
     // insert the evaluation
     if (havemethod){
-      smap.clear();
-      smap["METHOD"] = kmap.at("METHOD");
-      smap["PROPERTY"] = skey;
-      smap["VALUE"] = to_string_precise(info[k].ref);
-      insert_evaluation(os,smap);
+      st.recycle("INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHODID,:PROPID,:VALUE)");
+      std::string methodkey;
+      int methodid;
+      if (!get_key_and_id(kmap.at("METHOD"),"Methods",methodkey,methodid))
+        throw std::runtime_error("Invalid METHOD ID or key in INSERT_SET_DIN");
+
+      std::string propkey;
+      int propid;
+      if (!get_key_and_id(skey,"Properties",propkey,propid))
+        throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
+
+      st.bind((char *) ":METHODID",methodid);
+      st.bind((char *) ":PROPID",propid);
+      st.bind((char *) ":VALUE",(void *) &(info[k].ref),false,sizeof(double));
+      if (st.step() != SQLITE_DONE)
+        throw std::runtime_error("Failed inserting evaluation in INSERT_SET_XYZ");
     }
   }
 

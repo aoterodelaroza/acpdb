@@ -20,30 +20,10 @@ Creating skeleton database
 %% insert set s22b
 * INSERT: insert data into the database (SET)
 # INSERT SET s22b
-# INSERT STRUCTURE s22b.nh3_nh3
-# INSERT STRUCTURE s22b.nh3_nh3_1
-# INSERT STRUCTURE s22b.nh3_nh3_2
-# INSERT PROPERTY s22b.nh3_nh3
-# INSERT EVALUATION (method=m_ref;property=s22b.nh3_nh3)
-# INSERT STRUCTURE s22b.h2o_h2o
-# INSERT STRUCTURE s22b.h2o_h2o_1
-# INSERT STRUCTURE s22b.h2o_h2o_2
-# INSERT PROPERTY s22b.h2o_h2o
-# INSERT EVALUATION (method=m_ref;property=s22b.h2o_h2o)
 
 %% insert set s22b-b
 * INSERT: insert data into the database (SET)
 # INSERT SET s22b-b
-# INSERT STRUCTURE s22b-b.nh3_nh3
-# INSERT STRUCTURE s22b-b.nh3_nh3_1
-# INSERT STRUCTURE s22b-b.nh3_nh3_2
-# INSERT PROPERTY s22b-b.nh3_nh3
-# INSERT EVALUATION (method=m_ref;property=s22b-b.nh3_nh3)
-# INSERT STRUCTURE s22b-b.h2o_h2o
-# INSERT STRUCTURE s22b-b.h2o_h2o_1
-# INSERT STRUCTURE s22b-b.h2o_h2o_2
-# INSERT PROPERTY s22b-b.h2o_h2o
-# INSERT EVALUATION (method=m_ref;property=s22b-b.h2o_h2o)
 
 %% insert evaluation
 * INSERT: insert data into the database (EVALUATION)

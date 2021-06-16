@@ -253,16 +253,6 @@ Creating skeleton database
 %% insert set 003_write_moltemplate-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 003_write_moltemplate-set
-# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3
-# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3_1
-# INSERT STRUCTURE 003_write_moltemplate-set.nh3_nh3_2
-# INSERT PROPERTY 003_write_moltemplate-set.nh3_nh3
-# INSERT EVALUATION (method=test;property=003_write_moltemplate-set.nh3_nh3)
-# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o
-# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o_1
-# INSERT STRUCTURE 003_write_moltemplate-set.h2o_h2o_2
-# INSERT PROPERTY 003_write_moltemplate-set.h2o_h2o
-# INSERT EVALUATION (method=test;property=003_write_moltemplate-set.h2o_h2o)
 
 %% write
 * WRITE: write input files for database structures

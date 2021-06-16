@@ -253,16 +253,6 @@ Creating skeleton database
 %% insert set 001_write_db-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 001_write_db-set
-# INSERT STRUCTURE 001_write_db-set.nh3_nh3
-# INSERT STRUCTURE 001_write_db-set.nh3_nh3_1
-# INSERT STRUCTURE 001_write_db-set.nh3_nh3_2
-# INSERT PROPERTY 001_write_db-set.nh3_nh3
-# INSERT EVALUATION (method=test;property=001_write_db-set.nh3_nh3)
-# INSERT STRUCTURE 001_write_db-set.h2o_h2o
-# INSERT STRUCTURE 001_write_db-set.h2o_h2o_1
-# INSERT STRUCTURE 001_write_db-set.h2o_h2o_2
-# INSERT PROPERTY 001_write_db-set.h2o_h2o
-# INSERT EVALUATION (method=test;property=001_write_db-set.h2o_h2o)
 
 %% write
 * WRITE: write input files for database structures

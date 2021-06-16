@@ -20,16 +20,6 @@ Creating skeleton database
 %% insert set 011_insert_many_terms-set
 * INSERT: insert data into the database (SET)
 # INSERT SET 011_insert_many_terms-set
-# INSERT STRUCTURE 011_insert_many_terms-set.nh3_nh3
-# INSERT STRUCTURE 011_insert_many_terms-set.nh3_nh3_1
-# INSERT STRUCTURE 011_insert_many_terms-set.nh3_nh3_2
-# INSERT PROPERTY 011_insert_many_terms-set.nh3_nh3
-# INSERT EVALUATION (method=m_ref;property=011_insert_many_terms-set.nh3_nh3)
-# INSERT STRUCTURE 011_insert_many_terms-set.h2o_h2o
-# INSERT STRUCTURE 011_insert_many_terms-set.h2o_h2o_1
-# INSERT STRUCTURE 011_insert_many_terms-set.h2o_h2o_2
-# INSERT PROPERTY 011_insert_many_terms-set.h2o_h2o
-# INSERT EVALUATION (method=m_ref;property=011_insert_many_terms-set.h2o_h2o)
 
 %% insert evaluation
 * INSERT: insert data into the database (EVALUATION)
