@@ -73,3 +73,35 @@ Creating skeleton database
 # INSERT TERM (method=m_empty;property=2;nvalue=1;atom=1;l=0;exp=0.2)
 # INSERT TERM (method=m_empty;property=1;nvalue=1;atom=1;l=0;exp=0.2)
 
+## Description of the training set
+# List of atoms and maximum angular momentum channels (1)
+| Atom | lmax |
+| H | l |
+
+# List of exponents (2)
+| id | exp |
+| 0 | 0.1 |
+| 1 | 0.2 |
+
+# List of subsets (1)
+| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |
+| 0 | 011_insert_many_terms-set | 011_insert_many_terms-set | 1 | 1 | 2 | 2 | 1 |  |  |
+
+# List of methods
+| type | name | id | for fit? |
+| reference | m_ref | 2 | n/a |
+| empty | m_empty | 1 | n/a |
+
+# List of properties (2)
+| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |
+| yes | 1 | 011_insert_many_terms-set.nh3_nh3 | 1 | 011_insert_many_terms-set | 011_insert_many_terms-set | ENERGY_DIFFERENCE | 3 | 1 | -3.133000 |
+| yes | 2 | 011_insert_many_terms-set.h2o_h2o | 2 | 011_insert_many_terms-set | 011_insert_many_terms-set | ENERGY_DIFFERENCE | 3 | 1 | -4.989000 |
+
+# Calculation completion for the current training set
+# Reference: 2/2 (complete)
+# Empty: 2/2 (complete)
+# Terms: 
+| H | l | 0.1 | 2/2 | (complete)
+| H | l | 0.2 | 2/2 | (complete)
+# Total terms: 4/4 (complete)
+

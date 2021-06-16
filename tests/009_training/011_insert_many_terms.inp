@@ -41,3 +41,5 @@ insert calc
  method m_empty
  term
 end
+training describe
+
