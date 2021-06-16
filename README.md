@@ -649,6 +649,16 @@ by the database program. The available keywords are:
   corresponding to atom with symbol `xx` only. Requires using the
   `ACP` keyword in `WRITE` for a correct expansion.
 
+- `%term_atsymbol%`: atomic symbol in ACP term.
+
+- `%term_atnum%`: atomic number in ACP term.
+
+- `%term_lstr%`: angular momentum label in ACP term.
+
+- `%term_lnum%`: angular momentum value in ACP term.
+
+- `%term_exp%`: exponent in ACP term.
+
 Some template examples can be found in the `templates/` directory.
 
 ### Working with ACPs
