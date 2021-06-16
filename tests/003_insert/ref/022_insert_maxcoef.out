@@ -77,3 +77,11 @@ Creating skeleton database
 # INSERT MAXCOEF (method=m_empty;atom=h;l=l;exponent=0.1)
 # INSERT MAXCOEF (method=m_empty;property=022_insert_maxcoef-set.h2o_h2o;atom=h;l=l;exponent=0.2)
 
+* PRINT: print the contents of the database 
+
+| methodid| propid| atom| l| exponent| #values| 1st value| maxcoef|
+| 1| 2| 1| 0| 0.1| 1| -156.8773675| 0.35|
+| 1| 1| 1| 0| 0.1| 1| -225.9034092| 0.35|
+| 1| 2| 1| 0| 0.2| 1| -784.3868375| 1.35|
+| 1| 1| 1| 0| 0.2| 1| -853.4128792| 0|
+

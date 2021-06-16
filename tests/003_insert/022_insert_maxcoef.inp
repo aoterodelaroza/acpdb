@@ -46,3 +46,4 @@ insert maxcoef
  method m_empty
  file ../zz_source/terms3_maxcoef.dat
 end
+print term
