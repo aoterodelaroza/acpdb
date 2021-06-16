@@ -20,6 +20,7 @@ set(TESTS
   019_insert_set_poscar        ## insert a set with poscar files
   020_insert_set_poscar_regexp ## insert a set with poscar files, regexp
   021_insert_term_calcslope    ## insert a term, calcslope
+  022_insert_maxcoef           ## insert maxcoef in bulk
   )
 
 runtests(${TESTS})

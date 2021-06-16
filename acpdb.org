@@ -1,6 +1,5 @@
 #+STARTUP: showeverything
 
--- how to maxcoef, nonlinearity
 -- build energy differences from total energies --
 -- build all the databases
 -- own implementation of LASSO in c++ --

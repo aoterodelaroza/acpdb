@@ -715,6 +715,59 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   st.step();
 }
 
+// Insert maxcoefs from a file
+void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT MAXCOEF");
+
+  // get the file
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  std::string file;
+  if ((im = kmap.find("FILE")) != kmap.end())
+    file = im->second;
+  else
+    throw std::runtime_error("The FILE must be given in INSERT MAXCOEF");
+
+  // get the method
+  std::string method;
+  if ((im = kmap.find("METHOD")) != kmap.end())
+    method = im->second;
+  else
+    throw std::runtime_error("The METHOD must be given in INSERT MAXCOEF");
+
+  // begin the transaction
+  begin_transaction();
+
+  // read the file and insert
+  std::ifstream ifile(file,std::ios::in);
+  if (ifile.fail())
+    throw std::runtime_error("In INSERT MAXCOEF, error reading file: " + file);
+  std::string line;
+  while (std::getline(ifile,line)){
+    std::string atom, l, exp, value, propkey;
+    std::istringstream iss(line);
+    iss >> atom >> l >> exp >> value;
+    if (iss.fail())
+      continue;
+    iss >> propkey;
+    if (iss.fail())
+      propkey = "";
+
+    std::unordered_map<std::string,std::string> smap;
+    smap["METHOD"] = method;
+    smap["ATOM"] = atom;
+    smap["L"] = l;
+    smap["EXPONENT"] = exp;
+    smap["MAXCOEF"] = value;
+    if (!propkey.empty())
+      smap["PROPERTY"] = propkey;
+    insert_term(os,smap);
+  }
+  ifile.close();
+
+  // commit the transaction
+  commit_transaction();
+}
+
 // Bulk insert: read data from a file, then insert as evaluation or terms.
 void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
                         const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/,

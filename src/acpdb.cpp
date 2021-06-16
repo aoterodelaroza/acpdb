@@ -268,6 +268,8 @@ int main(int argc, char *argv[]) {
           db.insert_evaluation(*os,kmap);
         else if (category == "TERM")
           db.insert_term(*os,kmap);
+        else if (category == "MAXCOEF")
+          db.insert_maxcoef(*os,kmap);
         else if (category == "CALC")
           db.insert_calc(*os,kmap,ts.get_zat(),ts.get_lmax(),ts.get_exp());
       }

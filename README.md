@@ -3,22 +3,22 @@
 ACPDB is a database (SQLite) interface program for the development of
 atom-centered potentials (ACPs).
 
-| Section                                                                             | Keywords                                                                                                                                                                              |
-|-------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Global commands](#global-variables-and-commands)                                   | SOURCE, SYSTEM, ECHO, END                                                                                                                                                             |
-| [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                           |
-| [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                           |
-| [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms)) |
-| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-from-a-file-with-calculated-values))                                  |
-| [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                |
-| [Comparing to database contents](#comparing-to-the-database-contents)               | COMPARE                                                                                                                                                                               |
-| [Writing input and structure files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                        |
-| [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                  |
-| [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                              |
-| [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                       |
-| [Training set evaluations](#training-set-evaluations)                               | TRAINING EVAL                                                                                                                                                                         |
-| [Insert training set data in old format](#insert-training-set-data-in-old-format)   | TRAINING INSERT_OLD                                                                                                                                                                   |
-| [Dumping the training set](#dumping-the-training-set)                               | TRAINING DUMP                                                                                                                                                                         |
+| Section                                                                             | Keywords                                                                                                                                                                                                              |
+|-------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Global commands](#global-variables-and-commands)                                   | SOURCE, SYSTEM, ECHO, END                                                                                                                                                                                             |
+| [Global database operations](#global-database-operations-connect-disconnect-verify) | CONNECT, DISCONNECT, VERIFY                                                                                                                                                                                           |
+| [Print database information](#print-database-information)                           | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                                                           |
+| [Inserting data (elements)](#inserting-data-elements)                               | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms))                                 |
+| [Inserting data (bulk)](#inserting-data-bulk)                                       | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-and-terms-from-a-file-with-calculated-values)), [Maxcoefs](#insert-maximum-coefficients-from-a-file)) |
+| [Deleting data](#deleting-data)                                                     | DELETE                                                                                                                                                                                                                |
+| [Comparing to database contents](#comparing-to-the-database-contents)               | COMPARE                                                                                                                                                                                                               |
+| [Writing input and structure files](#writing-input-and-structure-files)             | WRITE ([Template format](#description-of-the-template-format))                                                                                                                                                        |
+| [Working with ACPs](#working-with-acps)                                             | ACP ([LOAD](#load-an-acp), [INFO](#acp-information), [WRITE](#write-an-acp), [SPLIT](#split-an-acp))                                                                                                                  |
+| [Defining the training set](#defining-the-training-set)                             | TRAINING                                                                                                                                                                                                              |
+| [Simple training set operations](#simple-training-set-operations)                   | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                                                       |
+| [Training set evaluations](#training-set-evaluations)                               | TRAINING EVAL                                                                                                                                                                                                         |
+| [Insert training set data in old format](#insert-training-set-data-in-old-format)   | TRAINING INSERT_OLD                                                                                                                                                                                                   |
+| [Dumping the training set](#dumping-the-training-set)                               | TRAINING DUMP                                                                                                                                                                                                         |
 
 ## Command-Line Syntax
 ~~~
@@ -442,6 +442,23 @@ using CALCSLOPE `c0.r`. The term values are calculated as the numbers
 given in the file minus the evaluation of method `method.s` in
 property `prop.s`, and the result divided by `c0.r`. Using CALCSLOPE
 requires having the corresponding evaluation in the database.
+
+#### Insert Maximum Coefficients from a File
+~~~
+INSERT MAXCOEF
+  METHOD {method.s|method.i}
+  FILE file.s
+END
+~~~
+Insert maximum coefficients from file `file.s` for method `method.s`
+(key) or `method.i` (integer ID). The file must have lines with the
+structure:
+~~~
+atom  l  exp.r  maxcoef.r  property.s
+~~~
+The last field (`property.s`) is optional. If it is present, apply the
+maxcoef only to that property. Otherwise, apply it to all properties
+that match the atom, angular momentum, and exponent.
 
 ### Deleting Data
 
