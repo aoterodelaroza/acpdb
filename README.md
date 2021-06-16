@@ -886,7 +886,9 @@ inserted:
   inserted if the evaluation is not already available in the
   database. If it is, the data is ignored.
 
-- `empty.dat`: evaluation of the empty method.
+- `empty.dat`: evaluation of the empty method. This data is only
+  inserted if the evaluation is not already available in the
+  database. If it is, the data is ignored.
 
 - `x_y_z.dat`, where `x` is the atom (lowercase symbol), `y` is the
   angular momentum (lowercase symbol), and `z` is the exponent integer

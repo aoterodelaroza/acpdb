@@ -61,12 +61,4 @@ Creating skeleton database
 
 * TRAINING: insert data in the old format 
 
-# INSERT EVALUATION (method=m_empty;property=012_insert_old-set.h2o_h2o)
-# INSERT EVALUATION (method=m_empty;property=012_insert_old-set.nh3_nh3)
-# INSERT TERM (method=m_empty;property=012_insert_old-set.h2o_h2o;atom=1;l=0;exponent=1.0000000000000001e-01)
-# INSERT TERM (method=m_empty;property=012_insert_old-set.nh3_nh3;atom=1;l=0;exponent=1.0000000000000001e-01)
-# INSERT TERM (method=m_empty;property=012_insert_old-set.h2o_h2o;atom=1;l=0;exponent=2.0000000000000001e-01)
-# INSERT TERM (method=m_empty;property=012_insert_old-set.nh3_nh3;atom=1;l=0;exponent=2.0000000000000001e-01)
-# INSERT MAXCOEF (method=m_empty;atom=H;l=l;exponent=0.1)
-# INSERT MAXCOEF (method=m_empty;atom=H;l=l;exponent=0.2)
 

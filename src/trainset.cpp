@@ -672,17 +672,16 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail())
     throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
-
   for (int i = 0; i < pid.size(); i++){
-    std::string valstr;
-    std::getline(ifile,valstr);
-    std::vector<double> value = list_all_doubles(valstr);
+    double value;
+    ifile >> value;
+    if (ifile.fail())
+      throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
     st1.bind((char *) ":METHODID",refid);
     st1.bind((char *) ":PROPID",pid[i]);
-    st1.bind((char *) ":VALUE",(void *) &value[0],false,value.size()*sizeof(double));
+    st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
     st1.step();
   }
-  ifile.close();
 
   // Insert data for empty method in empty.dat; save the empty for insertion of ACP terms
   int n = 0;
@@ -691,23 +690,22 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   ifile = std::ifstream(name,std::ios::in);
   if (ifile.fail())
     throw std::runtime_error("In TRAINING INSERT_OLD, error reading empty.dat file: " + name);
-
   for (int i = 0; i < pid.size(); i++){
-    std::unordered_map<std::string,std::string> smap;
-    std::string valstr;
-    std::getline(ifile,valstr);
+    double value;
+    ifile >> value;
     if (ifile.fail())
-      throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in empty.dat file: " + name);
-
-    smap["METHOD"] = std::to_string(emptyid);
-    smap["PROPERTY"] = std::to_string(pid[i]);
-    smap["VALUE"] = valstr;
-    db->insert_evaluation(os,smap);
-    yempty[n++] = std::stod(valstr);
+      throw std::runtime_error("In TRAINING INSERT_OLD, error reading empty.dat file: " + name);
+    yempty[i] = value;
+    st1.bind((char *) ":METHODID",emptyid);
+    st1.bind((char *) ":PROPID",pid[i]);
+    st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
+    st1.step();
   }
   ifile.close();
 
   // Insert data for ACP terms
+  st1.recycle("INSERT INTO Terms (methodid,propid,atom,l,exponent,value) VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE)");
+
   for (int iat = 0; iat < zat.size(); iat++){
     for (int il = 0; il <= lmax[iat]; il++){
       for (int iexp = 0; iexp < exp.size(); iexp++){
@@ -718,21 +716,20 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
         if (ifile.fail())
           throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
 
-        n = 0;
         for (int i = 0; i < pid.size(); i++){
-          std::unordered_map<std::string,std::string> smap;
-          std::string valstr;
-          std::getline(ifile,valstr);
+          double value;
+          ifile >> value;
           if (ifile.fail())
-            throw std::runtime_error("In TRAINING INSERT_OLD, unexpected error or end of file in term file: " + name);
+            throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
+          value = (value-yempty[i])/0.001;
 
-          smap["METHOD"] = std::to_string(emptyid);
-          smap["PROPERTY"] = std::to_string(pid[i]);
-          smap["ATOM"] = std::to_string(zat[iat]);
-          smap["L"] = std::to_string(il);
-          smap["EXPONENT"] = to_string_precise(exp[iexp]);
-          smap["VALUE"] = to_string_precise((std::stod(valstr)-yempty[n++])/0.001);
-          db->insert_term(os,smap);
+          st1.bind((char *) ":METHODID",emptyid);
+          st1.bind((char *) ":PROPID",pid[i]);
+          st1.bind((char *) ":ATOM",(int) zat[iat]);
+          st1.bind((char *) ":L",il);
+          st1.bind((char *) ":EXPONENT",exp[iexp]);
+          st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
+          st1.step();
         }
         ifile.close();
       }
@@ -740,6 +737,7 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   }
 
   // Insert maxcoef, if present
+  st1.recycle("UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
   name = dir + "/maxcoef.dat";
   if (ifile = std::ifstream(name,std::ios::in)){
     std::string line;
@@ -750,13 +748,12 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
       if (iss.fail())
         continue;
 
-      std::unordered_map<std::string,std::string> smap;
-      smap["METHOD"] = std::to_string(emptyid);
-      smap["ATOM"] = atom;
-      smap["L"] = l;
-      smap["EXPONENT"] = exp;
-      smap["MAXCOEF"] = value;
-      db->insert_term(os,smap);
+      st1.bind((char *) ":METHODID",emptyid);
+      st1.bind((char *) ":ATOM",(int) zatguess(atom));
+      st1.bind((char *) ":L",globals::ltoint.at(l));
+      st1.bind((char *) ":EXPONENT",exp);
+      st1.bind((char *) ":MAXCOEF",value);
+      st1.step();
     }
     ifile.close();
   }
