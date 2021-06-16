@@ -275,6 +275,12 @@ int main(int argc, char *argv[]) {
       }
       *os << std::endl;
 
+      //// CALC_EDIFF
+    } else if (keyw == "CALC_EDIFF") {
+      *os << "* CALC_EDIFF: calculate and insert energy differences from total energies " << std::endl;
+      db.calc_ediff(*os);
+      *os << std::endl;
+
       //// DELETE
     } else if (keyw == "DELETE") {
       std::string category = popstring(tokens,true);

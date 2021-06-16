@@ -1295,6 +1295,87 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   commit_transaction();
 }
 
+// Calculate energy differences from total energies
+void sqldb::calc_ediff(std::ostream &os){
+  statement stedif(db,R"SQL(
+SELECT id, nstructures, structures, coefficients
+FROM Properties
+WHERE property_type = 1;)SQL");
+  statement stetot(db,R"SQL(
+SELECT id
+FROM Properties
+WHERE property_type = 2 AND nstructures = 1 AND structures = :ID;)SQL");
+  statement stinsert(db,R"SQL(
+INSERT OR REPLACE into Evaluations (methodid,propid,value) VALUES (?1,?2,?3);
+)SQL");
+
+  // begin the transaction
+  begin_transaction();
+
+  // run over energy_difference properties
+  while (stedif.step() != SQLITE_DONE){
+    int propid = sqlite3_column_int(stedif.ptr(),0);
+    int nstr = sqlite3_column_int(stedif.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(stedif.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(stedif.ptr(),3);
+    bool found = true;
+
+    // find the energy properties corresponding to this energy_difference
+    int iprop[nstr];
+    for (int i = 0; i < nstr; i++){
+      stetot.reset();
+      stetot.bind(1,(void *) &(istr[i]),false,sizeof(int));
+      stetot.step();
+      if (sqlite3_column_type(stetot.ptr(),0) == SQLITE_NULL){
+        found = false;
+        break;
+      } else {
+        iprop[i] = sqlite3_column_int(stetot.ptr(), 0);
+      }
+    }
+
+    // if the corresponding energy properties were found
+    if (found){
+      // statement for fetching the values
+      std::string cmd = "SELECT Eval1.methodid";
+      for (int i = 0; i < nstr; i++)
+        cmd += ", Eval" + std::to_string(i+1) + ".value";
+      cmd += " FROM Evaluations as Eval1 ";
+      for (int i = 1; i < nstr; i++)
+        cmd += "INNER JOIN Evaluations as Eval" + std::to_string(i+1) + " ON Eval1.methodid = Eval" + std::to_string(i+1) + ".methodid ";
+      cmd += "WHERE Eval1.propid = " + std::to_string(iprop[0]);
+      for (int i = 1; i < nstr; i++)
+        cmd += " AND Eval" + std::to_string(i+1) + ".propid = " + std::to_string(iprop[i]);
+      statement st(db,cmd);
+
+      while (st.step() != SQLITE_DONE){
+        // get the energies and calculate the ediff
+        int methodid = sqlite3_column_int(st.ptr(),0);
+        double de = 0;
+        for (int i = 0; i < nstr; i++){
+          double *val = (double *) sqlite3_column_blob(st.ptr(), i+1);
+          de += val[0] * coef[i];
+        }
+
+        // from Hartree to kcal/mol
+        de = de * globals::ha_to_kcal;
+
+        // insert or replace the energy_difference evaluation
+        os << "# INSERT EVALUATION (method=" << methodid << ";property=" << propid << ";de=" << de << ")" << std::endl;
+        stinsert.reset();
+        stinsert.bind(1,methodid);
+        stinsert.bind(2,propid);
+        stinsert.bind(3,(void *) &de,false,sizeof(double));
+        if (stinsert.step() != SQLITE_DONE)
+          throw std::runtime_error("Failed inserting evaluation in CALC_EDIFF");
+      }
+    }
+  }
+
+  // commit the transaction
+  commit_transaction();
+}
+
 // Delete items from the database
 void sqldb::erase(std::ostream &os, const std::string &category, const std::list<std::string> &tokens) {
   if (!db) throw std::runtime_error("A database file must be connected before using DELETE");

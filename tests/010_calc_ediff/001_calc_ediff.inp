@@ -1,0 +1,33 @@
+## check: 001_calc_ediff.out -a1e-10
+## delete: 001_calc_ediff.db
+## labels: regression quick
+
+system rm -f 001_calc_ediff.db
+connect 001_calc_ediff.db
+
+insert method test
+end
+
+insert litref bibtex ../zz_source/bsip2.bib
+insert set s22
+ description A description.
+ litrefs bsip1 boys1970
+ din ../zz_source/s22.din
+ directory ../zz_source/s22_xyz
+end
+insert property ediff.
+ property_type ENERGY
+ set s22
+end
+## for writing the input files
+# write
+#  template template.gjf
+#  set s22
+# end
+insert calc
+ property_type ENERGY
+ file ../zz_source/s22.sto-3g.energies
+ method test
+end
+calc_ediff
+print evaluation

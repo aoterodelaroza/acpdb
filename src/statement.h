@@ -145,6 +145,10 @@ template<> struct statement::bind_dispatcher< char *, double > {
   static int impl(sqlite3_stmt *stmt, const char *col, const double arg, bool transient, int nbytes){
     return sqlite3_bind_double(stmt,sqlite3_bind_parameter_index(stmt,col),arg);}};
 
+template<> struct statement::bind_dispatcher< int, void * > {
+  static int impl(sqlite3_stmt *stmt, const int col, const void *arg, bool transient, int nbytes){
+    return sqlite3_bind_blob(stmt,col,arg,nbytes,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};
+
 template<> struct statement::bind_dispatcher< char *, void * > {
   static int impl(sqlite3_stmt *stmt, const char *col, const void *arg, bool transient, int nbytes){
     return sqlite3_bind_blob(stmt,sqlite3_bind_parameter_index(stmt,col),arg,nbytes,transient?SQLITE_TRANSIENT:SQLITE_STATIC);}};

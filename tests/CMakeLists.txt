@@ -11,6 +11,7 @@ set(TESTDIRS
   007_write         ## writing inputs
   008_acp           ## working with ACPs
   009_training      ## training set
+  010_calc_ediff    ## calculating energy differences
   )
 
 ## define the macro that will run the tests

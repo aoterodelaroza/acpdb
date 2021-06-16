@@ -89,6 +89,9 @@ class sqldb {
   // Insert additional info from an INSERT SET command (din keyword)
   void insert_set_din(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
 
+  // Calculate energy differences from total energies
+  void calc_ediff(std::ostream &os);
+
   // Delete items from the database
   void erase(std::ostream &os, const std::string &category, const std::list<std::string> &tokens);
 
