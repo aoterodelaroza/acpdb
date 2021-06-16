@@ -2,6 +2,7 @@
 ## delete: 001_delete_litref.db
 ## labels: regression quick
 
+verbose
 system rm -f 001_delete_litref.db
 connect 001_delete_litref.db
 insert litref bibtex ../zz_source/bsip2.bib

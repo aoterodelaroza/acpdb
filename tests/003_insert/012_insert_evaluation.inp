@@ -2,6 +2,7 @@
 ## delete: 012_insert_evaluation.db
 ## labels: regression quick
 
+verbose
 system rm -f 012_insert_evaluation.db
 connect 012_insert_evaluation.db
 

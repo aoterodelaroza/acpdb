@@ -2,6 +2,7 @@
 ## delete: 021_insert_term_calcslope.db
 ## labels: regression quick
 
+verbose
 system rm -f 021_insert_term_calcslope.db
 connect 021_insert_term_calcslope.db
 

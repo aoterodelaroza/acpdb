@@ -294,7 +294,8 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
       st.bind(":" + *it,im->second);
   }
 
-  os << "# INSERT LITREF " << key << std::endl;
+  if (globals::verbose)
+    os << "# INSERT LITREF " << key << std::endl;
 
   // submit
   st.step();
@@ -334,7 +335,8 @@ INSERT INTO Sets (key,litrefs,description)
     st.bind((char *) ":LITREFS",str);
   }
 
-  os << "# INSERT SET " << key << std::endl;
+  if (globals::verbose)
+    os << "# INSERT SET " << key << std::endl;
 
   // submit
   st.step();
@@ -369,7 +371,8 @@ INSERT INTO Methods (key,litrefs,description)
       st.bind(":" + *it,im->second);
   }
 
-  os << "# INSERT METHOD " << key << std::endl;
+  if (globals::verbose)
+    os << "# INSERT METHOD " << key << std::endl;
 
   // submit
   st.step();
@@ -429,7 +432,8 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
   st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
 
-  os << "# INSERT STRUCTURE " << key << std::endl;
+  if (globals::verbose)
+    os << "# INSERT STRUCTURE " << key << std::endl;
 
   // submit
   st.step();
@@ -521,7 +525,8 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
     }
 
-    os << "# INSERT PROPERTY " << key << std::endl;
+    if (globals::verbose)
+      os << "# INSERT PROPERTY " << key << std::endl;
 
     // submit
     st.step();
@@ -553,7 +558,8 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       st.bind((char *) ":STRUCTURES",(void *) &id,false,1 * sizeof(int));
       st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,sizeof(double));
 
-      os << "# INSERT PROPERTY " << newkey << std::endl;
+      if (globals::verbose)
+        os << "# INSERT PROPERTY " << newkey << std::endl;
       st.step();
     }
 
@@ -593,7 +599,8 @@ void sqldb::insert_evaluation(std::ostream &os, const std::unordered_map<std::st
   std::vector<double> value = list_all_doubles(kmap.find("VALUE")->second);
   st.bind((char *) ":VALUE",(void *) &value[0],false,value.size()*sizeof(double));
 
-  os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << propkey << ")" << std::endl;
+  if (globals::verbose)
+    os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << propkey << ")" << std::endl;
 
   // submit
   st.step();
@@ -697,19 +704,21 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   if ((im = kmap.find("MAXCOEF")) != kmap.end())
     st.bind((char *) ":MAXCOEF",std::stod(im->second));
 
-  if (isterm){
-    os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
-       << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-       << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
-  } else {
-    if (propid > 0)
-      os << "# INSERT MAXCOEF (method=" << methodkey << ";property=" << propkey
+  if (globals::verbose){
+    if (isterm){
+      os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
          << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
          << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
-    else
-      os << "# INSERT MAXCOEF (method=" << methodkey 
-         << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-         << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+    } else {
+      if (propid > 0)
+        os << "# INSERT MAXCOEF (method=" << methodkey << ";property=" << propkey
+           << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+           << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+      else
+        os << "# INSERT MAXCOEF (method=" << methodkey 
+           << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+           << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+    }
   }
   // submit
   st.step();
@@ -966,11 +975,13 @@ INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
           stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
           stinsert.bind((char *) ":L",(int) l_[ii]);
           stinsert.bind((char *) ":EXP",exp_[iexp]);
-          os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
-             << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
-             << ")" << std::endl;
+          if (globals::verbose)
+            os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
+               << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
+               << ")" << std::endl;
         } else {
-          os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
+          if (globals::verbose)
+            os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
         }
         if (stinsert.step() != SQLITE_DONE){
           std::cout << "method = " << methodkey << std::endl;
@@ -1051,7 +1062,8 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
             st.bind((char *) ":DESCRIPTION",fvalue);
         }
 
-        os << "# INSERT LITREF " << key << std::endl;
+        if (globals::verbose)
+          os << "# INSERT LITREF " << key << std::endl;
 
         st.step();
         if (field) bt_free_ast(field);
@@ -1362,7 +1374,8 @@ INSERT OR REPLACE into Evaluations (methodid,propid,value) VALUES (?1,?2,?3);
         de = de * globals::ha_to_kcal;
 
         // insert or replace the energy_difference evaluation
-        os << "# INSERT EVALUATION (method=" << methodid << ";property=" << propid << ";de=" << de << ")" << std::endl;
+        if (globals::verbose)
+          os << "# INSERT EVALUATION (method=" << methodid << ";property=" << propid << ";de=" << de << ")" << std::endl;
         stinsert.reset();
         stinsert.bind(1,methodid);
         stinsert.bind(2,propid);
@@ -1407,9 +1420,11 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
   } else if (category == "EVALUATION") {
     statement st(db,"DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1) AND propid = (SELECT id FROM Properties WHERE key = ?2);");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      os << "# DELETE " << category << " (method=" << *it;
+      if (globals::verbose)
+        os << "# DELETE " << category << " (method=" << *it;
       st.bind(1,*it++);
-      os << ";property=" << *it << ")" << std::endl;
+      if (globals::verbose)
+        os << ";property=" << *it << ")" << std::endl;
       st.bind(2,*it);
       st.step();
     }
@@ -1421,15 +1436,20 @@ DELETE FROM Terms WHERE
   atom = ?3 AND l = ?4 AND exponent = ?5;
 )SQL");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      os << "# DELETE " << category << " (method=" << *it;
+      if (globals::verbose)
+        os << "# DELETE " << category << " (method=" << *it;
       st.bind(1,*it++);
-      os << ";property=" << *it;
+      if (globals::verbose)
+        os << ";property=" << *it;
       st.bind(2,*it++);
-      os << ";atom=" << *it;
+      if (globals::verbose)
+        os << ";atom=" << *it;
       st.bind(3,std::stoi(*it++));
-      os << ";l=" << *it;
+      if (globals::verbose)
+        os << ";l=" << *it;
       st.bind(4,std::stoi(*it++));
-      os << ";exp=" << *it << ")" << std::endl;
+      if (globals::verbose)
+        os << ";exp=" << *it << ")" << std::endl;
       st.bind(5,std::stod(*it));
       st.step();
     }
@@ -1437,7 +1457,8 @@ DELETE FROM Terms WHERE
     statement st_id(db,"DELETE FROM " + table + " WHERE id = ?1;");
     statement st_key(db,"DELETE FROM " + table + " WHERE key = ?1;");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
-      os << "# DELETE " << category << " " << *it << std::endl;
+      if (globals::verbose)
+        os << "# DELETE " << category << " " << *it << std::endl;
       if (isinteger(*it)){
         st_id.bind(1,*it);
         st_id.step();
@@ -2394,7 +2415,8 @@ FROM Structures WHERE id = ?1;
   std::string content = tmpl.apply(s,a,zat,l,exp);
 
   // write the actual file and exit
-  os << "# WRITE file " << dir << "/" << name << std::endl;
+  if (globals::verbose)
+    os << "# WRITE file " << dir << "/" << name << std::endl;
   std::ofstream ofile(dir + "/" + name,std::ios::trunc);
   ofile << content;
   ofile.close();

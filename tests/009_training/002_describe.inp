@@ -2,6 +2,7 @@
 ## delete: 002_describe.db
 ## labels: regression quick
 
+verbose
 system rm -f 002_describe.db
 connect 002_describe.db
 

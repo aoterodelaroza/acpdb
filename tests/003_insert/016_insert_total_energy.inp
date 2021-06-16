@@ -2,6 +2,7 @@
 ## delete: 016_insert_total_energy.db
 ## labels: regression quick
 
+verbose
 system rm -f 016_insert_total_energy.db
 connect 016_insert_total_energy.db
 

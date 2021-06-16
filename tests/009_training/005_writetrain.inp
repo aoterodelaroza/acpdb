@@ -8,6 +8,7 @@
 ## delete: 005_writetrain-set.nh3_nh3.xyz
 ## labels: regression quick
 
+verbose
 system rm -f 005_writetrain.db
 connect 005_writetrain.db
 

@@ -2,6 +2,7 @@
 ## delete: 009_insert_structure_poscar.db
 ## labels: regression quick
 
+verbose
 system rm -f 009_insert_structure_poscar.db
 connect 009_insert_structure_poscar.db
 

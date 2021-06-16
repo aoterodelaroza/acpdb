@@ -2,6 +2,7 @@
 ## delete: 004_insert_set_xyz.db
 ## labels: regression quick
 
+verbose
 system rm -f 004_insert_set_xyz.db
 connect 004_insert_set_xyz.db
 

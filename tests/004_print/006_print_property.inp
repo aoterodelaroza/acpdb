@@ -1,5 +1,6 @@
 ## check: 006_print_property.out -a1e-10
 ## labels: regression quick
 
+verbose
 connect ../zz_source/bsip2-small/bsip2.db
 print property

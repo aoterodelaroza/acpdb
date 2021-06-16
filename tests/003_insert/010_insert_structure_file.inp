@@ -2,6 +2,7 @@
 ## delete: 010_insert_structure_file.db
 ## labels: regression quick
 
+verbose
 system rm -f 010_insert_structure_file.db
 connect 010_insert_structure_file.db
 

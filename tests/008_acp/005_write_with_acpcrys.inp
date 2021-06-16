@@ -3,6 +3,7 @@
 ## check: 005_write_with_acpcrys-set.oxalic_acid_beta.d12 -a1e-10
 ## labels: regression quick
 
+verbose
 system rm -f 005_write_with_acpcrys.db
 connect 005_write_with_acpcrys.db
 

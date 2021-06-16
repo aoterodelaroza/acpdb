@@ -2,6 +2,7 @@
 ## delete: 008_print_term.db
 ## labels: regression quick
 
+verbose
 system rm -f 008_print_term.db
 connect 008_print_term.db
 

@@ -2,6 +2,7 @@
 ## delete: 006_insert_din.db
 ## labels: regression quick
 
+verbose
 system rm -f 006_insert_din.db
 connect 006_insert_din.db
 

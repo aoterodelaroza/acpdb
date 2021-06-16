@@ -2,6 +2,7 @@
 ## delete: 004_delete_structure.db
 ## labels: regression quick
 
+verbose
 system rm -f 004_delete_structure.db
 connect 004_delete_structure.db
 

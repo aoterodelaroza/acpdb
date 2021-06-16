@@ -2,6 +2,7 @@
 ## delete: 005_delete_property.db
 ## labels: regression quick
 
+verbose
 system rm -f 005_delete_property.db
 connect 005_delete_property.db
 

@@ -144,7 +144,11 @@ int main(int argc, char *argv[]) {
       //// Global commands ////
 
       //// SYSTEM
-    if (keyw == "SYSTEM") {
+    if (keyw == "VERBOSE") {
+      globals::verbose = true;
+    } else if (keyw == "QUIET") {
+      globals::verbose = false;
+    } else if (keyw == "SYSTEM") {
       std::string cmd = mergetokens(tokens);
       *os << "* SYSTEM: " << cmd << std::endl << std::endl;
       system(cmd.c_str());

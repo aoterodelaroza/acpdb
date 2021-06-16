@@ -2,6 +2,7 @@
 ## delete: 008_delete_all.db
 ## labels: regression quick
 
+verbose
 system rm -f 008_delete_all.db
 connect 008_delete_all.db
 

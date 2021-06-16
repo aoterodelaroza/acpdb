@@ -1,6 +1,7 @@
 ## check: 001_acp_load.out -a1e-10
 ## labels: regression quick
 
+verbose
 acp load bleh ../zz_source/minis.bsip
 acp load bleh2
  C l 0.2 40.0

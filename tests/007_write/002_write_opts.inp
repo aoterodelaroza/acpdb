@@ -5,6 +5,7 @@
 ## delete: 002_write_opts.db
 ## labels: regression quick
 
+verbose
 system rm -f 002_write_opts.db
 connect 002_write_opts.db
 

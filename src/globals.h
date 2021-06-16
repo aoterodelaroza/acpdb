@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define M_PI 3.14159265358979323846
 
 namespace globals {
+  // global flags
+  extern bool verbose; // verbose output
+
   // universal constants and conversion factors
   extern const double ha_to_kcal; // Hartree to kcal/mol
   extern const double ang_to_bohr; // angstrom to bohr

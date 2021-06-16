@@ -3,6 +3,7 @@
 ## delete: octavedump.dat
 ## labels: regression quick
 
+verbose
 system rm -f 013_dump.db
 connect 013_dump.db
 

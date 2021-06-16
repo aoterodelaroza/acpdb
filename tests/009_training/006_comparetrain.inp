@@ -8,6 +8,7 @@
 ## delete: 006_comparetrain-set.nh3_nh3.xyz
 ## labels: regression quick
 
+verbose
 system rm -f 006_comparetrain.db
 connect 006_comparetrain.db
 

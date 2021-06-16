@@ -1,6 +1,5 @@
 #+STARTUP: showeverything
 
-quiet/printlevel
 double transaction
 improve insert_old and other slow calls in bulk insertion
 

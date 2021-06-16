@@ -8,6 +8,7 @@
 ## delete: 008_write_one_term-set.nh3_nh3.gjf
 ## labels: regression quick
 
+verbose
 system rm -f 008_write_one_term.db
 connect 008_write_one_term.db
 

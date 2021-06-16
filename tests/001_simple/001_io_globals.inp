@@ -1,6 +1,7 @@
 ## check: 001_io_globals.out -a1e-10
 ## labels: regression quick nodata
 
+verbose
 # this is a comment
 echo \
  bleh \

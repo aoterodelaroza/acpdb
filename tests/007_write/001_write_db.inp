@@ -8,6 +8,7 @@
 ## delete: 001_write_db.db
 ## labels: regression quick
 
+verbose
 system rm -f 001_write_db.db
 connect 001_write_db.db
 

@@ -1,6 +1,7 @@
 ## check: 002_print_litref.out -a1e-10
 ## labels: regression quick
 
+verbose
 connect ../zz_source/bsip2-small/bsip2.db
 print litref
 print litref bibtex

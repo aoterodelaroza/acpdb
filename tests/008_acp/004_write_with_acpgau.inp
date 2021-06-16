@@ -1,6 +1,7 @@
 ## check: 004_write_with_acpgau.out -a1e-10
 ## labels: regression quick
 
+verbose
 system rm -f 004_write_with_acpgau.db
 connect 004_write_with_acpgau.db
 

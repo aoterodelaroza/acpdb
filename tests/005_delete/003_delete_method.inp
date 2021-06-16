@@ -2,6 +2,7 @@
 ## delete: 003_delete_method.db
 ## labels: regression quick
 
+verbose
 system rm -f 003_delete_method.db
 connect 003_delete_method.db
 

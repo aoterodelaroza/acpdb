@@ -8,6 +8,7 @@
 ## delete: 007_eval-set.nh3_nh3.xyz
 ## labels: regression quick
 
+verbose
 system rm -f 007_eval.db
 connect 007_eval.db
 

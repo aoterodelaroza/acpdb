@@ -2,6 +2,7 @@
 ## delete: 001_insert_litref.db
 ## labels: regression quick
 
+verbose
 ## connect
 system rm -f 001_insert_litref.db
 connect 001_insert_litref.db

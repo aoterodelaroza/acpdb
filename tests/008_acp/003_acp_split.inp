@@ -5,6 +5,7 @@
 ## delete: 003_acp_split_b-2.acp
 ## labels: regression quick
 
+verbose
 acp load bleh
  C l 0.2 40.0
  N l 0.2 42.0

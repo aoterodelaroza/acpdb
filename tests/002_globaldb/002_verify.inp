@@ -2,6 +2,7 @@
 ## delete: 002_verify.db
 ## labels: regression quick
 
+verbose
 system rm -f 002_verify.db
 connect 002_verify.db
 verify

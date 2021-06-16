@@ -2,6 +2,7 @@
 ## delete: 001_define_ts.db
 ## labels: regression quick
 
+verbose
 system rm -f 001_define_ts.db
 connect 001_define_ts.db
 

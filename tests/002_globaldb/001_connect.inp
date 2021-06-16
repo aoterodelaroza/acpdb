@@ -2,6 +2,7 @@
 ## delete: 001_connect.db
 ## labels: regression quick
 
+verbose
 ## clean up
 system rm -f 001_connect.db
 

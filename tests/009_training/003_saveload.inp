@@ -2,6 +2,7 @@
 ## delete: 003_saveload.db
 ## labels: regression quick
 
+verbose
 system rm -f 003_saveload.db
 connect 003_saveload.db
 

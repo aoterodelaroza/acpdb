@@ -9,6 +9,7 @@
 ## delete: 004_write_crystemplate-set.oxalic_acid_beta.POSCAR
 ## labels: regression quick
 
+verbose
 system rm -f 004_write_crystemplate.db
 connect 004_write_crystemplate.db
 

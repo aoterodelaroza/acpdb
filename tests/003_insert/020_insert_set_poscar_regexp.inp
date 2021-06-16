@@ -2,6 +2,7 @@
 ## delete: 020_insert_set_poscar_regexp.db
 ## labels: regression quick
 
+verbose
 system rm -f 020_insert_set_poscar_regexp.db
 connect 020_insert_set_poscar_regexp.db
 

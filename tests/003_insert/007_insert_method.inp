@@ -2,6 +2,7 @@
 ## delete: 007_insert_method.db
 ## labels: regression quick
 
+verbose
 system rm -f 007_insert_method.db
 connect 007_insert_method.db
 

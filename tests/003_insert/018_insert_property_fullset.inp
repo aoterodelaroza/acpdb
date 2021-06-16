@@ -2,6 +2,7 @@
 ## delete: 018_insert_property_fullset.db
 ## labels: regression quick
 
+verbose
 system rm -f 018_insert_property_fullset.db
 connect 018_insert_property_fullset.db
 

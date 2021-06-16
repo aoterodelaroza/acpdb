@@ -5,7 +5,7 @@ atom-centered potentials (ACPs).
 
 | Section                                                                                                 | Keywords                                                                                                                                                                                                             |
 |---------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Global commands](#global-commands)                                                                     | SOURCE, SYSTEM, ECHO, END                                                                                                                                                                                            |
+| [Global commands](#global-commands)                                                                     | VERBOSE, QUIET, SOURCE, SYSTEM, ECHO, END                                                                                                                                                                            |
 | [Global database operations](#global-database-operations-connect-disconnect-verify)                     | CONNECT, DISCONNECT, VERIFY                                                                                                                                                                                          |
 | [Print database information](#print-database-information)                                               | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                                                          |
 | [Inserting data (elements)](#inserting-data-elements)                                                   | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms))                                |
@@ -93,6 +93,12 @@ number of values they comprise:
 ## Syntax
 
 ### Global Commands
+
+~~~
+VERBOSE
+QUIET
+~~~
+Activate or deactivate verbose output. Default is quiet.
 
 ~~~
 SOURCE file.s

@@ -5,6 +5,7 @@
 ## check: 009_print_din_s22c.din -a1e-10
 ## labels: regression quick
 
+verbose
 system rm -f 009_print_din.db
 connect 009_print_din.db
 

@@ -17,6 +17,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "globals.h"
 
+// global flags
+bool globals::verbose = false;
+
 // conversion factors
 const double globals::ha_to_kcal = 627.50947;
 const double globals::ang_to_bohr = 1. / 0.529177210903; // angstrom to bohr

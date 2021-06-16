@@ -2,6 +2,7 @@
 ## delete: 011_insert_property.db
 ## labels: regression quick
 
+verbose
 system rm -f 011_insert_property.db
 connect 011_insert_property.db
 
