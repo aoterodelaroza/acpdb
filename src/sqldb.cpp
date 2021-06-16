@@ -737,11 +737,18 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     throw std::runtime_error("The FILE must be given in INSERT MAXCOEF");
 
   // get the method
-  std::string method;
-  if ((im = kmap.find("METHOD")) != kmap.end())
-    method = im->second;
-  else
-    throw std::runtime_error("The METHOD must be given in INSERT MAXCOEF");
+  std::string methodkey;
+  int methodid;
+  if ((im = kmap.find("METHOD")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",methodkey,methodid))
+      throw std::runtime_error("Invalid METHOD ID or key in INSERT MAXCOEF");
+  } else
+    throw std::runtime_error("A METHOD is required in INSERT MAXCOEF");
+
+  // statements
+  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
+  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
+  statement *st;
 
   // begin the transaction
   begin_transaction();
@@ -761,15 +768,28 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     if (iss.fail())
       propkey = "";
 
-    std::unordered_map<std::string,std::string> smap;
-    smap["METHOD"] = method;
-    smap["ATOM"] = atom;
-    smap["L"] = l;
-    smap["EXPONENT"] = exp;
-    smap["MAXCOEF"] = value;
-    if (!propkey.empty())
-      smap["PROPERTY"] = propkey;
-    insert_term(os,smap);
+    if (!propkey.empty()){
+      std::string strdum;
+      int propid;
+      st = &sty;
+      if (!get_key_and_id(propkey,"Properties",strdum,propid))
+        throw std::runtime_error("Invalid PROPERTY ID or key in INSERT MAXCOEF");
+      st->bind((char *) ":PROPID",propid);
+    } else {
+      st = &stn;
+    }
+    st->bind((char *) ":METHODID",methodid);
+    int izat = zatguess(atom);
+    if (izat <= 0)
+      throw std::runtime_error("Invalid atomic symbol in INSERT MAXCOEF");
+    st->bind((char *) ":ATOM",izat);
+
+    if (globals::ltoint.find(l) == globals::ltoint.end())
+      throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
+    st->bind((char *) ":L",globals::ltoint.at(l));
+    st->bind((char *) ":EXPONENT",exp);
+    st->bind((char *) ":MAXCOEF",value);
+    st->step();
   }
   ifile.close();
 
