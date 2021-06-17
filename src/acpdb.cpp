@@ -130,13 +130,11 @@ int main(int argc, char *argv[]) {
     // fetch a line
     std::string line;
     get_next_line(*is,line);
+    deblank(line);
     if (line.empty() && is->eof())
       continue;
     if (is->fail())
       throw std::runtime_error("Error reading input");
-
-    // Print out
-    *os << "%% " << line << std::endl;
 
     // Tokenize the line
     std::list<std::string> tokens(list_all_words(line));
@@ -144,7 +142,12 @@ int main(int argc, char *argv[]) {
     // Get the first keyword
     std::string keyw = popstring(tokens,true);
 
-      //// Global commands ////
+    if (keyw.empty()) continue;
+
+    // Print out
+    *os << "%% " << line << std::endl;
+
+    //// Global commands ////
 
       //// SYSTEM
     if (keyw == "VERBOSE") {
@@ -453,7 +456,7 @@ int main(int argc, char *argv[]) {
       ts.addsubset(alias,kmap);
 
     } else {
-      throw std::runtime_error("Unknown keyword: " + keyw);
+      throw std::runtime_error("Unknown keyword: -" + keyw + "-");
     }
   }
 
