@@ -3,7 +3,7 @@
 prefix="lasso";
 
 ## List of 1-norm constraints to use
-tlist = [4];
+tlist = [5];
 
 ## Use the maximum coefficients, if available?
 usemaxcoef=1;
@@ -27,15 +27,16 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   endif
   fid = fopen(filebin,"r");
 
-  ## read all the info ## 
+  ## read all the info ##
   ## integers
   natoms = fread(fid,1,"uint64");
   nexp = fread(fid,1,"uint64");
   nrows = fread(fid,1,"uint64");
   ncols = fread(fid,1,"uint64");
+  naddsub = fread(fid,1,"uint64");
   nadd = fread(fid,1,"uint64");
-  nyfit = fread(fid,1,"uint64");
   addmaxl = fread(fid,1,"uint64");
+  nsub = naddsub - nadd;
 
   ## atom names
   atomstr = char(fread(fid,2*natoms,"char"));
@@ -52,7 +53,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
 
   ## small data arrays
   lname={"l","s","p","d","f","g","h"};
-  lmax = fread(fid,[1 natoms],"unsigned char") + 1;
+  lmax = fread(fid,[1 natoms],"unsigned char");
   explist = fread(fid,[1 nexp],"double");
 
   ## large data arrays
@@ -60,8 +61,16 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   x = fread(fid,[nrows ncols],"double");
   yref = fread(fid,[nrows 1],"double");
   yempty = fread(fid,[nrows 1],"double");
-  yadd = fread(fid,[nrows nyfit],"double");
-  ynofit = fread(fid,[nrows, nadd-nyfit],"double");
+  if (nadd > 0)
+    yadd = fread(fid,[nrows nadd],"double");
+  else
+    yadd = [];
+  endif
+  if (nsub > 0)
+    ynofit = fread(fid,[nrows nsub],"double");
+  else
+    ynofit = [];
+  endif
 
   ## apply the weights and transform the matrices for the fit
   wsqrt = sqrt(w);
@@ -147,7 +156,7 @@ for it = 1:length(tlist)
       endif
 
       for i = 1:length(w)
-        if (abs(w(i)) > maxcoef(i)) 
+        if (abs(w(i)) > maxcoef(i))
           ratio = min(maxcoef(i) / abs(w(i)),0.99);
           factor(i) = factor(i) * ratio^(1.1);
         endif
@@ -244,4 +253,3 @@ for it = 1:length(tlist)
          sum(abs(w)),sqrt(sum(w.^2)),max(abs(w)),...
          wrms,sum(sum(nterms)),iteration);
 endfor
-
