@@ -1095,8 +1095,10 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   }
 
   // write the lmax vector
-  const unsigned char *lmax_c = lmax.data();
-  ofile.write((const char *) lmax_c,lmax.size()*sizeof(unsigned char));
+  char lmax_c[lmax.size()];
+  for (int i = 0; i < lmax.size(); i++)
+    lmax_c[i] = lmax[i] + 1;
+  ofile.write((const char *) &lmax_c,lmax.size()*sizeof(unsigned char));
 
   // write the exponent vector
   const double *exp_c = exp.data();
@@ -1153,7 +1155,7 @@ ORDER BY Training_set.id;
     while (st.step() != SQLITE_DONE){
       if (n++ >= nrows)
         throw std::runtime_error("Too many rows dumping y data");
-      int len = sqlite3_column_int(st.ptr(),0);
+      int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
       double *value = (double *) sqlite3_column_blob(st.ptr(),1);
       ofile.write((const char *) value,len * sizeof(double));
     }
