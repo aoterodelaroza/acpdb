@@ -186,7 +186,9 @@ din files in that directory. If one or more SETs are given, either by
 key (`set.s`) or ID (`set.i`), write only the din files for those sets.
 Use method `method.s` (key) or `method.i` (ID) to write the reference
 values in the din files, or 0 if method is not given or evaluations
-are not available with that method.
+are not available with that method. The din file must have the
+`fieldasrxn` keyword defined. See [DIN File Format](#din-file-format)
+for details on the syntax of din files.
 
 ### Inserting Data (elements)
 
@@ -921,3 +923,40 @@ TRAINING DUMP
 Write the octavedump.dat file for the LASSO fit corresponding to the
 current dataset.
 
+## DIN File Format
+
+A din file contains a number of `ENERGY_DIFFERENCE` properties and the
+corresponding evaluations for a dataset. A din file is a text file
+with a header (lines start with `#`) followed by a number of
+consecutive blocks. Each block gives a property and an evaluation. The
+structure of a block is:
+```
+3
+a_struct
+-1.5
+b_struct
+0
+20.34
+```
+The property represented by this block is calculated as 3 times the
+energy of structure `a_struct` plus -1.5 times the energy of structure
+`b_struct`. The evaluation (reference energy) for this property is
+`20.34` kcal/mol. The header file must contain the line:
+```
+#@ fieldasrxn n
+```
+where `n` is an integer. This line determines the name the
+properties from the din file will have when inserted into the
+database. If `n` is a (small) positive number, use the name of the nth
+structure. If `n` is a negative number use the nth structure from the
+end. If `n` is zero, combine all structure names. If `n` is 999, the
+reference energy should be followed by the desired name for the
+corresponding property:
+```
+3
+a_struct
+-1.5
+b_struct
+0
+20.34 this_property_name
+```
