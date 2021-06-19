@@ -135,6 +135,7 @@ struct propinfo {
   int fieldasrxn = 0;
   std::vector<std::string> names;
   std::vector<double> coefs;
+  std::string pkey;
   double ref = 0;
 };
 
@@ -1297,8 +1298,18 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
       if (line_get_double(ifile,line,saux,c))
         throw std::runtime_error("Error reading din file " + din);
     }
-    if (line_get_double(ifile,line,saux,aux.ref))
-      throw std::runtime_error("Error reading din file " + din);
+    if (fieldasrxn == 999){
+      get_next_line(ifile,line);
+      if (ifile.fail() || line.empty())
+        throw std::runtime_error("Error reading din file " + din);
+      std::istringstream iss(line);
+      iss >> aux.ref >> aux.pkey;
+      if (iss.fail())
+        throw std::runtime_error("Error reading din file " + din);
+    } else {
+      if (line_get_double(ifile,line,saux,aux.ref))
+        throw std::runtime_error("Error reading din file " + din);
+    }
 
     // clean up and prepare next iteration
     info.push_back(aux);
@@ -1363,7 +1374,9 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL");
-    if (fieldasrxn != 0)
+    if (fieldasrxn == 999)
+      skey = key + "." + info[k].pkey;
+    else if (fieldasrxn != 0)
       skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
     else{
       skey = key + "." + info[k].names[0];
