@@ -472,7 +472,7 @@ ORDER BY Training_set.id;
         valstr = "<" + std::to_string(nval) + ">";
 
       bool isfit = (sqlite3_column_type(st.ptr(),7) != SQLITE_NULL);
-      auto it = std::find(setid.begin(),setid.end(),sqlite3_column_type(st.ptr(),6));
+      auto it = std::find(setid.begin(),setid.end(),sqlite3_column_int(st.ptr(),6));
       if (it == setid.end())
         throw std::runtime_error("Could not find set id in DESCRIBE");
       int sid = it - setid.begin();
