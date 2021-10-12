@@ -61,6 +61,7 @@ int structure::readfile(const std::string &filename){
 // Read an xyz file. Return non-zero if error; 0 if correct.
 int structure::readxyz(const std::string &filename){
 
+  std::string line;
   std::ifstream ifile(filename,std::ios::in);
   if (ifile.fail()) return 1;
 
@@ -69,6 +70,9 @@ int structure::readxyz(const std::string &filename){
   if (ifile.fail()) return 2;
   ifile >> charge >> mult;
   if (ifile.fail()) return 2;
+
+  // discard to the end of the second line
+  getline(ifile,line);
 
   // allocate space for atomic symbols and coordinates
   deallocate();
