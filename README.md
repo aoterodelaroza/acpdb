@@ -597,12 +597,15 @@ calculations. There are two possible ways of doing this. If the atom
 (atomic number `zat.i` or symbol `zat.s`), angular momentum (symbol
 `l.s` or value `l.i`), and exponent (`exp.r`) are given, then simply
 pass this information to the template. Instead, if nothing other than
-the TERM keyword is present, the training set must be defined. This
-creates files with name `prefix_atom_l_expid.ext` where `prefix` is
+the TERM keyword is present, the training set must be defined. If the
+template contains a loop (using the `%term_loop%` and `%term_endloop`
+keywords), then all terms are combined into a single input. See
+`templates/gaussian_terms.gjf` for an example. Otherwise, files are
+created with names `prefix_atom_l_expid.ext` where `prefix` is
 the name of the structure, `atom` is the atomic symbol, `l`, is the
-angular momentum symbol, and `expid` is the exponent integer ID. The
-number of files generated corresponds to all possible combinations of
-atom, l, and exponent from the training set.
+angular momentum symbol, and `expid` is the exponent integer ID. In
+this last case, the number of files generated corresponds to all
+possible combinations of atom, l, and exponent from the training set.
 
 #### Description of the Template Format
 
