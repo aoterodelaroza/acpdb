@@ -712,7 +712,7 @@ set the coefficients for the new ACPs to `value.r`.
 ### Defining the Training Set
 ~~~
 TRAINING
- ATOM|ATOMS [at1.s l1.i at2.s l2.i ... ]
+ ATOM|ATOMS [at1.s l1.s at2.s l2.s ... ]
  EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
  EMPTY method.s
  REFERENCE method.s

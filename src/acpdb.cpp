@@ -428,7 +428,7 @@ int main(int argc, char *argv[]) {
       }
 
       //// TRAINING -> ATOM
-    } else if (keyw == "ATOM") {
+    } else if (keyw == "ATOM" || keyw == "ATOMS") {
       if (!intraining)
         throw std::runtime_error("ATOM is not allowed outside the TRAINING environment");
       ts.addatoms(tokens);
