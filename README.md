@@ -723,7 +723,7 @@ TRAINING
   MASK RANGE start.i [end.i [step.i]]
   MASK ITEMS item1.i item2.i ...
   MASK PATTERN 0/1 0/1 ...
-  MASK ATOMS
+  MASK ATOM|ATOMS
   WEIGHT_GLOBAL w.r
   WEIGHT_PATTERN w1.r w2.r w3.r w4.r...
   NORM_REF
@@ -787,9 +787,10 @@ is as follows:
   `end.i`. If `setp.i` is given, use that as step. `ITEMS` indicates
   the items from the database set one by one. `PATTERN` repeats a
   pattern over the items of the set. If `itemn.i` is 0, it means the
-  item is not used and 1 means it is used. `ATOMS` deactivates all
-  items in the subset that have atoms other than those that are target
-  of ACP development (requires using a previous `ATOM` command).
+  item is not used and 1 means it is used. `ATOM` or `ATOMS`
+  deactivates all items in the subset that have atoms other than those
+  that are target of ACP development (requires using a previous `ATOM`
+  command).
 
   The remaining commands are used to set the weights of the items in
   the subset. The keywords are:

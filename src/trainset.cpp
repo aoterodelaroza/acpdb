@@ -170,7 +170,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
       for (int i = 0; i < set_mask.size(); i++)
         set_mask[i] = pattern[i % pattern.size()];
 
-    } else if (keyw == "ATOMS") {
+    } else if (keyw == "ATOM" || keyw == "ATOMS") {
       if (zat.empty())
         throw std::runtime_error("ATOMS in TRAINING SUBSET/MASK is not possible if no atoms have been defined");
 

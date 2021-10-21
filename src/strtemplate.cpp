@@ -28,13 +28,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
 // t_acpgau, t_acpcrys
-// t_term_atsymbol, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp
+// t_term_atsymbol, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
+// t_term_loop, t_term_endloop
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
   "acpgau", "acpcrys",
-  "term_atsymbol", "term_atnum", "term_lstr", "term_lnum", "term_exp"
+  "term_atsymbol", "term_atnum", "term_lstr", "term_lnum", "term_exp",
+  "term_loop", "term_endloop"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
   "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
@@ -42,6 +44,7 @@ static const std::vector<std::string> tokenstr = { // strings for the keywords (
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
   "%acpgau","%acpcrys",
   "%term_atsymbol%","%term_atnum%","%term_lstr%","%term_lnum%","%term_exp%",
+  "%term_loop%","%term_endloop%"
 };
 static const int ntoken = tokenstr.size();
 
@@ -73,6 +76,7 @@ strtemplate::strtemplate(const std::string &source){
         }
 
         tl.emplace(it,template_token({(tokentypes) i,arg}));
+        if (i == t_term_loop) hasloop_ = true;
         if (it->str.size() == pos1){
           it = tl.erase(it);
           break;
@@ -274,10 +278,71 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8) << exp;
       result.append(ss.str());
+    } else if (it->token == t_term_loop) {
+      throw std::runtime_error("Cannot use a loop in template.apply()");
+    } else if (it->token == t_term_loop) {
+      throw std::runtime_error("Cannot use a loop in template.apply()");
     }
   }
 
   return result;
+}
+
+// Apply a string to the template and write to an output stream, with loops
+void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
+                              const std::vector<unsigned char> &l,
+                              const std::vector<double> &exp) {
+  std::list<template_token> tl_loc, tl_repeat;
+  bool inloop = false;
+
+  // run over tokens
+  for (auto it = tl.begin(); it != tl.end(); it++){
+    // start the loop
+    if (it->token == t_term_loop){
+      if (inloop)
+        throw std::runtime_error("Nested term loops are not allowed (found term_loop inside term_loop)");
+      inloop = true;
+      tl_repeat.clear();
+    } else if (it->token == t_term_endloop){
+      // end the loop
+      if (!inloop)
+        throw std::runtime_error("Tried to end term loop when not inside loop");
+      // expand
+      for (int iz = 0; iz < zat.size(); iz++){
+        for (int iexp = 0; iexp < exp.size(); iexp++){
+          for (auto itr = tl_repeat.begin(); itr != tl_repeat.end(); itr++){
+            if (itr->token == t_term_atnum) {
+              tl_loc.push_back(template_token({t_string,std::to_string(zat[iz])}));
+            } else if (itr->token == t_term_atsymbol) {
+              tl_loc.push_back(template_token({t_string,nameguess(zat[iz])}));
+            } else if (itr->token == t_term_lnum) {
+              tl_loc.push_back(template_token({t_string,std::to_string(l[iz])}));
+            } else if (itr->token == t_term_lstr) {
+              tl_loc.push_back(template_token({t_string,std::string(1,globals::inttol[l[iz]])}));
+            } else if (itr->token == t_term_exp) {
+              std::stringstream ss;
+              ss << std::fixed << std::setprecision(8) << exp[iexp];
+              tl_loc.push_back(template_token({t_string,ss.str()}));
+            } else {
+              tl_loc.push_back(*itr);
+            }
+          }
+        }
+      }
+      tl_repeat.clear();
+      inloop = false;
+    } else if (inloop) {
+      tl_repeat.push_back(*it);
+    } else {
+      tl_loc.push_back(*it);
+    }
+  }
+  if (inloop)
+    throw std::runtime_error("Term loop did not have a termination");
+
+  // update with the new template
+  tl = tl_loc;
+  hasloop_ = false;
 }
 
 // Print the contents of the template to stdout. For debugging purposes.

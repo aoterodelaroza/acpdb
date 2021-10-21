@@ -2322,16 +2322,22 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 )SQL";
   std::string ext_c = "POSCAR";
   if ((im = kmap.find("TEMPLATE")) != kmap.end()){
+    if (!fs::exists(im->second))
+      throw std::runtime_error("TEMPLATE file " + im->second + " does not exist or is not a file");
     std::ifstream is(im->second.c_str(),std::ios::in);
     template_c = template_m = std::string(std::istreambuf_iterator<char>(is),{});
     ext_c = ext_m = get_file_extension(im->second);
   }
   if ((im = kmap.find("TEMPLATE_MOL")) != kmap.end()){
+    if (!fs::exists(im->second))
+      throw std::runtime_error("TEMPLATE_MOL file " + im->second + " does not exist or is not a file");
     std::ifstream is(im->second.c_str(),std::ios::in);
     template_m = std::string(std::istreambuf_iterator<char>(is),{});
     ext_m = get_file_extension(im->second);
   }
   if ((im = kmap.find("TEMPLATE_CRYS")) != kmap.end()){
+    if (!fs::exists(im->second))
+      throw std::runtime_error("TEMPLATE_CRYS file " + im->second + " does not exist or is not a file");
     std::ifstream is(im->second.c_str(),std::ios::in);
     template_c = std::string(std::istreambuf_iterator<char>(is),{});
     ext_c = get_file_extension(im->second);
@@ -2444,15 +2450,34 @@ void sqldb::write_many_structures(std::ostream &os,
     throw std::runtime_error("Inconsistent atom and l arrays in write_many_structures");
 
   // build the templates
+  strtemplate *tptr;
   strtemplate tm(template_m);
   strtemplate tc(template_c);
+  strtemplate tmexp, tcexp;
+  if (tm.hasloop()){
+    tmexp = tm;
+    tmexp.expand_loop(zat,l,exp);
+  }
+  if (tc.hasloop()){
+    tcexp = tc;
+    tcexp.expand_loop(zat,l,exp);
+  }
 
   if (npack <= 0 || npack >= smap.size()){
-    for (int ii = 0; ii < zat.size(); ii++){
-      for (int iexp = 0; iexp < exp.size(); iexp++){
-        for (auto it = smap.begin(); it != smap.end(); it++){
-          write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
-                              zat[ii], l[ii], exp[iexp], iexp, rename, dir);
+    for (auto it = smap.begin(); it != smap.end(); it++){
+      if (it->second)
+        tptr = &tm;
+      else
+        tptr = &tc;
+      if (tptr->hasloop()){
+        write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
+                            a, zat[0], l[0], exp[0], 0, false, dir);
+      } else {
+        for (int ii = 0; ii < zat.size(); ii++){
+          for (int iexp = 0; iexp < exp.size(); iexp++){
+            write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
+                                zat[ii], l[ii], exp[iexp], iexp, rename, dir);
+          }
         }
       }
     }
@@ -2469,35 +2494,52 @@ void sqldb::write_many_structures(std::ostream &os,
       srand[n++] = it->first;
     std::random_shuffle(srand.begin(),srand.end());
 
-    n = 0;
-    int ipack = 0;
+    // write the inputs
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
-      for (int ii = 0; ii < zat.size(); ii++){
-        for (int iexp = 0; iexp < exp.size(); iexp++){
-          written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
-                                                         a, zat[ii], l[ii], exp[iexp], iexp, rename, dir)));
+      if (smap.at(srand[i]))
+        tptr = &tm;
+      else
+        tptr = &tc;
 
-          // create a new package if written has npack items or we are about to finish
-          if (++n % npack == 0 || i == srand.size()-1 && !written.empty()){
-            std::string tarcmd = std::to_string(++ipack);
-            tarcmd.insert(0,slen-tarcmd.size(),'0');
-            tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-            for (auto iw = written.begin(); iw != written.end(); iw++)
-              tarcmd = tarcmd + " " + iw->string();
-
-            if (system(tarcmd.c_str()))
-              throw std::runtime_error("Error running tar command on input files");
-            for (auto iw = written.begin(); iw != written.end(); iw++)
-              remove(dir / *iw);
-            written.clear();
+      if (tptr->hasloop()){
+        written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
+                                                       (smap.at(srand[i])?ext_m:ext_c),
+                                                       a, zat[0], l[0], exp[0], 0, false, dir)));
+      } else {
+        for (int ii = 0; ii < zat.size(); ii++){
+          for (int iexp = 0; iexp < exp.size(); iexp++){
+            written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
+                                                           a, zat[ii], l[ii], exp[iexp], iexp, rename, dir)));
           }
         }
       }
     }
+
+    // pack the inputs
+    std::list<fs::path> local;
+    n = 0;
+    int ipack = 0;
+    for (auto it = written.begin(); it != written.end(); it++){
+      local.push_back(*it);
+      // create a new package if written has npack items or we are about to finish
+      if (++n % npack == 0 || n == written.size() && !local.empty()){
+        std::string tarcmd = std::to_string(++ipack);
+        tarcmd.insert(0,slen-tarcmd.size(),'0');
+        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+        for (auto iw = local.begin(); iw != local.end(); iw++)
+          tarcmd = tarcmd + " " + iw->string();
+
+        if (system(tarcmd.c_str()))
+          throw std::runtime_error("Error running tar command on input files");
+        for (auto iw = local.begin(); iw != local.end(); iw++)
+          remove(dir / *iw);
+        local.clear();
+      }
+    }
+
   }
 }
-
 // Write the structure id in the database with template tmpl and
 // extension ext. dir: output directory.
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
@@ -2540,3 +2582,4 @@ FROM Structures WHERE id = ?1;
 
   return name;
 }
+
