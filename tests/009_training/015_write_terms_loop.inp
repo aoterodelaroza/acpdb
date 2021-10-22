@@ -1,0 +1,76 @@
+## check: 015_write_terms_loop.out -a1e-10
+## delete: 015_write_terms_loop.db
+## delete: 009_write_many_terms-set.nh3_nh3@h_l_2.gjf
+## labels: regression quick
+
+verbose
+system rm -f 015_write_terms_loop.db
+connect 015_write_terms_loop.db
+
+insert method m_empty
+end
+insert method m_ref
+end
+insert set 009_write_many_terms-set
+ din ../zz_source/s22partial.din
+ directory ../zz_source/s22_xyz
+ method m_ref
+end
+insert evaluation
+ method m_empty
+ property 009_write_many_terms-set.nh3_nh3
+ value 0.2
+end
+insert evaluation
+ method m_empty
+ property 009_write_many_terms-set.h2o_h2o
+ value 0.3
+end
+insert term
+ method m_empty
+ property 009_write_many_terms-set.h2o_h2o
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property 009_write_many_terms-set.h2o_h2o
+ atom H
+ L 0
+ exponent 0.2
+ value 0.3
+end
+insert term
+ method m_empty
+ property 009_write_many_terms-set.nh3_nh3
+ atom H
+ L 0
+ exponent 0.1
+ value 0.3
+end
+insert term
+ method m_empty
+ property 009_write_many_terms-set.nh3_nh3
+ atom H
+ L 0
+ exponent 0.2
+ value 0.3
+end
+
+training
+ atom H l
+ exp 0.1 0.2
+ empty m_empty
+ reference m_ref
+ subset
+  set 009_write_many_terms-set
+ end
+end
+
+write
+ template ../zz_source/templates/gaussian_terms.gjf
+ training
+ term
+end
