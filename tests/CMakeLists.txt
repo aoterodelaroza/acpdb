@@ -127,6 +127,12 @@ if (NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/dat/")
   execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_CURRENT_SOURCE_DIR}/dat" "${CMAKE_CURRENT_BINARY_DIR}/dat")
 endif()
 
+## create symlink for the templates (build)
+if (NOT EXISTS "${CMAKE_BINARY_DIR}/templates/")
+  message(STATUS "Creating symlink for templates in ${CMAKE_BINARY_DIR}/")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink "${CMAKE_SOURCE_DIR}/templates" "${CMAKE_BINARY_DIR}/templates")
+endif()
+
 ## process all subdirectories
 foreach(dir ${TESTDIRS})
   add_subdirectory(${dir})

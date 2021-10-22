@@ -10,6 +10,9 @@ set(acpdb_LICENSE "GNU/GPL version 3")
 set(acpdb_DESCRIPTION "Database interface for the generation of ACPs")
 string(TIMESTAMP DATE "%a %d %b %Y %H:%M:%S")
 
+## policies
+cmake_policy(SET CMP0110 NEW) ## allow colons in test names
+
 ## default build type, and type options
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
