@@ -807,6 +807,7 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
 
   // some variables
   std::unordered_map<std::string,std::string>::const_iterator im;
+  bool orreplace = false;
 
   // get the property_type
   std::string ptkey;
@@ -832,6 +833,10 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
     file = im->second;
   else
     throw std::runtime_error("The FILE must be given in INSERT CALC");
+
+  // whether to replace or not
+  if ((im = kmap.find("OR_REPLACE")) != kmap.end())
+    orreplace = true;
 
   // get the term
   bool doterm = false, doslope = false, changename = false;
@@ -911,15 +916,17 @@ FROM Evaluations
 WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
 )SQL");
   statement stinsert(db,"");
-  if (doterm){
-    stinsert.recycle(R"SQL(
-INSERT INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);
-)SQL");
-  } else {
-    stinsert.recycle(R"SQL(
-INSERT INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);
-)SQL");
-  }
+
+  std::string sqlcmd = "";
+  if (orreplace)
+    sqlcmd = "INSERT OR REPLACE";
+  else
+    sqlcmd = "INSERT";
+  if (doterm)
+    sqlcmd += " INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);";
+  else
+    sqlcmd += " INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);";
+  stinsert.recycle(sqlcmd);
 
   // run over all possible combinations of atom, l, and exponent
   for (int ii = 0; ii < zat_.size(); ii++){

@@ -400,6 +400,7 @@ INSERT CALC
   METHOD {method.s|method.i}
   [TERM [{zat.i|zat.s} {l.i|l.s} exp.r]]
   [CALCSLOPE c0.r]
+  [OR_REPLACE]
 END
 ~~~
 Insert data in bulk from file `file.s`. If no TERM keyword is present,
@@ -450,6 +451,12 @@ using CALCSLOPE `c0.r`. The term values are calculated as the numbers
 given in the file minus the evaluation of method `method.s` in
 property `prop.s`, and the result divided by `c0.r`. Using CALCSLOPE
 requires having the corresponding evaluation in the database.
+
+The bulk insertion of data into the database fails if one of the
+unique constraints is violated, for instance, if the same data is
+inserted twice. Sometimes it is desirable to replace the existing
+data. To do this, use the `OR_REPLACE` keyword, which will insert the
+data if it does not exist and replace the data if it does.
 
 #### Insert Maximum Coefficients from a File
 ~~~
