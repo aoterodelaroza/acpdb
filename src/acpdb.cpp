@@ -397,7 +397,6 @@ int main(int argc, char *argv[]) {
       } else if (category == "WRITEDIN") {
         ts.write_din(name);
       } else if (category == "EVAL") {
-        std::string output = popstring(tokens);
         std::string uname = name;
         uppercase(uname);
 
