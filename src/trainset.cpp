@@ -885,8 +885,11 @@ ORDER BY Training_set.id;
   std::vector<double> rms(nset,0.0), mae(nset,0.0), mse(nset,0.0), wrms(nset,0.0);
   double rmst, maet, mset, wrmst, wrms_total_nofit = 0;
   int maxsetl = 0;
+  std::vector<unsigned long int> ndat(nset,0);
+  unsigned long int nsettot = 0;
   for (int i = 0; i < setid.size(); i++){
-    calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
+    ndat[i] = calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
+    nsettot += ndat[i];
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
@@ -914,12 +917,14 @@ ORDER BY Training_set.id;
        << std::left << "  rms = " << std::right << std::setw(14) << rms[i]
        << std::left << "  mae = " << std::right << std::setw(14) << mae[i]
        << std::left << "  mse = " << std::right << std::setw(14) << mse[i]
+       << std::left << "  ndat = " << std::right << ndat[i]
        << std::endl;
   }
   os << "# " << std::right << std::setw(maxsetl) << "all"
      << std::left << "  rms = " << std::right << std::setw(14) << rmst
      << std::left << "  mae = " << std::right << std::setw(14) << maet
      << std::left << "  mse = " << std::right << std::setw(14) << mset
+     << std::left << "  ndat = " << std::right << nsettot
      << std::endl;
 
   // write the table of results

@@ -102,8 +102,8 @@ Creating skeleton database
 # Statistics: 
 #   wrms    =  6.25159260
 #   wrmsall =  6.25159260 (including evaluation subsets)
-# s22b  rms =     4.42054352  mae =     4.31100000  mse =     4.31100000
-#  all  rms =     4.42054352  mae =     4.31100000  mse =     4.31100000
+# s22b  rms =     4.42054352  mae =     4.31100000  mse =     4.31100000  ndat = 2
+#  all  rms =     4.42054352  mae =     4.31100000  mse =     4.31100000  ndat = 2
 Id Name                                      weight             yempty               yacp               yadd             ytotal               yref         difference
 1 s22b.nh3_nh3                              1.000000       0.2000000000       0.0000000000       0.0000000000       0.2000000000      -3.1330000000       3.3330000000
 2 s22b.h2o_h2o                              1.000000       0.3000000000       0.0000000000       0.0000000000       0.3000000000      -4.9890000000       5.2890000000
@@ -118,8 +118,8 @@ Id Name                                      weight             yempty          
 #   maxcoef =  2000.0000000
 #   wrms    =  603.40738936
 #   wrmsall =  603.40738936 (including evaluation subsets)
-# s22b  rms =   426.67345683  mae =   305.34100000  mse =   305.34100000
-#  all  rms =   426.67345683  mae =   305.34100000  mse =   305.34100000
+# s22b  rms =   426.67345683  mae =   305.34100000  mse =   305.34100000  ndat = 2
+#  all  rms =   426.67345683  mae =   305.34100000  mse =   305.34100000  ndat = 2
 Id Name                                      weight             yempty               yacp               yadd             ytotal               yref         difference
 1 s22b.nh3_nh3                              1.000000       0.2000000000     600.0300000000       0.0000000000     600.2300000000      -3.1330000000     603.3630000000
 2 s22b.h2o_h2o                              1.000000       0.3000000000       2.0300000000       0.0000000000       2.3300000000      -4.9890000000       7.3190000000
