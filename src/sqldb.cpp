@@ -2376,7 +2376,7 @@ ORDER BY Properties.id
          << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
          << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
          << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
-         << std::left << " ndat = " << ndat
+         << std::left << " ndat = " << std::right << ndat
          << std::endl;
     }
 
@@ -2386,7 +2386,7 @@ ORDER BY Properties.id
        << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
        << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
        << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
-       << std::left << " ndat = " << ndat
+       << std::left << " ndat = " << std::right << ndat
        << std::endl;
   }
   os << "#" << std::endl;
