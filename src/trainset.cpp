@@ -280,11 +280,11 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 
   // calculate the normalization factor
   double norm = 1.;
-  if (norm_nitem)
+  if (norm_nitem && set_size[sid] > 0)
     norm *= set_size[sid];
-  if (norm_nitemsqrt)
+  if (norm_nitemsqrt && set_size[sid] > 0)
     norm *= std::sqrt(set_size[sid]);
-  if (norm_ref){
+  if (norm_ref && set_size[sid] > 0){
     statement st(db->ptr(),R"SQL(
 SELECT length(value), value FROM Training_set, Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)

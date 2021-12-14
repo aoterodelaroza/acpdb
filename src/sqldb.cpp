@@ -848,6 +848,8 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
     std::list<std::string> words = list_all_words(im->second);
 
     if (words.size() == 0 || words.size() == 1){
+      // TERM
+      // TERM ASSUME_ORDER
       assumeorder = false;
       if (words.size() == 1){
         std::string str = words.front();
@@ -867,6 +869,7 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
         }
       }
     } else if (words.size() == 3){
+      // TERM atom l exp
       changename = false;
       assumeorder = false;
       std::string str = words.front();
@@ -1011,28 +1014,30 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 
     // insert into the database
     long int ninsert = 0;
-    for (int ii = 0; ii < zat_.size(); ii++){
-      for (int iexp = 0; iexp < exp_.size(); iexp++){
-        for (auto it = propmap.begin(); it != propmap.end(); it++){
+    for (auto it = propmap.begin(); it != propmap.end(); it++){
+      int n = -1;
+      for (int ii = 0; ii < zat_.size(); ii++){
+        for (int iexp = 0; iexp < exp_.size(); iexp++){
           ninsert++;
+          n++;
           stinsert.reset();
           stinsert.bind((char *) ":METHOD",methodid);
           stinsert.bind((char *) ":PROPID",it->first);
-          stinsert.bind((char *) ":VALUE",(void *) &it->second[0],false,sizeof(double));
+          stinsert.bind((char *) ":VALUE",(void *) &it->second[n],false,sizeof(double));
           stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
           stinsert.bind((char *) ":L",(int) l_[ii]);
           stinsert.bind((char *) ":EXP",exp_[iexp]);
           if (stinsert.step() != SQLITE_DONE){
             std::cout << "method = " << methodkey << std::endl;
             std::cout << "propid = " << it->first << std::endl;
-            std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
+            std::cout << "value = " << it->second[n] << " (" << n << " of " << it->second.size() << "elements)" << std::endl;
             throw std::runtime_error("Failed inserting data in the database (INSERT CALC,assume_order)");
           }
         }
       }
     }
 
-    // write inserted and rejectd
+    // write inserted and rejected
     std::cout << "# Number of terms inserted/rejected/total: " << ninsert << "/"
               << nprop * zat_.size() * exp_.size() - ninsert << "/"
               << nprop * zat_.size() * exp_.size()
