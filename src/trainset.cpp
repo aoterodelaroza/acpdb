@@ -121,8 +121,17 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   // is this set used in the fit? (nofit keyword)
   set_dofit.push_back(kmap.find("NOFIT") == kmap.end());
 
-  //// mask ////
+  //// mask and/mask or ////
   std::vector<bool> set_mask(size,true);
+  bool imask_and = true;
+  if (kmap.find("MASK_AND") != kmap.end())
+    imask_and = true;
+  if (kmap.find("MASK_OR") != kmap.end()){
+    imask_and = false;
+    std::fill(set_mask.begin(), set_mask.end(), false);
+  }
+
+  //// mask ////
   if (kmap.find("MASK_ATOMS") != kmap.end()){
     if (zat.empty())
       throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
@@ -166,7 +175,10 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	}
       }
       n++;
-      set_mask[n] = set_mask[n] & found;
+      if (imask_and)
+	set_mask[n] = set_mask[n] & found;
+      else
+	set_mask[n] = set_mask[n] | found;
     }
   }
   if (kmap.find("MASK_PATTERN") != kmap.end()){
@@ -177,8 +189,12 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     int n = 0;
     while (!tokens.empty())
       pattern[n++] = (popstring(tokens) != "0");
-    for (int i = 0; i < set_mask.size(); i++)
-      set_mask[i] = set_mask[i] & pattern[i % pattern.size()];
+    for (int i = 0; i < set_mask.size(); i++){
+      if (imask_and)
+	set_mask[i] = set_mask[i] & pattern[i % pattern.size()];
+      else
+	set_mask[i] = set_mask[i] | pattern[i % pattern.size()];
+    }
   }
   if (kmap.find("MASK_ITEMS") != kmap.end()){
     std::list<std::string> tokens(list_all_words(kmap["MASK_ITEMS"]));
@@ -191,8 +207,12 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING/SUBSET/MASK_ITEMS");
       set_mask_local[item] = true;
     }
-    for (int i = 0; i < set_mask.size(); i++)
-      set_mask[i] = set_mask[i] & set_mask_local[i];
+    for (int i = 0; i < set_mask.size(); i++){
+      if (imask_and)
+	set_mask[i] = set_mask[i] & set_mask_local[i];
+      else
+	set_mask[i] = set_mask[i] | set_mask_local[i];
+    }
   }
   if (kmap.find("MASK_RANGE") != kmap.end()){
     int istart = 0, iend = size, istep = 1;
@@ -218,9 +238,17 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     std::vector<bool> set_mask_local(size,false);
     for (int i = istart; i < iend; i+=istep)
       set_mask_local[i] = true;
-    for (int i = 0; i < set_mask.size(); i++)
-      set_mask[i] = set_mask[i] & set_mask_local[i];
+    for (int i = 0; i < set_mask.size(); i++){
+      if (imask_and)
+	set_mask[i] = set_mask[i] & set_mask_local[i];
+      else
+	set_mask[i] = set_mask[i] | set_mask_local[i];
+    }
   }
+  for (int i = 0; i < set_mask.size(); i++){
+    printf("%d %d\n",i,(int) set_mask[i]);
+  }
+  exit(1);
 
   // build the propid, size, and final index of the set
   set_size.push_back(0);
