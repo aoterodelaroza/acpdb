@@ -756,10 +756,12 @@ TRAINING
  SUBSET [alias.s]
   SET name.s
   NOFIT
-  MASK_RANGE start.i [end.i [step.i]]
+  MASK_AND
+  MASK_OR
   MASK_ITEMS item1.i item2.i ...
   MASK_PATTERN 0/1 0/1 ...
   MASK_ATOMS
+  MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
   WEIGHT_GLOBAL w.r
   WEIGHT_PATTERN w1.r w2.r w3.r w4.r...
   NORM_REF
@@ -815,18 +817,25 @@ is as follows:
   least-squares fitting routine, and is used only for evaluation
   purposes.
 
-  The `MASK` commands apply a mask to remove some items from the
-  database set. The items indicated in the `MASK` command are used
-  in the training set and the others are deactivated. Four versions of
-  the `MASK` command exist. `RANGE` indicates a range starting at
-  `start.i` up to the end of the subset. If `end.i` is given, stop at
-  `end.i`. If `setp.i` is given, use that as step. `ITEMS` indicates
-  the items from the database set one by one. `PATTERN` repeats a
-  pattern over the items of the set. If `itemn.i` is 0, it means the
-  item is not used and 1 means it is used. `ATOM` or `ATOMS`
-  deactivates all items in the subset that have atoms other than those
-  that are target of ACP development (requires using a previous `ATOM`
-  command).
+  The `MASK` commands apply a mask to remove some items from a certain
+  subset when it is incorporated into the training set. Several masks
+  can be applied, and they are combined either with a logical and (if
+  the `MASK_AND` keyword is used, this is the default) or with a
+  logical or (if `MASK_OR`). By default, no mask is applied, so all
+  the elements in the subset are used in the training set.
+
+  Four versions of the `MASK` command exist. `MASK_ITEMS` givesone by
+  one the number identifiers of the elements from the subset to be
+  incorporated. `MASK_PATTERN` repeats a pattern over the elements of
+  the subset. An element is incorporated if the pattern item is a 1
+  and it is not if it is a 0. `MASK_ATOMS` constructs the mask by
+  selecting only the entries in the subset that contain only the atoms
+  in the training set. Using this mask requires having defined the
+  `ATOMS` previously. Lastly, `MASK_RANGE` indicates a range
+  starting at `start.i` up to `end.i` with `step.i`. The
+  interpretation of `MASK_RANGE` varies depending on whether it is
+  followed by one (`step.i`), two (`start.i` and `step.i`), or three
+  (`start.i`, `step.i`, and `end.i`) integers.
 
   The remaining commands are used to set the weights of the items in
   the subset. The keywords are:
