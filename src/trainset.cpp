@@ -123,102 +123,103 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 
   //// mask ////
   std::vector<bool> set_mask(size,true);
-  if (kmap.find("MASK") != kmap.end()){
-    // set all elements in the mask to zero
-    for (int i = 0; i < set_mask.size(); i++)
-      set_mask[i] = false;
+  if (kmap.find("MASK_ATOMS") != kmap.end()){
+    if (zat.empty())
+      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
 
-    std::list<std::string> tokens(list_all_words(kmap["MASK"]));
-    std::string keyw = popstring(tokens,true);
-
-    if (keyw == "RANGE"){
-      int istart = 0, iend = size, istep = 1;
-
-      // read the start, end, and step
-      if (tokens.empty())
-        throw std::runtime_error("Empty range in TRAINING SUBSET/MASK");
-      istart = std::stoi(popstring(tokens)) - 1;
-      if (!tokens.empty()){
-        iend = std::stoi(popstring(tokens));
-        if (!tokens.empty())
-          istep = std::stoi(tokens.front());
+    // build the array of structures that contain only the atoms in the zat array
+    std::unordered_map<int,bool> usest;
+    statement st(db->ptr(),"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+    while (st.step() != SQLITE_DONE){
+      int id = sqlite3_column_int(st.ptr(),0);
+      int nat = sqlite3_column_int(st.ptr(),1);
+      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+      bool res = true;
+      for (int j = 0; j < nat; j++){
+	bool found = false;
+	for (int k = 0; k < zat.size(); k++){
+	  if (zat[k] == zat_[j]){
+	    found = true;
+	    break;
+	  }
+	}
+	if (!found){
+	  res = false;
+	  break;
+	}
       }
-      if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0)
-        throw std::runtime_error("Invalid range in TRAINING SUBSET/MASK");
-
-      // reassign the mask and the size for this set
-      for (int i = istart; i < iend; i+=istep)
-        set_mask[i] = true;
-
-    } else if (keyw == "ITEMS") {
-      if (tokens.empty())
-        throw std::runtime_error("Empty item list in TRAINING SUBSET/MASK");
-      while (!tokens.empty()){
-        int item = std::stoi(popstring(tokens)) - 1;
-        if (item < 0 || item >= size)
-          throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING SUBSET/MASK");
-        set_mask[item] = true;
-      }
-
-    } else if (keyw == "PATTERN") {
-      if (tokens.empty())
-        throw std::runtime_error("Empty pattern in TRAINING SUBSET/MASK");
-      std::vector<bool> pattern(tokens.size(),false);
-      int n = 0;
-      while (!tokens.empty())
-        pattern[n++] = (popstring(tokens) != "0");
-      for (int i = 0; i < set_mask.size(); i++)
-        set_mask[i] = pattern[i % pattern.size()];
-
-    } else if (keyw == "ATOM" || keyw == "ATOMS") {
-      if (zat.empty())
-        throw std::runtime_error("ATOMS in TRAINING SUBSET/MASK is not possible if no atoms have been defined");
-
-      // build the array of structures that contain only the atoms in the zat array
-      std::unordered_map<int,bool> usest;
-      statement st(db->ptr(),"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
-      while (st.step() != SQLITE_DONE){
-        int id = sqlite3_column_int(st.ptr(),0);
-        int nat = sqlite3_column_int(st.ptr(),1);
-        unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
-
-        bool res = true;
-        for (int j = 0; j < nat; j++){
-          bool found = false;
-          for (int k = 0; k < zat.size(); k++){
-            if (zat[k] == zat_[j]){
-              found = true;
-              break;
-            }
-          }
-          if (!found){
-            res = false;
-            break;
-          }
-        }
-        usest[id] = res;
-      }
-
-      // run over the properties in this set and write the mask
-      st.recycle("SELECT nstructures,structures FROM Properties WHERE setid = " +
-                 std::to_string(setid[sid]) + " ORDER BY orderid;");
-      int n = 0;
-      while (st.step() != SQLITE_DONE){
-        int nstr = sqlite3_column_int(st.ptr(),0);
-        int *str = (int *) sqlite3_column_blob(st.ptr(),1);
-
-        bool found = false;
-        for (int i = 0; i < nstr; i++){
-          if (!usest[str[i]]){
-            found = true;
-            break;
-          }
-        }
-        set_mask[n++] = !found;
-      }
-    } else {
-      throw std::runtime_error("Unknown category " + keyw + " in TRAINING SUBSET/MASK");
+      usest[id] = res;
     }
+
+    // run over the properties in this set and write the mask
+    st.recycle("SELECT nstructures,structures FROM Properties WHERE setid = " +
+	       std::to_string(setid[sid]) + " ORDER BY orderid;");
+    int n = 0;
+    while (st.step() != SQLITE_DONE){
+      int nstr = sqlite3_column_int(st.ptr(),0);
+      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+      bool found = false;
+      for (int i = 0; i < nstr; i++){
+	if (!usest[str[i]]){
+	  found = true;
+	  break;
+	}
+      }
+      n++;
+      set_mask[n] = set_mask[n] & found;
+    }
+  }
+  if (kmap.find("MASK_PATTERN") != kmap.end()){
+    std::list<std::string> tokens(list_all_words(kmap["MASK_PATTERN"]));
+    if (tokens.empty())
+      throw std::runtime_error("Empty pattern in TRAINING/SUBSET/MASK_PATTERN");
+    std::vector<bool> pattern(tokens.size(),false);
+    int n = 0;
+    while (!tokens.empty())
+      pattern[n++] = (popstring(tokens) != "0");
+    for (int i = 0; i < set_mask.size(); i++)
+      set_mask[i] = set_mask[i] & pattern[i % pattern.size()];
+  }
+  if (kmap.find("MASK_ITEMS") != kmap.end()){
+    std::list<std::string> tokens(list_all_words(kmap["MASK_ITEMS"]));
+    if (tokens.empty())
+      throw std::runtime_error("Empty item list in TRAINING/SUBSET/MASK_ITEMS");
+    std::vector<bool> set_mask_local(size,false);
+    while (!tokens.empty()){
+      int item = std::stoi(popstring(tokens)) - 1;
+      if (item < 0 || item >= size)
+	throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING/SUBSET/MASK_ITEMS");
+      set_mask_local[item] = true;
+    }
+    for (int i = 0; i < set_mask.size(); i++)
+      set_mask[i] = set_mask[i] & set_mask_local[i];
+  }
+  if (kmap.find("MASK_RANGE") != kmap.end()){
+    int istart = 0, iend = size, istep = 1;
+    std::list<std::string> tokens(list_all_words(kmap["MASK_RANGE"]));
+
+    // read the start, end, and step
+    if (tokens.empty())
+      throw std::runtime_error("Empty range in TRAINING/SUBSET/MASK_RANGE");
+    else if (tokens.size() == 1)
+      istep = std::stoi(tokens.front());
+    else if (tokens.size() == 2){
+      istart = std::stoi(popstring(tokens)) - 1;
+      istep = std::stoi(tokens.front());
+    } else if (tokens.size() == 3){
+      istart = std::stoi(popstring(tokens)) - 1;
+      istep = std::stoi(popstring(tokens));
+      iend = std::stoi(tokens.front());
+    }
+    if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0)
+      throw std::runtime_error("Invalid range in TRAINING/SUBSET/MASK_RANGE");
+
+    // reassign the mask and the size for this set
+    std::vector<bool> set_mask_local(size,false);
+    for (int i = istart; i < iend; i+=istep)
+      set_mask_local[i] = true;
+    for (int i = 0; i < set_mask.size(); i++)
+      set_mask[i] = set_mask[i] & set_mask_local[i];
   }
 
   // build the propid, size, and final index of the set
