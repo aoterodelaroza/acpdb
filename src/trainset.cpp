@@ -174,11 +174,11 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	  break;
 	}
       }
-      n++;
       if (imask_and)
-	set_mask[n] = set_mask[n] & found;
+	set_mask[n] = set_mask[n] & !found;
       else
-	set_mask[n] = set_mask[n] | found;
+	set_mask[n] = set_mask[n] | !found;
+      n++;
     }
   }
   if (kmap.find("MASK_PATTERN") != kmap.end()){
