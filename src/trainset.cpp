@@ -1138,7 +1138,7 @@ ORDER BY Training_set.id;
           ofile.write((const char *) value,len * sizeof(double));
         }
         if (n != nrows)
-          throw std::runtime_error("Too few rows dumping terms data");
+          throw std::runtime_error("Too few rows dumping terms data. Is the training data complete?");
       }
     }
   }
