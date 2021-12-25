@@ -245,10 +245,6 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	set_mask[i] = set_mask[i] | set_mask_local[i];
     }
   }
-  for (int i = 0; i < set_mask.size(); i++){
-    printf("%d %d\n",i,(int) set_mask[i]);
-  }
-  exit(1);
 
   // build the propid, size, and final index of the set
   set_size.push_back(0);
