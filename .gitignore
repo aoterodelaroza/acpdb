@@ -1,5 +1,6 @@
 # private design files
 db-design.org
+.cache/
 
 # databases from tests
 *.db
