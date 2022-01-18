@@ -23,7 +23,7 @@ atom-centered potentials (ACPs).
 
 ## Command-Line Syntax
 ~~~
-apcdb [-h] [inputfile [outputfile]]
+acpdb [-h] [inputfile [outputfile]]
 ~~~
 The input file is a keyword-driven case-insensitive text
 file. Comments start with # and continued lines end with a backslash
