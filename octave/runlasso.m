@@ -123,7 +123,7 @@ for it = 1:length(tlist)
       printf("it = %d, wrms = %.5f, delta-wrms = %.5f\n",n,wrms,abs(wrms-wrmsold));
       ## run a LASSO fit for the ACP coefficients
       ytilde1 = y - xtilde2 * wadd;
-      [w,iteration] = LassoActiveSet(xtilde1,ytilde1,t,'optTol',1e-9,'zeroThreshold',1e-9,'mode',1);
+      [w,iteration] = LassoActiveSet(xtilde1,ytilde1,t,'optTol',1e-9,'zeroThreshold',1e-9);
 
       ## run a normal LS for the additional terms
       ytilde2 = y - xtilde1 * w;
@@ -143,7 +143,7 @@ for it = 1:length(tlist)
       for i = 1:columns(x)
         xtilde(:,i) = x(:,i) * factor(i);
       endfor
-      [w,iteration] = LassoActiveSet(xtilde,y,t,'optTol',1e-9,'zeroThreshold',1e-9,'mode',1);
+      [w,iteration] = LassoActiveSet(xtilde,y,t,'optTol',1e-9,'zeroThreshold',1e-9);
       for i = 1:length(w)
         w(i) = w(i) * factor(i);
       endfor
@@ -164,7 +164,7 @@ for it = 1:length(tlist)
     endwhile
     clear xtilde factor changed
   else
-    [w,iteration] = LassoActiveSet(x,y,t,'optTol',1e-9,'zeroThreshold',1e-9,'mode',1);
+    [w,iteration] = LassoActiveSet(x,y,t,'optTol',1e-9,'zeroThreshold',1e-9);
   endif
 
   ## Calculate the wrms and print the line
