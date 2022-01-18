@@ -765,6 +765,7 @@ TRAINING
   WEIGHT_GLOBAL w.r
   WEIGHT_PATTERN w1.r w2.r w3.r w4.r...
   NORM_REF
+  NORM_REFSQRT
   NORM_NITEM
   NORM_NITEMSQRT
   WEIGHT_ITEMS i1.i w1.r i2.i w2.r ...
@@ -849,13 +850,17 @@ is as follows:
     the fourth, etc.
 
   * `NORM_REF`: divide all weights by the mean absolute reference
-    value of each set.
+    value of each set. Incompatible with `NORM_REFSQRT`.
+
+  * `NORM_REFSQRT`: divide all weights by the square root of the mean
+    absolute reference value of each set. Incompatible with
+    `NORM_REF`.
 
   * `NORM_NITEM`: divide all weights by the number of items in each
-    set.
+    set. Incompatible with `NORM_NITEMSQRT`.
 
   * `NORM_NITEMSQRT`: divide all weights by the square root of the
-    number of items in each set.
+    number of items in each set. Incompatible with `NORM_NITEM`.
 
   * `WEIGHT_ITEM i1.i w1.r ...` gives specific weights to individual
     items in the set (weight `w1.r` to item `i1.i`, etc.). Note that
