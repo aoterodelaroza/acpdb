@@ -280,6 +280,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   }
 
   bool norm_ref = (kmap.find("NORM_REF") != kmap.end());
+  bool norm_refsqrt = (kmap.find("NORM_REFSQRT") != kmap.end());
   bool norm_nitem = (kmap.find("NORM_NITEM") != kmap.end());
   bool norm_nitemsqrt = (kmap.find("NORM_NITEMSQRT") != kmap.end());
 
@@ -309,7 +310,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     norm *= set_size[sid];
   if (norm_nitemsqrt && set_size[sid] > 0)
     norm *= std::sqrt(set_size[sid]);
-  if (norm_ref && set_size[sid] > 0){
+  if ((norm_ref || norm_refsqrt) && set_size[sid] > 0){
     statement st(db->ptr(),R"SQL(
 SELECT length(value), value FROM Training_set, Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
@@ -331,8 +332,10 @@ WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Trai
     }
     dsum = dsum / ndat;
 
-    if (std::abs(dsum) > 1e-40)
+    if (norm_ref && std::abs(dsum) > 1e-40)
       norm *= dsum;
+    else if (norm_ref && std::abs(dsum) > 1e-40)
+      norm *= std::sqrt(dsum);
     else
       throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
   }
