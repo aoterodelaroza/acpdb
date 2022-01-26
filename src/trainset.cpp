@@ -812,7 +812,7 @@ void trainset::write_olddat(std::ostream &os, const std::string &directory/*="./
    std::ofstream ofile(fname,std::ios::trunc);
    if (ofile.fail())
      throw std::runtime_error("Error writing file: " + fname);
-   fname = dir + "/refs.dat";
+   fname = dir + "/ref.dat";
    std::ofstream ofile2(fname,std::ios::trunc);
    if (ofile2.fail())
      throw std::runtime_error("Error writing file: " + fname);
@@ -852,12 +852,48 @@ ORDER BY Training_set.id;
    }
    ofile.close();
 
+   // the w.dat file
+   ofile.clear();
+   fname = dir + "/w.dat";
+   ofile.open(fname);
+   if (ofile.fail())
+     throw std::runtime_error("Error writing file: " + fname);
+   ofile << std::scientific;
+   ofile.precision(15);
+   unsigned long int n = 0;
+   for (int i = 0; i < setid.size(); i++){
+     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
+       if (set_dofit[i])
+	 ofile << w[n] << std::endl;
+       n++;
+     }
+   }
+   ofile.close();
+
+   // the empty.dat file
+   ofile.clear();
+   fname = dir + "/empty.dat";
+   ofile.open(fname);
+   if (ofile.fail())
+     throw std::runtime_error("Error writing file: " + fname);
+   ofile << std::scientific;
+   ofile.precision(15);
+   st.reset();
+   st.bind(1,emptyid);
+   while (st.step() != SQLITE_DONE){
+     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+     ofile << val[0] << std::endl;
+   }
+   ofile.close();
+
+
    // the x_y_z.dat files
    st.recycle(R"SQL(
-SELECT Terms.value
-FROM Terms, Training_set, Properties
+SELECT Terms.value, Evaluations.value
+FROM Terms, Training_set, Properties, Evaluations
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
       AND Training_set.propid = Properties.id AND Properties.property_type = 1
+      AND Properties.id = Evaluations.propid AND Evaluations.methodid = Terms.methodid
 ORDER BY Training_set.id;
 )SQL");
    for (int iz = 0; iz < zat.size(); iz++){
@@ -882,7 +918,9 @@ ORDER BY Training_set.id;
 	   if (n++ >= nrows)
 	     throw std::runtime_error("Too many rows writing terms data");
 	   double *val = (double *) sqlite3_column_blob(st.ptr(),0);
-	   ofile << val[0] << std::endl;
+	   double *empty = (double *) sqlite3_column_blob(st.ptr(),1);
+	   double e0 = empty[0] + 0.001 * val[0];
+	   ofile << e0 << std::endl;
 	 }
 	 if (n != nrows)
 	   throw std::runtime_error("Too few rows writing terms data. Is the training data complete?");
