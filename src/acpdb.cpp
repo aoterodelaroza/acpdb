@@ -419,6 +419,8 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(*os,a);
       } else if (category == "INSERT_OLD"){
         ts.insert_olddat(*os,name);
+      } else if (category == "WRITE_OLD"){
+        ts.write_olddat(*os,name);
       } else if (category == "DUMP") {
         *os << "* TRAINING: dumping to an octave file " << std::endl << std::endl;
         ts.dump();

@@ -791,6 +791,107 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   os << std::endl;
 }
 
+// Write training set data to data files in old-style format
+void trainset::write_olddat(std::ostream &os, const std::string &directory/*="./"*/){
+  if (!db || !(*db))
+    throw std::runtime_error("A database file must be connected before using TRAINING WRITE_OLD");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using TRAINING WRITE_OLD");
+
+  os << "* TRAINING: write data in the old (acpfit) format " << std::endl << std::endl;
+
+   // Check directory
+   std::string dir = ".";
+   if (!directory.empty()) dir = directory;
+   if (!fs::is_directory(dir))
+     throw std::runtime_error("In TRAINING WRITE_OLD, directory not found: " + dir);
+
+   // write the names.dat and ref.dat
+   unsigned long int nrows = 0;
+   std::string fname = dir + "/names.dat";
+   std::ofstream ofile(fname,std::ios::trunc);
+   if (ofile.fail())
+     throw std::runtime_error("Error writing file: " + fname);
+   fname = dir + "/refs.dat";
+   std::ofstream ofile2(fname,std::ios::trunc);
+   if (ofile2.fail())
+     throw std::runtime_error("Error writing file: " + fname);
+   ofile2 << std::scientific;
+   ofile2.precision(15);
+   statement st(db->ptr(),R"SQL(
+SELECT Properties.key, Evaluations.value
+FROM Properties, Training_set, Evaluations
+WHERE Properties.id = Training_set.propid AND Properties.id = Evaluations.propid AND Evaluations.methodid = ?1 AND Properties.property_type = 1
+ORDER BY Training_set.id;
+)SQL");
+   st.bind(1,refid);
+   while (st.step() != SQLITE_DONE){
+     const unsigned char *key = sqlite3_column_text(st.ptr(), 0);
+     ofile << key << std::endl;
+
+     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+     ofile2 << val[0] << std::endl;
+     nrows++;
+   }
+   ofile.close();
+   ofile2.close();
+
+   // the empty.dat
+   ofile.clear();
+   fname = dir + "/empty.dat";
+   ofile.open(fname);
+   if (ofile.fail())
+     throw std::runtime_error("Error writing file: " + fname);
+   ofile << std::scientific;
+   ofile.precision(15);
+   st.reset();
+   st.bind(1,emptyid);
+   while (st.step() != SQLITE_DONE){
+     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+     ofile << val[0] << std::endl;
+   }
+   ofile.close();
+
+   // the x_y_z.dat files
+   st.recycle(R"SQL(
+SELECT Terms.value
+FROM Terms, Training_set, Properties
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+      AND Training_set.propid = Properties.id AND Properties.property_type = 1
+ORDER BY Training_set.id;
+)SQL");
+   for (int iz = 0; iz < zat.size(); iz++){
+     for (int il = 0; il <= lmax[iz]; il++){
+       for (int ie = 0; ie < exp.size(); ie++){
+	 std::string atom = nameguess(zat[iz]);
+	 lowercase(atom);
+	 fname = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(ie+1) + ".dat";
+	 ofile.clear();
+	 ofile.open(fname);
+	 if (ofile.fail())
+	   throw std::runtime_error("Error writing file: " + fname);
+	 ofile << std::scientific;
+	 ofile.precision(15);
+	 st.reset();
+	 st.bind((char *) ":METHOD",emptyid);
+	 st.bind((char *) ":ATOM",(int) zat[iz]);
+	 st.bind((char *) ":L",il);
+	 st.bind((char *) ":EXP",exp[ie]);
+	 int n = 0;
+	 while (st.step() != SQLITE_DONE){
+	   if (n++ >= nrows)
+	     throw std::runtime_error("Too many rows writing terms data");
+	   double *val = (double *) sqlite3_column_blob(st.ptr(),0);
+	   ofile << val[0] << std::endl;
+	 }
+	 if (n != nrows)
+	   throw std::runtime_error("Too few rows writing terms data. Is the training data complete?");
+	 ofile.close();
+       }
+     }
+   }
+}
+
 // Evaluate an ACP on the current training set.
 void trainset::eval_acp(std::ostream &os, const acp &a) const{
   if (!db || !(*db))
@@ -1075,7 +1176,7 @@ void trainset::dump() const {
     if (!addisfit[i]) iaddperm.push_back(i);
 
   // calculate the number of rows and the weights with only the dofit sets
-  // write the yref, yempt, and yadd columns
+  // write the yref, yempty, and yadd columns
   statement st(db->ptr(),R"SQL(
 SELECT length(Evaluations.value)
 FROM Evaluations

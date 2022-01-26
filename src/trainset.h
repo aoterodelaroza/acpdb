@@ -70,6 +70,9 @@ class trainset {
   // template
   void insert_olddat(std::ostream &os, const std::string &directory="./");
 
+  // Write training set data to data files in old-style format
+  void write_olddat(std::ostream &os, const std::string &directory="./");
+
   // Is the training set defined?
   inline bool isdefined() const{
     return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() &&
