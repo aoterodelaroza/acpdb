@@ -52,7 +52,7 @@ while iteration < maxIter
             if mode == 0
                 [Q,R] = qr(XX(sigma,sigma),0);
             else
-                [Q,R] = qr(X(:,sigma));
+                [Q,R] = qr(X(:,sigma),0);
             end
         else
             [junk qrPos] = max(abs(sigma(sigma)-sigma_old(sigma)));
@@ -137,7 +137,7 @@ while iteration < maxIter
                 [Q,R] = qr(XX(sigma,sigma),0); % Could do a qr delete here instead
                 [beta_t,h] = solveKKT(sigma,theta_sigma,beta_sigma,Xy_sigma,Q,R,y,t,beta);
             else
-                [Q,R] = qr(X(:,sigma)); % Could do a qr delete here instead
+                [Q,R] = qr(X(:,sigma),0); % Could do a qr delete here instead
                 [beta_t,h] = solveKKT2(sigma,theta_sigma,beta_sigma,Q,R,y,t,beta);
             end
             
