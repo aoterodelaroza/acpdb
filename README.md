@@ -226,10 +226,8 @@ INSERT SET name.s
 END
 ~~~
 Insert a set with name `name.s` in the database with the given
-description. The set calculates property `prop.s` (alternatively, it
-can be given by its ID from Property_types, `prop.i`). One or more
-literature references associated with the set can be given by either
-their key or numerical id.
+description. One or more literature references associated with the set
+can be given by either their key or numerical id.
 
 ~~~
 INSERT SET name.s
@@ -261,6 +259,7 @@ INSERT SET name.s
   DIN file.s
   [DIRECTORY directory.s]
   [METHOD method.s]
+  [PREFIX prefix.s]
 END
 ~~~
 Add the set with name `name.s` in the same way as above. In addition,
@@ -271,6 +270,26 @@ corresponding properties and the corresponding evaluations with method
 `method.s` (the property type for the properties is assumed to be
 ENERGY_DIFFERENCE). If no METHOD is given, the evaluations are not
 inserted.
+
+The name of the inserted structures is the structure file name (minus
+the extension) preceded by a prefix (`prefix.s`). The name of the
+inserted properties is determined by the "@fieldasrxn" keyword in the
+din file header. It can be:
+
+- 999: the name is given as a separate field right after the reference
+  energy.
+
+- A number > 0: the corresponding structure name in order of
+  appearance in the din file formula.
+
+- Anything else: a concatenation of all the structure names separated
+  by an underscore.
+
+The property name constructed in this way is preceded by the same
+prefix as in the structure name (`prefix.s`). By default, this prefix
+is the set name (`name.s`) followed by a dot, but can be changed with
+the PREFIX keyword. If no prefix follows the PREFIX keyword, the
+prefix is removed.
 
 #### Methods
 
