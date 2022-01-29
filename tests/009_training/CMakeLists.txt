@@ -14,6 +14,7 @@ set(TESTS
   013_dump                    ## octave dump
   014_insert_many_terms_slope ## insert many terms, with slope
   015_write_terms_loop        ## write terms, many, in loop
+  016_write_old               ## write_old keyword in training
 )
 
 runtests(${TESTS})
