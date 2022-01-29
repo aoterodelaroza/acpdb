@@ -1387,6 +1387,11 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   if (!get_key_and_id(key,"Sets",strdum,setid))
     throw std::runtime_error("Invalid set ID or key in INSERT_SET_DIN");
 
+  // prefix
+  std::string prefix = key + ".";
+  if (kmap.find("PREFIX") != kmap.end())
+    prefix = kmap.at("PREFIX");
+
   // open the din file
   std::ifstream ifile(din,std::ios::in);
   if (ifile.fail())
@@ -1472,7 +1477,7 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
     int n = info[k].names.size();
     for (int i = 0; i < n; i++){
       if (used.find(info[k].names[i]) == used.end()){
-        skey = key + "." + info[k].names[i];
+        skey = prefix + info[k].names[i];
         st.bind((char *) ":KEY",skey);
         st.bind((char *) ":SETID",setid);
 
@@ -1509,11 +1514,11 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL");
     if (fieldasrxn == 999)
-      skey = key + "." + info[k].pkey;
+      skey = prefix + info[k].pkey;
     else if (fieldasrxn != 0)
-      skey = key + "." + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
+      skey = prefix + info[k].names[fieldasrxn>0?fieldasrxn-1:n+fieldasrxn];
     else{
-      skey = key + "." + info[k].names[0];
+      skey = prefix + info[k].names[0];
       for (int i = 1; i < info[k].names.size(); i++)
         skey += "_" + info[k].names[i];
     }
@@ -1525,7 +1530,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     int strid[n];
     double coef[n];
     for (int i = 0; i < n; i++){
-      std::string strkey = key + "." + info[k].names[i];
+      std::string strkey = prefix + info[k].names[i];
       strid[i] = find_id_from_key(strkey,"Structures");
       coef[i] = info[k].coefs[i];
     }
