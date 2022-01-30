@@ -71,6 +71,7 @@ Creating skeleton database
 | H | l | 0.1 | 0/2 | (missing)
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
+# The training set is NOT COMPLETE.
 
 %% insert calc
 * INSERT: insert data into the database (CALC)
@@ -111,4 +112,5 @@ Creating skeleton database
 | H | l | 0.1 | 2/2 | (complete)
 | H | l | 0.2 | 2/2 | (complete)
 # Total terms: 4/4 (complete)
+# The training set is COMPLETE.
 

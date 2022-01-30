@@ -62,8 +62,12 @@ class trainset {
   // Add an additional method
   void addadditional(const std::list<std::string> &tokens);
 
-  // Describe the current training set
-  void describe(std::ostream &os, bool except_on_undefined, bool full) const;
+  // Describe the current training set. If except_on_undefined, throw
+  // an exception if the training set is not fully defined. If full,
+  // check if all the data for the training set is available - in this
+  // case, the routine sets the complete flag. If quiet, write only a
+  // few messages to the output.
+  void describe(std::ostream &os, bool except_on_undefined, bool full, bool quiet);
 
   // Insert data in bulk into the database using data files from
   // previous ACP development programs using this training set as
@@ -83,7 +87,7 @@ class trainset {
   void write_din(const std::string &directory="") const;
 
   // Evaluate an ACP on the current training set
-  void eval_acp(std::ostream &os, const acp &a) const;
+  void eval_acp(std::ostream &os, const acp &a);
 
   // Save the current training set to the database
   void savedb(std::string &name) const;
@@ -98,7 +102,7 @@ class trainset {
   void listdb(std::ostream &os) const;
 
   // Write the octavedump.dat file
-  void dump() const;
+  void dump(std::ostream &os);
 
   // Write input files or structure files for the training set
   // structures. Pass the options other than TRAINING and the ACP to the
@@ -137,6 +141,9 @@ class trainset {
   //// Variables ////
 
   sqldb *db; // Database pointer
+
+  enum completetype { c_unknown, c_no, c_yes };
+  completetype complete = c_unknown; // whether the training set is complete
 
   int ntot; // Total number of properties in the training set
 

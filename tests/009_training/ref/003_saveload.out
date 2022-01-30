@@ -377,6 +377,7 @@ Creating skeleton database
 | O | p | 0.2 | 0/30 | (missing)
 | O | p | 0.3 | 0/30 | (missing)
 # Total terms: 0/630 (missing)
+# The training set is NOT COMPLETE.
 
 %% training save bleh
 %% training print
@@ -483,6 +484,7 @@ Creating skeleton database
 | O | p | 0.2 | 0/30 | (missing)
 | O | p | 0.3 | 0/30 | (missing)
 # Total terms: 0/630 (missing)
+# The training set is NOT COMPLETE.
 
 %% training delete bleh
 %% training print

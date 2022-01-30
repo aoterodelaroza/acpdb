@@ -87,6 +87,7 @@ Creating skeleton database
 | H | l | 0.1 | 2/2 | (complete)
 | H | l | 0.2 | 2/2 | (complete)
 # Total terms: 4/4 (complete)
+# The training set is COMPLETE.
 
 %% write
 * WRITE: write input files for database structures

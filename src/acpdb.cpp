@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
       if (intraining){
         intraining = false;
         *os << "* TRAINING: fininshed defining the training set " << std::endl << std::endl;
-        ts.describe(*os,false,true);
+        ts.describe(*os,false,true,false);
       } else
         break;
 
@@ -240,11 +240,11 @@ int main(int argc, char *argv[]) {
       std::string category = popstring(tokens,true);
       if (category.length() == 0){
         db.printsummary(*os,false);
-        ts.describe(*os,false,false);
+        ts.describe(*os,false,false,false);
         ts.listdb(*os);
       } else if (category == "FULL") {
         db.printsummary(*os,true);
-        ts.describe(*os,false,true);
+        ts.describe(*os,false,true,false);
         ts.listdb(*os);
       } else if (category == "DIN") {
         std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
@@ -382,7 +382,7 @@ int main(int argc, char *argv[]) {
         ts = trainset();
         ts.setdb(&db);
       } else if (category == "DESCRIBE") {
-        ts.describe(*os,false,true);
+        ts.describe(*os,false,true,false);
       } else if (category == "SAVE") {
         ts.savedb(name);
       } else if (category == "LOAD") {
@@ -422,8 +422,7 @@ int main(int argc, char *argv[]) {
       } else if (category == "WRITE_OLD"){
         ts.write_olddat(*os,name);
       } else if (category == "DUMP") {
-        *os << "* TRAINING: dumping to an octave file " << std::endl << std::endl;
-        ts.dump();
+        ts.dump(*os);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }

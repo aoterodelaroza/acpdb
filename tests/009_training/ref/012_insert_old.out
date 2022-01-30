@@ -63,6 +63,7 @@ Creating skeleton database
 | H | l | 0.1 | 0/2 | (missing)
 | H | l | 0.2 | 0/2 | (missing)
 # Total terms: 0/4 (missing)
+# The training set is NOT COMPLETE.
 
 %% training insert_old ../zz_source/olddat
 * TRAINING: insert data in the old format 

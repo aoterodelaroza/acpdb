@@ -71,6 +71,7 @@ void trainset::addatoms(const std::list<std::string> &tokens){
     zat.push_back(zat_);
     lmax.push_back(lmax_);
   }
+  complete = c_unknown;
 }
 
 // Add exponents.
@@ -82,6 +83,7 @@ void trainset::addexp(const std::list<std::string> &tokens){
 
     exp.push_back(e_);
   }
+  complete = c_unknown;
 }
 
 // Add a subset (combination of set, mask, weights)
@@ -351,6 +353,7 @@ WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Trai
       throw std::runtime_error("Item weight out of bounds in TRAINING SUBSET");
     w[id] = witem[i].second;
   }
+  complete = c_unknown;
 }
 
 // Set the reference method
@@ -366,6 +369,7 @@ void trainset::setreference(const std::list<std::string> &tokens){
   refid = db->find_id_from_key(refname,"Methods");
   if (refid == 0)
     throw std::runtime_error("METHOD identifier not found in database (" + refname + ") in TRAINING REFRENCE");
+  complete = c_unknown;
 }
 
 // Set the empty method
@@ -382,6 +386,7 @@ void trainset::setempty(const std::list<std::string> &tokens){
 
   emptyname = name;
   emptyid = idx;
+  complete = c_unknown;
 }
 
 // Add an additional method
@@ -401,15 +406,17 @@ void trainset::addadditional(const std::list<std::string> &tokens){
   addname.push_back(name);
   addid.push_back(idx);
   addisfit.push_back(++it != tokens.end() && equali_strings(*it,"FIT"));
+  complete = c_unknown;
 }
 
 // Describe the current training set
-void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) const {
+void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, bool quiet) {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using DESCRIBE");
 
   os << "## Description of the training set" << std::endl;
   if (!isdefined()){
+    complete = c_no;
     os << "# The TRAINING SET is NOT DEFINED" << std::endl;
     if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
     if (lmax.empty()) os << "--- No angular momenta found (LMAX) ---" << std::endl;
@@ -428,55 +435,65 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full) c
   std::streamsize prec = os.precision(10);
 
   // Atoms and lmax //
-  os << "# List of atoms and maximum angular momentum channels (" << zat.size() << ")" << std::endl;
-  os << "| Atom | lmax |" << std::endl;
-  for (int i = 0; i < zat.size(); i++){
-    os << "| " << nameguess(zat[i]) << " | " << globals::inttol[lmax[i]] << " |" << std::endl;
+  if (!quiet){
+    os << "# List of atoms and maximum angular momentum channels (" << zat.size() << ")" << std::endl;
+    os << "| Atom | lmax |" << std::endl;
+    for (int i = 0; i < zat.size(); i++){
+      os << "| " << nameguess(zat[i]) << " | " << globals::inttol[lmax[i]] << " |" << std::endl;
+    }
+    os << std::endl;
   }
-  os << std::endl;
 
   // Exponents //
-  os << "# List of exponents (" << exp.size() << ")" << std::endl;
-  os << "| id | exp |" << std::endl;
-  for (int i = 0; i < exp.size(); i++){
-    os << "| " << i << " | " << exp[i] << " |" << std::endl;
+  if (~quiet){
+    os << "# List of exponents (" << exp.size() << ")" << std::endl;
+    os << "| id | exp |" << std::endl;
+    for (int i = 0; i < exp.size(); i++){
+      os << "| " << i << " | " << exp[i] << " |" << std::endl;
+    }
+    os << std::endl;
   }
-  os << std::endl;
 
   // Sets //
   statement st(db->ptr(),"SELECT litrefs, description FROM Sets WHERE id = ?1;");
-  os << "# List of subsets (" << setname.size() << ")" << std::endl;
-  os << "| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |" << std::endl;
-  for (int i = 0; i < setname.size(); i++){
-    st.reset();
-    st.bind(1,setid[i]);
-    st.step();
-    const char *litref = (const char *) sqlite3_column_text(st.ptr(), 0);
-    const char *description = (const char *) sqlite3_column_text(st.ptr(), 1);
+  if (!quiet){
+    os << "# List of subsets (" << setname.size() << ")" << std::endl;
+    os << "| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |" << std::endl;
+    for (int i = 0; i < setname.size(); i++){
+      st.reset();
+      st.bind(1,setid[i]);
+      st.step();
+      const char *litref = (const char *) sqlite3_column_text(st.ptr(), 0);
+      const char *description = (const char *) sqlite3_column_text(st.ptr(), 1);
 
-    os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i]
-       << " | " << set_initial_idx[i]+1
-       << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i]
-       << " | " << (litref?litref:"") << " | "
-       << (description?description:"") << " |" << std::endl;
+      os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i]
+	 << " | " << set_initial_idx[i]+1
+	 << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i]
+	 << " | " << (litref?litref:"") << " | "
+	 << (description?description:"") << " |" << std::endl;
+    }
+    os << std::endl;
   }
-  os << std::endl;
 
   // Methods //
-  os << "# List of methods" << std::endl;
-  os << "| type | name | id | for fit? |" << std::endl;
-  os << "| reference | " << refname << " | " << refid << " | n/a |" << std::endl;
-  os << "| empty | " << emptyname << " | " << emptyid << " | n/a |" << std::endl;
-  for (int i = 0; i < addname.size() ; i++){
-    os << "| additional | " << addname[i] << " | " << addid[i] << " | " << (addisfit[i]?"yes":"no") << " |" << std::endl;
+  if (!quiet){
+    os << "# List of methods" << std::endl;
+    os << "| type | name | id | for fit? |" << std::endl;
+    os << "| reference | " << refname << " | " << refid << " | n/a |" << std::endl;
+    os << "| empty | " << emptyname << " | " << emptyid << " | n/a |" << std::endl;
+    for (int i = 0; i < addname.size() ; i++){
+      os << "| additional | " << addname[i] << " | " << addid[i] << " | " << (addisfit[i]?"yes":"no") << " |" << std::endl;
+    }
+    os << std::endl;
   }
-  os << std::endl;
 
   // the long lists
   if (full){
     // Properties //
-    os << "# List of properties (" << ntot << ")" << std::endl;
-    os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
+    if (!quiet){
+      os << "# List of properties (" << ntot << ")" << std::endl;
+      os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
+    }
     st.recycle(R"SQL(
 SELECT Properties.id, Properties.key, Properties.nstructures, length(Evaluations.value), Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
 FROM Properties
@@ -505,17 +522,21 @@ ORDER BY Training_set.id;
         throw std::runtime_error("Could not find set id in DESCRIBE");
       int sid = it - setid.begin();
 
-      os << "| " << (isfit?"yes":"no") << " | " << n+1 << " | " << sqlite3_column_text(st.ptr(), 1)
-         << " | " << sqlite3_column_int(st.ptr(), 0)
-         << " | " << alias[sid] << " | " << setname[sid] << " | " << sqlite3_column_text(st.ptr(), 5)
-         << " | " << sqlite3_column_int(st.ptr(), 2)
-         << " | " << w[n] << " | " << valstr << " |" << std::endl;
+      if (!quiet){
+	os << "| " << (isfit?"yes":"no") << " | " << n+1 << " | " << sqlite3_column_text(st.ptr(), 1)
+	   << " | " << sqlite3_column_int(st.ptr(), 0)
+	   << " | " << alias[sid] << " | " << setname[sid] << " | " << sqlite3_column_text(st.ptr(), 5)
+	   << " | " << sqlite3_column_int(st.ptr(), 2)
+	   << " | " << w[n] << " | " << valstr << " |" << std::endl;
+      }
       n++;
     }
-    os << std::endl;
+    if (!quiet)
+      os << std::endl;
 
     // Completion //
-    os << "# Calculation completion for the current training set" << std::endl;
+    if (!quiet)
+      os << "# Calculation completion for the current training set" << std::endl;
 
     // number of evaluations to be done
     st.recycle("SELECT COUNT(DISTINCT Training_set.propid) FROM Training_set;");
@@ -549,10 +570,12 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
       ncalc_add[j] = sqlite3_column_int(st.ptr(), 0);
       st.reset();
     }
-    os << "# Reference: " << ncalc_ref << "/" << ncalc_all << (ncalc_ref==ncalc_all?" (complete)":" (missing)") << std::endl;
-    os << "# Empty: " << ncalc_empty << "/" << ncalc_all << (ncalc_empty==ncalc_all?" (complete)":" (missing)") << std::endl;
-    for (int j = 0; j < addid.size(); j++)
-      os << "# Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ncalc_all << (ncalc_add[j]==ncalc_all?" (complete)":" (missing)") << std::endl;
+    if (!quiet){
+      os << "# Reference: " << ncalc_ref << "/" << ncalc_all << (ncalc_ref==ncalc_all?" (complete)":" (missing)") << std::endl;
+      os << "# Empty: " << ncalc_empty << "/" << ncalc_all << (ncalc_empty==ncalc_all?" (complete)":" (missing)") << std::endl;
+      for (int j = 0; j < addid.size(); j++)
+	os << "# Additional (" << addname[j] << "): " << ncalc_add[j] << "/" << ncalc_all << (ncalc_add[j]==ncalc_all?" (complete)":" (missing)") << std::endl;
+    }
 
     // terms
     st.recycle(R"SQL(
@@ -561,7 +584,8 @@ FROM Terms
 INNER JOIN Training_set ON Training_set.propid = Terms.propid
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
     int ncall = 0, ntall = 0;
-    os << "# Terms: " << std::endl;
+    if (!quiet)
+      os << "# Terms: " << std::endl;
     for (int iz = 0; iz < zat.size(); iz++){
       for (int il = 0; il <= lmax[iz]; il++){
         for (int ie = 0; ie < exp.size(); ie++){
@@ -572,14 +596,30 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
           st.bind((char *) ":EXP",exp[ie]);
           st.step();
           int ncalc = sqlite3_column_int(st.ptr(), 0);
-          os << "| " << nameguess(zat[iz]) << " | " << globals::inttol[il] << " | "
-             << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
+	  if (!quiet){
+	    os << "| " << nameguess(zat[iz]) << " | " << globals::inttol[il] << " | "
+	       << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
+	  }
           ncall += ncalc;
           ntall += ncalc_all;
         }
       }
     }
-    os << "# Total terms: " << ncall << "/" << ntall << (ncall==ntall?" (complete)":" (missing)") << std::endl;
+    if (!quiet)
+      os << "# Total terms: " << ncall << "/" << ntall << (ncall==ntall?" (complete)":" (missing)") << std::endl;
+
+    // update the complete flag
+    bool iscomplete = (ncall == ntall && ncalc_ref == ncalc_all && ncalc_empty == ncalc_all);
+    for (int j = 0; j < addid.size(); j++)
+      iscomplete = iscomplete && (ncalc_add[j]==ncalc_all);
+
+    if (iscomplete){
+      os << "# The training set is COMPLETE." << std::endl;
+      complete = c_yes;
+    } else {
+      os << "# The training set is NOT COMPLETE." << std::endl;
+      complete = c_no;
+    }
   }
   os << std::endl;
 
@@ -789,6 +829,7 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   // Commit the transaction
   db->commit_transaction();
   os << std::endl;
+  complete = c_unknown;
 }
 
 // Write training set data to data files in old-style format
@@ -800,95 +841,100 @@ void trainset::write_olddat(std::ostream &os, const std::string &directory/*="./
 
   os << "* TRAINING: write data in the old (acpfit) format " << std::endl << std::endl;
 
-   // Check directory
-   std::string dir = ".";
-   if (!directory.empty()) dir = directory;
-   if (!fs::is_directory(dir))
-     throw std::runtime_error("In TRAINING WRITE_OLD, directory not found: " + dir);
+  if (complete == c_unknown)
+    describe(os,false,true,true);
+  if (complete == c_no)
+    throw std::runtime_error("The training set needs to be complete before using TRAINING WRITE_OLD");
 
-   // write the names.dat and ref.dat
-   unsigned long int nrows = 0;
-   std::string fname = dir + "/names.dat";
-   std::ofstream ofile(fname,std::ios::trunc);
-   if (ofile.fail())
-     throw std::runtime_error("Error writing file: " + fname);
-   fname = dir + "/ref.dat";
-   std::ofstream ofile2(fname,std::ios::trunc);
-   if (ofile2.fail())
-     throw std::runtime_error("Error writing file: " + fname);
-   ofile2 << std::scientific;
-   ofile2.precision(15);
-   statement st(db->ptr(),R"SQL(
+  // Check directory
+  std::string dir = ".";
+  if (!directory.empty()) dir = directory;
+  if (!fs::is_directory(dir))
+    throw std::runtime_error("In TRAINING WRITE_OLD, directory not found: " + dir);
+
+  // write the names.dat and ref.dat
+  unsigned long int nrows = 0;
+  std::string fname = dir + "/names.dat";
+  std::ofstream ofile(fname,std::ios::trunc);
+  if (ofile.fail())
+    throw std::runtime_error("Error writing file: " + fname);
+  fname = dir + "/ref.dat";
+  std::ofstream ofile2(fname,std::ios::trunc);
+  if (ofile2.fail())
+    throw std::runtime_error("Error writing file: " + fname);
+  ofile2 << std::scientific;
+  ofile2.precision(15);
+  statement st(db->ptr(),R"SQL(
 SELECT Properties.key, Evaluations.value
 FROM Properties, Training_set, Evaluations
 WHERE Properties.id = Training_set.propid AND Properties.id = Evaluations.propid AND Evaluations.methodid = ?1 AND Properties.property_type = 1
 ORDER BY Training_set.id;
 )SQL");
-   st.bind(1,refid);
-   while (st.step() != SQLITE_DONE){
-     const unsigned char *key = sqlite3_column_text(st.ptr(), 0);
-     ofile << key << std::endl;
+  st.bind(1,refid);
+  while (st.step() != SQLITE_DONE){
+    const unsigned char *key = sqlite3_column_text(st.ptr(), 0);
+    ofile << key << std::endl;
 
-     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-     ofile2 << val[0] << std::endl;
-     nrows++;
-   }
-   ofile.close();
-   ofile2.close();
+    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+    ofile2 << val[0] << std::endl;
+    nrows++;
+  }
+  ofile.close();
+  ofile2.close();
 
-   // the empty.dat
-   ofile.clear();
-   fname = dir + "/empty.dat";
-   ofile.open(fname);
-   if (ofile.fail())
-     throw std::runtime_error("Error writing file: " + fname);
-   ofile << std::scientific;
-   ofile.precision(15);
-   st.reset();
-   st.bind(1,emptyid);
-   while (st.step() != SQLITE_DONE){
-     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-     ofile << val[0] << std::endl;
-   }
-   ofile.close();
+  // the empty.dat
+  ofile.clear();
+  fname = dir + "/empty.dat";
+  ofile.open(fname);
+  if (ofile.fail())
+    throw std::runtime_error("Error writing file: " + fname);
+  ofile << std::scientific;
+  ofile.precision(15);
+  st.reset();
+  st.bind(1,emptyid);
+  while (st.step() != SQLITE_DONE){
+    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+    ofile << val[0] << std::endl;
+  }
+  ofile.close();
 
-   // the w.dat file
-   ofile.clear();
-   fname = dir + "/w.dat";
-   ofile.open(fname);
-   if (ofile.fail())
-     throw std::runtime_error("Error writing file: " + fname);
-   ofile << std::scientific;
-   ofile.precision(15);
-   unsigned long int n = 0;
-   for (int i = 0; i < setid.size(); i++){
-     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
-       if (set_dofit[i])
-	 ofile << w[n] << std::endl;
-       n++;
-     }
-   }
-   ofile.close();
+  // the w.dat file
+  ofile.clear();
+  fname = dir + "/w.dat";
+  ofile.open(fname);
+  if (ofile.fail())
+    throw std::runtime_error("Error writing file: " + fname);
+  ofile << std::scientific;
+  ofile.precision(15);
+  unsigned long int n = 0;
+  for (int i = 0; i < setid.size(); i++){
+    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
+      if (set_dofit[i])
+	ofile << w[n] << std::endl;
+      n++;
+    }
+  }
+  ofile.close();
 
-   // the empty.dat file
-   ofile.clear();
-   fname = dir + "/empty.dat";
-   ofile.open(fname);
-   if (ofile.fail())
-     throw std::runtime_error("Error writing file: " + fname);
-   ofile << std::scientific;
-   ofile.precision(15);
-   st.reset();
-   st.bind(1,emptyid);
-   while (st.step() != SQLITE_DONE){
-     double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-     ofile << val[0] << std::endl;
-   }
-   ofile.close();
+  // the empty.dat file
+  ofile.clear();
+  fname = dir + "/empty.dat";
+  ofile.open(fname);
+  if (ofile.fail())
+    throw std::runtime_error("Error writing file: " + fname);
+  ofile << std::scientific;
+  ofile.precision(15);
+  st.reset();
+  st.bind(1,emptyid);
+  while (st.step() != SQLITE_DONE){
+    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
+    ofile << val[0] << std::endl;
+  }
+  ofile.close();
 
 
-   // the x_y_z.dat files
-   st.recycle(R"SQL(
+  // the x_y_z.dat files
+  st.recycle(R"SQL(
 SELECT Terms.value, Evaluations.value
 FROM Terms, Training_set, Properties, Evaluations
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
@@ -896,46 +942,51 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
       AND Properties.id = Evaluations.propid AND Evaluations.methodid = Terms.methodid
 ORDER BY Training_set.id;
 )SQL");
-   for (int iz = 0; iz < zat.size(); iz++){
-     for (int il = 0; il <= lmax[iz]; il++){
-       for (int ie = 0; ie < exp.size(); ie++){
-	 std::string atom = nameguess(zat[iz]);
-	 lowercase(atom);
-	 fname = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(ie+1) + ".dat";
-	 ofile.clear();
-	 ofile.open(fname);
-	 if (ofile.fail())
-	   throw std::runtime_error("Error writing file: " + fname);
-	 ofile << std::scientific;
-	 ofile.precision(15);
-	 st.reset();
-	 st.bind((char *) ":METHOD",emptyid);
-	 st.bind((char *) ":ATOM",(int) zat[iz]);
-	 st.bind((char *) ":L",il);
-	 st.bind((char *) ":EXP",exp[ie]);
-	 int n = 0;
-	 while (st.step() != SQLITE_DONE){
-	   if (n++ >= nrows)
-	     throw std::runtime_error("Too many rows writing terms data");
-	   double *val = (double *) sqlite3_column_blob(st.ptr(),0);
-	   double *empty = (double *) sqlite3_column_blob(st.ptr(),1);
-	   double e0 = empty[0] + 0.001 * val[0];
-	   ofile << e0 << std::endl;
-	 }
-	 if (n != nrows)
-	   throw std::runtime_error("Too few rows writing terms data. Is the training data complete?");
-	 ofile.close();
-       }
-     }
-   }
+  for (int iz = 0; iz < zat.size(); iz++){
+    for (int il = 0; il <= lmax[iz]; il++){
+      for (int ie = 0; ie < exp.size(); ie++){
+	std::string atom = nameguess(zat[iz]);
+	lowercase(atom);
+	fname = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(ie+1) + ".dat";
+	ofile.clear();
+	ofile.open(fname);
+	if (ofile.fail())
+	  throw std::runtime_error("Error writing file: " + fname);
+	ofile << std::scientific;
+	ofile.precision(15);
+	st.reset();
+	st.bind((char *) ":METHOD",emptyid);
+	st.bind((char *) ":ATOM",(int) zat[iz]);
+	st.bind((char *) ":L",il);
+	st.bind((char *) ":EXP",exp[ie]);
+	int n = 0;
+	while (st.step() != SQLITE_DONE){
+	  if (n++ >= nrows)
+	    throw std::runtime_error("Too many rows writing terms data");
+	  double *val = (double *) sqlite3_column_blob(st.ptr(),0);
+	  double *empty = (double *) sqlite3_column_blob(st.ptr(),1);
+	  double e0 = empty[0] + 0.001 * val[0];
+	  ofile << e0 << std::endl;
+	}
+	if (n != nrows)
+	  throw std::runtime_error("Too few rows writing terms data. Is the training data complete?");
+	ofile.close();
+      }
+    }
+  }
 }
 
 // Evaluate an ACP on the current training set.
-void trainset::eval_acp(std::ostream &os, const acp &a) const{
+void trainset::eval_acp(std::ostream &os, const acp &a) {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using TRAINING EVAL");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using TRAINING EVAL");
+
+  if (complete == c_unknown)
+    describe(os,false,true,true);
+  if (complete == c_no)
+    throw std::runtime_error("The training set needs to be complete before using TRAINING EVAL");
 
   // get the number of items
   int nall = 0;
@@ -1159,6 +1210,7 @@ WHERE key = ?1;
 #else
   throw std::runtime_error("Cannot use TRAINING SAVE: not compiled with cereal support");
 #endif
+  complete = c_unknown;
 }
 
 // Delete a training set from the database (or all the t.s.)
@@ -1193,11 +1245,19 @@ void trainset::listdb(std::ostream &os) const {
 }
 
 // Write the octavedump.dat file
-void trainset::dump() const {
+void trainset::dump(std::ostream &os) {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using DUMP");
   if (!isdefined())
     throw std::runtime_error("The training set needs to be defined before using DUMP");
+
+  os << "* TRAINING: dumping to an octave file " << std::endl;
+
+  // check the completeness of the training set
+  if (complete == c_unknown)
+    describe(os,false,true,true);
+  if (complete == c_no)
+    throw std::runtime_error("The training set needs to be complete before using DUMP");
 
   std::ofstream ofile("octavedump.dat",std::ios::trunc | std::ios::binary);
 
@@ -1336,6 +1396,7 @@ ORDER BY Training_set.id;
   }
 
   ofile.close();
+  os << std::endl;
 }
 
 // Write input files or structure files for the training set
@@ -1427,4 +1488,5 @@ void trainset::insert_subset_db(int sid){
     st.step();
   }
   db->commit_transaction();
+  complete = c_unknown;
 }
