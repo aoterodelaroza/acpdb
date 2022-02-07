@@ -1006,7 +1006,6 @@ ORDER BY Training_set.id;
     nsetid.push_back(sid);
     nall += nitem;
   }
-
   // initialize container vectors
   std::vector<double> yempty(nall,0.0), yacp(nall,0.0), yadd(nall,0.0), ytotal(nall,0.0), yref(nall,0.0);
   std::vector<std::string> names(ntot,"");
@@ -1037,6 +1036,8 @@ ORDER BY Training_set.id;
   while (st.step() != SQLITE_DONE){
     int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
     double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+    if (nitem == 0 || !rval)
+      throw std::runtime_error("In TRAINING EVAL, unexpected null element in evaluation search");
     for (int i = 0; i < nitem; i++)
       yempty[n++] = rval[i];
   }
