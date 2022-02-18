@@ -19,8 +19,7 @@ title
 %charge% %mult%
 
 -%term_atsymbol% 0
-%term_atsymbol% 0 0
-%term_lstr%
+%term_atsymbol_lstr_gaussian%
 1
 2 %term_exp% 0.001
 %term_endloop%

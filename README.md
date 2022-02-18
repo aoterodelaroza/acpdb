@@ -717,6 +717,18 @@ by the database program. The available keywords are:
 
 - `%term_atsymbol%`: atomic symbol in ACP term.
 
+- `%term_atsymbol_lstr_gaussian%`: atomic symbol and angular momentum
+  label block in Gaussian ACP format. For instance, for the p channel
+  in Cl, this keyword would expand to:
+~~~
+Cl 2 0
+l
+0
+s
+0
+p
+~~~
+
 - `%term_atnum%`: atomic number in ACP term.
 
 - `%term_lstr%`: angular momentum label in ACP term.

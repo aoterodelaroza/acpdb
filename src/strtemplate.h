@@ -37,7 +37,7 @@ class strtemplate {
     t_charge, t_mult, t_nat, t_ntyp, t_xyz,
     t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
     t_acpgau, t_acpcrys,
-    t_term_atsymbol, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
+    t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
     t_term_loop, t_term_endloop};
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
@@ -57,6 +57,7 @@ class strtemplate {
   // t_acpgau (%acpgau[%xx]%): the ACP in Gaussian format; optionally for only one atom.
   // t_acpcrys (%acpcrys[%xx]%): the ACP in crystal format; optionally for only one atom.
   // t_term_atsymbol (%term_atsymbol%): ACP term, atomic symbol
+  // t_term_atsymbol_lstr_gaussian (%term_atsymbol_lstr_gaussian%): ACP term, atomic symbol & l for Gaussian inputs
   // t_term_atnum (%term_atnum%): ACP term, atomic number
   // t_term_lstr (%term_lstr%): ACP term, angular momentum label
   // t_term_lnum (%term_lnum%): ACP term, angular momentum value

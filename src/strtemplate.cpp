@@ -28,14 +28,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
 // t_acpgau, t_acpcrys
-// t_term_atsymbol, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
+// t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr,
+// t_term_lnum, t_term_exp,
 // t_term_loop, t_term_endloop
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
   "acpgau", "acpcrys",
-  "term_atsymbol", "term_atnum", "term_lstr", "term_lnum", "term_exp",
+  "term_atsymbol", "term_atsymbol_lstr_gaussian", "term_atnum",
+  "term_lstr", "term_lnum", "term_exp",
   "term_loop", "term_endloop"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
@@ -43,7 +45,8 @@ static const std::vector<std::string> tokenstr = { // strings for the keywords (
   "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
   "%acpgau","%acpcrys",
-  "%term_atsymbol%","%term_atnum%","%term_lstr%","%term_lnum%","%term_exp%",
+  "%term_atsymbol%","%term_atsymbol_lstr_gaussian%","%term_atnum%",
+  "%term_lstr%","%term_lnum%","%term_exp%",
   "%term_loop%","%term_endloop%"
 };
 static const int ntoken = tokenstr.size();
@@ -270,6 +273,15 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       result.append(std::to_string(zat));
     } else if (it->token == t_term_atsymbol) {
       result.append(nameguess(zat));
+    } else if (it->token == t_term_atsymbol_lstr_gaussian) {
+      std::stringstream ss;
+      ss << nameguess(zat) << " " << (int) l << " 0" << std::endl;
+      for (unsigned char i = 0; i < l; i++){
+	ss << globals::inttol[i] << std::endl;
+	ss << "0" << std::endl;
+      }
+      ss << globals::inttol[l];
+      result.append(ss.str());
     } else if (it->token == t_term_lnum) {
       result.append(std::to_string(l));
     } else if (it->token == t_term_lstr) {
@@ -315,6 +327,15 @@ void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
               tl_loc.push_back(template_token({t_string,std::to_string(zat[iz])}));
             } else if (itr->token == t_term_atsymbol) {
               tl_loc.push_back(template_token({t_string,nameguess(zat[iz])}));
+            } else if (itr->token == t_term_atsymbol_lstr_gaussian) {
+	      std::stringstream ss;
+	      ss << nameguess(zat[iz]) << " " << (int) l[iz] << " 0" << std::endl;
+	      for (unsigned char i = 0; i < l[iz]; i++){
+		ss << globals::inttol[i] << std::endl;
+		ss << "0" << std::endl;
+	      }
+	      ss << globals::inttol[l[iz]];
+	      tl_loc.push_back(template_token({t_string,ss.str()}));
             } else if (itr->token == t_term_lnum) {
               tl_loc.push_back(template_token({t_string,std::to_string(l[iz])}));
             } else if (itr->token == t_term_lstr) {
