@@ -686,11 +686,12 @@ by the database program. The available keywords are:
 - `%ntyp%`: the number of atomic species.
 
 - `%xyz%`: the block with the atomic coordinates. The format of each
-  line is the atomic symbol followed by the x, y, and z coordinates.
+  line is the atomic symbol followed by the x, y, and z coordinates in
+  angstrom.
 
 - `%xyzatnum%`: the block with the atomic coordinates. The format of
   each line is the atomic number followed by the x, y, and z
-  coordinates.
+  coordinates in angstrom.
 
 - `%xyzatnum200%`: the block with the atomic coordinates. The format
   of each line is the atomic number plus 200 followed by the x, y, and
