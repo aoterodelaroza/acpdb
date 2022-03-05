@@ -167,6 +167,7 @@ void acp::writeacp_gaussian(std::ostream &os, unsigned char zat/*=0*/) const{
       for (int j = 0; j < xv.size(); j++)
         os << std::endl << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef;
     }
+    os << std::endl;
   }
   os.precision(prec);
   os << std::defaultfloat;

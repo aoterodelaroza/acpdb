@@ -72,10 +72,14 @@ strtemplate::strtemplate(const std::string &source){
           tl.emplace(it,template_token({t_string,it->str.substr(0,pos0)}));
 
         std::string arg = "";
-        if (tokenstr[i][tokenstr[i].size()-1] != '%' && it->str[pos1] == ':'){
-          size_t pos2 = it->str.find('%',pos1);
-          arg = it->str.substr(pos1+1,pos2-pos1-1);
-          pos1 = pos2+1;
+        if (tokenstr[i][tokenstr[i].size()-1] != '%'){
+	  size_t pos2 = it->str.find('%',pos1);
+	  if (it->str[pos1] == ':'){
+	    arg = it->str.substr(pos1+1,pos2-pos1-1);
+	    pos1 = pos2+1;
+	  } else {
+	    pos1 = pos2+1;
+	  }
         }
 
         tl.emplace(it,template_token({(tokentypes) i,arg}));
