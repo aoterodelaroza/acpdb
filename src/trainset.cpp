@@ -198,16 +198,21 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	set_mask[i] = set_mask[i] | pattern[i % pattern.size()];
     }
   }
-  if (kmap.find("MASK_ITEMS") != kmap.end()){
-    std::list<std::string> tokens(list_all_words(kmap["MASK_ITEMS"]));
+  if (kmap.find("MASK_ITEMS") != kmap.end() || kmap.find("MASK_NOTITEMS") != kmap.end() ){
+    bool pos = kmap.find("MASK_ITEMS") != kmap.end();
+    std::list<std::string> tokens;
+    if (pos)
+      tokens = list_all_words(kmap["MASK_ITEMS"]);
+    else
+      tokens = list_all_words(kmap["MASK_NOTITEMS"]);
     if (tokens.empty())
       throw std::runtime_error("Empty item list in TRAINING/SUBSET/MASK_ITEMS");
-    std::vector<bool> set_mask_local(size,false);
+    std::vector<bool> set_mask_local(size,pos?false:true);
     while (!tokens.empty()){
       int item = std::stoi(popstring(tokens)) - 1;
       if (item < 0 || item >= size)
 	throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING/SUBSET/MASK_ITEMS");
-      set_mask_local[item] = true;
+      set_mask_local[item] = pos?true:false;
     }
     for (int i = 0; i < set_mask.size(); i++){
       if (imask_and)

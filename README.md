@@ -792,6 +792,7 @@ TRAINING
   MASK_AND
   MASK_OR
   MASK_ITEMS item1.i item2.i ...
+  MASK_NOTITEMS item1.i item2.i ...
   MASK_PATTERN 0/1 0/1 ...
   MASK_ATOMS
   MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
@@ -858,18 +859,19 @@ is as follows:
   logical or (if `MASK_OR`). By default, no mask is applied, so all
   the elements in the subset are used in the training set.
 
-  Four versions of the `MASK` command exist. `MASK_ITEMS` givesone by
+  Four versions of the `MASK` command exist. `MASK_ITEMS` gives one by
   one the number identifiers of the elements from the subset to be
-  incorporated. `MASK_PATTERN` repeats a pattern over the elements of
-  the subset. An element is incorporated if the pattern item is a 1
-  and it is not if it is a 0. `MASK_ATOMS` constructs the mask by
-  selecting only the entries in the subset that contain only the atoms
-  in the training set. Using this mask requires having defined the
-  `ATOMS` previously. Lastly, `MASK_RANGE` indicates a range
-  starting at `start.i` up to `end.i` with `step.i`. The
-  interpretation of `MASK_RANGE` varies depending on whether it is
-  followed by one (`step.i`), two (`start.i` and `step.i`), or three
-  (`start.i`, `step.i`, and `end.i`) integers.
+  incorporated. `MASK_NOTITEMS` is the same but the items to take out
+  of the training set are given instead. `MASK_PATTERN` repeats a
+  pattern over the elements of the subset. An element is incorporated
+  if the pattern item is a 1 and it is not if it is a 0. `MASK_ATOMS`
+  constructs the mask by selecting only the entries in the subset that
+  contain only the atoms in the training set. Using this mask requires
+  having defined the `ATOMS` previously. Lastly, `MASK_RANGE`
+  indicates a range starting at `start.i` up to `end.i` with
+  `step.i`. The interpretation of `MASK_RANGE` varies depending on
+  whether it is followed by one (`step.i`), two (`start.i` and
+  `step.i`), or three (`start.i`, `step.i`, and `end.i`) integers.
 
   The remaining commands are used to set the weights of the items in
   the subset. The keywords are:
