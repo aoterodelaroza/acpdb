@@ -89,6 +89,10 @@ class trainset {
   // Evaluate an ACP on the current training set
   void eval_acp(std::ostream &os, const acp &a);
 
+  // Evaluate an ACP and compare to an external file; choose the systems
+  // with maximum deviation (non-linearity error) for each atom in the TS.
+  void maxcoef_select(std::ostream &os, const acp &a, const std::string &file);
+
   // Save the current training set to the database
   void savedb(std::string &name) const;
 

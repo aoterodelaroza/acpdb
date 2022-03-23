@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #include <filesystem>
 #include <unordered_map>
+#include <map>
 #include <cstring>
 
 namespace fs = std::filesystem;
@@ -1154,6 +1155,235 @@ ORDER BY Training_set.id;
   // write the table of results
   output_eval(os,{},names,num,w,ytotal,"ytotal",yref,"yref",{yempty,yacp,yadd},{"yempty","yacp","yadd"});
   os << std::endl;
+}
+
+// Evaluate an ACP and compare to an external file; choose the systems
+// with maximum deviation (non-linearity error) for each atom in the TS.
+void trainset::maxcoef_select(std::ostream &os, const acp &a, const std::string &file){
+  if (!db || !(*db))
+    throw std::runtime_error("A database file must be connected before using TRAINING MAXCOEF_SELECT");
+  if (!isdefined())
+    throw std::runtime_error("The training set needs to be defined before using TRAINING MAXCOEF_SELECT");
+
+  if (complete == c_unknown)
+    describe(os,false,true,true);
+  if (complete == c_no)
+    throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF_SELECT");
+
+  // get the number of items
+  int nall = 0;
+  std::vector<int> num, nsetid;
+  statement st(db->ptr(),R"SQL(
+SELECT length(Evaluations.value), Properties.setid
+FROM Evaluations, Training_set, Properties
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid AND
+      Evaluations.propid = Properties.id
+ORDER BY Training_set.id;
+)SQL");
+  st.bind((char *) ":METHOD",refid);
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    int sid = sqlite3_column_int(st.ptr(),1);
+    num.push_back(nitem);
+    nsetid.push_back(sid);
+    nall += nitem;
+  }
+
+  // initialize container vectors
+  std::vector<double> yempty(nall,0.0), yacp(nall,0.0), yadd(nall,0.0), ytotal(nall,0.0), yscf(nall,0.0), yref(nall,0.0);
+  std::vector<std::string> names(ntot,"");
+
+  // get the names
+  st.recycle(R"SQL(
+SELECT Properties.key
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
+  int n = 0;
+  while (st.step() != SQLITE_DONE)
+    names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
+  if (n != nall)
+    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in names");
+
+  // get the empty, reference, additional methods
+  st.recycle(R"SQL(
+SELECT length(Evaluations.value), Evaluations.value
+FROM Evaluations, Training_set
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
+
+  n = 0;
+  st.bind((char *) ":METHOD",emptyid);
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+    if (nitem == 0 || !rval)
+      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected null element in evaluation search");
+    for (int i = 0; i < nitem; i++)
+      yempty[n++] = rval[i];
+  }
+  if (n != nall)
+    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+
+  n = 0;
+  st.bind((char *) ":METHOD",refid);
+  while (st.step() != SQLITE_DONE){
+    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+    for (int i = 0; i < nitem; i++)
+      yref[n++] = rval[i];
+  }
+  if (n != nall)
+    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+
+  for (int j = 0; j < addid.size(); j++){
+    n = 0;
+    st.bind((char *) ":METHOD",addid[j]);
+    while (st.step() != SQLITE_DONE){
+      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+      for (int i = 0; i < nitem; i++)
+        yadd[n++] = rval[i];
+    }
+    if (n != nall)
+      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+  }
+
+  // get the ACP and total contributions
+  st.recycle(R"SQL(
+SELECT length(Terms.value), Terms.value
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+ORDER BY Training_set.id;
+)SQL");
+  for (int i = 0; i < a.size(); i++){
+    acp::term t = a.get_term(i);
+    st.reset();
+    st.bind((char *) ":METHOD",emptyid);
+    st.bind((char *) ":ATOM",(int) t.atom);
+    st.bind((char *) ":L",(int) t.l);
+    st.bind((char *) ":EXP",t.exp);
+
+    n = 0;
+    while (st.step() != SQLITE_DONE){
+      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
+      for (int j = 0; j < nitem; j++)
+        yacp[n++] += rval[j] * t.coef;
+    }
+    if (n != nall){
+      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
+                << " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
+      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in ACP term number " + std::to_string(i));
+    }
+  }
+  for (int i = 0; i < nall; i++)
+    ytotal[i] = yempty[i] + yacp[i] + yadd[i];
+
+  // read the file and build the data file
+  if (!fs::is_regular_file(file))
+    throw std::runtime_error("Invalid FILE in TRAINING MAXCOEF_SELECT (not a file)");
+  std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
+
+  //////
+
+  // fetch the reference method values from the DB and populate vectors
+  std::vector<std::string> names_missing_fromdat;
+  std::vector<double> datvalues;
+  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
+
+  // the statement text
+  st.recycle(R"SQL(
+SELECT Properties.key, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key,
+       length(ref.value), ref.value
+FROM Properties
+INNER JOIN Sets ON Properties.setid = Sets.id
+INNER JOIN Training_Set ON Training_set.propid = Properties.id
+LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.methodid = :METHOD)
+ORDER BY Properties.id
+)SQL");
+  st.bind((char *) ":METHOD",emptyid);
+  while (st.step() != SQLITE_DONE){
+    // check if the evaluation is available in the database
+    std::string key = (char *) sqlite3_column_text(st.ptr(),0);
+    if (sqlite3_column_type(st.ptr(),8) == SQLITE_NULL)
+      continue;
+
+    // check if the components are in the data file or in the approximate method
+    int nvalue = sqlite3_column_int(st.ptr(),7) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(),1);
+    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
+    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
+    int ptid = sqlite3_column_int(st.ptr(),4);
+    int thissetid = sqlite3_column_int(st.ptr(),5);
+    std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 6);
+    std::vector<double> value(nvalue,0.0);
+    bool found = true;
+
+    for (int i = 0; i < nstr; i++){
+      stkey.reset();
+      stkey.bind(1,istr[i]);
+      stkey.step();
+      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+      if (datmap.find(strname) == datmap.end()){
+	found = false;
+	break;
+      }
+      for (int j = 0; j < nvalue; j++)
+	value[j] += coef[i] * datmap[strname][j];
+    }
+    if (ptid == globals::ppty_energy_difference){
+      for (int j = 0; j < nvalue; j++)
+	value[j] *= globals::ha_to_kcal;
+    }
+
+    // populate the vectors
+    if (!found){
+      names_missing_fromdat.push_back(key);
+    } else {
+      double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
+      for (int j = 0; j < nvalue; j++)
+        datvalues.push_back(value[j]);
+    }
+  }
+  datmap.clear();
+  if (!names_missing_fromdat.empty()){
+    os << "## The following properties are missing from the FILE:" << std::endl;
+    for (int i = 0; i < names_missing_fromdat.size(); i++)
+      os << "## " << names_missing_fromdat[i] << std::endl;
+    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, structures missing from file");
+  }
+  if (datvalues.size() != nall)
+    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, different number of values in file and DB");
+
+  // calculate statistics
+  double rmst, maet, mset, wrmst;
+  calc_stats(ytotal,datvalues,w,wrmst,rmst,maet,mset);
+  std::streamsize prec = os.precision(7);
+  os << std::fixed;
+  os << "# Non-linearity error evaluation" << std::endl;
+  os << "# ACP: " << (a?a.get_name():emptyname) << std::endl;
+  os << "# SCF from file: " << file << std::endl;
+  os << "# Statistics: " << std::endl;
+  os.precision(8);
+  os << "#   wrms =  " << wrmst << std::endl;
+  os << "# "
+     << std::left << "  rms = " << std::right << std::setw(14) << rmst
+     << std::left << "  mae = " << std::right << std::setw(14) << maet
+     << std::left << "  mse = " << std::right << std::setw(14) << mset
+     << std::left << "  ndat = " << std::right << nall
+     << std::endl;
+  os.precision(prec);
+
+  // write the table of results
+  output_eval(os,{},names,num,w,ytotal,"ACP (linear)",datvalues,"SCF (file)",{yref},{"Reference"});
+  os << std::endl;
+
+  // figure out how to find per-system per-atom information
+  printf("bleh!\n");
+  exit(0);
 }
 
 // Save the current training set to the database

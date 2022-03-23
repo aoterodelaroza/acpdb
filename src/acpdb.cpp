@@ -417,6 +417,15 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(of,a);
         } else
           ts.eval_acp(*os,a);
+      } else if (category == "MAXCOEF_SELECT") {
+        acp a = string_to_acp(name);
+	if (!a)
+	  throw std::runtime_error("Unknown ACP " + name + " in TRAINING MAXCOEF_SELECT");
+
+	if (tokens.empty())
+	  throw std::runtime_error("Missing evaluation file name in TRAINING MAXCOEF_SELECT");
+	std::string file = popstring(tokens);
+	ts.maxcoef_select(*os,a,file);
       } else if (category == "INSERT_OLD"){
         ts.insert_olddat(*os,name);
       } else if (category == "WRITE_OLD"){
