@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "parseutils.h"
 #include "outputeval.h"
 #include "globals.h"
+#include "acp.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -1160,7 +1161,8 @@ ORDER BY Training_set.id;
 
 // Evaluate an ACP and compare to an external file; choose the systems
 // with maximum deviation (non-linearity error) for each atom in the TS.
-void trainset::maxcoef_select(std::ostream &os, const acp &a, const std::string &file){
+void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
+		       const acp &a){
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using TRAINING MAXCOEF_SELECT");
   if (!isdefined())
@@ -1172,7 +1174,26 @@ void trainset::maxcoef_select(std::ostream &os, const acp &a, const std::string 
     throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF_SELECT");
 
   // header
-  os << "* TRAINING MAXCOEF_SELECT: select systems for maxcoef calculation " << std::endl << std::endl;
+  os << "* TRAINING MAXCOEF: calculate maximum coefficients for ACP development " << std::endl << std::endl;
+
+  // parse input options
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  bool iswrite;
+  if ((im = kmap.find("WRITE")) != kmap.end())
+    iswrite = true;
+  else if ((im = kmap.find("CALC")) != kmap.end())
+    iswrite = false;
+  else
+    throw std::runtime_error("Either WRITE or CALC is required in TRAINING MAXCOEF");
+
+  im = kmap.find("SCF");
+  if (im == kmap.end())
+    throw std::runtime_error("The SCF evaluaions are required in TRAINING MAXCOEF");
+  std::string file = kmap.at("SCF");
+
+  int nprop_per_atom = 5;
+  if ((im = kmap.find("NPROP_PER_ATOM")) != kmap.end())
+    nprop_per_atom = std::stoi(im->second);
 
   // get the number of items
   int nall = 0;
@@ -1399,19 +1420,18 @@ ORDER BY Properties.id
   // find the two figure out how to find per-system per-atom information
   os << "# LIST of properties on which to run the maxcoef calculation: " << std::endl;
   os << "| id | name | atom | nonlinear error (kcal/mol) |" << std::endl;
-  const int nitem = 5;
   std::unordered_map<int,bool> propused;
   std::unordered_map<unsigned char,std::vector<int>> atchosen;
   for (int i = 0; i < zat.size(); i++){
-    std::vector<double> esave(nitem,0.0);
-    atchosen[zat[i]].resize(nitem,0);
+    std::vector<double> esave(nprop_per_atom,0.0);
+    atchosen[zat[i]].resize(nprop_per_atom,0);
     if (atmap.find(zat[i]) != atmap.end()){
       for (int j = 0; j < atmap[zat[i]].size(); j++){
 	int id = atmap[zat[i]][j];
 	double e = std::abs(ytotal[id] - datvalues[id]);
 	if (e > esave[0]){
 	  int kthis = 0;
-	  for (int k = 1; k < nitem; k++){
+	  for (int k = 1; k < nprop_per_atom; k++){
 	    if (e > esave[k])
 	      kthis = k;
 	    else

@@ -417,15 +417,14 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(of,a);
         } else
           ts.eval_acp(*os,a);
-      } else if (category == "MAXCOEF_SELECT") {
-        acp a = string_to_acp(name);
+      } else if (category == "MAXCOEF") {
+	std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+	if (kmap.find("ACP") == kmap.end())
+	  throw std::runtime_error("An ACP is required in TRAINING MAXCOEF");
+	acp a = string_to_acp(kmap.at("ACP"));
 	if (!a)
-	  throw std::runtime_error("Unknown ACP " + name + " in TRAINING MAXCOEF_SELECT");
-
-	if (tokens.empty())
-	  throw std::runtime_error("Missing evaluation file name in TRAINING MAXCOEF_SELECT");
-	std::string file = popstring(tokens);
-	ts.maxcoef_select(*os,a,file);
+	  throw std::runtime_error("Unknown ACP " + kmap.at("ACP") + " in TRAINING MAXCOEF");
+	ts.maxcoef(*os,kmap,a);
       } else if (category == "INSERT_OLD"){
         ts.insert_olddat(*os,name);
       } else if (category == "WRITE_OLD"){
