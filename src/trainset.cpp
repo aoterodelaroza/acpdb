@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <map>
 #include <cstring>
+#include <list>
 
 namespace fs = std::filesystem;
 
@@ -1170,6 +1171,9 @@ void trainset::maxcoef_select(std::ostream &os, const acp &a, const std::string 
   if (complete == c_no)
     throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF_SELECT");
 
+  // header
+  os << "* TRAINING MAXCOEF_SELECT: select systems for maxcoef calculation " << std::endl << std::endl;
+
   // get the number of items
   int nall = 0;
   std::vector<int> num, nsetid;
@@ -1287,12 +1291,11 @@ ORDER BY Training_set.id;
     throw std::runtime_error("Invalid FILE in TRAINING MAXCOEF_SELECT (not a file)");
   std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
 
-  //////
-
   // fetch the reference method values from the DB and populate vectors
   std::vector<std::string> names_missing_fromdat;
   std::vector<double> datvalues;
-  statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
+  std::unordered_map<unsigned char,std::vector<int>> atmap;
+  statement stkey(db->ptr(),"SELECT key, nat, zatoms FROM Structures WHERE id = ?1;");
 
   // the statement text
   st.recycle(R"SQL(
@@ -1305,11 +1308,13 @@ LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.method
 ORDER BY Properties.id
 )SQL");
   st.bind((char *) ":METHOD",emptyid);
+  n = 0;
   while (st.step() != SQLITE_DONE){
     // check if the evaluation is available in the database
     std::string key = (char *) sqlite3_column_text(st.ptr(),0);
     if (sqlite3_column_type(st.ptr(),8) == SQLITE_NULL)
       continue;
+    n++;
 
     // check if the components are in the data file or in the approximate method
     int nvalue = sqlite3_column_int(st.ptr(),7) / sizeof(double);
@@ -1322,6 +1327,8 @@ ORDER BY Properties.id
     std::vector<double> value(nvalue,0.0);
     bool found = true;
 
+    // fetch the structures and calculate value and atom map
+    std::unordered_map<unsigned char,bool> atused;
     for (int i = 0; i < nstr; i++){
       stkey.reset();
       stkey.bind(1,istr[i]);
@@ -1333,11 +1340,19 @@ ORDER BY Properties.id
       }
       for (int j = 0; j < nvalue; j++)
 	value[j] += coef[i] * datmap[strname][j];
+
+      int nat = sqlite3_column_int(stkey.ptr(),1);
+      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(stkey.ptr(),2);
+      for (int j = 0; j < nat; j++)
+	atused[zat_[j]] = true;
     }
     if (ptid == globals::ppty_energy_difference){
       for (int j = 0; j < nvalue; j++)
 	value[j] *= globals::ha_to_kcal;
     }
+    for (int j = 0; j < zat.size(); j++)
+      if (atused.find(zat[j]) != atused.end())
+	atmap[zat[j]].push_back(n);
 
     // populate the vectors
     if (!found){
@@ -1355,7 +1370,7 @@ ORDER BY Properties.id
       os << "## " << names_missing_fromdat[i] << std::endl;
     throw std::runtime_error("In TRAINING MAXCOEF_SELECT, structures missing from file");
   }
-  if (datvalues.size() != nall)
+  if (datvalues.size() != nall || n != nall)
     throw std::runtime_error("In TRAINING MAXCOEF_SELECT, different number of values in file and DB");
 
   // calculate statistics
@@ -1381,9 +1396,43 @@ ORDER BY Properties.id
   output_eval(os,{},names,num,w,ytotal,"ACP (linear)",datvalues,"SCF (file)",{yref},{"Reference"});
   os << std::endl;
 
-  // figure out how to find per-system per-atom information
-  printf("bleh!\n");
-  exit(0);
+  // find the two figure out how to find per-system per-atom information
+  os << "# LIST of properties on which to run the maxcoef calculation: " << std::endl;
+  os << "| id | name | atom | nonlinear error (kcal/mol) |" << std::endl;
+  const int nitem = 5;
+  std::unordered_map<int,bool> propused;
+  std::unordered_map<unsigned char,std::vector<int>> atchosen;
+  for (int i = 0; i < zat.size(); i++){
+    std::vector<double> esave(nitem,0.0);
+    atchosen[zat[i]].resize(nitem,0);
+    if (atmap.find(zat[i]) != atmap.end()){
+      for (int j = 0; j < atmap[zat[i]].size(); j++){
+	int id = atmap[zat[i]][j];
+	double e = std::abs(ytotal[id] - datvalues[id]);
+	if (e > esave[0]){
+	  int kthis = 0;
+	  for (int k = 1; k < nitem; k++){
+	    if (e > esave[k])
+	      kthis = k;
+	    else
+	      break;
+	  }
+	  for (int k = 0; k < kthis; k++){
+	    esave[k] = esave[k+1];
+	    atchosen[zat[i]][k] = atchosen[zat[i]][k+1];
+	  }
+	  esave[kthis] = e;
+	  atchosen[zat[i]][kthis] = id;
+	}
+      }
+
+      for (int j=0; j<atchosen[zat[i]].size(); j++){
+	int id = atchosen[zat[i]][j];
+	os << "|" << id << "| " << names[id] << " | " << nameguess(zat[i]) << " | " << esave[j] << "|" << std::endl;
+      }
+    }
+  }
+  os << std::endl;
 }
 
 // Save the current training set to the database
