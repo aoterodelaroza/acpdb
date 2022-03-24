@@ -119,11 +119,12 @@ class sqldb {
   // to the structure writer. If smapin is present, write only the
   // structures that are keys in the map (the value of the map is 0 if
   // crystal or 1 if molecule). zat, lmax, and exp are used to interpret
-  // the TERMS keyword.
+  // the TERMS keyword. prefix = prefix the file names with this string.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                         const std::unordered_map<int,int> &smapin={},
                         const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
-                        const std::vector<double> &exp={});
+                        const std::vector<double> &exp={},
+			const std::string &prefix="");
 
   // Write the structures with IDs given by the keys in smap. The values
   // of smap should be 1 if the structures are molecules or zero if they
@@ -139,7 +140,8 @@ class sqldb {
                              const std::unordered_map<int,int> &smap,
                              const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l, const std::vector<double> &exp,
                              const bool rename,
-                             const std::string &dir="./", int npack=0);
+                             const std::string &dir="./", int npack=0,
+			     const std::string &prefix="");
 
   // Write the structure id in the database with template tmpl and
   // extension ext. dir: output directory.
@@ -147,7 +149,8 @@ class sqldb {
                                   const std::string &ext, const acp& a,
                                   const unsigned char zat, const unsigned char l, const double exp, const int iexp,
                                   const bool rename,
-                                  const std::string &dir="./");
+                                  const std::string &dir="./",
+				  const std::string &prefix="");
 
   // Find the property type ID corresponding to the key in the database table.
   // If toupper, uppercase the key before fetching the ID from the table. If

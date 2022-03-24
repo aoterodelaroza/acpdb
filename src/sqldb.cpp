@@ -2429,10 +2429,11 @@ ORDER BY Properties.id
 // to the structure writer. If smapin is present, write only the
 // structures that are keys in the map (the value of the map is 0 if
 // crystal or 1 if molecule). zat, lmax, and exp are used to interpret
-// the TERMS keyword.
+// the TERMS keyword. prefix = prefix the file names with this string.
 void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                              const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
-                             const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/){
+                             const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/,
+			     const std::string &prefix/*=""*/){
   if (!db)
     throw std::runtime_error("Error reading connected database");
 
@@ -2565,8 +2566,9 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   }
 
   // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,l_,exp_,rename,dir,npack);
-  os << std::endl;
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,l_,exp_,rename,dir,npack,prefix);
+  if (globals::verbose)
+    os << std::endl;
 }
 
 // Write the structures with IDs given by the keys in smap. The values
@@ -2574,7 +2576,8 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 // are crystals. Use template_m and template_c as templates for
 // molecules and crystals. Use ext_m and ext_c as file extensions for
 // molecules and crystals. dir: output directory. npack = package and
-// compress in packets of npack files (0 = no packing).
+// compress in packets of npack files (0 = no packing). prefix =
+// prefix the file names with this string.
 void sqldb::write_many_structures(std::ostream &os,
                                   const std::string &template_m, const std::string &template_c,
                                   const std::string &ext_m, const std::string &ext_c,
@@ -2582,7 +2585,8 @@ void sqldb::write_many_structures(std::ostream &os,
                                   const std::unordered_map<int,int> &smap,
                                   const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l, const std::vector<double> &exp,
                                   const bool rename,
-                                  const std::string &dir/*="./"*/, int npack/*=0*/){
+                                  const std::string &dir/*="./"*/, int npack/*=0*/,
+				  const std::string &prefix/*=""*/){
 
   // consistency check
   if (zat.size() != l.size())
@@ -2610,12 +2614,12 @@ void sqldb::write_many_structures(std::ostream &os,
         tptr = &tc;
       if (tptr->hasloop()){
         write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
-                            a, zat[0], l[0], exp[0], 0, false, dir);
+                            a, zat[0], l[0], exp[0], 0, false, dir, prefix);
       } else {
         for (int ii = 0; ii < zat.size(); ii++){
           for (int iexp = 0; iexp < exp.size(); iexp++){
             write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
-                                zat[ii], l[ii], exp[iexp], iexp, rename, dir);
+                                zat[ii], l[ii], exp[iexp], iexp, rename, dir, prefix);
           }
         }
       }
@@ -2644,12 +2648,12 @@ void sqldb::write_many_structures(std::ostream &os,
       if (tptr->hasloop()){
         written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
                                                        (smap.at(srand[i])?ext_m:ext_c),
-                                                       a, zat[0], l[0], exp[0], 0, false, dir)));
+                                                       a, zat[0], l[0], exp[0], 0, false, dir, prefix)));
       } else {
         for (int ii = 0; ii < zat.size(); ii++){
           for (int iexp = 0; iexp < exp.size(); iexp++){
             written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
-                                                           a, zat[ii], l[ii], exp[iexp], iexp, rename, dir)));
+                                                           a, zat[ii], l[ii], exp[iexp], iexp, rename, dir, prefix)));
           }
         }
       }
@@ -2685,7 +2689,8 @@ std::string sqldb::write_one_structure(std::ostream &os, int id, const strtempla
                                        const std::string &ext, const acp& a,
                                        const unsigned char zat, const unsigned char l, const double exp, const int iexp,
                                        const bool rename,
-                                       const std::string &dir/*="./"*/){
+                                       const std::string &dir/*="./"*/,
+				       const std::string &prefix/*=""*/){
 
   // get the structure from the database
   statement st(db,R"SQL(
@@ -2704,9 +2709,9 @@ FROM Structures WHERE id = ?1;
   if (rename){
     std::string atom = nameguess(zat);
     lowercase(atom);
-    name = s.get_name() + "@" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
+    name = prefix + s.get_name() + "@" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
   } else {
-    name = s.get_name() + "." + ext;
+    name = prefix + s.get_name() + "." + ext;
   }
 
   // write the substitution of the template to a string

@@ -1191,7 +1191,7 @@ void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,st
     throw std::runtime_error("The SCF evaluaions are required in TRAINING MAXCOEF");
   std::string file = kmap.at("SCF");
 
-  int nprop_per_atom = 5;
+  int nprop_per_atom = 2;
   if ((im = kmap.find("NPROP_PER_ATOM")) != kmap.end())
     nprop_per_atom = std::stoi(im->second);
 
@@ -1453,6 +1453,65 @@ ORDER BY Properties.id
     }
   }
   os << std::endl;
+
+  if (iswrite){
+    // WRITE
+    std::unordered_map<std::string,std::string> kmap_new = kmap;
+    kmap_new.erase("TERM");
+    kmap_new.erase("SET");
+
+    st.recycle(R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.key
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
+)SQL");
+    stkey.recycle("SELECT ismolecule, key FROM Structures WHERE id = ?1;");
+    for (int i = 0; i < zat.size(); i++){
+      std::unordered_map<int,int> smap;
+
+      // calculate the structure map
+      for (int j = 0; j < atchosen[zat[i]].size(); j++){
+	int id = atchosen[zat[i]][j];
+	st.reset();
+	st.bind(1,id);
+	st.step();
+	int nstr = sqlite3_column_int(st.ptr(),0);
+	int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+	if (nstr == 0)
+	  throw std::runtime_error("structures not found in TRAINING MAXCOEF");
+	for (int k = 0; k < nstr; k++){
+	  stkey.reset();
+	  stkey.bind(1,str[k]);
+	  stkey.step();
+	  smap[str[k]] = sqlite3_column_int(stkey.ptr(),0);
+	}
+      }
+
+      // coefficients
+      std::vector<double> coef;
+      for (int j = -5; j < 3; j++)
+	coef.push_back(std::pow(10.0,j));
+
+      // write the structures
+      for (unsigned char il = 0; il <= lmax[i]; il++){
+        for (int ie = 0; ie < exp.size(); ie++){
+	  for (int ic = 0; ic < coef.size(); ic++){
+	    const acp::term t = {zat[i],il,exp[ie],coef[ic]};
+	    const acp a("",t);
+
+	    std::string prefix = "maxcoef-" + nameguess(zat[i]) + "-" +
+	      globals::inttol[il] + "-" + std::to_string(ie) + "-" + std::to_string(ic);
+	    db->write_structures(os, kmap_new, a, smap, {}, {}, {}, prefix);
+	  }
+	}
+      }
+    }
+
+  } else {
+    // CALC
+    printf("not implemented!\n");
+    exit(0);
+  }
 }
 
 // Save the current training set to the database
