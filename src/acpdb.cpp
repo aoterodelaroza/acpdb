@@ -320,7 +320,7 @@ int main(int argc, char *argv[]) {
       if (kmap.find("TRAINING") != kmap.end())
         ts.write_structures(*os,kmap,a);
       else
-        db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_lmax(),ts.get_exp(),{0.001});
+        db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_lmax(),ts.get_exp());
 
       //// ACP
     } else if (keyw == "ACP") {

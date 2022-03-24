@@ -1164,14 +1164,14 @@ ORDER BY Training_set.id;
 void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
 		       const acp &a){
   if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING MAXCOEF_SELECT");
+    throw std::runtime_error("A database file must be connected before using TRAINING MAXCOEF");
   if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using TRAINING MAXCOEF_SELECT");
+    throw std::runtime_error("The training set needs to be defined before using TRAINING MAXCOEF");
 
   if (complete == c_unknown)
     describe(os,false,true,true);
   if (complete == c_no)
-    throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF_SELECT");
+    throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF");
 
   // header
   os << "* TRAINING MAXCOEF: calculate maximum coefficients for ACP development " << std::endl << std::endl;
@@ -1229,7 +1229,7 @@ ORDER BY Training_set.id;
   while (st.step() != SQLITE_DONE)
     names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
   if (n != nall)
-    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in names");
+    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in names");
 
   // get the empty, reference, additional methods
   st.recycle(R"SQL(
@@ -1245,12 +1245,12 @@ ORDER BY Training_set.id;
     int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
     double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
     if (nitem == 0 || !rval)
-      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected null element in evaluation search");
+      throw std::runtime_error("In TRAINING MAXCOEF, unexpected null element in evaluation search");
     for (int i = 0; i < nitem; i++)
       yempty[n++] = rval[i];
   }
   if (n != nall)
-    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
 
   n = 0;
   st.bind((char *) ":METHOD",refid);
@@ -1261,7 +1261,7 @@ ORDER BY Training_set.id;
       yref[n++] = rval[i];
   }
   if (n != nall)
-    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
 
   for (int j = 0; j < addid.size(); j++){
     n = 0;
@@ -1273,7 +1273,7 @@ ORDER BY Training_set.id;
         yadd[n++] = rval[i];
     }
     if (n != nall)
-      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in empty");
+      throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
   }
 
   // get the ACP and total contributions
@@ -1301,7 +1301,7 @@ ORDER BY Training_set.id;
     if (n != nall){
       std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
                 << " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
-      throw std::runtime_error("In TRAINING MAXCOEF_SELECT, unexpected end of the database column in ACP term number " + std::to_string(i));
+      throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in ACP term number " + std::to_string(i));
     }
   }
   for (int i = 0; i < nall; i++)
@@ -1309,7 +1309,7 @@ ORDER BY Training_set.id;
 
   // read the file and build the data file
   if (!fs::is_regular_file(file))
-    throw std::runtime_error("Invalid FILE in TRAINING MAXCOEF_SELECT (not a file)");
+    throw std::runtime_error("Invalid FILE in TRAINING MAXCOEF (not a file)");
   std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
 
   // fetch the reference method values from the DB and populate vectors
@@ -1389,10 +1389,10 @@ ORDER BY Properties.id
     os << "## The following properties are missing from the FILE:" << std::endl;
     for (int i = 0; i < names_missing_fromdat.size(); i++)
       os << "## " << names_missing_fromdat[i] << std::endl;
-    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, structures missing from file");
+    throw std::runtime_error("In TRAINING MAXCOEF, structures missing from file");
   }
   if (datvalues.size() != nall || n != nall)
-    throw std::runtime_error("In TRAINING MAXCOEF_SELECT, different number of values in file and DB");
+    throw std::runtime_error("In TRAINING MAXCOEF, different number of values in file and DB");
 
   // calculate statistics
   double rmst, maet, mset, wrmst;
@@ -1457,8 +1457,8 @@ ORDER BY Properties.id
   if (iswrite){
     // WRITE
     std::unordered_map<std::string,std::string> kmap_new = kmap;
-    kmap_new.erase("TERM");
     kmap_new.erase("SET");
+    kmap_new["TERM"] = "";
 
     st.recycle(R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.key
@@ -1493,9 +1493,9 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	coef.push_back(std::pow(10.0,j));
 
       // write the structures
-      std::string prefix = "maxcoef-" + nameguess(zat[i]);
+      std::string prefix = "maxcoef-" + nameguess(zat[i]) + "-";
       const std::vector<unsigned char> zat_ = {zat[i]};
-      const std::vector<unsigned char> lmax_ = {lmax[zat[i]]};
+      const std::vector<unsigned char> lmax_ = {lmax[i]};
       db->write_structures(os, kmap_new, a, smap, zat_, lmax_, exp, coef, prefix);
     }
 
@@ -1803,7 +1803,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap,zat,lmax,exp,{});
+  db->write_structures(os,kmap,a,smap,zat,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,

@@ -2429,9 +2429,9 @@ ORDER BY Properties.id
 // the structure writer for keyword expansion. If smapin is present,
 // write only the structures that are keys in the map (the value of
 // the map is 0 if crystal or 1 if molecule). zat, lmax, exp, and coef
-// are used for loop expansion in the template. If TERM is present,
-// coef is ignored. prefix = prefix the file names with this
-// string. os = output stream for verbose notifications.
+// are used for loop expansion in the template. prefix = prefix the
+// file names with this string. os = output stream for verbose
+// notifications.
 void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                              const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
                              const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/,
@@ -2532,10 +2532,14 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       exp_ = exp;
       zat_.clear();
       l_.clear();
-      if (words.size() == 1)
-	coef_[0] = std::stod(words.front());
-      else
-	coef_[0] = 0.001;
+      if (coef.empty()){
+	if (words.size() == 1)
+	  coef_[0] = std::stod(words.front());
+	else
+	  coef_[0] = 0.001;
+      } else {
+	coef_ = coef;
+      }
 
       for (int izat = 0; izat < zat.size(); izat++){
         for (unsigned char il = 0; il <= lmax[izat]; il++){
@@ -2574,8 +2578,6 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     } else {
       throw std::runtime_error("Invalid number of tokens in WRITE/TERM");
     }
-  } else {
-    coef_ = coef;
   }
 
   // write the inputs

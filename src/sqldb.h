@@ -119,8 +119,8 @@ class sqldb {
   // the structure writer for keyword expansion. If smapin is present,
   // write only the structures that are keys in the map (the value of
   // the map is 0 if crystal or 1 if molecule). zat, lmax, exp, and coef
-  // are used for loop expansion in the TERMS keyword. prefix = prefix
-  // the file names with this string. os = output stream for verbose
+  // are used for loop expansion in the template. prefix = prefix the
+  // file names with this string. os = output stream for verbose
   // notifications.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                         const std::unordered_map<int,int> &smapin={},
