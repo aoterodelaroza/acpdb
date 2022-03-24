@@ -19,8 +19,9 @@ atom-centered potentials (ACPs).
 | [Simple training set operations](#simple-training-set-operations)                                       | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                                                      |
 | [Training set evaluations](#training-set-evaluations)                                                   | TRAINING EVAL                                                                                                                                                                                                        |
 | [Insert training set data in old acpfit format](#insert-training-set-data-in-old-acpfit-format)         | TRAINING INSERT_OLD                                                                                                                                                                                                  |
-| [Write training set data in old acpfit format](#write-training-set-data-in-old-acpfit-format)           | TRAINING WRITE_OLD                                                                                                                                                                                                  |
+| [Write training set data in old acpfit format](#write-training-set-data-in-old-acpfit-format)           | TRAINING WRITE_OLD                                                                                                                                                                                                   |
 | [Dumping the training set](#dumping-the-training-set)                                                   | TRAINING DUMP                                                                                                                                                                                                        |
+| [Calculation of training set maximum coefficients](#calculation-of-training-set-maximum-coefficients)   | TRAINING MAXCOEF                                                                                                                                                                                                     |
 
 ## Command-Line Syntax
 ~~~
@@ -1042,6 +1043,64 @@ TRAINING DUMP
 Write the octavedump.dat file for the LASSO fit corresponding to the
 current dataset.
 
+### Calculation of Training Set Maximum Coefficients
+~~~
+TRAINING MAXCOEF
+  {WRITE|GEN}
+  ACP {name.s|file.s}
+  SCF file.s
+  [NPROP_PER_ATOM nprop.i]
+  [TEMPLATE file.s]
+  [TEMPLATE_MOL filemol.s]
+  [TEMPLATE_CRYS filecrys.s]
+  [DIRECTORY dir.s]
+  [PACK ipack.i]
+END
+~~~
+The MAXCOEF keyword is used to calculate maximum coefficients for each
+of the terms in a training set. There are two modes of operation for
+this keyword. Using WRITE, the input files for the calculation of the
+maximum coefficients are generated. Using GEN, the maximum
+coefficients are calculated from the result of running the input files
+in WRITE.
+
+A MAXCOEF run requires the self-consistent evaluation of the whole
+training set with the ACP given in `name.s` or `file.s`. The input
+files for this evaluation can be generated using the
+[WRITE keyword](#writing-input-and-structure-files). The results of
+the evaluation are collected in a file using grep or awk in the same
+way as for the [INSERT keyword](#inserting-data-bulk). The file is
+passed to MAXCOEF using the SCF keyword (file name `file.s`).
+
+If the WRITE option is used, the evaluation for the training set
+proerties predicted by the linear model associated with the given ACP
+are compared against the self-consistent results for the same ACP, and
+the difference between the two (the non-linearity error) is
+evaluated. A number of `nprop.i` properties are chosen that contain a
+given atom in the training set and that have maximum non-linearity
+error. By doing this, a subset of the training set is selected which
+is then used to calculate the maximum coefficients. The input files
+coresponding to this subset in which different maximum coefficients
+are examined are written using the same syntax as for the
+[WRITE keyword](#writing-input-and-structure-files).
+
+If no `TEMPLATE` is given, write the structure files (xyz format for
+molecules, POSCAR format for crystals). Otherwise, write input files
+according to the template (the template format is described below). If
+`TEMPLATE` is given, `file.s` is used as template for both crystals
+and molecules. If `TEMPLATE_MOL` is given, use `filemol.s` for
+molecules. If `TEMPLATE_CRYS` is given, use `filecrys.s` for
+crystals. The extensions of the generated input files are the same as
+the extension of the template. Some template examples can be found in
+the `templates/` directory. If a DIRECTORY is given, write the new din
+files in that directory (default: `./`). If PACK is present, create
+`tar.xz` compressed archives with at most `ipack.i` structures each
+(this only works if the number of structures is greater than
+`ipack.i`). The `PACK` keyword invokes the `tar` utility through a
+`system()` call.
+
+The GEN keyword is not implemented yet.
+
 ## DIN File Format
 
 A din file contains a number of `ENERGY_DIFFERENCE` properties and the
@@ -1079,3 +1138,4 @@ b_struct
 0
 20.34 this_property_name
 ```
+
