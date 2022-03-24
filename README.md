@@ -22,6 +22,8 @@ atom-centered potentials (ACPs).
 | [Write training set data in old acpfit format](#write-training-set-data-in-old-acpfit-format)           | TRAINING WRITE_OLD                                                                                                                                                                                                   |
 | [Dumping the training set](#dumping-the-training-set)                                                   | TRAINING DUMP                                                                                                                                                                                                        |
 | [Calculation of training set maximum coefficients](#calculation-of-training-set-maximum-coefficients)   | TRAINING MAXCOEF                                                                                                                                                                                                     |
+| [DIN File Format](#din-file-format)                                                                     | ---                                                                                                                                                                                                                  |
+| [Template library](#template-library)                                                                   | ---                                                                                                                                                                                                                  |
 
 ## Command-Line Syntax
 ~~~
@@ -1073,14 +1075,14 @@ way as for the [INSERT keyword](#inserting-data-bulk). The file is
 passed to MAXCOEF using the SCF keyword (file name `file.s`).
 
 If the WRITE option is used, the evaluation for the training set
-proerties predicted by the linear model associated with the given ACP
+properties predicted by the linear model associated with the given ACP
 are compared against the self-consistent results for the same ACP, and
 the difference between the two (the non-linearity error) is
 evaluated. A number of `nprop.i` properties are chosen that contain a
 given atom in the training set and that have maximum non-linearity
 error. By doing this, a subset of the training set is selected which
 is then used to calculate the maximum coefficients. The input files
-coresponding to this subset in which different maximum coefficients
+corresponding to this subset in which different maximum coefficients
 are examined are written using the same syntax as for the
 [WRITE keyword](#writing-input-and-structure-files).
 
@@ -1138,4 +1140,43 @@ b_struct
 0
 20.34 this_property_name
 ```
+
+## Template Library
+
+The current list of template files for the generation of inputs with
+acpdb is below. These files can be found in the `templates/`
+subdirectory of the distribution.
+
+* `crystal.34`: a CRYSTAL17 `fort.34` geometry input file, for a
+  periodic crystal with no symmetry.
+
+* `crystal.d12`: a CRYSTAL17 `d12` input file for a periodic crystal
+  with no symmetry.
+
+* `crystalecp.34`: a CRYSTAL17 `fort.34` geometry input file, for a
+  periodic crystal with no symmetry. Uses ACPs for all atoms.
+
+* `crystalecp.d12`: a CRYSTAL17 `d12` input file for a periodic
+  crystal with no symmetry. Uses ACPs for all atoms
+
+* `espresso.in`: a Quantum ESPRESSO input file for a full geometry
+  relaxation.
+
+* `file.xyz`: an xyz file.
+
+* `gaussian.gjf`: a simple Gaussian input file.
+
+* `gaussian_pseudo.gjf`: a Gaussian input file using an ACP and the
+  `pseudo=read` keyword.
+
+* `gaussian_terms.gjf`: a Gaussian input file for term and maxcoef
+  calculations.
+
+* `orca.inp`: a simple ORCA input file.
+
+* `psi4.inp`: a simple psi4 input file.
+
+* `vasp.POSCAR`: a simple VASP POSCAR file.
+
+
 
