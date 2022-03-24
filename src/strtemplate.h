@@ -69,12 +69,17 @@ class strtemplate {
   strtemplate() : tl{}, hasloop_(false) {};
   strtemplate(const std::string &source); // construct from string
 
-  // Apply the template and write to an output string, no loops
+  // Apply a string to the template and write to an output stream. The
+  // substitutions are performed with the information from the structure (s),
+  // the ACP (a), the list of atomic numbers (zat), angular momenta (l),
+  // exponents (exp), and coefficients (coef).
   std::string apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l,
 		    const double exp, const double coef) const;
 
-  // Expand one or more template loops based on the values in a list
-  // of zat, l, and exp.
+  // Apply a string to the template and write to an output stream, with
+  // loop expansion. The information from the loop expansion comes from
+  // the list of atomic numbers (zat), angular momenta (l), exponents
+  // (exp), and coefficients (coef).
   void expand_loop(const std::vector<unsigned char> &zat,
                    const std::vector<unsigned char> &l,
                    const std::vector<double> &exp,

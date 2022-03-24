@@ -115,11 +115,13 @@ class sqldb {
                         int usetrain=-1);
 
   // Write input files for a database set or the whole database. The
-  // options go in map kmap. If the ACP is present, it is passed down
-  // to the structure writer. If smapin is present, write only the
-  // structures that are keys in the map (the value of the map is 0 if
-  // crystal or 1 if molecule). zat, lmax, and exp are used to interpret
-  // the TERMS keyword. prefix = prefix the file names with this string.
+  // options go in map kmap. If the ACP is present, it is passed down to
+  // the structure writer for keyword expansion. If smapin is present,
+  // write only the structures that are keys in the map (the value of
+  // the map is 0 if crystal or 1 if molecule). zat, lmax, exp, and coef
+  // are used for loop expansion in the TERMS keyword. prefix = prefix
+  // the file names with this string. os = output stream for verbose
+  // notifications.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                         const std::unordered_map<int,int> &smapin={},
                         const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
@@ -131,8 +133,13 @@ class sqldb {
   // are crystals. Use template_m and template_c as templates for
   // molecules and crystals. Use ext_m and ext_c as file extensions for
   // molecules and crystals. dir: output directory. npack = package and
-  // compress in packets of npack files (0 = no packing). zat, l, exp =
-  // information for the term substitution in the template.
+  // compress in packets of npack files (0 = no packing). prefix =
+  // prefix the file names with this string. os is the output stream
+  // for verbose notifications. For the template expansion, use the
+  // information in ACP a. For the loop expansion, use the list of
+  // atomic numbers (zat), angular momenta (l), exponents (exp), and
+  // coefficients (coef). If rename, incorporate the atom, l, exponent
+  // info into the file name.
   void write_many_structures(std::ostream &os,
                              const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
@@ -144,8 +151,13 @@ class sqldb {
                              const std::string &dir="./", int npack=0,
 			     const std::string &prefix="");
 
-  // Write the structure id in the database with template tmpl and
-  // extension ext. dir: output directory.
+  // Write one structure to output directory dir with name prefix prefix
+  // and extension ext. If rename, write an extended name with atom, l,
+  // and exponent info in it. If the run is verbose, write a note to
+  // stream os. The structure written has database ID equal to id. Use
+  // template in tmpl. For the keyword expansion, use the information in
+  // the ACP (a), atomic numbers (zat), angular momentum (l),
+  // exponent (exp), exponent ID (iexp), and coefficient (coef).
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
                                   const std::string &ext, const acp& a,
                                   const unsigned char zat, const unsigned char l, const double exp, const int iexp,

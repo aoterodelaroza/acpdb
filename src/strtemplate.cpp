@@ -94,7 +94,10 @@ strtemplate::strtemplate(const std::string &source){
   }
 }
 
-// Apply a string to the template and write to an output stream
+// Apply a string to the template and write to an output stream. The
+// substitutions are performed with the information from the structure (s),
+// the ACP (a), the list of atomic numbers (zat), angular momenta (l),
+// exponents (exp), and coefficients (coef).
 std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, 
 			       const double exp, const double coef) const {
 
@@ -309,7 +312,10 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
   return result;
 }
 
-// Apply a string to the template and write to an output stream, with loops
+// Apply a string to the template and write to an output stream, with
+// loop expansion. The information from the loop expansion comes from
+// the list of atomic numbers (zat), angular momenta (l), exponents
+// (exp), and coefficients (coef).
 void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
                               const std::vector<unsigned char> &l,
                               const std::vector<double> &exp,
