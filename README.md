@@ -1056,7 +1056,6 @@ TRAINING MAXCOEF
   [TEMPLATE_MOL filemol.s]
   [TEMPLATE_CRYS filecrys.s]
   [DIRECTORY dir.s]
-  [PACK ipack.i]
 END
 ~~~
 The MAXCOEF keyword is used to calculate maximum coefficients for each
@@ -1095,11 +1094,7 @@ molecules. If `TEMPLATE_CRYS` is given, use `filecrys.s` for
 crystals. The extensions of the generated input files are the same as
 the extension of the template. Some template examples can be found in
 the `templates/` directory. If a DIRECTORY is given, write the new din
-files in that directory (default: `./`). If PACK is present, create
-`tar.xz` compressed archives with at most `ipack.i` structures each
-(this only works if the number of structures is greater than
-`ipack.i`). The `PACK` keyword invokes the `tar` utility through a
-`system()` call.
+files in that directory (default: `./`).
 
 The GEN keyword is not implemented yet.
 

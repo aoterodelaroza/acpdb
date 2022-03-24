@@ -1458,6 +1458,7 @@ ORDER BY Properties.id
     // WRITE
     std::unordered_map<std::string,std::string> kmap_new = kmap;
     kmap_new.erase("SET");
+    kmap_new.erase("PACK");
     kmap_new["TERM"] = "";
 
     st.recycle(R"SQL(
