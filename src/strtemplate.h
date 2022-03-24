@@ -38,7 +38,7 @@ class strtemplate {
     t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
     t_acpgau, t_acpcrys,
     t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
-    t_term_loop, t_term_endloop};
+    t_term_coef, t_term_loop, t_term_endloop};
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
   // t_cell (%cell%): a 3x3 matrix with the lattice vectors (angstrom)
@@ -62,6 +62,7 @@ class strtemplate {
   // t_term_lstr (%term_lstr%): ACP term, angular momentum label
   // t_term_lnum (%term_lnum%): ACP term, angular momentum value
   // t_term_exp (%term_exp%): ACP term, exponent
+  // t_term_coef (%term_coef%): ACP term, coefficient
   // t_term_loop (%term_loop%): start ACP term loop
   // t_term_endloop (%term_endloop%): end ACP term loop
 
@@ -69,13 +70,15 @@ class strtemplate {
   strtemplate(const std::string &source); // construct from string
 
   // Apply the template and write to an output string, no loops
-  std::string apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, const double exp) const;
+  std::string apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l,
+		    const double exp, const double coef) const;
 
   // Expand one or more template loops based on the values in a list
   // of zat, l, and exp.
   void expand_loop(const std::vector<unsigned char> &zat,
                    const std::vector<unsigned char> &l,
-                   const std::vector<double> &exp);
+                   const std::vector<double> &exp,
+                   const std::vector<double> &coef);
 
   // whether the template has loops
   bool hasloop() { return hasloop_; }

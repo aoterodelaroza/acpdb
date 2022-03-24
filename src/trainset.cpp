@@ -1493,18 +1493,10 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	coef.push_back(std::pow(10.0,j));
 
       // write the structures
-      for (unsigned char il = 0; il <= lmax[i]; il++){
-        for (int ie = 0; ie < exp.size(); ie++){
-	  for (int ic = 0; ic < coef.size(); ic++){
-	    const acp::term t = {zat[i],il,exp[ie],coef[ic]};
-	    const acp a("",t);
-
-	    std::string prefix = "maxcoef-" + nameguess(zat[i]) + "-" +
-	      globals::inttol[il] + "-" + std::to_string(ie) + "-" + std::to_string(ic);
-	    db->write_structures(os, kmap_new, a, smap, {}, {}, {}, prefix);
-	  }
-	}
-      }
+      std::string prefix = "maxcoef-" + nameguess(zat[i]);
+      const std::vector<unsigned char> zat_ = {zat[i]};
+      const std::vector<unsigned char> lmax_ = {lmax[zat[i]]};
+      db->write_structures(os, kmap_new, a, smap, zat_, lmax_, exp, coef, prefix);
     }
 
   } else {
@@ -1811,7 +1803,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap,zat,lmax,exp);
+  db->write_structures(os,kmap,a,smap,zat,lmax,exp,{});
 }
 
 // Read data for the training set or one of its subsets from a file,

@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
 // t_acpgau, t_acpcrys
 // t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr,
-// t_term_lnum, t_term_exp,
+// t_term_lnum, t_term_exp, t_term_coef
 // t_term_loop, t_term_endloop
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
@@ -37,7 +37,7 @@ static const std::vector<std::string> tokenname = { // keyword names for printin
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
   "acpgau", "acpcrys",
   "term_atsymbol", "term_atsymbol_lstr_gaussian", "term_atnum",
-  "term_lstr", "term_lnum", "term_exp",
+  "term_lstr", "term_lnum", "term_exp", "term_coef",
   "term_loop", "term_endloop"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
@@ -46,7 +46,7 @@ static const std::vector<std::string> tokenstr = { // strings for the keywords (
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
   "%acpgau","%acpcrys",
   "%term_atsymbol%","%term_atsymbol_lstr_gaussian%","%term_atnum%",
-  "%term_lstr%","%term_lnum%","%term_exp%",
+  "%term_lstr%","%term_lnum%","%term_exp%","%term_coef%",
   "%term_loop%","%term_endloop%"
 };
 static const int ntoken = tokenstr.size();
@@ -95,7 +95,8 @@ strtemplate::strtemplate(const std::string &source){
 }
 
 // Apply a string to the template and write to an output stream
-std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, const double exp) const {
+std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, 
+			       const double exp, const double coef) const {
 
   std::string result;
 
@@ -294,6 +295,10 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8) << exp;
       result.append(ss.str());
+    } else if (it->token == t_term_coef) {
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(8) << coef;
+      result.append(ss.str());
     } else if (it->token == t_term_loop) {
       throw std::runtime_error("Cannot use a loop in template.apply()");
     } else if (it->token == t_term_loop) {
@@ -307,7 +312,8 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
 // Apply a string to the template and write to an output stream, with loops
 void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
                               const std::vector<unsigned char> &l,
-                              const std::vector<double> &exp) {
+                              const std::vector<double> &exp,
+                              const std::vector<double> &coef) {
   std::list<template_token> tl_loc, tl_repeat;
   bool inloop = false;
 
@@ -326,31 +332,37 @@ void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
       // expand
       for (int iz = 0; iz < zat.size(); iz++){
         for (int iexp = 0; iexp < exp.size(); iexp++){
-          for (auto itr = tl_repeat.begin(); itr != tl_repeat.end(); itr++){
-            if (itr->token == t_term_atnum) {
-              tl_loc.push_back(template_token({t_string,std::to_string(zat[iz])}));
-            } else if (itr->token == t_term_atsymbol) {
-              tl_loc.push_back(template_token({t_string,nameguess(zat[iz])}));
-            } else if (itr->token == t_term_atsymbol_lstr_gaussian) {
-	      std::stringstream ss;
-	      ss << nameguess(zat[iz]) << " " << (int) l[iz] << " 0" << std::endl;
-	      for (unsigned char i = 0; i < l[iz]; i++){
-		ss << globals::inttol[i] << std::endl;
-		ss << "0" << std::endl;
+	  for (int icoef = 0; icoef < coef.size(); icoef++){
+	    for (auto itr = tl_repeat.begin(); itr != tl_repeat.end(); itr++){
+	      if (itr->token == t_term_atnum) {
+		tl_loc.push_back(template_token({t_string,std::to_string(zat[iz])}));
+	      } else if (itr->token == t_term_atsymbol) {
+		tl_loc.push_back(template_token({t_string,nameguess(zat[iz])}));
+	      } else if (itr->token == t_term_atsymbol_lstr_gaussian) {
+		std::stringstream ss;
+		ss << nameguess(zat[iz]) << " " << (int) l[iz] << " 0" << std::endl;
+		for (unsigned char i = 0; i < l[iz]; i++){
+		  ss << globals::inttol[i] << std::endl;
+		  ss << "0" << std::endl;
+		}
+		ss << globals::inttol[l[iz]];
+		tl_loc.push_back(template_token({t_string,ss.str()}));
+	      } else if (itr->token == t_term_lnum) {
+		tl_loc.push_back(template_token({t_string,std::to_string(l[iz])}));
+	      } else if (itr->token == t_term_lstr) {
+		tl_loc.push_back(template_token({t_string,std::string(1,globals::inttol[l[iz]])}));
+	      } else if (itr->token == t_term_exp) {
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(8) << exp[iexp];
+		tl_loc.push_back(template_token({t_string,ss.str()}));
+	      } else if (itr->token == t_term_coef) {
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(8) << coef[icoef];
+		tl_loc.push_back(template_token({t_string,ss.str()}));
+	      } else {
+		tl_loc.push_back(*itr);
 	      }
-	      ss << globals::inttol[l[iz]];
-	      tl_loc.push_back(template_token({t_string,ss.str()}));
-            } else if (itr->token == t_term_lnum) {
-              tl_loc.push_back(template_token({t_string,std::to_string(l[iz])}));
-            } else if (itr->token == t_term_lstr) {
-              tl_loc.push_back(template_token({t_string,std::string(1,globals::inttol[l[iz]])}));
-            } else if (itr->token == t_term_exp) {
-              std::stringstream ss;
-              ss << std::fixed << std::setprecision(8) << exp[iexp];
-              tl_loc.push_back(template_token({t_string,ss.str()}));
-            } else {
-              tl_loc.push_back(*itr);
-            }
+	    }
           }
         }
       }

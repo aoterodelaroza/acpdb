@@ -123,7 +123,7 @@ class sqldb {
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                         const std::unordered_map<int,int> &smapin={},
                         const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
-                        const std::vector<double> &exp={},
+                        const std::vector<double> &exp={}, const std::vector<double> &coef={},
 			const std::string &prefix="");
 
   // Write the structures with IDs given by the keys in smap. The values
@@ -138,7 +138,8 @@ class sqldb {
                              const std::string &ext_m, const std::string &ext_c,
                              const acp &a,
                              const std::unordered_map<int,int> &smap,
-                             const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l, const std::vector<double> &exp,
+                             const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l,
+			     const std::vector<double> &exp, const std::vector<double> &coef,
                              const bool rename,
                              const std::string &dir="./", int npack=0,
 			     const std::string &prefix="");
@@ -148,7 +149,7 @@ class sqldb {
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
                                   const std::string &ext, const acp& a,
                                   const unsigned char zat, const unsigned char l, const double exp, const int iexp,
-                                  const bool rename,
+                                  const double coef, const bool rename,
                                   const std::string &dir="./",
 				  const std::string &prefix="");
 
