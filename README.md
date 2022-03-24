@@ -612,7 +612,7 @@ WRITE
   [PACK ipack.i]
   [ACP {name.s|file.s}]
   [TRAINING [alias.s]]
-  [TERM [{zat.i|zat.s} {l.i|l.s} exp.r]]
+  [TERM [{zat.i|zat.s} {l.i|l.s} exp.r] [coef.r]]
 END
 ~~~
 Write the structures in the database to input or structure files. If
@@ -649,16 +649,23 @@ If the keyword TERM is present, write input files for the term
 calculations. There are two possible ways of doing this. If the atom
 (atomic number `zat.i` or symbol `zat.s`), angular momentum (symbol
 `l.s` or value `l.i`), and exponent (`exp.r`) are given, then simply
-pass this information to the template. Instead, if nothing other than
-the TERM keyword is present, the training set must be defined. If the
-template contains a loop (using the `%term_loop%` and `%term_endloop%`
-keywords), then all terms are combined into a single input. See
-`templates/gaussian_terms.gjf` for an example. Otherwise, files are
-created with names `prefix_atom_l_expid.ext` where `prefix` is
-the name of the structure, `atom` is the atomic symbol, `l`, is the
-angular momentum symbol, and `expid` is the exponent integer ID. In
-this last case, the number of files generated corresponds to all
-possible combinations of atom, l, and exponent from the training set.
+pass this information to the template. In addition, a fourth value can
+be passed (`coef.r`) corresponding to the term coefficient. If this
+last value is not present, 0.001 is used.
+
+If the `zat`, `l`, and `exp` are not present in the TERM keyword, the
+training set must be defined. If the template contains a loop (using
+the `%term_loop%` and `%term_endloop%` keywords), then all terms are
+combined into a single input. See `templates/gaussian_terms.gjf` for
+an example. Otherwise, files are created with names
+`prefix_atom_l_expid.ext` where `prefix` is the name of the structure,
+`atom` is the atomic symbol, `l`, is the angular momentum symbol, and
+`expid` is the exponent integer ID. In this last case, the number of
+files generated corresponds to all possible combinations of atom, l,
+and exponent from the training set. In this mode of operation, an
+additional value may be passed to TERM (`coef.r`) corresponding to the
+term coefficient. If `coef.r` is not present, a default of 0.001 is
+used.
 
 #### Description of the Template Format
 
@@ -737,6 +744,8 @@ p
 - `%term_lnum%`: angular momentum value in ACP term.
 
 - `%term_exp%`: exponent in ACP term.
+
+- `%term_coef%`: coefficient in ACP term.
 
 Some template examples can be found in the `templates/` directory.
 
