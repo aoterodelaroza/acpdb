@@ -1490,7 +1490,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 
       // coefficients
       std::vector<double> coef;
-      for (int j = -5; j < 3; j++)
+      for (int j = -6; j < 2; j++)
 	coef.push_back(std::pow(10.0,j));
 
       // write the structures
