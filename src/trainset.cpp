@@ -1525,6 +1525,10 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
       lmaxx = std::max((int) lmax[i]+1,lmaxx);
     std::vector<double> cmax(zat.size() * lmaxx * exp.size(),coef[coef.size()-1]);
 
+    // If inserting, start transaction
+    if (kmap.find("INSERT") != kmap.end())
+      db->begin_transaction();
+
     // statements
     statement steval(db->ptr(),R"SQL(
 SELECT length(Evaluations.value), Evaluations.value, length(Terms.value), Terms.value
@@ -1532,6 +1536,12 @@ FROM Properties, Evaluations, Training_Set, Terms
 WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
       Training_set.id = :ID AND Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
       Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+)SQL");
+    statement stinsert(db->ptr(),R"SQL(
+UPDATE OR REPLACE Terms
+SET maxcoef = :MAXCOEF
+WHERE methodid = :METHOD AND atom = :ATOM AND l = :L AND exponent = :EXP
+      AND propid = (SELECT propid FROM Training_set WHERE id = :ID)
 )SQL");
     st.recycle(R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
@@ -1584,6 +1594,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	    double *eval = (double *) sqlite3_column_blob(steval.ptr(),1);
 	    double *tval = (double *) sqlite3_column_blob(steval.ptr(),3);
 
+	    double coefid = coef[coef.size()-1];
 	    double elast = 0.0;
 	    bool found = false;
 	    for (int ic = 0; ic < coef.size(); ic++){
@@ -1602,16 +1613,31 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	      double edif = std::abs(elin - escf);
 
 	      if (edif > ethrs && !found){
-		if (ic == 0){
-		  cmax[idmax] = std::min(cmax[idmax],coef[0]);
-		} else {
-		  double cthis = coef[ic-1] + (coef[ic] - coef[ic-1]) * (ethrs - elast) / (edif - elast);
-		  cmax[idmax] = std::min(cmax[idmax],cthis);
-		}
+		if (ic == 0)
+		  coefid = coef[0];
+		else
+		  coefid = coef[ic-1] + (coef[ic] - coef[ic-1]) * (ethrs - elast) / (edif - elast);
 		found = true;
 	      }
 	      elast = edif;
 	    } // ic, over coefficients
+
+	    // update the cmax
+	    cmax[idmax] = std::min(cmax[idmax],coefid);
+
+	    // insert into the database
+	    if (kmap.find("INSERT") != kmap.end()){
+	      stinsert.reset();
+	      stinsert.bind((char *) ":METHOD",emptyid);
+	      stinsert.bind((char *) ":ATOM",(int) zat[i]);
+	      stinsert.bind((char *) ":L",il);
+	      stinsert.bind((char *) ":EXP",exp[ie]);
+	      stinsert.bind((char *) ":ID",id);
+	      stinsert.bind((char *) ":MAXCOEF",coefid);
+	      stinsert.step();
+	      // printf("inserted: %d %d %d %.2f %d %.10e\n",emptyid,(int) zat[i],(int) il,
+	      // 	     exp[ie],id,coefid);
+	    }
 
 	  } // ie, over exponents
 	} // il, over angular momenta
@@ -1625,6 +1651,10 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
       } // j, over training IDs for a given atom
     } // i, over atoms
 
+    // If inserting, commit transaction
+    if (kmap.find("INSERT") != kmap.end())
+      db->commit_transaction();
+
     // write the final list, in maxcoef file format
     os << "# LIST of maximum coefficients: " << std::endl;
     for (int i = 0; i < zat.size(); i++){
@@ -1636,6 +1666,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
       }
     }
     os << std::endl;
+
   }
 }
 
@@ -1883,6 +1914,67 @@ ORDER BY Training_set.id;
     if (n != nrows)
       throw std::runtime_error("Too few rows dumping y data");
   }
+
+  // write the maxcoef vector
+  st.recycle(R"SQL(
+SELECT Terms.maxcoef
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+ORDER BY Training_set.id;
+)SQL");
+  for (int iz = 0; iz < zat.size(); iz++){
+    for (int il = 0; il <= lmax[iz]; il++){
+      for (int ie = 0; ie < exp.size(); ie++){
+        st.reset();
+        st.bind((char *) ":METHOD",emptyid);
+        st.bind((char *) ":ATOM",(int) zat[iz]);
+        st.bind((char *) ":L",il);
+        st.bind((char *) ":EXP",exp[ie]);
+        int n = 0;
+        while (st.step() != SQLITE_DONE){
+          if (n++ >= nrows)
+            throw std::runtime_error("Too many rows dumping terms data");
+          int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+          double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+          ofile.write((const char *) value,len * sizeof(double));
+        }
+        if (n != nrows)
+          throw std::runtime_error("Too few rows dumping terms data. Is the training data complete?");
+      }
+    }
+  }
+
+  //   st.recycle(R"SQL(
+  // SELECT Terms.value, Evaluations.value
+  // FROM Terms, Training_set, Properties, Evaluations
+  // WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+  //       AND Training_set.propid = Properties.id AND Properties.property_type = 1
+  //       AND Properties.id = Evaluations.propid AND Evaluations.methodid = Terms.methodid
+  // ORDER BY Training_set.id;
+  // )SQL");
+
+  // if (any(maxcoef /= huge(1d0))) then
+  //    write (lu) int(1,1)
+  //    nmaxc = 0
+  //    do i = 1, natoms
+  //       do j = 1, lmax(i)
+  //          do k = 1, nexp
+  //             nmaxc = nmaxc + 1
+  //          end do
+  //       end do
+  //    end do
+  //    write (lu) nmaxc
+  //    do i = 1, natoms
+  //       do j = 1, lmax(i)
+  //          do k = 1, nexp
+  //             write (lu) maxcoef(k,j,i)
+  //          end do
+  //       end do
+  //    end do
+  // else
+  //    write (lu) int(0,1)
+  // end if
 
   ofile.close();
   os << std::endl;
