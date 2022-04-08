@@ -1917,12 +1917,12 @@ ORDER BY Training_set.id;
 
   // write the maxcoef vector
   st.recycle(R"SQL(
-SELECT Terms.maxcoef
+SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
-      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
-ORDER BY Training_set.id;
+      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
+  std::vector<double> maxc;
   for (int iz = 0; iz < zat.size(); iz++){
     for (int il = 0; il <= lmax[iz]; il++){
       for (int ie = 0; ie < exp.size(); ie++){
@@ -1931,51 +1931,28 @@ ORDER BY Training_set.id;
         st.bind((char *) ":ATOM",(int) zat[iz]);
         st.bind((char *) ":L",il);
         st.bind((char *) ":EXP",exp[ie]);
-        int n = 0;
-        while (st.step() != SQLITE_DONE){
-          if (n++ >= nrows)
-            throw std::runtime_error("Too many rows dumping terms data");
-          int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-          double *value = (double *) sqlite3_column_blob(st.ptr(),1);
-          ofile.write((const char *) value,len * sizeof(double));
-        }
-        if (n != nrows)
-          throw std::runtime_error("Too few rows dumping terms data. Is the training data complete?");
+	st.step();
+	if (sqlite3_column_type(st.ptr(),0) != SQLITE_NULL){
+	} else {
+	  maxc.clear();
+	  goto exit_loop;
+	}
+	maxc.push_back(sqlite3_column_double(st.ptr(),0));
       }
     }
   }
+  exit_loop:
+  uint64_t nmaxc;
+  if (maxc.empty()){
+    nmaxc = 0;
+    ofile.write((const char *) &nmaxc,sizeof(uint64_t));
+  } else {
+    nmaxc = maxc.size();
+    ofile.write((const char *) &nmaxc,sizeof(uint64_t));
+    ofile.write((const char *) &maxc[0],maxc.size() * sizeof(double));
+  }
 
-  //   st.recycle(R"SQL(
-  // SELECT Terms.value, Evaluations.value
-  // FROM Terms, Training_set, Properties, Evaluations
-  // WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
-  //       AND Training_set.propid = Properties.id AND Properties.property_type = 1
-  //       AND Properties.id = Evaluations.propid AND Evaluations.methodid = Terms.methodid
-  // ORDER BY Training_set.id;
-  // )SQL");
-
-  // if (any(maxcoef /= huge(1d0))) then
-  //    write (lu) int(1,1)
-  //    nmaxc = 0
-  //    do i = 1, natoms
-  //       do j = 1, lmax(i)
-  //          do k = 1, nexp
-  //             nmaxc = nmaxc + 1
-  //          end do
-  //       end do
-  //    end do
-  //    write (lu) nmaxc
-  //    do i = 1, natoms
-  //       do j = 1, lmax(i)
-  //          do k = 1, nexp
-  //             write (lu) maxcoef(k,j,i)
-  //          end do
-  //       end do
-  //    end do
-  // else
-  //    write (lu) int(0,1)
-  // end if
-
+  // clean up
   ofile.close();
   os << std::endl;
 }

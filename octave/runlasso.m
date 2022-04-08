@@ -3,13 +3,13 @@
 prefix="lasso";
 
 ## List of 1-norm constraints to use
-tlist = [5];
+tlist = [0 25];
 
 ## Use the maximum coefficients, if available?
 usemaxcoef=1;
 
 ## Use the additional energy contributions, if available?
-useaddcols=0;
+useaddcols=1;
 
 ## In the cases with additional energy contribution, use this as convergence threshold.
 wrmsconv = 1e-4;
@@ -17,7 +17,7 @@ wrmsconv = 1e-4;
 #### Do NOT touch past here ####
 
 ## the version of this lasso script
-lasso_version = "1.5";
+lasso_version = "1.6bin";
 
 ## Read the binary file written by acpdb
 function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
@@ -72,6 +72,17 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
     ynofit = [];
   endif
 
+  ## maxcoef
+  nmaxcoef = fread(fid,1,"uint64");
+  if (nmaxcoef > 0)
+    maxcoef = fread(fid,[nmaxcoef 1],"double");
+    if (nmaxcoef != ncols)
+      maxcoef = [];
+    endif
+  else
+    maxcoef = [];
+  endif
+
   ## apply the weights and transform the matrices for the fit
   wsqrt = sqrt(w);
   x = x .* (wsqrt * ones(1,ncols));
@@ -84,8 +95,6 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
     y = y - sum(ynofit,2);
   endif
   y = y .* wsqrt;
-
-  maxcoef = [];
 
   fclose(fid);
 endfunction
