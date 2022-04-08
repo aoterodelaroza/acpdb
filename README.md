@@ -169,10 +169,14 @@ PRINT STRUCTURE
 PRINT PROPERTY
 PRINT EVALUATION
 PRINT TERM
+PRINT MAXCOEF
 ~~~
 Print the individual tables in the database. In the case of the
 literature references (LITREF), if the BIBTEX keyword is used, write
-the list of literature references in bibtex format.
+the list of literature references in bibtex format. The MAXCOEF
+keyword prints the available per-term maximum coefficients by taking
+the minimum of the maxcoefs for all properties for which they are
+available.
 
 #### DIN files
 ~~~

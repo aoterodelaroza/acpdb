@@ -1800,6 +1800,16 @@ FROM Evaluations;
 SELECT methodid,propid,atom,l,exponent,length(value),value,maxcoef
 FROM Terms;
 )SQL";
+  } else if (category == "MAXCOEF"){
+    headers = {"methodid","atom",  "l","exponent","maxcoef"};
+    types   = {     t_int, t_int,t_int,  t_double, t_double};
+    cols    = {         0,     1,    2,         3,        4};
+    stmt = R"SQL(
+SELECT methodid,atom,l,exponent,MIN(maxcoef)
+FROM Terms
+WHERE maxcoef IS NOT NULL
+GROUP BY methodid,atom,l,exponent
+)SQL";
   } else {
     throw std::runtime_error("Unknown LIST category: " + category);
   }
