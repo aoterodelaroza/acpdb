@@ -1504,9 +1504,15 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
   } else {
     // CALC
 
+    // get the threshold
+    double ethrs = 1.0;
+    if (kmap.find("CALC") == kmap.end())
+      throw std::runtime_error("The CALC keyword is required in TRAINING MAXCOEF + CALC");
+    if (!kmap.at("CALC").empty())
+      ethrs = std::stod(kmap.at("CALC"));
+
     // read the file and build the data file
-    im = kmap.find("SOURCE");
-    if (im == kmap.end())
+    if (kmap.find("SOURCE") == kmap.end())
       throw std::runtime_error("The SOURCE file with the maxcoef are required in TRAINING MAXCOEF + CALC");
     std::string file = kmap.at("SOURCE");
     if (!fs::is_regular_file(file))
@@ -1595,7 +1601,6 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	      double elin = eval[0] + tval[0] * coef[ic];
 	      double edif = std::abs(elin - escf);
 
-	      double ethrs = 1.0;
 	      if (edif > ethrs && !found){
 		if (ic == 0){
 		  cmax[idmax] = std::min(cmax[idmax],coef[0]);
