@@ -1547,6 +1547,16 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	if (nstr == 0)
 	  throw std::runtime_error("structures not found in TRAINING MAXCOEF");
 
+	// find the structure keys and file names
+	std::vector<std::string> strfile;
+	for (int k = 0; k < nstr; k++){
+	  stkey.reset();
+	  stkey.bind(1,str[k]);
+	  stkey.step();
+	  std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
+	  strfile.push_back("maxcoef-" + nameguess(zat[i]) + "-" + name);
+	}
+
 	int n = 0;
 	for (int il = 0; il <= lmax[i]; il++){
 	  for (int ie = 0; ie < exp.size(); ie++){
@@ -1574,19 +1584,13 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	      n++;
 	      double escf = 0;
 	      for (int k = 0; k < nstr; k++){
-		stkey.reset();
-		stkey.bind(1,str[k]);
-		stkey.step();
-		std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
-		std::string file = "maxcoef-" + nameguess(zat[i]) + "-" + name;
+		if (datmap.find(strfile[k]) == datmap.end())
+		  throw std::runtime_error("In TRAINING MAXCOEF, structure in SOURCE file not found: " + strfile[k]);
+		if (n > datmap[strfile[k]].size())
+		  throw std::runtime_error("In TRAINING MAXCOEF, not enough energies for file: " + strfile[k]);
 
-		if (datmap.find(file) == datmap.end())
-		  throw std::runtime_error("In TRAINING MAXCOEF, structure in SOURCE file not found: " + file);
-		if (n > datmap[file].size())
-		  throw std::runtime_error("In TRAINING MAXCOEF, not enough energies for file: " + file);
-
-		escf += pcoef[k] * datmap[file][n];
-	      }
+		escf += pcoef[k] * datmap[strfile[k]][n];
+	      } // k, over structures
 	      escf *= globals::ha_to_kcal;
 	      double elin = eval[0] + tval[0] * coef[ic];
 	      double edif = std::abs(elin - escf);
@@ -1602,13 +1606,19 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 		found = true;
 	      }
 	      elast = edif;
-	    }
+	    } // ic, over coefficients
 
-	  }
+	  } // ie, over exponents
+	} // il, over angular momenta
+
+	// check that we had the correct number of energies in the datmap
+	for (int k = 0; k < nstr; k++){
+	  if (datmap[strfile[k]].size() != n)
+	    throw std::runtime_error("In TRAINING MAXCOEF, too many energies for file: " + strfile[k]);
 	}
 
-      }
-    }
+      } // j, over training IDs for a given atom
+    } // i, over atoms
 
     // write the final list, in maxcoef file format
     os << "# LIST of maximum coefficients: " << std::endl;
