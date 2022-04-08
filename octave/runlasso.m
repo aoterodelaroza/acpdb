@@ -37,6 +37,12 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   nadd = fread(fid,1,"uint64");
   addmaxl = fread(fid,1,"uint64");
   nsub = naddsub - nadd;
+  printf("## Reading from binary file:\n");
+  printf("# %d atoms\n",natoms);
+  printf("# %d exponents\n",nexp);
+  printf("# %d rows\n",nrows);
+  printf("# %d columns\n",ncols);
+  printf("# %d additional method evaluations\n",naddsub);
 
   ## atom names
   atomstr = char(fread(fid,2*natoms,"char"));
@@ -82,6 +88,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   else
     maxcoef = [];
   endif
+  printf("# %d maximum coefficients\n",length(maxcoef));
 
   ## apply the weights and transform the matrices for the fit
   wsqrt = sqrt(w);
@@ -96,6 +103,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   endif
   y = y .* wsqrt;
 
+  printf("## DONE\n");
   fclose(fid);
 endfunction
 

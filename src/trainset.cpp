@@ -1839,7 +1839,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   }
   const char *atoms_c = atoms.c_str();
   ofile.write(atoms_c,zat.size()*2*sizeof(char));
-  os << "# Dumped: " << zat.size() << " atom names " << std::endl;
+  os << "# Dumped: " << zat.size() << " atom names" << std::endl;
 
   // write the additional method names
   for (int i = 0; i < addname.size(); i++){
@@ -1847,24 +1847,24 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
     const char *name_c = name.c_str();
     ofile.write(name_c,addmaxl*sizeof(char));
   }
-  os << "# Dumped: " << addname.size() << " additional method names " << std::endl;
+  os << "# Dumped: " << addname.size() << " additional method names" << std::endl;
 
   // write the lmax vector
   char lmax_c[lmax.size()];
   for (int i = 0; i < lmax.size(); i++)
     lmax_c[i] = lmax[i] + 1;
   ofile.write((const char *) &lmax_c,lmax.size()*sizeof(unsigned char));
-  os << "# Dumped: " << lmax.size() << " maximum angular momenta " << std::endl;
+  os << "# Dumped: " << lmax.size() << " maximum angular momenta" << std::endl;
 
   // write the exponent vector
   const double *exp_c = exp.data();
   ofile.write((const char *) exp_c,exp.size()*sizeof(double));
-  os << "# Dumped: " << exp.size() << " exponent values " << std::endl;
+  os << "# Dumped: " << exp.size() << " exponents" << std::endl;
 
   // write the w vector
   const double *w_c = wtrain.data();
   ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
-  os << "# Dumped: " << wtrain.size() << " weights " << std::endl;
+  os << "# Dumped: " << wtrain.size() << " weights" << std::endl;
 
   // write the x matrix
   st.recycle(R"SQL(
