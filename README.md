@@ -1057,22 +1057,24 @@ coefficients (maxcoef) even if they are available in the database.
 ### Calculation of Training Set Maximum Coefficients
 ~~~
 TRAINING MAXCOEF
-  {WRITE|GEN}
+  {WRITE|CALC [ethres.r]}
   ACP {name.s|file.s}
   SCF file.s
+  SOURCE file.s
   [NPROP_PER_ATOM nprop.i]
   [TEMPLATE file.s]
   [TEMPLATE_MOL filemol.s]
   [TEMPLATE_CRYS filecrys.s]
   [DIRECTORY dir.s]
+  [INSERT]
 END
 ~~~
 The MAXCOEF keyword is used to calculate maximum coefficients for each
-of the terms in a training set. There are two modes of operation for
-this keyword. Using WRITE, the input files for the calculation of the
-maximum coefficients are generated. Using GEN, the maximum
-coefficients are calculated from the result of running the input files
-in WRITE.
+of the terms in a training set. There are two stages for
+this calculation. First, using WRITE, the input files for the
+calculation of the maximum coefficients are generated. In stage 2,
+using GEN, the maximum coefficients are calculated from the result of
+running the input files in WRITE.
 
 A MAXCOEF run requires the self-consistent evaluation of the whole
 training set with the ACP given in `name.s` or `file.s`. The input
@@ -1094,18 +1096,27 @@ corresponding to this subset in which different maximum coefficients
 are examined are written using the same syntax as for the
 [WRITE keyword](#writing-input-and-structure-files).
 
-If no `TEMPLATE` is given, write the structure files (xyz format for
-molecules, POSCAR format for crystals). Otherwise, write input files
-according to the template (the template format is described below). If
-`TEMPLATE` is given, `file.s` is used as template for both crystals
-and molecules. If `TEMPLATE_MOL` is given, use `filemol.s` for
-molecules. If `TEMPLATE_CRYS` is given, use `filecrys.s` for
-crystals. The extensions of the generated input files are the same as
-the extension of the template. Some template examples can be found in
-the `templates/` directory. If a DIRECTORY is given, write the new din
-files in that directory (default: `./`).
+The WRITE option uses the ACP, SCF, NPROP\_PER\_ATOM, TEMPLATE, and
+DIRECTORY options. If no `TEMPLATE` is given, write the structure
+files (xyz format for molecules, POSCAR format for
+crystals). Otherwise, write input files according to the template (the
+template format is described below). If `TEMPLATE` is given, `file.s`
+is used as template for both crystals and molecules. If `TEMPLATE_MOL`
+is given, use `filemol.s` for molecules. If `TEMPLATE_CRYS` is given,
+use `filecrys.s` for crystals. The extensions of the generated input
+files are the same as the extension of the template. Some template
+examples can be found in the `templates/` directory. If a DIRECTORY is
+given, write the new din files in that directory (default: `./`).
 
-The GEN keyword is not implemented yet.
+The CALC keyword reads the results of running the inputs created by
+the WRITE keyword and calculates the maximum coefficients. The results
+of these calculations are compared to the predictions of the linear
+model and a maximum coefficient is calculated for each term to keep
+the nonlinearity error below `ethres.r` (default: 1 kcal/mol). For the
+CALC keyword, the ACP, SCF, and NPROP\_PER_\ATOM options used in WRITE
+are required, and the total energies of the new calculations must be
+passed using the SOURCE keyword. If the INSERT keyword is used,
+the calculated maximum coefficients are inserted into the database.
 
 ## DIN File Format
 
