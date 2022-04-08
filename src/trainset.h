@@ -107,7 +107,7 @@ class trainset {
   void listdb(std::ostream &os) const;
 
   // Write the octavedump.dat file
-  void dump(std::ostream &os);
+  void dump(std::ostream &os, const std::string &keyw="");
 
   // Write input files or structure files for the training set
   // structures. Pass the options other than TRAINING and the ACP to the

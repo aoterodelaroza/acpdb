@@ -1765,7 +1765,7 @@ void trainset::listdb(std::ostream &os) const {
 }
 
 // Write the octavedump.dat file
-void trainset::dump(std::ostream &os) {
+void trainset::dump(std::ostream &os, const std::string &keyw/*=""*/) {
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using DUMP");
   if (!isdefined())
@@ -1916,28 +1916,30 @@ ORDER BY Training_set.id;
   }
 
   // write the maxcoef vector
-  st.recycle(R"SQL(
+  std::vector<double> maxc;
+  if (keyw != "NOMAXCOEF"){
+    st.recycle(R"SQL(
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
-  std::vector<double> maxc;
-  for (int iz = 0; iz < zat.size(); iz++){
-    for (int il = 0; il <= lmax[iz]; il++){
-      for (int ie = 0; ie < exp.size(); ie++){
-        st.reset();
-        st.bind((char *) ":METHOD",emptyid);
-        st.bind((char *) ":ATOM",(int) zat[iz]);
-        st.bind((char *) ":L",il);
-        st.bind((char *) ":EXP",exp[ie]);
-	st.step();
-	if (sqlite3_column_type(st.ptr(),0) != SQLITE_NULL){
-	} else {
-	  maxc.clear();
-	  goto exit_loop;
+    for (int iz = 0; iz < zat.size(); iz++){
+      for (int il = 0; il <= lmax[iz]; il++){
+	for (int ie = 0; ie < exp.size(); ie++){
+	  st.reset();
+	  st.bind((char *) ":METHOD",emptyid);
+	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":L",il);
+	  st.bind((char *) ":EXP",exp[ie]);
+	  st.step();
+	  if (sqlite3_column_type(st.ptr(),0) != SQLITE_NULL){
+	  } else {
+	    maxc.clear();
+	    goto exit_loop;
+	  }
+	  maxc.push_back(sqlite3_column_double(st.ptr(),0));
 	}
-	maxc.push_back(sqlite3_column_double(st.ptr(),0));
       }
     }
   }

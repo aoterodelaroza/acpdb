@@ -1040,10 +1040,11 @@ Writing the `maxcoef.dat` file is not implemented yet.
 
 ### Dumping the Training Set
 ~~~
-TRAINING DUMP
+TRAINING DUMP [NOMAXCOEF]
 ~~~
 Write the octavedump.dat file for the LASSO fit corresponding to the
-current dataset.
+current dataset. If NOMAXCOEF is present, do not dump the maximum term
+coefficients (maxcoef) even if they are available in the database.
 
 ### Calculation of Training Set Maximum Coefficients
 ~~~

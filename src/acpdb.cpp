@@ -374,6 +374,8 @@ int main(int argc, char *argv[]) {
         throw std::runtime_error("The database is not sane");
       std::string category = popstring(tokens,true);
       std::string name = popstring(tokens);
+      std::string uname = name;
+      uppercase(uname);
 
       // TRAINING subkeywords
       if (category.empty()){
@@ -397,9 +399,6 @@ int main(int argc, char *argv[]) {
       } else if (category == "WRITEDIN") {
         ts.write_din(name);
       } else if (category == "EVAL") {
-        std::string uname = name;
-        uppercase(uname);
-
         acp a;
         if (uname != "EMPTY"){
           *os << "* TRAINING: evaluating ACP " << name << std::endl << std::endl;
@@ -430,7 +429,7 @@ int main(int argc, char *argv[]) {
       } else if (category == "WRITE_OLD"){
         ts.write_olddat(*os,name);
       } else if (category == "DUMP") {
-        ts.dump(*os);
+        ts.dump(*os,uname);
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
