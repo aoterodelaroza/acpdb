@@ -1,0 +1,30 @@
+%nprocs=32
+%mem=64GB
+%chk=%basename%.chk
+#t wb97xd gen symm=none int=(grid=ultrafine) guess=(read,tcheck) stable=opt
+
+title
+
+%charge% %mult%
+%xyz%
+
+@pcseg1.gbs/N
+
+%term_loop%
+--Link1--
+%nprocs=32
+%mem=64GB
+%oldchk=%basename%.chk
+#t wb97xd genecp iop(5/13=1,5/36=2,99/5=2) symm=none int=(grid=ultrafine) geom=check guess=(read,tcheck)
+
+title
+
+%charge% %mult%
+
+@pcseg1.gbs/N
+
+-%term_atsymbol% 0
+%term_atsymbol_lstr_gaussian%
+1
+2 %term_exp% %term_coef%
+%term_endloop%
