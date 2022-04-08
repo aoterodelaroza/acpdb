@@ -1664,13 +1664,16 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
     table = "Properties";
   else if (category == "EVALUATION")
     table = "Evaluations";
-  else if (category == "TERM")
+  else if (category == "TERM" || category == "MAXCOEF")
     table = "Terms";
   else
     throw std::runtime_error("Unknown keyword in DELETE");
 
   // execute
-  if (tokens.empty()){
+  if (category == "MAXCOEF") {
+    statement st(db,"UPDATE Terms SET maxcoef = NULL");
+    st.step();
+  } else if (tokens.empty()){
     statement st(db,"DELETE FROM " + table + ";");
     st.execute();
   } else if (category == "EVALUATION") {

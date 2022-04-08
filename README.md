@@ -540,6 +540,7 @@ DELETE STRUCTURE [struct.s|struct.i] [struct.s|struct.i] ...
 DELETE PROPERTY [prop.s|prop.i] [prop.s|prop.i] ...
 DELETE EVALUATION [method.s prop.s] [method.s prop.s] ...
 DELETE TERM [method.s prop.s atom.i l.i exp.r] [method.s prop.s] ...
+DELETE MAXCOEF
 ~~~
 Delete one or more entries from the database tables. Most entries
 can be given by their key (if available) or by their
@@ -550,6 +551,9 @@ momentum channel (as an integer), and exponent.
 
 In all cases, multiple entries can be deleted with the same DELETE
 keyword. If no entries are passed to DELETE, all entries are deleted.
+
+In the case of the MAXCOEF keyword, delete all maximum coefficient
+information from the terms table.
 
 ### Comparing to the Database Contents
 ~~~
