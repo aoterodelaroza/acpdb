@@ -1616,7 +1616,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 		if (ic == 0)
 		  coefid = coef[0];
 		else
-		  coefid = coef[ic-1] + (coef[ic] - coef[ic-1]) * (ethrs - elast) / (edif - elast);
+		  coefid = coef[ic];
 		found = true;
 	      }
 	      elast = edif;
