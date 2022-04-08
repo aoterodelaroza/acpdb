@@ -1828,6 +1828,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
     addmaxl = std::max(addmaxl,(uint64_t) addname[i].size());
   uint64_t sizes[7] = {zat.size(), exp.size(), nrows, ncols, addid.size(), nyfit, addmaxl};
   ofile.write((const char *) &sizes,7*sizeof(uint64_t));
+  os << "# Dumped: " << 7 << " size integers " << std::endl;
 
   // write the atomic names
   std::string atoms = "";
@@ -1838,6 +1839,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   }
   const char *atoms_c = atoms.c_str();
   ofile.write(atoms_c,zat.size()*2*sizeof(char));
+  os << "# Dumped: " << zat.size() << " atom names " << std::endl;
 
   // write the additional method names
   for (int i = 0; i < addname.size(); i++){
@@ -1845,20 +1847,24 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
     const char *name_c = name.c_str();
     ofile.write(name_c,addmaxl*sizeof(char));
   }
+  os << "# Dumped: " << addname.size() << " additional method names " << std::endl;
 
   // write the lmax vector
   char lmax_c[lmax.size()];
   for (int i = 0; i < lmax.size(); i++)
     lmax_c[i] = lmax[i] + 1;
   ofile.write((const char *) &lmax_c,lmax.size()*sizeof(unsigned char));
+  os << "# Dumped: " << lmax.size() << " maximum angular momenta " << std::endl;
 
   // write the exponent vector
   const double *exp_c = exp.data();
   ofile.write((const char *) exp_c,exp.size()*sizeof(double));
+  os << "# Dumped: " << exp.size() << " exponent values " << std::endl;
 
   // write the w vector
   const double *w_c = wtrain.data();
   ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
+  os << "# Dumped: " << wtrain.size() << " weights " << std::endl;
 
   // write the x matrix
   st.recycle(R"SQL(
@@ -1889,6 +1895,7 @@ ORDER BY Training_set.id;
       }
     }
   }
+  os << "# Dumped: terms (x) with " << nrows << " rows and " << ncols << " columns" << std::endl;
 
   // write the yref, yempt, and yadd columns
   st.recycle(R"SQL(
@@ -1914,6 +1921,7 @@ ORDER BY Training_set.id;
     if (n != nrows)
       throw std::runtime_error("Too few rows dumping y data");
   }
+  os << "# Dumped: evaluations (y) for " << ids.size() << " methods with " << nrows << " items each" << std::endl;
 
   // write the maxcoef vector
   std::vector<double> maxc;
@@ -1953,10 +1961,11 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
     ofile.write((const char *) &nmaxc,sizeof(uint64_t));
     ofile.write((const char *) &maxc[0],maxc.size() * sizeof(double));
   }
+  os << "# Dumped: " << maxc.size() << " maximum coefficients" << std::endl;
 
   // clean up
   ofile.close();
-  os << std::endl;
+  os << "# DONE" << std::endl << std::endl;
 }
 
 // Write input files or structure files for the training set
