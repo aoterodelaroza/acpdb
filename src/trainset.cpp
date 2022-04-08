@@ -29,10 +29,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <cmath>
 #include <filesystem>
-#include <unordered_map>
 #include <map>
 #include <cstring>
 #include <list>
+#include <tuple>
 
 namespace fs = std::filesystem;
 
@@ -1161,6 +1161,7 @@ ORDER BY Training_set.id;
 
 // Evaluate an ACP and compare to an external file; choose the systems
 // with maximum deviation (non-linearity error) for each atom in the TS.
+// Generate the maxcoef file.
 void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
 		       const acp &a){
   if (!db || !(*db))
@@ -1454,6 +1455,11 @@ ORDER BY Properties.id
   }
   os << std::endl;
 
+  // coefficients
+  std::vector<double> coef;
+  for (int j = -6; j < 2; j++)
+    coef.push_back(std::pow(10.0,j));
+
   if (iswrite){
     // WRITE
     std::unordered_map<std::string,std::string> kmap_new = kmap;
@@ -1488,11 +1494,6 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 	}
       }
 
-      // coefficients
-      std::vector<double> coef;
-      for (int j = -6; j < 2; j++)
-	coef.push_back(std::pow(10.0,j));
-
       // write the structures
       std::string prefix = "maxcoef-" + nameguess(zat[i]) + "-";
       const std::vector<unsigned char> zat_ = {zat[i]};
@@ -1502,8 +1503,124 @@ WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
 
   } else {
     // CALC
-    printf("not implemented!\n");
-    exit(0);
+
+    // read the file and build the data file
+    im = kmap.find("SOURCE");
+    if (im == kmap.end())
+      throw std::runtime_error("The SOURCE file with the maxcoef are required in TRAINING MAXCOEF + CALC");
+    std::string file = kmap.at("SOURCE");
+    if (!fs::is_regular_file(file))
+      throw std::runtime_error("Invalid SOURCE file in TRAINING MAXCOEF (not a file)");
+    datmap = read_data_file_vector(file,1.);
+
+    // initialize the maxcoefs
+    int lmaxx = 0;
+    for (int i = 0; i < zat.size(); i++)
+      lmaxx = std::max((int) lmax[i]+1,lmaxx);
+    std::vector<double> cmax(zat.size() * lmaxx * exp.size(),coef[coef.size()-1]);
+
+    // statements
+    statement steval(db->ptr(),R"SQL(
+SELECT length(Evaluations.value), Evaluations.value, length(Terms.value), Terms.value
+FROM Properties, Evaluations, Training_Set, Terms
+WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
+      Training_set.id = :ID AND Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
+      Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+)SQL");
+    st.recycle(R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
+)SQL");
+    stkey.recycle("SELECT key FROM Structures WHERE id = ?1;");
+
+    // run over atoms and training IDs
+    for (int i = 0; i < zat.size(); i++){
+      for (int j = 0; j < atchosen[zat[i]].size(); j++){
+	int id = atchosen[zat[i]][j];
+	st.reset();
+	st.bind(1,id);
+	st.step();
+	int nstr = sqlite3_column_int(st.ptr(),0);
+	int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+	double *pcoef = (double *) sqlite3_column_blob(st.ptr(),2);
+	if (nstr == 0)
+	  throw std::runtime_error("structures not found in TRAINING MAXCOEF");
+
+	int n = 0;
+	for (int il = 0; il <= lmax[i]; il++){
+	  for (int ie = 0; ie < exp.size(); ie++){
+	    int idmax = ie + exp.size() * (il + lmaxx * i);
+
+	    steval.reset();
+	    steval.bind((char *) ":METHOD",emptyid);
+	    steval.bind((char *) ":ID",id);
+	    steval.bind((char *) ":ATOM",(int) zat[i]);
+	    steval.bind((char *) ":L",il);
+	    steval.bind((char *) ":EXP",exp[ie]);
+	    steval.step();
+	    int neval = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
+	    int nterm = sqlite3_column_int(steval.ptr(),2) / sizeof(double);
+	    if (neval != nterm)
+	      throw std::runtime_error("Incompatible neval and nterm in TRAINING MAXCOEF");
+	    if (neval != 1)
+	      throw std::runtime_error("Do not know how to handle neval != 1 in TRAINING MAXCOEF");
+	    double *eval = (double *) sqlite3_column_blob(steval.ptr(),1);
+	    double *tval = (double *) sqlite3_column_blob(steval.ptr(),3);
+
+	    double elast = 0.0;
+	    bool found = false;
+	    for (int ic = 0; ic < coef.size(); ic++){
+	      n++;
+	      double escf = 0;
+	      for (int k = 0; k < nstr; k++){
+		stkey.reset();
+		stkey.bind(1,str[k]);
+		stkey.step();
+		std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
+		std::string file = "maxcoef-" + nameguess(zat[i]) + "-" + name;
+
+		if (datmap.find(file) == datmap.end())
+		  throw std::runtime_error("In TRAINING MAXCOEF, structure in SOURCE file not found: " + file);
+		if (n > datmap[file].size())
+		  throw std::runtime_error("In TRAINING MAXCOEF, not enough energies for file: " + file);
+
+		escf += pcoef[k] * datmap[file][n];
+	      }
+	      escf *= globals::ha_to_kcal;
+	      double elin = eval[0] + tval[0] * coef[ic];
+	      double edif = std::abs(elin - escf);
+
+	      double ethrs = 1.0;
+	      if (edif > ethrs && !found){
+		if (ic == 0){
+		  cmax[idmax] = std::min(cmax[idmax],coef[0]);
+		} else {
+		  double cthis = coef[ic-1] + (coef[ic] - coef[ic-1]) * (ethrs - elast) / (edif - elast);
+		  cmax[idmax] = std::min(cmax[idmax],cthis);
+		}
+		found = true;
+	      }
+	      elast = edif;
+	    }
+
+	  }
+	}
+
+      }
+    }
+
+    // write the final list, in maxcoef file format
+    os << "# LIST of maximum coefficients: " << std::endl;
+    for (int i = 0; i < zat.size(); i++){
+      for (int il = 0; il <= lmax[i]; il++){
+	for (int ie = 0; ie < exp.size(); ie++){
+	  int idmax = ie + exp.size() * (il + lmaxx * i);
+	  printf("%s %c %.6f %.10e\n",nameguess(zat[i]).c_str(),globals::inttol[il],exp[ie],cmax[idmax]);
+	}
+      }
+    }
+    os << std::endl;
   }
 }
 
