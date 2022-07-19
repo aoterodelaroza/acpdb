@@ -255,6 +255,21 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	set_mask[i] = set_mask[i] | set_mask_local[i];
     }
   }
+  if (kmap.find("MASK_RANDOM") != kmap.end()) {
+    // find the used IDs and make sure we have enough
+    int num = std::stoi(kmap["MASK_RANDOM"]);
+    std::vector<int> ids;
+    for (int i = 0; i < set_mask.size(); i++)
+      if (set_mask[i]) ids.push_back(i);
+    if (ids.size() < num)
+      throw std::runtime_error("Not enough items remaining to satisfy the requested MASK_RANDOM");
+
+    // shuffle and re-build the mask
+    std::random_shuffle(ids.begin(), ids.end());
+    std::fill(set_mask.begin(), set_mask.end(), false);
+    for (int i = 0; i < num; i++)
+      set_mask[ids[i]] = true;
+  }
 
   // build the propid, size, and final index of the set
   set_size.push_back(0);
