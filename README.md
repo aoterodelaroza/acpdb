@@ -815,6 +815,7 @@ TRAINING
   MASK_NOTITEMS item1.i item2.i ...
   MASK_PATTERN 0/1 0/1 ...
   MASK_ATOMS
+  MASK_NOANIONS
   MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
   MASK_RANDOM n.i
   WEIGHT_GLOBAL w.r
@@ -892,8 +893,11 @@ is as follows:
     not if it is a 0.
 
   * `MASK_ATOMS` constructs the mask by selecting only the entries in
-  the subset that contain only the atoms in the training set. Using
-  this mask requires having defined the `ATOMS` previously.
+    the subset that contain only the atoms in the training set. Using
+    this mask requires having defined the `ATOMS` previously.
+
+  * `MASK_NOANIONS` select only the subset entries that do not contain
+    any anions.
 
   * `MASK_RANGE` indicates a range starting at `start.i` up to `end.i`
     with `step.i`. The interpretation of `MASK_RANGE` varies depending

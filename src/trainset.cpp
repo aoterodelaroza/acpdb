@@ -137,30 +137,36 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   }
 
   //// mask ////
-  if (kmap.find("MASK_ATOMS") != kmap.end()){
+  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end()){
     if (zat.empty())
       throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
 
     // build the array of structures that contain only the atoms in the zat array
     std::unordered_map<int,bool> usest;
-    statement st(db->ptr(),"SELECT id,nat,zatoms FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+    statement st(db->ptr(),"SELECT id,nat,zatoms,charge FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
     while (st.step() != SQLITE_DONE){
       int id = sqlite3_column_int(st.ptr(),0);
       int nat = sqlite3_column_int(st.ptr(),1);
       unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+      int charge = sqlite3_column_int(st.ptr(),3);
       bool res = true;
-      for (int j = 0; j < nat; j++){
-	bool found = false;
-	for (int k = 0; k < zat.size(); k++){
-	  if (zat[k] == zat_[j]){
-	    found = true;
+      if (kmap.find("MASK_ATOMS") != kmap.end()){
+	for (int j = 0; j < nat; j++){
+	  bool found = false;
+	  for (int k = 0; k < zat.size(); k++){
+	    if (zat[k] == zat_[j]){
+	      found = true;
+	      break;
+	    }
+	  }
+	  if (!found){
+	    res = false;
 	    break;
 	  }
 	}
-	if (!found){
-	  res = false;
-	  break;
-	}
+      }
+      if (kmap.find("MASK_NOANIONS") != kmap.end()){
+	if (charge < 0) res = false;
       }
       usest[id] = res;
     }
