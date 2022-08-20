@@ -816,6 +816,7 @@ TRAINING
   MASK_PATTERN 0/1 0/1 ...
   MASK_ATOMS
   MASK_NOANIONS
+  MASK_NOCHARGED
   MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
   MASK_RANDOM n.i
   WEIGHT_GLOBAL w.r
@@ -898,6 +899,9 @@ is as follows:
 
   * `MASK_NOANIONS` select only the subset entries that do not contain
     any anions.
+
+  * `MASK_NOCHARGED` select only the subset entries that involve only
+    neutral species.
 
   * `MASK_RANGE` indicates a range starting at `start.i` up to `end.i`
     with `step.i`. The interpretation of `MASK_RANGE` varies depending

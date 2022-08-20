@@ -137,7 +137,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   }
 
   //// mask ////
-  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end()){
+  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
     if (zat.empty())
       throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
 
@@ -167,6 +167,9 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
       }
       if (kmap.find("MASK_NOANIONS") != kmap.end()){
 	if (charge < 0) res = false;
+      }
+      if (kmap.find("MASK_NOCHARGED") != kmap.end()){
+	if (charge != 0) res = false;
       }
       usest[id] = res;
     }
