@@ -91,8 +91,7 @@ class trainset {
 
   // Evaluate an ACP and compare to an external file; choose the systems
   // with maximum deviation (non-linearity error) for each atom in the TS.
-  void maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-	       const acp &a);
+  void maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Save the current training set to the database
   void savedb(std::string &name) const;

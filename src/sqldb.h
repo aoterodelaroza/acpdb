@@ -128,18 +128,19 @@ class sqldb {
                         const std::vector<double> &exp={}, const std::vector<double> &coef={},
 			const std::string &prefix="");
 
-  // Write the structures with IDs given by the keys in smap. The values
-  // of smap should be 1 if the structures are molecules or zero if they
-  // are crystals. Use template_m and template_c as templates for
-  // molecules and crystals. Use ext_m and ext_c as file extensions for
-  // molecules and crystals. dir: output directory. npack = package and
-  // compress in packets of npack files (0 = no packing). prefix =
-  // prefix the file names with this string. os is the output stream
-  // for verbose notifications. For the template expansion, use the
-  // information in ACP a. For the loop expansion, use the list of
-  // atomic numbers (zat), angular momenta (l), exponents (exp), and
-  // coefficients (coef). If rename, incorporate the atom, l, exponent
-  // info into the file name.
+  // Write the structures with IDs given by the keys in smap. The
+  // values of smap should be 1 if the structures are molecules or
+  // zero if they are crystals. Use template_m and template_c as
+  // templates for molecules and crystals. Use ext_m and ext_c as file
+  // extensions for molecules and crystals. dir: output
+  // directory. npack = package and compress in packets of npack files
+  // (0 = no packing). prefix = prefix the file names with this
+  // string. os is the output stream for verbose notifications. For
+  // the template expansion, use the information in ACP a. For the
+  // loop expansion, use the list of atomic numbers (zat), angular
+  // momenta (l), exponents (exp), and coefficients (coef). Rename = 0
+  // (do not rename), = 1 (write an extended name with atom, l, and
+  // exponent info in it), = 2 (with atom, l, exponent, coef).
   void write_many_structures(std::ostream &os,
                              const std::string &template_m, const std::string &template_c,
                              const std::string &ext_m, const std::string &ext_c,
@@ -147,21 +148,23 @@ class sqldb {
                              const std::unordered_map<int,int> &smap,
                              const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l,
 			     const std::vector<double> &exp, const std::vector<double> &coef,
-                             const bool rename,
+                             const int rename,
                              const std::string &dir="./", int npack=0,
 			     const std::string &prefix="");
 
-  // Write one structure to output directory dir with name prefix prefix
-  // and extension ext. If rename, write an extended name with atom, l,
-  // and exponent info in it. If the run is verbose, write a note to
-  // stream os. The structure written has database ID equal to id. Use
-  // template in tmpl. For the keyword expansion, use the information in
-  // the ACP (a), atomic numbers (zat), angular momentum (l),
-  // exponent (exp), exponent ID (iexp), and coefficient (coef).
+  // Write one structure to output directory dir with name prefix
+  // prefix and extension ext. Rename = 0 (do not rename), = 1 (write
+  // an extended name with atom, l, and exponent info in it), = 2
+  // (with atom, l, exponent, coef). If the run is verbose, write a
+  // note to stream os. The structure written has database ID equal to
+  // id. Use template in tmpl. For the keyword expansion, use the
+  // information in the ACP (a), atomic numbers (zat), angular
+  // momentum (l), exponent (exp), exponent ID (iexp), and coefficient
+  // (coef).
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
                                   const std::string &ext, const acp& a,
                                   const unsigned char zat, const unsigned char l, const double exp, const int iexp,
-                                  const double coef, const bool rename,
+                                  const double coef, const int icoef, const int rename,
                                   const std::string &dir="./",
 				  const std::string &prefix="");
 

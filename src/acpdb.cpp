@@ -68,6 +68,9 @@ int main(int argc, char *argv[]) {
   std::cout << "** ACPDB: database interface for ACP development **"<< std::endl;
   print_timestamp();
 
+  // Set the random seed
+  std::srand(std::time(NULL));
+
   // Check command parameters
   if (argc > 3 || (argc >= 2 && strcmp(argv[1],"-h") == 0) || (argc >= 3 && strcmp(argv[2],"-h") == 0)){
     std::cout << "Usage: " + std::string(argv[0]) + " [inputfile [outputfile]]" << std::endl;
@@ -418,12 +421,7 @@ int main(int argc, char *argv[]) {
           ts.eval_acp(*os,a);
       } else if (category == "MAXCOEF") {
 	std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
-	if (kmap.find("ACP") == kmap.end())
-	  throw std::runtime_error("An ACP is required in TRAINING MAXCOEF");
-	acp a = string_to_acp(kmap.at("ACP"));
-	if (!a)
-	  throw std::runtime_error("Unknown ACP " + kmap.at("ACP") + " in TRAINING MAXCOEF");
-	ts.maxcoef(*os,kmap,a);
+	ts.maxcoef(*os,kmap);
       } else if (category == "INSERT_OLD"){
         ts.insert_olddat(*os,name);
       } else if (category == "WRITE_OLD"){
