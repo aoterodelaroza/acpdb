@@ -1204,280 +1204,6 @@ void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,st
   else
     throw std::runtime_error("Either WRITE or CALC is required in TRAINING MAXCOEF");
 
-//  im = kmap.find("SCF");
-//  if (im == kmap.end())
-//    throw std::runtime_error("The SCF evaluaions are required in TRAINING MAXCOEF");
-//  std::string file = kmap.at("SCF");
-//
-//  int nprop_per_atom = 2;
-//  if ((im = kmap.find("NPROP_PER_ATOM")) != kmap.end())
-//    nprop_per_atom = std::stoi(im->second);
-
-//   // get the number of items
-//   int nall = 0;
-//   std::vector<int> num, nsetid;
-  statement st(db->ptr(),R"SQL(
-SELECT length(Evaluations.value), Properties.setid
-FROM Evaluations, Training_set, Properties
-WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid AND
-      Evaluations.propid = Properties.id
-ORDER BY Training_set.id;
-)SQL");
-//   st.bind((char *) ":METHOD",refid);
-//   while (st.step() != SQLITE_DONE){
-//     int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-//     int sid = sqlite3_column_int(st.ptr(),1);
-//     num.push_back(nitem);
-//     nsetid.push_back(sid);
-//     nall += nitem;
-//   }
-
-
-  // if (complete == c_unknown)
-  //   describe(os,false,true,true);
-  // if (complete == c_no)
-  //   throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF");
-
-//  // initialize container vectors
-//  std::vector<double> yempty(nall,0.0), yacp(nall,0.0), yadd(nall,0.0), ytotal(nall,0.0), yscf(nall,0.0), yref(nall,0.0);
-//  std::vector<std::string> names(ntot,"");
-//
-//  // get the names
-//  st.recycle(R"SQL(
-//SELECT Properties.key
-//FROM Properties, Training_set
-//WHERE Properties.id = Training_set.propid
-//ORDER BY Training_set.id;
-//)SQL");
-//  int n = 0;
-//  while (st.step() != SQLITE_DONE)
-//    names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
-//  if (n != nall)
-//    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in names");
-//
-//  // get the empty, reference, additional methods
-//  st.recycle(R"SQL(
-//SELECT length(Evaluations.value), Evaluations.value
-//FROM Evaluations, Training_set
-//WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid
-//ORDER BY Training_set.id;
-//)SQL");
-//
-//  n = 0;
-//  st.bind((char *) ":METHOD",emptyid);
-//  while (st.step() != SQLITE_DONE){
-//    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-//    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
-//    if (nitem == 0 || !rval)
-//      throw std::runtime_error("In TRAINING MAXCOEF, unexpected null element in evaluation search");
-//    for (int i = 0; i < nitem; i++)
-//      yempty[n++] = rval[i];
-//  }
-//  if (n != nall)
-//    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
-//
-//  n = 0;
-//  st.bind((char *) ":METHOD",refid);
-//  while (st.step() != SQLITE_DONE){
-//    int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-//    double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
-//    for (int i = 0; i < nitem; i++)
-//      yref[n++] = rval[i];
-//  }
-//  if (n != nall)
-//    throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
-//
-//  for (int j = 0; j < addid.size(); j++){
-//    n = 0;
-//    st.bind((char *) ":METHOD",addid[j]);
-//    while (st.step() != SQLITE_DONE){
-//      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-//      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
-//      for (int i = 0; i < nitem; i++)
-//        yadd[n++] = rval[i];
-//    }
-//    if (n != nall)
-//      throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in empty");
-//  }
-//
-//  // get the ACP and total contributions
-//  st.recycle(R"SQL(
-//SELECT length(Terms.value), Terms.value
-//FROM Terms, Training_set
-//WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
-//ORDER BY Training_set.id;
-//)SQL");
-//  for (int i = 0; i < a.size(); i++){
-//    acp::term t = a.get_term(i);
-//    st.reset();
-//    st.bind((char *) ":METHOD",emptyid);
-//    st.bind((char *) ":ATOM",(int) t.atom);
-//    st.bind((char *) ":L",(int) t.l);
-//    st.bind((char *) ":EXP",t.exp);
-//
-//    n = 0;
-//    while (st.step() != SQLITE_DONE){
-//      int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-//      double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
-//      for (int j = 0; j < nitem; j++)
-//        yacp[n++] += rval[j] * t.coef;
-//    }
-//    if (n != nall){
-//      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
-//                << " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
-//      throw std::runtime_error("In TRAINING MAXCOEF, unexpected end of the database column in ACP term number " + std::to_string(i));
-//    }
-//  }
-//  for (int i = 0; i < nall; i++)
-//    ytotal[i] = yempty[i] + yacp[i] + yadd[i];
-//
-//  // read the file and build the data file
-//  if (!fs::is_regular_file(file))
-//    throw std::runtime_error("Invalid FILE in TRAINING MAXCOEF (not a file)");
-//  std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
-//
-//  // fetch the reference method values from the DB and populate vectors
-//  std::vector<std::string> names_missing_fromdat;
-//  std::vector<double> datvalues;
-//  std::unordered_map<unsigned char,std::vector<int>> atmap;
-  statement stkey(db->ptr(),"SELECT key, nat, zatoms FROM Structures WHERE id = ?1;");
-//
-//  // the statement text
-//  st.recycle(R"SQL(
-//SELECT Properties.key, Properties.nstructures, Properties.structures, Properties.coefficients, Properties.property_type, Sets.id, Sets.key,
-//       length(ref.value), ref.value
-//FROM Properties
-//INNER JOIN Sets ON Properties.setid = Sets.id
-//INNER JOIN Training_Set ON Training_set.propid = Properties.id
-//LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.methodid = :METHOD)
-//ORDER BY Properties.id
-//)SQL");
-//  st.bind((char *) ":METHOD",emptyid);
-//  n = 0;
-//  while (st.step() != SQLITE_DONE){
-//    // check if the evaluation is available in the database
-//    std::string key = (char *) sqlite3_column_text(st.ptr(),0);
-//    if (sqlite3_column_type(st.ptr(),8) == SQLITE_NULL)
-//      continue;
-//    n++;
-//
-//    // check if the components are in the data file or in the approximate method
-//    int nvalue = sqlite3_column_int(st.ptr(),7) / sizeof(double);
-//    int nstr = sqlite3_column_int(st.ptr(),1);
-//    int *istr = (int *) sqlite3_column_blob(st.ptr(),2);
-//    double *coef = (double *) sqlite3_column_blob(st.ptr(),3);
-//    int ptid = sqlite3_column_int(st.ptr(),4);
-//    int thissetid = sqlite3_column_int(st.ptr(),5);
-//    std::string thissetname = (char *) sqlite3_column_text(st.ptr(), 6);
-//    std::vector<double> value(nvalue,0.0);
-//    bool found = true;
-//
-//    // fetch the structures and calculate value and atom map
-//    std::unordered_map<unsigned char,bool> atused;
-//    for (int i = 0; i < nstr; i++){
-//      stkey.reset();
-//      stkey.bind(1,istr[i]);
-//      stkey.step();
-//      std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-//      if (datmap.find(strname) == datmap.end()){
-//	found = false;
-//	break;
-//      }
-//      for (int j = 0; j < nvalue; j++)
-//	value[j] += coef[i] * datmap[strname][j];
-//
-//      int nat = sqlite3_column_int(stkey.ptr(),1);
-//      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(stkey.ptr(),2);
-//      for (int j = 0; j < nat; j++)
-//	atused[zat_[j]] = true;
-//    }
-//    if (ptid == globals::ppty_energy_difference){
-//      for (int j = 0; j < nvalue; j++)
-//	value[j] *= globals::ha_to_kcal;
-//    }
-//    for (int j = 0; j < zat.size(); j++)
-//      if (atused.find(zat[j]) != atused.end())
-//	atmap[zat[j]].push_back(n);
-//
-//    // populate the vectors
-//    if (!found){
-//      names_missing_fromdat.push_back(key);
-//    } else {
-//      double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
-//      for (int j = 0; j < nvalue; j++)
-//        datvalues.push_back(value[j]);
-//    }
-//  }
-//  datmap.clear();
-//  if (!names_missing_fromdat.empty()){
-//    os << "## The following properties are missing from the FILE:" << std::endl;
-//    for (int i = 0; i < names_missing_fromdat.size(); i++)
-//      os << "## " << names_missing_fromdat[i] << std::endl;
-//    throw std::runtime_error("In TRAINING MAXCOEF, structures missing from file");
-//  }
-//  if (datvalues.size() != nall || n != nall)
-//    throw std::runtime_error("In TRAINING MAXCOEF, different number of values in file and DB");
-//
-//  // calculate statistics
-//  double rmst, maet, mset, wrmst;
-//  calc_stats(ytotal,datvalues,w,wrmst,rmst,maet,mset);
-//  std::streamsize prec = os.precision(7);
-//  os << std::fixed;
-//  os << "# Non-linearity error evaluation" << std::endl;
-//  os << "# ACP: " << (a?a.get_name():emptyname) << std::endl;
-//  os << "# SCF from file: " << file << std::endl;
-//  os << "# Statistics: " << std::endl;
-//  os.precision(8);
-//  os << "#   wrms =  " << wrmst << std::endl;
-//  os << "# "
-//     << std::left << "  rms = " << std::right << std::setw(14) << rmst
-//     << std::left << "  mae = " << std::right << std::setw(14) << maet
-//     << std::left << "  mse = " << std::right << std::setw(14) << mset
-//     << std::left << "  ndat = " << std::right << nall
-//     << std::endl;
-//  os.precision(prec);
-//
-//  // write the table of results
-//  output_eval(os,{},names,num,w,ytotal,"ACP (linear)",datvalues,"SCF (file)",{yref},{"Reference"});
-//  os << std::endl;
-//
-//  // find the two figure out how to find per-system per-atom information
-//  os << "# LIST of properties on which to run the maxcoef calculation: " << std::endl;
-//  os << "| id | name | atom | nonlinear error (kcal/mol) |" << std::endl;
-//  std::unordered_map<int,bool> propused;
-//  std::unordered_map<unsigned char,std::vector<int>> atchosen;
-//  for (int i = 0; i < zat.size(); i++){
-//    std::vector<double> esave(nprop_per_atom,0.0);
-//    atchosen[zat[i]].resize(nprop_per_atom,0);
-//    if (atmap.find(zat[i]) != atmap.end()){
-//      for (int j = 0; j < atmap[zat[i]].size(); j++){
-//	int id = atmap[zat[i]][j];
-//	double e = std::abs(ytotal[id] - datvalues[id]);
-//	if (e > esave[0]){
-//	  int kthis = 0;
-//	  for (int k = 1; k < nprop_per_atom; k++){
-//	    if (e > esave[k])
-//	      kthis = k;
-//	    else
-//	      break;
-//	  }
-//	  for (int k = 0; k < kthis; k++){
-//	    esave[k] = esave[k+1];
-//	    atchosen[zat[i]][k] = atchosen[zat[i]][k+1];
-//	  }
-//	  esave[kthis] = e;
-//	  atchosen[zat[i]][kthis] = id;
-//	}
-//      }
-//
-//      for (int j=0; j<atchosen[zat[i]].size(); j++){
-//	int id = atchosen[zat[i]][j];
-//	os << "|" << id << "| " << names[id] << " | " << nameguess(zat[i]) << " | " << esave[j] << "|" << std::endl;
-//      }
-//    }
-//  }
-//  os << std::endl;
-
   // coefficients
   std::vector<double> coef;
   for (int j = -6; j < 2; j++)
@@ -1490,12 +1216,12 @@ ORDER BY Training_set.id;
     kmap_new.erase("PACK");
     kmap_new["TERM"] = "";
 
-    st.recycle(R"SQL(
+    statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.key
 FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid;
 )SQL");
-    stkey.recycle("SELECT ismolecule, key FROM Structures WHERE id = ?1;");
+    statement stkey(db->ptr(),"SELECT ismolecule, key FROM Structures WHERE id = ?1;");
 
     std::unordered_map<int,int> smap;
     while (st.step() != SQLITE_DONE){
@@ -1514,171 +1240,115 @@ WHERE Properties.id = Training_set.propid;
     // write the structures
     db->write_structures(os, kmap_new, {}, smap, zat, lmax, exp, coef, "maxcoef-");
 
-//  } else {
-//    // CALC
-//
-//    // get the threshold
-//    double ethrs = 1.0;
-//    if (kmap.find("CALC") == kmap.end())
-//      throw std::runtime_error("The CALC keyword is required in TRAINING MAXCOEF + CALC");
-//    if (!kmap.at("CALC").empty())
-//      ethrs = std::stod(kmap.at("CALC"));
-//
-//    // read the file and build the data file
-//    if (kmap.find("SOURCE") == kmap.end())
-//      throw std::runtime_error("The SOURCE file with the maxcoef are required in TRAINING MAXCOEF + CALC");
-//    std::string file = kmap.at("SOURCE");
-//    if (!fs::is_regular_file(file))
-//      throw std::runtime_error("Invalid SOURCE file in TRAINING MAXCOEF (not a file)");
-//    datmap = read_data_file_vector(file,1.);
-//
-//    // initialize the maxcoefs
-//    int lmaxx = 0;
-//    for (int i = 0; i < zat.size(); i++)
-//      lmaxx = std::max((int) lmax[i]+1,lmaxx);
-//    std::vector<double> cmax(zat.size() * lmaxx * exp.size(),coef[coef.size()-1]);
-//
-//    // If inserting, start transaction
-//    if (kmap.find("INSERT") != kmap.end())
-//      db->begin_transaction();
-//
-//    // statements
-//    statement steval(db->ptr(),R"SQL(
-//SELECT length(Evaluations.value), Evaluations.value, length(Terms.value), Terms.value
-//FROM Properties, Evaluations, Training_Set, Terms
-//WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
-//      Training_set.id = :ID AND Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
-//      Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
-//)SQL");
-//    statement stinsert(db->ptr(),R"SQL(
-//UPDATE OR REPLACE Terms
-//SET maxcoef = :MAXCOEF
-//WHERE methodid = :METHOD AND atom = :ATOM AND l = :L AND exponent = :EXP
-//      AND propid = (SELECT propid FROM Training_set WHERE id = :ID)
-//)SQL");
-//    st.recycle(R"SQL(
-//SELECT Properties.nstructures, Properties.structures, Properties.coefficients
-//FROM Properties, Training_set
-//WHERE Properties.id = Training_set.propid AND Training_set.id = ?1;
-//)SQL");
-//    stkey.recycle("SELECT key FROM Structures WHERE id = ?1;");
-//
-//    // run over atoms and training IDs
-//    for (int i = 0; i < zat.size(); i++){
-//      for (int j = 0; j < atchosen[zat[i]].size(); j++){
-//	int id = atchosen[zat[i]][j];
-//	st.reset();
-//	st.bind(1,id);
-//	st.step();
-//	int nstr = sqlite3_column_int(st.ptr(),0);
-//	int *str = (int *) sqlite3_column_blob(st.ptr(),1);
-//	double *pcoef = (double *) sqlite3_column_blob(st.ptr(),2);
-//	if (nstr == 0)
-//	  throw std::runtime_error("structures not found in TRAINING MAXCOEF");
-//
-//	// find the structure keys and file names
-//	std::vector<std::string> strfile;
-//	for (int k = 0; k < nstr; k++){
-//	  stkey.reset();
-//	  stkey.bind(1,str[k]);
-//	  stkey.step();
-//	  std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
-//	  strfile.push_back("maxcoef-" + nameguess(zat[i]) + "-" + name);
-//	}
-//
-//	int n = 0;
-//	for (int il = 0; il <= lmax[i]; il++){
-//	  for (int ie = 0; ie < exp.size(); ie++){
-//	    int idmax = ie + exp.size() * (il + lmaxx * i);
-//
-//	    steval.reset();
-//	    steval.bind((char *) ":METHOD",emptyid);
-//	    steval.bind((char *) ":ID",id);
-//	    steval.bind((char *) ":ATOM",(int) zat[i]);
-//	    steval.bind((char *) ":L",il);
-//	    steval.bind((char *) ":EXP",exp[ie]);
-//	    steval.step();
-//	    int neval = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
-//	    int nterm = sqlite3_column_int(steval.ptr(),2) / sizeof(double);
-//	    if (neval != nterm)
-//	      throw std::runtime_error("Incompatible neval and nterm in TRAINING MAXCOEF");
-//	    if (neval != 1)
-//	      throw std::runtime_error("Do not know how to handle neval != 1 in TRAINING MAXCOEF");
-//	    double *eval = (double *) sqlite3_column_blob(steval.ptr(),1);
-//	    double *tval = (double *) sqlite3_column_blob(steval.ptr(),3);
-//
-//	    double coefid = coef[coef.size()-1];
-//	    double elast = 0.0;
-//	    bool found = false;
-//	    for (int ic = 0; ic < coef.size(); ic++){
-//	      n++;
-//	      double escf = 0;
-//	      for (int k = 0; k < nstr; k++){
-//		if (datmap.find(strfile[k]) == datmap.end())
-//		  throw std::runtime_error("In TRAINING MAXCOEF, structure in SOURCE file not found: " + strfile[k]);
-//		if (n > datmap[strfile[k]].size())
-//		  throw std::runtime_error("In TRAINING MAXCOEF, not enough energies for file: " + strfile[k]);
-//
-//		escf += pcoef[k] * datmap[strfile[k]][n];
-//	      } // k, over structures
-//	      escf *= globals::ha_to_kcal;
-//	      double elin = eval[0] + tval[0] * coef[ic];
-//	      double edif = std::abs(elin - escf);
-//
-//	      if (edif > ethrs && !found){
-//		if (ic == 0)
-//		  coefid = coef[0];
-//		else
-//		  coefid = coef[ic];
-//		found = true;
-//	      }
-//	      elast = edif;
-//	    } // ic, over coefficients
-//
-//	    // update the cmax
-//	    cmax[idmax] = std::min(cmax[idmax],coefid);
-//
-//	    // insert into the database
-//	    if (kmap.find("INSERT") != kmap.end()){
-//	      stinsert.reset();
-//	      stinsert.bind((char *) ":METHOD",emptyid);
-//	      stinsert.bind((char *) ":ATOM",(int) zat[i]);
-//	      stinsert.bind((char *) ":L",il);
-//	      stinsert.bind((char *) ":EXP",exp[ie]);
-//	      stinsert.bind((char *) ":ID",id);
-//	      stinsert.bind((char *) ":MAXCOEF",coefid);
-//	      stinsert.step();
-//	      // printf("inserted: %d %d %d %.2f %d %.10e\n",emptyid,(int) zat[i],(int) il,
-//	      // 	     exp[ie],id,coefid);
-//	    }
-//
-//	  } // ie, over exponents
-//	} // il, over angular momenta
-//
-//	// check that we had the correct number of energies in the datmap
-//	for (int k = 0; k < nstr; k++){
-//	  if (datmap[strfile[k]].size() != n)
-//	    throw std::runtime_error("In TRAINING MAXCOEF, too many energies for file: " + strfile[k]);
-//	}
-//
-//      } // j, over training IDs for a given atom
-//    } // i, over atoms
-//
-//    // If inserting, commit transaction
-//    if (kmap.find("INSERT") != kmap.end())
-//      db->commit_transaction();
-//
-//    // write the final list, in maxcoef file format
-//    os << "# LIST of maximum coefficients: " << std::endl;
-//    for (int i = 0; i < zat.size(); i++){
-//      for (int il = 0; il <= lmax[i]; il++){
-//	for (int ie = 0; ie < exp.size(); ie++){
-//	  int idmax = ie + exp.size() * (il + lmaxx * i);
-//	  printf("%s %c %.6f %.10e\n",nameguess(zat[i]).c_str(),globals::inttol[il],exp[ie],cmax[idmax]);
-//	}
-//      }
-//    }
-//    os << std::endl;
+  } else {
+    // CALC
+
+    // check that the mini-training set is complete
+    if (complete == c_unknown)
+      describe(os,false,true,true);
+    if (complete == c_no)
+      throw std::runtime_error("The training set needs to be complete before using TRAINING MAXCOEF");
+
+    // get the threshold
+    double ethrs = 1.0;
+    if (kmap.find("CALC") == kmap.end())
+      throw std::runtime_error("The CALC keyword is required in TRAINING MAXCOEF + CALC");
+    if (!kmap.at("CALC").empty())
+      ethrs = std::stod(kmap.at("CALC"));
+
+    // read the file and build the data file
+    if (kmap.find("SOURCE") == kmap.end())
+      throw std::runtime_error("The SOURCE file with the maxcoef are required in TRAINING MAXCOEF + CALC");
+    std::string file = kmap.at("SOURCE");
+    if (!fs::is_regular_file(file))
+      throw std::runtime_error("Invalid SOURCE file in TRAINING MAXCOEF (not a file)");
+    std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
+
+    // statements
+    statement steval(db->ptr(),R"SQL(
+SELECT Evaluations.propid, Evaluations.value, Terms.value
+FROM Properties, Evaluations, Training_Set, Terms
+WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
+      Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
+      Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+)SQL");
+    statement st(db->ptr(),R"SQL(
+SELECT Properties.nstructures, Properties.structures, Properties.coefficients
+FROM Properties, Training_set
+WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
+)SQL");
+    statement stkey(db->ptr(),"SELECT key FROM Structures WHERE id = ?1;");
+
+    // open the file
+    FILE *fp = fopen("maxcoef.dat","w");
+
+    // run over atoms
+    os << "# LIST of maximum coefficients written to maxcoef.dat" << std::endl;
+    for (int i = 0; i < zat.size(); i++){
+      for (int il = 0; il <= lmax[i]; il++){
+	for (int ie = 0; ie < exp.size(); ie++){
+	  // initialize the cmax
+	  double cmax = coef[coef.size()-1];
+
+	  steval.reset();
+	  steval.bind((char *) ":METHOD",emptyid);
+	  steval.bind((char *) ":ATOM",(int) zat[i]);
+	  steval.bind((char *) ":L",il);
+	  steval.bind((char *) ":EXP",exp[ie]);
+	  while (steval.step() != SQLITE_DONE){
+	    // structure ID and linear and zero energies
+	    int id = sqlite3_column_int(steval.ptr(),0);
+	    double *res = (double *) sqlite3_column_blob(steval.ptr(),1);
+	    double e0 = res[0];
+	    res = (double *) sqlite3_column_blob(steval.ptr(),2);
+	    double eslope = res[0];
+
+	    // get the structures
+	    st.reset();
+	    st.bind(1,id);
+	    st.step();
+	    int nstr = sqlite3_column_int(st.ptr(),0);
+	    int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+	    double *pcoef = (double *) sqlite3_column_blob(st.ptr(),2);
+
+	    double elast = 0;
+	    for (int ic = 0; ic < coef.size(); ic++){
+	      // find the structure keys and file names
+	      double escf = 0.;
+	      std::vector<std::string> strfile;
+	      for (int k = 0; k < nstr; k++){
+		stkey.reset();
+		stkey.bind(1,str[k]);
+		stkey.step();
+		std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
+		std::string atom = nameguess(zat[i]);
+		lowercase(atom);
+		std::string str = "maxcoef-" + name + "@" + atom + "_" + globals::inttol[il] + "_"
+		  + std::to_string(ie+1) + "_" + std::to_string(ic+1);
+		escf += pcoef[k] * datmap[str][0];
+	      }
+	      escf *= globals::ha_to_kcal;
+	      double elin = e0 + coef[ic] * eslope;
+	      double edif = std::abs(escf - elin);
+
+	      if (edif > ethrs) {
+		double cc;
+		if (ic == 0)
+		  cc = coef[0];
+		else
+		  cc = coef[ic-1] + (ethrs - elast) * (coef[ic] - coef[ic-1]) / (edif - elast);
+		cmax = std::min(cmax,cc);
+		break;
+	      }
+	      elast = edif;
+	    } // ic, over coefficients
+	  } // steval.step(), runs over properties
+	  fprintf(fp,"%s %c %.6f %.10e\n",nameguess(zat[i]).c_str(),globals::inttol[il],exp[ie],cmax);
+	} // ie, over exponents
+      } // il, over angular momenta
+    } // i, over atoms
+    fclose(fp);
+    os << std::endl;
   }
 }
 

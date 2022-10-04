@@ -2767,7 +2767,6 @@ FROM Structures WHERE id = ?1;
   } else if (rename == 0) {
     name = prefix + s.get_name() + "." + ext;
   }
-  std::cout << name << std::endl;
 
   // write the substitution of the template to a string
   std::string content = tmpl.apply(s,a,zat,l,exp,coef);
