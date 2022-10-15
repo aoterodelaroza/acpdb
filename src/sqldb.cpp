@@ -120,13 +120,13 @@ CREATE TABLE Training_set_repo (
 );
 INSERT INTO Property_types (id,key,description)
        VALUES (1,'ENERGY_DIFFERENCE','A difference of molecular or crystal energies (reaction energy, binding energy, lattice energy, etc.)'),
-              (2,'ENERGY','The total energy of a molecule or crystal'),
-              (3,'DIPOLE','The electric dipole of a molecule'),
-              (4,'STRESS','The stress tensor in a crystal'),
-              (5,'D1E','The first derivatives of the energy wrt the atomic positions in a molecule or crystal'),
-              (6,'D2E','The second derivatives of the energy wrt the atomic positions in a molecule or crystal'),
-              (7,'HOMO','The orbital energy of the highest occupied molecular orbital'),
-              (8,'LUMO','The orbital energy of the lowest unoccupied molecular orbital');
+	      (2,'ENERGY','The total energy of a molecule or crystal'),
+	      (3,'DIPOLE','The electric dipole of a molecule'),
+	      (4,'STRESS','The stress tensor in a crystal'),
+	      (5,'D1E','The first derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+	      (6,'D2E','The second derivatives of the energy wrt the atomic positions in a molecule or crystal'),
+	      (7,'HOMO','The orbital energy of the highest occupied molecular orbital'),
+	      (8,'LUMO','The orbital energy of the lowest unoccupied molecular orbital');
 )SQL";
 //// end of database schema ////
 
@@ -183,7 +183,7 @@ std::string sqldb::find_key_from_id(const int id,const std::string &table,bool t
 // before parsing it. If touppero, uppercase the output key. Returns the
 // ID if succeeded, 0 if failed.
 int sqldb::get_key_and_id(const std::string &input, const std::string &table,
-                          std::string &key, int &id, bool toupperi/*=false*/, bool touppero/*=false*/){
+			  std::string &key, int &id, bool toupperi/*=false*/, bool touppero/*=false*/){
 
   if (isinteger(input)){
     id = std::stoi(input);
@@ -330,7 +330,7 @@ INSERT INTO Sets (key,litrefs,description)
     std::string str = "";
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (!find_id_from_key(*it,"Literature_refs"))
-        throw std::runtime_error("Litref not found (" + *it + ") in INSERT SET");
+	throw std::runtime_error("Litref not found (" + *it + ") in INSERT SET");
       str = str + *it + " ";
     }
     st.bind((char *) ":LITREFS",str);
@@ -505,15 +505,15 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       int n = 0;
       int *str = new int[nstructures];
       for (auto it = tok1.begin(); it != tok1.end(); it++){
-        int idx = 0;
-        if (isinteger(*it))
-          idx = std::stoi(*it);
-        else
-          idx = find_id_from_key(*it,"Structures");
+	int idx = 0;
+	if (isinteger(*it))
+	  idx = std::stoi(*it);
+	else
+	  idx = find_id_from_key(*it,"Structures");
 
-        if (!idx)
-          throw std::runtime_error("Structure not found (" + *it + ") in INSERT PROPERTY");
-        str[n++] = idx;
+	if (!idx)
+	  throw std::runtime_error("Structure not found (" + *it + ") in INSERT PROPERTY");
+	str[n++] = idx;
       }
       st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
       delete str;
@@ -522,7 +522,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     // bind the coefficients
     if (!tok2.empty()) {
       if (nstructures != tok2.size())
-        throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
+	throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
       st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
     }
 
@@ -560,7 +560,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,sizeof(double));
 
       if (globals::verbose)
-        os << "# INSERT PROPERTY " << newkey << std::endl;
+	os << "# INSERT PROPERTY " << newkey << std::endl;
       st.step();
     }
 
@@ -656,7 +656,7 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
     else{
       int iz = zatguess(im->second);
       if (!iz)
-        throw std::runtime_error("Unknown atom in INSERT TERM");
+	throw std::runtime_error("Unknown atom in INSERT TERM");
       st.bind((char *) ":ATOM",iz);
     }
   else
@@ -668,7 +668,7 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
       std::string l = im->second;
       lowercase(l);
       if (globals::ltoint.find(l) == globals::ltoint.end())
-        throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
+	throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
       st.bind((char *) ":L",globals::ltoint.at(l));
     }
   else
@@ -693,11 +693,11 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
       int len = sqlite3_column_int(st2.ptr(),0) / sizeof(double);
       double *rval = (double *) sqlite3_column_blob(st2.ptr(),1);
       if (!rval)
-        throw std::runtime_error("To use CALCSLOPE in INSERT TERM, the evaluation for the corresponding method and property must be available");
+	throw std::runtime_error("To use CALCSLOPE in INSERT TERM, the evaluation for the corresponding method and property must be available");
       if (len != tok.size())
-        throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT TERM");
+	throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT TERM");
       for (int i = 0; i < tok.size(); i++)
-        tok[i] = (tok[i] - rval[i]) / c0;
+	tok[i] = (tok[i] - rval[i]) / c0;
     }
 
     st.bind((char *) ":VALUE",(void *) &tok.front(),true,tok.size() * sizeof(double));
@@ -708,17 +708,17 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   if (globals::verbose){
     if (isterm){
       os << "# INSERT TERM (method=" << methodkey << ";property=" << propkey
-         << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-         << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+	 << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+	 << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
     } else {
       if (propid > 0)
-        os << "# INSERT MAXCOEF (method=" << methodkey << ";property=" << propkey
-           << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-           << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+	os << "# INSERT MAXCOEF (method=" << methodkey << ";property=" << propkey
+	   << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+	   << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
       else
-        os << "# INSERT MAXCOEF (method=" << methodkey 
-           << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
-           << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
+	os << "# INSERT MAXCOEF (method=" << methodkey
+	   << ";atom=" << kmap.find("ATOM")->second << ";l=" << kmap.find("L")->second
+	   << ";exponent=" << kmap.find("EXPONENT")->second << ")" << std::endl;
     }
   }
   // submit
@@ -774,7 +774,7 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
       int propid;
       st = &sty;
       if (!get_key_and_id(propkey,"Properties",strdum,propid))
-        throw std::runtime_error("Invalid PROPERTY ID or key in INSERT MAXCOEF");
+	throw std::runtime_error("Invalid PROPERTY ID or key in INSERT MAXCOEF");
       st->bind((char *) ":PROPID",propid);
     } else {
       st = &stn;
@@ -800,8 +800,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
 
 // Bulk insert: read data from a file, then insert as evaluation or terms.
 void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-                        const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/,
-                        const std::vector<double> &exp/*={}*/){
+			const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/,
+			const std::vector<double> &exp/*={}*/){
   if (!db)
     throw std::runtime_error("A database file must be connected before using INSERT CALC");
 
@@ -852,21 +852,21 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
       // TERM ASSUME_ORDER
       assumeorder = false;
       if (words.size() == 1){
-        std::string str = words.front();
-        uppercase(str);
-        assumeorder = (str == "ASSUME_ORDER");
-        if (!assumeorder)
-          throw std::runtime_error("Unknown keyword in INSERT CALC/TERM");
+	std::string str = words.front();
+	uppercase(str);
+	assumeorder = (str == "ASSUME_ORDER");
+	if (!assumeorder)
+	  throw std::runtime_error("Unknown keyword in INSERT CALC/TERM");
       }
       changename = true;
       exp_ = exp;
       zat_.clear();
       l_.clear();
       for (int izat = 0; izat < zat.size(); izat++){
-        for (unsigned char il = 0; il <= lmax[izat]; il++){
-          zat_.push_back(zat[izat]);
-          l_.push_back(il);
-        }
+	for (unsigned char il = 0; il <= lmax[izat]; il++){
+	  zat_.push_back(zat[izat]);
+	  l_.push_back(il);
+	}
       }
     } else if (words.size() == 3){
       // TERM atom l exp
@@ -875,19 +875,19 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
       std::string str = words.front();
       words.pop_front();
       if (isinteger(str))
-        zat_[0] = std::stoi(str);
+	zat_[0] = std::stoi(str);
       else
-        zat_[0] = zatguess(str);
+	zat_[0] = zatguess(str);
 
       str = words.front();
       words.pop_front();
       if (isinteger(str))
-        l_[0] = std::stoi(str);
+	l_[0] = std::stoi(str);
       else{
-        lowercase(str);
-        if (globals::ltoint.find(str) == globals::ltoint.end())
-          throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
-        l_[0] = globals::ltoint.at(str);
+	lowercase(str);
+	if (globals::ltoint.find(str) == globals::ltoint.end())
+	  throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
+	l_[0] = globals::ltoint.at(str);
       }
 
       str = words.front();
@@ -975,40 +975,40 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 
       bool found = true;
       for (int i = 0; i < nstr; i++){
-        stkey.reset();
-        stkey.bind(1,istr[i]);
-        stkey.step();
-        std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+	stkey.reset();
+	stkey.bind(1,istr[i]);
+	stkey.step();
+	std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
 
-        if (datmap.find(strname) == datmap.end() || datmap[strname].size() != zat_.size() * exp_.size()){
-          found = false;
-          reject.push_back(strname);
-          break;
-        }
-        accept.push_back(strname);
+	if (datmap.find(strname) == datmap.end() || datmap[strname].size() != zat_.size() * exp_.size()){
+	  found = false;
+	  reject.push_back(strname);
+	  break;
+	}
+	accept.push_back(strname);
 
-        if (coef) {
-          for (int j = 0; j < value.size(); j++)
-            value[j] += coef[i] * datmap[strname][j];
-        } else {
-          for (int j = 0; j < value.size(); j++)
-            value[j] += datmap[strname][j];
-        }
+	if (coef) {
+	  for (int j = 0; j < value.size(); j++)
+	    value[j] += coef[i] * datmap[strname][j];
+	} else {
+	  for (int j = 0; j < value.size(); j++)
+	    value[j] += datmap[strname][j];
+	}
       }
       if (found){
-        if (doslope){
-          steval.reset();
-          steval.bind(1,propid);
-          steval.bind(2,methodid);
-          steval.step();
-          int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
-          double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
-          if (!rval)
-            throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
-          for (int i = 0; i < value.size(); i++)
-            value[i] = (value[i] - rval[0]) / c0;
-        }
-        propmap[propid] = value;
+	if (doslope){
+	  steval.reset();
+	  steval.bind(1,propid);
+	  steval.bind(2,methodid);
+	  steval.step();
+	  int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
+	  double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
+	  if (!rval)
+	    throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
+	  for (int i = 0; i < value.size(); i++)
+	    value[i] = (value[i] - rval[0]) / c0;
+	}
+	propmap[propid] = value;
       }
     }
 
@@ -1017,34 +1017,34 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
     for (auto it = propmap.begin(); it != propmap.end(); it++){
       int n = -1;
       for (int ii = 0; ii < zat_.size(); ii++){
-        for (int iexp = 0; iexp < exp_.size(); iexp++){
-          ninsert++;
-          n++;
-          stinsert.reset();
-          stinsert.bind((char *) ":METHOD",methodid);
-          stinsert.bind((char *) ":PROPID",it->first);
-          stinsert.bind((char *) ":VALUE",(void *) &it->second[n],false,sizeof(double));
-          stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
-          stinsert.bind((char *) ":L",(int) l_[ii]);
-          stinsert.bind((char *) ":EXP",exp_[iexp]);
-          if (stinsert.step() != SQLITE_DONE){
-            std::cout << "method = " << methodkey << std::endl;
-            std::cout << "propid = " << it->first << std::endl;
-            std::cout << "value = " << it->second[n] << " (" << n << " of " << it->second.size() << "elements)" << std::endl;
-            throw std::runtime_error("Failed inserting data in the database (INSERT CALC,assume_order)");
-          }
-        }
+	for (int iexp = 0; iexp < exp_.size(); iexp++){
+	  ninsert++;
+	  n++;
+	  stinsert.reset();
+	  stinsert.bind((char *) ":METHOD",methodid);
+	  stinsert.bind((char *) ":PROPID",it->first);
+	  stinsert.bind((char *) ":VALUE",(void *) &it->second[n],false,sizeof(double));
+	  stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
+	  stinsert.bind((char *) ":L",(int) l_[ii]);
+	  stinsert.bind((char *) ":EXP",exp_[iexp]);
+	  if (stinsert.step() != SQLITE_DONE){
+	    std::cout << "method = " << methodkey << std::endl;
+	    std::cout << "propid = " << it->first << std::endl;
+	    std::cout << "value = " << it->second[n] << " (" << n << " of " << it->second.size() << "elements)" << std::endl;
+	    throw std::runtime_error("Failed inserting data in the database (INSERT CALC,assume_order)");
+	  }
+	}
       }
     }
 
     // write inserted and rejected
     std::cout << "# Number of terms inserted/rejected/total: " << ninsert << "/"
-              << nprop * zat_.size() * exp_.size() - ninsert << "/"
-              << nprop * zat_.size() * exp_.size()
-              << std::endl;
+	      << nprop * zat_.size() * exp_.size() - ninsert << "/"
+	      << nprop * zat_.size() * exp_.size()
+	      << std::endl;
     std::cout << "# Number of structures accepted/rejected/total: "
-              << accept.size() << "/" << reject.size() << "/"
-              << accept.size() + reject.size() << std::endl;
+	      << accept.size() << "/" << reject.size() << "/"
+	      << accept.size() + reject.size() << std::endl;
     std::cout << "# Rejected structures: " << std::endl;
     for (auto it = reject.begin(); it != reject.end(); it++)
       std::cout << *it << std::endl;
@@ -1058,92 +1058,92 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
     for (int ii = 0; ii < zat_.size(); ii++){
       for (int iexp = 0; iexp < exp_.size(); iexp++){
 
-        // build the property map
-        std::unordered_map<int,std::vector<double>> propmap;
-        ststruct.reset();
-        ststruct.bind(1,ptid);
-        while (ststruct.step() != SQLITE_DONE){
-          int propid = sqlite3_column_int(ststruct.ptr(),0);
-          int nstr = sqlite3_column_int(ststruct.ptr(),1);
-          int *istr = (int *) sqlite3_column_blob(ststruct.ptr(),2);
-          double *coef = (double *) sqlite3_column_blob(ststruct.ptr(),3);
-          std::vector<double> value;
-          bool found = true;
-          for (int i = 0; i < nstr; i++){
-            stkey.reset();
-            stkey.bind(1,istr[i]);
-            stkey.step();
-            std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+	// build the property map
+	std::unordered_map<int,std::vector<double>> propmap;
+	ststruct.reset();
+	ststruct.bind(1,ptid);
+	while (ststruct.step() != SQLITE_DONE){
+	  int propid = sqlite3_column_int(ststruct.ptr(),0);
+	  int nstr = sqlite3_column_int(ststruct.ptr(),1);
+	  int *istr = (int *) sqlite3_column_blob(ststruct.ptr(),2);
+	  double *coef = (double *) sqlite3_column_blob(ststruct.ptr(),3);
+	  std::vector<double> value;
+	  bool found = true;
+	  for (int i = 0; i < nstr; i++){
+	    stkey.reset();
+	    stkey.bind(1,istr[i]);
+	    stkey.step();
+	    std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
 
-            if (doterm && changename){
-              std::string atom = nameguess(zat_[ii]);
-              lowercase(atom);
-              strname += "@" + atom + "_" + globals::inttol[l_[ii]] + "_" + std::to_string(iexp+1);
-            }
+	    if (doterm && changename){
+	      std::string atom = nameguess(zat_[ii]);
+	      lowercase(atom);
+	      strname += "@" + atom + "_" + globals::inttol[l_[ii]] + "_" + std::to_string(iexp+1);
+	    }
 
-            // std::cout << strname << std::endl;
-            if (datmap.find(strname) == datmap.end()){
-              found = false;
-              break;
-            }
+	    // std::cout << strname << std::endl;
+	    if (datmap.find(strname) == datmap.end()){
+	      found = false;
+	      break;
+	    }
 
-            if (i == 0)
-              value.resize(datmap[strname].size(), 0.);
-            else if (datmap[strname].size() != value.size())
-              throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
+	    if (i == 0)
+	      value.resize(datmap[strname].size(), 0.);
+	    else if (datmap[strname].size() != value.size())
+	      throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
 
-            if (coef) {
-              for (int j = 0; j < value.size(); j++)
-                value[j] += coef[i] * datmap[strname][j];
-            } else {
-              for (int j = 0; j < value.size(); j++)
-                value[j] += datmap[strname][j];
-            }
-          }
-          if (found){
-            if (doterm && doslope){
-              steval.reset();
-              steval.bind(1,propid);
-              steval.bind(2,methodid);
-              steval.step();
-              int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
-              double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
-              if (!rval)
-                throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
-              if (len != value.size())
-                throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT CALC");
-              for (int i = 0; i < value.size(); i++)
-                value[i] = (value[i] - rval[i]) / c0;
-            }
-            propmap[propid] = value;
-          }
-        }
+	    if (coef) {
+	      for (int j = 0; j < value.size(); j++)
+		value[j] += coef[i] * datmap[strname][j];
+	    } else {
+	      for (int j = 0; j < value.size(); j++)
+		value[j] += datmap[strname][j];
+	    }
+	  }
+	  if (found){
+	    if (doterm && doslope){
+	      steval.reset();
+	      steval.bind(1,propid);
+	      steval.bind(2,methodid);
+	      steval.step();
+	      int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
+	      double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
+	      if (!rval)
+		throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
+	      if (len != value.size())
+		throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT CALC");
+	      for (int i = 0; i < value.size(); i++)
+		value[i] = (value[i] - rval[i]) / c0;
+	    }
+	    propmap[propid] = value;
+	  }
+	}
 
-        // insert into the database
-        for (auto it = propmap.begin(); it != propmap.end(); it++){
-          stinsert.reset();
-          stinsert.bind((char *) ":METHOD",methodid);
-          stinsert.bind((char *) ":PROPID",it->first);
-          stinsert.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
-          if (doterm){
-            stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
-            stinsert.bind((char *) ":L",(int) l_[ii]);
-            stinsert.bind((char *) ":EXP",exp_[iexp]);
-            if (globals::verbose)
-              os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
-                 << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
-                 << ")" << std::endl;
-          } else {
-            if (globals::verbose)
-              os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
-          }
-          if (stinsert.step() != SQLITE_DONE){
-            std::cout << "method = " << methodkey << std::endl;
-            std::cout << "propid = " << it->first << std::endl;
-            std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
-            throw std::runtime_error("Failed inserting data in the database (INSERT CALC)");
-          }
-        }
+	// insert into the database
+	for (auto it = propmap.begin(); it != propmap.end(); it++){
+	  stinsert.reset();
+	  stinsert.bind((char *) ":METHOD",methodid);
+	  stinsert.bind((char *) ":PROPID",it->first);
+	  stinsert.bind((char *) ":VALUE",(void *) &it->second[0],false,(it->second).size()*sizeof(double));
+	  if (doterm){
+	    stinsert.bind((char *) ":ATOM",(int) zat_[ii]);
+	    stinsert.bind((char *) ":L",(int) l_[ii]);
+	    stinsert.bind((char *) ":EXP",exp_[iexp]);
+	    if (globals::verbose)
+	      os << "# INSERT TERM (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size()
+		 << ";atom=" << (int) zat_[ii] << ";l=" << (int) l_[ii] << ";exp=" << exp[iexp]
+		 << ")" << std::endl;
+	  } else {
+	    if (globals::verbose)
+	      os << "# INSERT EVALUATION (method=" << methodkey << ";property=" << it->first << ";nvalue=" << it->second.size() << ")" << std::endl;
+	  }
+	  if (stinsert.step() != SQLITE_DONE){
+	    std::cout << "method = " << methodkey << std::endl;
+	    std::cout << "propid = " << it->first << std::endl;
+	    std::cout << "value = " << it->second[0] << "(" << it->second.size() << "elements)" << std::endl;
+	    throw std::runtime_error("Failed inserting data in the database (INSERT CALC)");
+	  }
+	}
       }
     }
   }
@@ -1187,41 +1187,41 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
       std::string type = bt_entry_type(entry);
 
       if (equali_strings(type,"article")){
-        // bind the key
-        st.bind((char *) ":KEY",key,false);
+	// bind the key
+	st.bind((char *) ":KEY",key,false);
 
-        // bind the rest of the fields
-        char *fname = NULL;
-        AST *field = NULL;
-        while (field = bt_next_field(entry,field,&fname)){
-          // this prevents a memory leak if we throw an exception
-          char *fvalue_ = bt_get_text(field);
-          std::string fvalue(fvalue_);
-          free(fvalue_);
+	// bind the rest of the fields
+	char *fname = NULL;
+	AST *field = NULL;
+	while (field = bt_next_field(entry,field,&fname)){
+	  // this prevents a memory leak if we throw an exception
+	  char *fvalue_ = bt_get_text(field);
+	  std::string fvalue(fvalue_);
+	  free(fvalue_);
 
-          if (!strcmp(fname,"title"))
-            st.bind((char *) ":TITLE",fvalue);
-          else if (!strcmp(fname,"author") || !strcmp(fname,"authors"))
-            st.bind((char *) ":AUTHORS",fvalue);
-          else if (!strcmp(fname,"journal"))
-            st.bind((char *) ":JOURNAL",fvalue);
-          else if (!strcmp(fname,"volume"))
-            st.bind((char *) ":VOLUME",fvalue);
-          else if (!strcmp(fname,"page") || !strcmp(fname,"pages"))
-            st.bind((char *) ":PAGE",fvalue);
-          else if (!strcmp(fname,"year"))
-            st.bind((char *) ":YEAR",fvalue);
-          else if (!strcmp(fname,"doi"))
-            st.bind((char *) ":DOI",fvalue);
-          else if (!strcmp(fname,"description"))
-            st.bind((char *) ":DESCRIPTION",fvalue);
-        }
+	  if (!strcmp(fname,"title"))
+	    st.bind((char *) ":TITLE",fvalue);
+	  else if (!strcmp(fname,"author") || !strcmp(fname,"authors"))
+	    st.bind((char *) ":AUTHORS",fvalue);
+	  else if (!strcmp(fname,"journal"))
+	    st.bind((char *) ":JOURNAL",fvalue);
+	  else if (!strcmp(fname,"volume"))
+	    st.bind((char *) ":VOLUME",fvalue);
+	  else if (!strcmp(fname,"page") || !strcmp(fname,"pages"))
+	    st.bind((char *) ":PAGE",fvalue);
+	  else if (!strcmp(fname,"year"))
+	    st.bind((char *) ":YEAR",fvalue);
+	  else if (!strcmp(fname,"doi"))
+	    st.bind((char *) ":DOI",fvalue);
+	  else if (!strcmp(fname,"description"))
+	    st.bind((char *) ":DESCRIPTION",fvalue);
+	}
 
-        if (globals::verbose)
-          os << "# INSERT LITREF " << key << std::endl;
+	if (globals::verbose)
+	  os << "# INSERT LITREF " << key << std::endl;
 
-        st.step();
-        if (field) bt_free_ast(field);
+	st.step();
+	if (field) bt_free_ast(field);
       }
     }
 
@@ -1271,93 +1271,93 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
       auto it = tokens.begin();
       std::string dir = *it, rgx_s;
       if (std::next(it) != tokens.end())
-        rgx_s = *(std::next(it));
+	rgx_s = *(std::next(it));
       else{
-        if (ixyz == 0)
-          rgx_s = ".*\\.xyz$";
-        else
-          rgx_s = ".*\\.POSCAR";
+	if (ixyz == 0)
+	  rgx_s = ".*\\.xyz$";
+	else
+	  rgx_s = ".*\\.POSCAR";
       }
       std::regex rgx(rgx_s, std::regex::awk | std::regex::icase | std::regex::optimize);
 
       // sort the list of files (for reproducible outputs)
       std::set<fs::path> sortedfiles;
       for (auto &f : fs::directory_iterator(dir))
-        sortedfiles.insert(f.path());
+	sortedfiles.insert(f.path());
 
       // run over directory files and add the structures
       for (const auto& file : sortedfiles){
-        std::string filename = file.filename();
-        if (std::regex_match(filename.begin(),filename.end(),rgx)){
-          std::string skey = key + "." + std::string(file.stem());
-          st.bind((char *) ":KEY",skey);
+	std::string filename = file.filename();
+	if (std::regex_match(filename.begin(),filename.end(),rgx)){
+	  std::string skey = key + "." + std::string(file.stem());
+	  st.bind((char *) ":KEY",skey);
 
-          std::string strdum;
-          int setid;
-          if (get_key_and_id(key,"Sets",strdum,setid))
-            st.bind((char *) ":SETID",setid);
-          else
-            throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
+	  std::string strdum;
+	  int setid;
+	  if (get_key_and_id(key,"Sets",strdum,setid))
+	    st.bind((char *) ":SETID",setid);
+	  else
+	    throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
 
-          structure s;
-          if (ixyz == 0) {
-            if (s.readxyz(file.string()))
-              throw std::runtime_error("Error reading file: " + *it);
-          } else if (ixyz == 1) {
-            if (s.readposcar(file.string()))
-              throw std::runtime_error("Error reading file: " + *it);
-          }
-          int nat = s.get_nat();
-          st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
-          st.bind((char *) ":CHARGE",s.get_charge());
-          st.bind((char *) ":MULTIPLICITY",s.get_mult());
-          st.bind((char *) ":NAT",nat);
-          if (!s.ismolecule())
-            st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-          st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-          st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-          if (st.step() != SQLITE_DONE)
-            throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
-        }
+	  structure s;
+	  if (ixyz == 0) {
+	    if (s.readxyz(file.string()))
+	      throw std::runtime_error("Error reading file: " + *it);
+	  } else if (ixyz == 1) {
+	    if (s.readposcar(file.string()))
+	      throw std::runtime_error("Error reading file: " + *it);
+	  }
+	  int nat = s.get_nat();
+	  st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+	  st.bind((char *) ":CHARGE",s.get_charge());
+	  st.bind((char *) ":MULTIPLICITY",s.get_mult());
+	  st.bind((char *) ":NAT",nat);
+	  if (!s.ismolecule())
+	    st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+	  st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+	  if (st.step() != SQLITE_DONE)
+	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+	}
       }
 
     } else if (fs::is_regular_file(tokens.front())) {
       // add a list of files //
 
       for (auto it = tokens.begin(); it != tokens.end(); it++){
-        if (fs::is_regular_file(*it)){
-          std::string skey = key + "." + std::string(fs::path(*it).stem());
-          st.bind((char *) ":KEY",skey);
+	if (fs::is_regular_file(*it)){
+	  std::string skey = key + "." + std::string(fs::path(*it).stem());
+	  st.bind((char *) ":KEY",skey);
 
-          std::string strdum;
-          int setid;
-          if (get_key_and_id(key,"Sets",strdum,setid))
-            st.bind((char *) ":SETID",setid);
-          else
-            throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
+	  std::string strdum;
+	  int setid;
+	  if (get_key_and_id(key,"Sets",strdum,setid))
+	    st.bind((char *) ":SETID",setid);
+	  else
+	    throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
 
-          structure s;
-          if (ixyz == 0) {
-            if (s.readxyz(*it))
-              throw std::runtime_error("Error reading file: " + *it);
-          } else if (ixyz == 1) {
-            if (s.readposcar(*it))
-              throw std::runtime_error("Error reading file: " + *it);
-          }
-          int nat = s.get_nat();
-          st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
-          st.bind((char *) ":CHARGE",s.get_charge());
-          st.bind((char *) ":MULTIPLICITY",s.get_mult());
-          st.bind((char *) ":NAT",nat);
-          if (!s.ismolecule())
-            st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-          st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-          st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-          if (st.step() != SQLITE_DONE)
-            throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
-        } else {
-          throw std::runtime_error("File or directory not found: " + *it);
-        }
+	  structure s;
+	  if (ixyz == 0) {
+	    if (s.readxyz(*it))
+	      throw std::runtime_error("Error reading file: " + *it);
+	  } else if (ixyz == 1) {
+	    if (s.readposcar(*it))
+	      throw std::runtime_error("Error reading file: " + *it);
+	  }
+	  int nat = s.get_nat();
+	  st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+	  st.bind((char *) ":CHARGE",s.get_charge());
+	  st.bind((char *) ":MULTIPLICITY",s.get_mult());
+	  st.bind((char *) ":NAT",nat);
+	  if (!s.ismolecule())
+	    st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+	  st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+	  if (st.step() != SQLITE_DONE)
+	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+	} else {
+	  throw std::runtime_error("File or directory not found: " + *it);
+	}
       }
     } else {
       throw std::runtime_error("File or directory not found: " + tokens.front());
@@ -1410,8 +1410,8 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
     if (str.substr(0,2) == "#@"){
       iss >> str;
       if (str == "fieldasrxn"){
-        havefield = true;
-        iss >> fieldasrxn;
+	havefield = true;
+	iss >> fieldasrxn;
       }
     } else if (str[0] == '#' || str.empty())
       continue;
@@ -1431,32 +1431,32 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
     aux.coefs.clear();
     while (c != 0){
       if (line_get_double(ifile,line,str,caux))
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
       aux.coefs.push_back(c);
       aux.names.push_back(str);
       if (line_get_double(ifile,line,saux,c))
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
     }
     if (fieldasrxn == 999){
       get_next_line(ifile,line);
       if (ifile.fail() || line.empty())
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
       std::istringstream iss(line);
       iss >> aux.ref >> aux.pkey;
       if (iss.fail())
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
     } else {
       if (line_get_double(ifile,line,saux,aux.ref))
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
     }
 
     // clean up and prepare next iteration
     info.push_back(aux);
     if (line_get_double(ifile,line,saux,c)){
       if (ifile.eof())
-        break;
+	break;
       else
-        throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din);
     }
   }
   ifile.close();
@@ -1477,34 +1477,34 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
     int n = info[k].names.size();
     for (int i = 0; i < n; i++){
       if (used.find(info[k].names[i]) == used.end()){
-        skey = prefix + info[k].names[i];
-        st.bind((char *) ":KEY",skey);
-        st.bind((char *) ":SETID",setid);
+	skey = prefix + info[k].names[i];
+	st.bind((char *) ":KEY",skey);
+	st.bind((char *) ":SETID",setid);
 
-        structure s;
-        std::string filename = dir + "/" + info[k].names[i] + ".xyz";
-        if (!fs::is_regular_file(filename)){
-          filename = dir + "/" + info[k].names[i] + ".POSCAR";
-          if (!fs::is_regular_file(filename))
-            throw std::runtime_error("xyz/POSCAR file not found (" + dir + "/" + info[k].names[i] + ") processing din file " + din);
-          if (s.readposcar(filename))
-            throw std::runtime_error("Error reading file: " + filename);
-        } else {
-          if (s.readxyz(filename))
-            throw std::runtime_error("Error reading file: " + filename);
-        }
-        int nat = s.get_nat();
-        st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
-        st.bind((char *) ":CHARGE",s.get_charge());
-        st.bind((char *) ":MULTIPLICITY",s.get_mult());
-        st.bind((char *) ":NAT",nat);
-        if (!s.ismolecule())
-          st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-        st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-        st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-        if (st.step() != SQLITE_DONE)
-          throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
-        used[info[k].names[i]] = true;
+	structure s;
+	std::string filename = dir + "/" + info[k].names[i] + ".xyz";
+	if (!fs::is_regular_file(filename)){
+	  filename = dir + "/" + info[k].names[i] + ".POSCAR";
+	  if (!fs::is_regular_file(filename))
+	    throw std::runtime_error("xyz/POSCAR file not found (" + dir + "/" + info[k].names[i] + ") processing din file " + din);
+	  if (s.readposcar(filename))
+	    throw std::runtime_error("Error reading file: " + filename);
+	} else {
+	  if (s.readxyz(filename))
+	    throw std::runtime_error("Error reading file: " + filename);
+	}
+	int nat = s.get_nat();
+	st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+	st.bind((char *) ":CHARGE",s.get_charge());
+	st.bind((char *) ":MULTIPLICITY",s.get_mult());
+	st.bind((char *) ":NAT",nat);
+	if (!s.ismolecule())
+	  st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+	st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+	st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+	if (st.step() != SQLITE_DONE)
+	  throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+	used[info[k].names[i]] = true;
       }
     }
 
@@ -1520,7 +1520,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     else{
       skey = prefix + info[k].names[0];
       for (int i = 1; i < info[k].names.size(); i++)
-        skey += "_" + info[k].names[i];
+	skey += "_" + info[k].names[i];
     }
     st.bind((char *) ":KEY",skey);
     st.bind((char *) ":PROPERTY_TYPE",1);
@@ -1545,18 +1545,18 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
       std::string methodkey;
       int methodid;
       if (!get_key_and_id(kmap.at("METHOD"),"Methods",methodkey,methodid))
-        throw std::runtime_error("Invalid METHOD ID or key in INSERT_SET_DIN");
+	throw std::runtime_error("Invalid METHOD ID or key in INSERT_SET_DIN");
 
       std::string propkey;
       int propid;
       if (!get_key_and_id(skey,"Properties",propkey,propid))
-        throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
+	throw std::runtime_error("Invalid PROPERTY ID or key in INSERT EVALUATION");
 
       st.bind((char *) ":METHODID",methodid);
       st.bind((char *) ":PROPID",propid);
       st.bind((char *) ":VALUE",(void *) &(info[k].ref),false,sizeof(double));
       if (st.step() != SQLITE_DONE)
-        throw std::runtime_error("Failed inserting evaluation in INSERT_SET_XYZ");
+	throw std::runtime_error("Failed inserting evaluation in INSERT_SET_XYZ");
     }
   }
 
@@ -1596,10 +1596,10 @@ INSERT OR REPLACE into Evaluations (methodid,propid,value) VALUES (?1,?2,?3);
       stetot.bind(1,(void *) &(istr[i]),false,sizeof(int));
       stetot.step();
       if (sqlite3_column_type(stetot.ptr(),0) == SQLITE_NULL){
-        found = false;
-        break;
+	found = false;
+	break;
       } else {
-        iprop[i] = sqlite3_column_int(stetot.ptr(), 0);
+	iprop[i] = sqlite3_column_int(stetot.ptr(), 0);
       }
     }
 
@@ -1608,36 +1608,36 @@ INSERT OR REPLACE into Evaluations (methodid,propid,value) VALUES (?1,?2,?3);
       // statement for fetching the values
       std::string cmd = "SELECT Eval1.methodid";
       for (int i = 0; i < nstr; i++)
-        cmd += ", Eval" + std::to_string(i+1) + ".value";
+	cmd += ", Eval" + std::to_string(i+1) + ".value";
       cmd += " FROM Evaluations as Eval1 ";
       for (int i = 1; i < nstr; i++)
-        cmd += "INNER JOIN Evaluations as Eval" + std::to_string(i+1) + " ON Eval1.methodid = Eval" + std::to_string(i+1) + ".methodid ";
+	cmd += "INNER JOIN Evaluations as Eval" + std::to_string(i+1) + " ON Eval1.methodid = Eval" + std::to_string(i+1) + ".methodid ";
       cmd += "WHERE Eval1.propid = " + std::to_string(iprop[0]);
       for (int i = 1; i < nstr; i++)
-        cmd += " AND Eval" + std::to_string(i+1) + ".propid = " + std::to_string(iprop[i]);
+	cmd += " AND Eval" + std::to_string(i+1) + ".propid = " + std::to_string(iprop[i]);
       statement st(db,cmd);
 
       while (st.step() != SQLITE_DONE){
-        // get the energies and calculate the ediff
-        int methodid = sqlite3_column_int(st.ptr(),0);
-        double de = 0;
-        for (int i = 0; i < nstr; i++){
-          double *val = (double *) sqlite3_column_blob(st.ptr(), i+1);
-          de += val[0] * coef[i];
-        }
+	// get the energies and calculate the ediff
+	int methodid = sqlite3_column_int(st.ptr(),0);
+	double de = 0;
+	for (int i = 0; i < nstr; i++){
+	  double *val = (double *) sqlite3_column_blob(st.ptr(), i+1);
+	  de += val[0] * coef[i];
+	}
 
-        // from Hartree to kcal/mol
-        de = de * globals::ha_to_kcal;
+	// from Hartree to kcal/mol
+	de = de * globals::ha_to_kcal;
 
-        // insert or replace the energy_difference evaluation
-        if (globals::verbose)
-          os << "# INSERT EVALUATION (method=" << methodid << ";property=" << propid << ";de=" << de << ")" << std::endl;
-        stinsert.reset();
-        stinsert.bind(1,methodid);
-        stinsert.bind(2,propid);
-        stinsert.bind(3,(void *) &de,false,sizeof(double));
-        if (stinsert.step() != SQLITE_DONE)
-          throw std::runtime_error("Failed inserting evaluation in CALC_EDIFF");
+	// insert or replace the energy_difference evaluation
+	if (globals::verbose)
+	  os << "# INSERT EVALUATION (method=" << methodid << ";property=" << propid << ";de=" << de << ")" << std::endl;
+	stinsert.reset();
+	stinsert.bind(1,methodid);
+	stinsert.bind(2,propid);
+	stinsert.bind(3,(void *) &de,false,sizeof(double));
+	if (stinsert.step() != SQLITE_DONE)
+	  throw std::runtime_error("Failed inserting evaluation in CALC_EDIFF");
       }
     }
   }
@@ -1680,10 +1680,10 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
     statement st(db,"DELETE FROM Evaluations WHERE methodid = (SELECT id FROM Methods WHERE key = ?1) AND propid = (SELECT id FROM Properties WHERE key = ?2);");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
-        os << "# DELETE " << category << " (method=" << *it;
+	os << "# DELETE " << category << " (method=" << *it;
       st.bind(1,*it++);
       if (globals::verbose)
-        os << ";property=" << *it << ")" << std::endl;
+	os << ";property=" << *it << ")" << std::endl;
       st.bind(2,*it);
       st.step();
     }
@@ -1696,19 +1696,19 @@ DELETE FROM Terms WHERE
 )SQL");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
-        os << "# DELETE " << category << " (method=" << *it;
+	os << "# DELETE " << category << " (method=" << *it;
       st.bind(1,*it++);
       if (globals::verbose)
-        os << ";property=" << *it;
+	os << ";property=" << *it;
       st.bind(2,*it++);
       if (globals::verbose)
-        os << ";atom=" << *it;
+	os << ";atom=" << *it;
       st.bind(3,std::stoi(*it++));
       if (globals::verbose)
-        os << ";l=" << *it;
+	os << ";l=" << *it;
       st.bind(4,std::stoi(*it++));
       if (globals::verbose)
-        os << ";exp=" << *it << ")" << std::endl;
+	os << ";exp=" << *it << ")" << std::endl;
       st.bind(5,std::stod(*it));
       st.step();
     }
@@ -1717,13 +1717,13 @@ DELETE FROM Terms WHERE
     statement st_key(db,"DELETE FROM " + table + " WHERE key = ?1;");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
-        os << "# DELETE " << category << " " << *it << std::endl;
+	os << "# DELETE " << category << " " << *it << std::endl;
       if (isinteger(*it)){
-        st_id.bind(1,*it);
-        st_id.step();
+	st_id.bind(1,*it);
+	st_id.step();
       } else {
-        st_key.bind(1,*it);
-        st_key.step();
+	st_key.bind(1,*it);
+	st_key.step();
       }
     }
   }
@@ -1833,24 +1833,24 @@ GROUP BY methodid,atom,l,exponent
   while (st.step() != SQLITE_DONE){
     for (int i = 0; i < n; i++){
       if (types[i] == t_str){
-        const unsigned char *field = sqlite3_column_text(st.ptr(), cols[i]);
-        if (!dobib_)
-          os << "| " << (field?field:(const unsigned char*) "");
-        else{
-          if (headers[i] == "key")
-            os << "@article{" << field << std::endl;
-          else if (field)
-            os << " " << headers[i] << "={" << field << "}," << std::endl;
-        }
+	const unsigned char *field = sqlite3_column_text(st.ptr(), cols[i]);
+	if (!dobib_)
+	  os << "| " << (field?field:(const unsigned char*) "");
+	else{
+	  if (headers[i] == "key")
+	    os << "@article{" << field << std::endl;
+	  else if (field)
+	    os << " " << headers[i] << "={" << field << "}," << std::endl;
+	}
       } else if (types[i] == t_int && !dobib_){
-        os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
+	os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
       } else if (types[i] == t_intsize && !dobib_){
-        os << "| " << sqlite3_column_int(st.ptr(), cols[i]) / sizeof(double);
+	os << "| " << sqlite3_column_int(st.ptr(), cols[i]) / sizeof(double);
       } else if (types[i] == t_double && !dobib_){
-        os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
+	os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
       } else if (types[i] == t_ptr_double && !dobib_){
-        double *ptr = (double *) sqlite3_column_blob(st.ptr(), cols[i]);
-        os << "| " << *ptr;
+	double *ptr = (double *) sqlite3_column_blob(st.ptr(), cols[i]);
+	os << "| " << *ptr;
       }
     }
     if (!dobib_)
@@ -1961,10 +1961,10 @@ void sqldb::print_din(std::ostream &os, const std::unordered_map<std::string,std
       int idx;
       std::string key;
       if (get_key_and_id(*it,"Sets",key,idx)){
-        idset.push_back(idx);
-        nameset.push_back(key);
+	idset.push_back(idx);
+	nameset.push_back(key);
       } else
-        throw std::runtime_error("Invalid set " + *it + " in PRINT DIN");
+	throw std::runtime_error("Invalid set " + *it + " in PRINT DIN");
     }
   } else {
     statement st(db,"SELECT id, key FROM Sets ORDER BY id;");
@@ -2031,16 +2031,16 @@ ORDER BY Properties.orderid;
       double *coef = (double *) sqlite3_column_blob(st.ptr(),2);
 
       for (int j = 0; j < nstr; j++){
-        ofile << coef[j] << std::endl;
-        ofile << find_key_from_id(str[j],"Structures") << std::endl;
+	ofile << coef[j] << std::endl;
+	ofile << find_key_from_id(str[j],"Structures") << std::endl;
       }
       ofile << "0" << std::endl;
 
       if (methodid > 0){
-        double *value = (double *) sqlite3_column_blob(st.ptr(),3);
-        ofile << value[0] << std::endl;
+	double *value = (double *) sqlite3_column_blob(st.ptr(),3);
+	ofile << value[0] << std::endl;
       } else
-        ofile << "0.0" << std::endl;
+	ofile << "0.0" << std::endl;
     }
   }
   os << std::endl;
@@ -2061,7 +2061,7 @@ void sqldb::verify(std::ostream &os){
     std::list<std::string> tokens = list_all_words(field);
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (!find_id_from_key(*it,"Literature_refs"))
-        os << "LITREF (" + *it + ") in SET (" + std::string((char *) sqlite3_column_text(st.ptr(), 1)) + ") not found" << std::endl;
+	os << "LITREF (" + *it + ") in SET (" + std::string((char *) sqlite3_column_text(st.ptr(), 1)) + ") not found" << std::endl;
     }
   }
 
@@ -2076,7 +2076,7 @@ void sqldb::verify(std::ostream &os){
     std::list<std::string> tokens = list_all_words(field);
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (!find_id_from_key(*it,"Literature_refs"))
-        os << "LITREF (" + *it + ") in METHODS (" + std::string((char *) sqlite3_column_text(st.ptr(), 1)) + ") not found" << std::endl;
+	os << "LITREF (" + *it + ") in METHODS (" + std::string((char *) sqlite3_column_text(st.ptr(), 1)) + ") not found" << std::endl;
     }
   }
 
@@ -2092,7 +2092,7 @@ void sqldb::verify(std::ostream &os){
       stcheck.bind(1,str[i]);
       stcheck.step();
       if (sqlite3_column_int(stcheck.ptr(),0) == 0)
-        os << "STRUCTURES (" + std::to_string(str[i]) + ") in Properties (" + std::string((char *) sqlite3_column_text(st.ptr(), 0)) + ") not found" << std::endl;
+	os << "STRUCTURES (" + std::to_string(str[i]) + ") in Properties (" + std::string((char *) sqlite3_column_text(st.ptr(), 0)) + ") not found" << std::endl;
       stcheck.reset();
     }
   }
@@ -2121,7 +2121,7 @@ WHERE Evaluations.propid = Properties.id
     // check the number of values
     if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
       if (nvalue != 1)
-        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have one value, but has " << nvalue << std::endl;
+	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have one value, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_dipole && nvalue != 3){
       os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_stress && nvalue != 6){
@@ -2132,9 +2132,9 @@ WHERE Evaluations.propid = Properties.id
       stcheck.step();
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
-        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
+	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
       else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
-        os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
+	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }
   }
@@ -2160,32 +2160,32 @@ WHERE Terms.propid = Properties.id
     // check the number of structures
     if (ppty != globals::ppty_energy_difference && nstr != 1){
       os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-         << ") should have one structure, but has " << nstr << std::endl;
+	 << ") should have one structure, but has " << nstr << std::endl;
       continue;
     }
 
     // check the number of values
     if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
       if (nvalue != 1)
-        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-           << ") should have one value, but has " << nvalue << std::endl;
+	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	   << ") should have one value, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_dipole && nvalue != 3){
       os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-         << ") should have 3 values, but has " << nvalue << std::endl;
+	 << ") should have 3 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_stress && nvalue != 6){
       os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-         << ") should have 6 values, but has " << nvalue << std::endl;
+	 << ") should have 6 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
       int idstr = sqlite3_column_int(st.ptr(),8);
       stcheck.bind(1,idstr);
       stcheck.step();
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
-        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-           << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
+	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	   << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
       else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
-        os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
-           << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
+	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	   << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }
   }
@@ -2198,7 +2198,7 @@ WHERE Terms.propid = Properties.id
 // defined and compare to the whole training set. If usetrain > 0,
 // compare to the training set and restrict to set usetrain.
 void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-                             int usetrain/*=-1*/){
+			     int usetrain/*=-1*/){
   if (!db)
     throw std::runtime_error("A database file must be connected before using COMPARE");
 
@@ -2273,7 +2273,7 @@ INNER JOIN Sets ON Properties.setid = Sets.id
 )SQL";
   if (usetrain >= 0)
     sttext += R"SQL(
-INNER JOIN Training_Set ON Training_set.propid = Properties.id
+INNER JOIN Training_set ON Training_set.propid = Properties.id
 )SQL";
   sttext += R"SQL(
 LEFT OUTER JOIN Evaluations AS ref ON (ref.propid = Properties.id AND ref.methodid = :METHOD)
@@ -2290,9 +2290,15 @@ WHERE Properties.property_type = :PROPERTY_TYPE
     sttext += R"SQL(
 AND Properties.setid = :SET
 )SQL";
-  sttext += R"SQL(
+  if (usetrain >= 0) {
+    sttext += R"SQL(
+ORDER BY Training_set.id
+)SQL";
+  } else {
+    sttext += R"SQL(
 ORDER BY Properties.id
 )SQL";
+  }
 
   statement st(db,sttext);
   if (sid > 0)
@@ -2325,27 +2331,27 @@ ORDER BY Properties.id
       int nvalue_a = sqlite3_column_int(st.ptr(),9) / sizeof(double);
       double *rval_a = (double *) sqlite3_column_blob(st.ptr(),10);
       if (!rval_a || nvalue_a != nvalue){
-        found = false;
+	found = false;
       } else {
-        for (int j = 0; j < nvalue; j++)
-          value[j] = rval_a[j];
+	for (int j = 0; j < nvalue; j++)
+	  value[j] = rval_a[j];
       }
     } else {
       for (int i = 0; i < nstr; i++){
-        stkey.reset();
-        stkey.bind(1,istr[i]);
-        stkey.step();
-        std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
-        if (datmap.find(strname) == datmap.end()){
-          found = false;
-          break;
-        }
-        for (int j = 0; j < nvalue; j++)
-          value[j] += coef[i] * datmap[strname][j];
+	stkey.reset();
+	stkey.bind(1,istr[i]);
+	stkey.step();
+	std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
+	if (datmap.find(strname) == datmap.end()){
+	  found = false;
+	  break;
+	}
+	for (int j = 0; j < nvalue; j++)
+	  value[j] += coef[i] * datmap[strname][j];
       }
       if (ptid == globals::ppty_energy_difference){
-        for (int j = 0; j < nvalue; j++)
-          value[j] *= globals::ha_to_kcal;
+	for (int j = 0; j < nvalue; j++)
+	  value[j] *= globals::ha_to_kcal;
       }
     }
 
@@ -2359,8 +2365,8 @@ ORDER BY Properties.id
       setname[thissetid] = thissetname;
       double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
       for (int j = 0; j < nvalue; j++){
-        refvalues.push_back(rval[j]);
-        datvalues.push_back(value[j]);
+	refvalues.push_back(rval[j]);
+	datvalues.push_back(value[j]);
       }
     }
   }
@@ -2395,12 +2401,12 @@ ORDER BY Properties.id
       // calculate the statistics for the given set
       int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse,setid,it->first);
       os << "# " << std::left << std::setw(15) << it->second
-         << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
-         << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
-         << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
-         << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
-         << std::left << " ndat = " << std::right << ndat
-         << std::endl;
+	 << std::left << "  rms = " << std::right << std::setw(12) << rms << " "
+	 << std::left << "  mae = " << std::right << std::setw(12) << mae << " "
+	 << std::left << "  mse = " << std::right << std::setw(12) << mse << " "
+	 << std::left << " wrms = " << std::right << std::setw(12) << wrms << " "
+	 << std::left << " ndat = " << std::right << ndat
+	 << std::endl;
     }
 
     int ndat = calc_stats(datvalues,refvalues,{},wrms,rms,mae,mse);
@@ -2446,8 +2452,8 @@ ORDER BY Properties.id
 // file names with this string. os = output stream for verbose
 // notifications.
 void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
-                             const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
-                             const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/,
+			     const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
+			     const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/,
 			     const std::vector<double> &coef/*={}*/, const std::string &prefix/*=""*/){
   if (!db)
     throw std::runtime_error("Error reading connected database");
@@ -2508,7 +2514,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     std::string setkey;
     if ((im = kmap.find("SET")) != kmap.end()){
       if (!get_key_and_id(im->second,"Sets",setkey,setid))
-        throw std::runtime_error("Invalid SET in WRITE");
+	throw std::runtime_error("Invalid SET in WRITE");
     }
 
     std::string sttext="SELECT Properties.nstructures, Properties.structures FROM Properties";
@@ -2523,10 +2529,10 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       int n = sqlite3_column_int(st.ptr(),0);
       const int *str = (int *)sqlite3_column_blob(st.ptr(), 1);
       for (int i = 0; i < n; i++){
-        ststr.bind(1,str[i]);
-        ststr.step();
-        smap[str[i]] = sqlite3_column_int(ststr.ptr(),0);
-        ststr.reset();
+	ststr.bind(1,str[i]);
+	ststr.step();
+	smap[str[i]] = sqlite3_column_int(ststr.ptr(),0);
+	ststr.reset();
       }
     }
   }
@@ -2539,7 +2545,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     std::list<std::string> words = list_all_words(im->second);
     if (words.size() == 0 || words.size() == 1){
       if (zat.empty() || lmax.empty() || exp.empty())
-        throw std::runtime_error("The training set must be defined if using WRITE TERM with no additonal options");
+	throw std::runtime_error("The training set must be defined if using WRITE TERM with no additonal options");
 
       rename = 1;
       exp_ = exp;
@@ -2557,10 +2563,10 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       }
 
       for (int izat = 0; izat < zat.size(); izat++){
-        for (unsigned char il = 0; il <= lmax[izat]; il++){
-          zat_.push_back(zat[izat]);
-          l_.push_back(il);
-        }
+	for (unsigned char il = 0; il <= lmax[izat]; il++){
+	  zat_.push_back(zat[izat]);
+	  l_.push_back(il);
+	}
       }
 
     } else if (words.size() == 3 || words.size() == 4){
@@ -2568,19 +2574,19 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       std::string str = words.front();
       words.pop_front();
       if (isinteger(str))
-        zat_[0] = std::stoi(str);
+	zat_[0] = std::stoi(str);
       else
-        zat_[0] = zatguess(str);
+	zat_[0] = zatguess(str);
 
       str = words.front();
       words.pop_front();
       if (isinteger(str))
-        l_[0] = std::stoi(str);
+	l_[0] = std::stoi(str);
       else{
-        lowercase(str);
-        if (globals::ltoint.find(str) == globals::ltoint.end())
-          throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
-        l_[0] = globals::ltoint.at(str);
+	lowercase(str);
+	if (globals::ltoint.find(str) == globals::ltoint.end())
+	  throw std::runtime_error("Invalid angular momentum " + str + " in WRITE/TERM");
+	l_[0] = globals::ltoint.at(str);
       }
 
       str = words.front();
@@ -2614,14 +2620,14 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 // coefficients (coef). If rename, incorporate the atom, l, exponent
 // info into the file name.
 void sqldb::write_many_structures(std::ostream &os,
-                                  const std::string &template_m, const std::string &template_c,
-                                  const std::string &ext_m, const std::string &ext_c,
-                                  const acp &a,
-                                  const std::unordered_map<int,int> &smap,
-                                  const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l,
+				  const std::string &template_m, const std::string &template_c,
+				  const std::string &ext_m, const std::string &ext_c,
+				  const acp &a,
+				  const std::unordered_map<int,int> &smap,
+				  const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l,
 				  const std::vector<double> &exp, const std::vector<double> &coef,
-                                  const int rename,
-                                  const std::string &dir/*="./"*/, int npack/*=0*/,
+				  const int rename,
+				  const std::string &dir/*="./"*/, int npack/*=0*/,
 				  const std::string &prefix/*=""*/){
 
   // consistency check
@@ -2645,22 +2651,22 @@ void sqldb::write_many_structures(std::ostream &os,
   if (npack <= 0 || npack >= smap.size()){
     for (auto it = smap.begin(); it != smap.end(); it++){
       if (it->second)
-        tptr = &tm;
+	tptr = &tm;
       else
-        tptr = &tc;
+	tptr = &tc;
       if (tptr->hasloop()){
-        write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
-                            a, zat[0], l[0], exp[0], 0, coef[0], 0, 0, dir, prefix);
+	write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
+			    a, zat[0], l[0], exp[0], 0, coef[0], 0, 0, dir, prefix);
       } else {
-        for (int ii = 0; ii < zat.size(); ii++){
-          for (int iexp = 0; iexp < exp.size(); iexp++){
+	for (int ii = 0; ii < zat.size(); ii++){
+	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
 				  zat[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef, rename,
 				  dir, prefix);
 	    }
-          }
-        }
+	  }
+	}
       }
     }
   } else {
@@ -2680,25 +2686,25 @@ void sqldb::write_many_structures(std::ostream &os,
     std::list<fs::path> written;
     for (int i = 0; i < srand.size(); i++){
       if (smap.at(srand[i]))
-        tptr = &tm;
+	tptr = &tm;
       else
-        tptr = &tc;
+	tptr = &tc;
 
       if (tptr->hasloop()){
-        written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
-                                                       (smap.at(srand[i])?ext_m:ext_c),
-                                                       a, zat[0], l[0], exp[0], 0, coef[0], 0, 0, dir,
+	written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
+						       (smap.at(srand[i])?ext_m:ext_c),
+						       a, zat[0], l[0], exp[0], 0, coef[0], 0, 0, dir,
 						       prefix)));
       } else {
-        for (int ii = 0; ii < zat.size(); ii++){
-          for (int iexp = 0; iexp < exp.size(); iexp++){
+	for (int ii = 0; ii < zat.size(); ii++){
+	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
 							     a, zat[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef,
 							     rename, dir, prefix)));
 	    }
-          }
-        }
+	  }
+	}
       }
     }
 
@@ -2710,17 +2716,17 @@ void sqldb::write_many_structures(std::ostream &os,
       local.push_back(*it);
       // create a new package if written has npack items or we are about to finish
       if (++n % npack == 0 || n == written.size() && !local.empty()){
-        std::string tarcmd = std::to_string(++ipack);
-        tarcmd.insert(0,slen-tarcmd.size(),'0');
-        tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
-        for (auto iw = local.begin(); iw != local.end(); iw++)
-          tarcmd = tarcmd + " " + iw->string();
+	std::string tarcmd = std::to_string(++ipack);
+	tarcmd.insert(0,slen-tarcmd.size(),'0');
+	tarcmd = "tar cJf " + dir + "/pack_" + tarcmd + ".tar.xz -C " + dir;
+	for (auto iw = local.begin(); iw != local.end(); iw++)
+	  tarcmd = tarcmd + " " + iw->string();
 
-        if (system(tarcmd.c_str()))
-          throw std::runtime_error("Error running tar command on input files");
-        for (auto iw = local.begin(); iw != local.end(); iw++)
-          remove(dir / *iw);
-        local.clear();
+	if (system(tarcmd.c_str()))
+	  throw std::runtime_error("Error running tar command on input files");
+	for (auto iw = local.begin(); iw != local.end(); iw++)
+	  remove(dir / *iw);
+	local.clear();
       }
     }
 
@@ -2735,10 +2741,10 @@ void sqldb::write_many_structures(std::ostream &os,
 // the ACP (a), atomic numbers (zat), angular momentum (l),
 // exponent (exp), exponent ID (iexp), and coefficient (coef).
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-                                       const std::string &ext, const acp& a,
-                                       const unsigned char zat, const unsigned char l, const double exp, const int iexp,
-                                       const double coef, const int icoef, const int rename,
-                                       const std::string &dir/*="./"*/,
+				       const std::string &ext, const acp& a,
+				       const unsigned char zat, const unsigned char l, const double exp, const int iexp,
+				       const double coef, const int icoef, const int rename,
+				       const std::string &dir/*="./"*/,
 				       const std::string &prefix/*=""*/){
 
   // get the structure from the database
@@ -2780,4 +2786,3 @@ FROM Structures WHERE id = ?1;
 
   return name;
 }
-
