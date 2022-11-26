@@ -1,7 +1,7 @@
 %nprocs=32
 %mem=64GB
 %chk=%basename%.chk
-#t mn15 6-31+G** symm=none int=(grid=ultrafine) 6d 10f guess=(read,tcheck)
+#t mn15 6-31+G** symm=none int=(grid=ultrafine) 6d 10f guess=(read,tcheck) stable=opt
 
 title
 
