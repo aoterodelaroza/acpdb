@@ -818,7 +818,7 @@ TRAINING
   MASK_NOANIONS
   MASK_NOCHARGED
   MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
-  MASK_RANDOM n.i
+  MASK_RANDOM n.i [seed.i]
   WEIGHT_GLOBAL w.r
   WEIGHT_PATTERN w1.r w2.r w3.r w4.r...
   NORM_REF
@@ -911,7 +911,10 @@ is as follows:
   * `MASK_RANDOM` selects a random number `n.i` of unmasked
     items. This is useful to choose a random subset of a given
     set. Note that `MASK_OR` and `MASK_AND` does not apply, and that
-    `MASK_RANDOM` is processed after all other `MASK` commands.
+    `MASK_RANDOM` is processed after all other `MASK` commands. If a
+    random seed `seed.i` is given, set the random seed to this
+    value. Otherwise, use the current time and print the random seed
+    to the standard output.
 
   The remaining commands are used to set the weights of the items in
   the subset. The keywords are:

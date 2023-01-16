@@ -265,8 +265,29 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     }
   }
   if (kmap.find("MASK_RANDOM") != kmap.end()) {
+    std::list<std::string> tokens(list_all_words(kmap["MASK_RANDOM"]));
+
+    // read the entries
+    int num;
+    unsigned int seed = 0;
+    bool seedgiven = false;
+    if (tokens.empty())
+      throw std::runtime_error("Empty number of items in MASK_RANDOM");
+    else if (tokens.size() == 1)
+      num = std::stoi(tokens.front());
+    else if (tokens.size() == 2){
+      num = std::stoi(popstring(tokens)) - 1;
+      seed = std::stoi(tokens.front());
+      seedgiven = true;
+    }
+
+    // set the seed
+    if (!seedgiven)
+      seed = std::time(NULL);
+    std::srand(seed);
+    std::cout << std::endl << "  Setting RANDOM SEED = " << seed << std::endl << std::endl;
+
     // find the used IDs and make sure we have enough
-    int num = std::stoi(kmap["MASK_RANDOM"]);
     std::vector<int> ids;
     for (int i = 0; i < set_mask.size(); i++)
       if (set_mask[i]) ids.push_back(i);
