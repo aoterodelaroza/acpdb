@@ -1305,6 +1305,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 
     // run over atoms
     os << "# LIST of maximum coefficients written to maxcoef.dat" << std::endl;
+    int nbefore = 0;
     for (int i = 0; i < zat.size(); i++){
       for (int il = 0; il <= lmax[i]; il++){
 	for (int ie = 0; ie < exp.size(); ie++){
@@ -1342,11 +1343,9 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 		stkey.bind(1,str[k]);
 		stkey.step();
 		std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
-		std::string atom = nameguess(zat[i]);
-		lowercase(atom);
-		std::string str = "maxcoef-" + name + "@" + atom + "_" + globals::inttol[il] + "_"
-		  + std::to_string(ie+1) + "_" + std::to_string(ic+1);
-		escf += pcoef[k] * datmap[str][0];
+		std::string strname = "maxcoef-" + name;
+		int nthis = nbefore + ic + 1; // +1 to account for the empty calculation
+		escf += pcoef[k] * datmap[strname][nthis];
 	      }
 	      escf *= globals::ha_to_kcal;
 	      double elin = e0 + coef[ic] * eslope;
@@ -1365,6 +1364,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	    } // ic, over coefficients
 	  } // steval.step(), runs over properties
 	  fprintf(fp,"%s %c %.6f %.10e\n",nameguess(zat[i]).c_str(),globals::inttol[il],exp[ie],cmax);
+	  nbefore = nbefore + coef.size();
 	} // ie, over exponents
       } // il, over angular momenta
     } // i, over atoms
