@@ -982,7 +982,8 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 
 	if (datmap.find(strname) == datmap.end() || datmap[strname].size() != zat_.size() * exp_.size()){
 	  found = false;
-	  reject.push_back(strname);
+	  reject.push_back(strname + " (reason:" + std::to_string(datmap[strname].size()) + " out of " +
+			   std::to_string(zat_.size() * exp_.size()) + " provided)");
 	  break;
 	}
 	accept.push_back(strname);
