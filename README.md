@@ -1184,6 +1184,8 @@ subdirectory of the distribution.
 
 * `gaussian.gjf`: a simple Gaussian input file.
 
+* `gaussian_d1e_forces.gjf`: Gaussian calculation of atomic forces.
+
 * `gaussian_pseudo.gjf`: a Gaussian input file using an ACP and the
   `pseudo=read` keyword.
 
@@ -1209,6 +1211,9 @@ carry out a complete ACP development process. The subdirectories are:
 
 * `01_create_database`: create and populate a database, define a
   training set.
+
+* `05_force_calc`: calculate forces and insert them into the database
+  as properties of a set.
 
 * `10_calculate_terms`: calculate the ACP terms for a given training
   set.
