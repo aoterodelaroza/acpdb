@@ -1202,3 +1202,22 @@ subdirectory of the distribution.
 
 * `vasp.POSCAR`: a simple VASP POSCAR file.
 
+## Example Library
+
+The `example_inputs` directory contains template inputs and scripts to
+carry out a complete ACP development process. The subdirectories are:
+
+* `01_create_database`: create and populate a database, define a
+  training set.
+
+* `10_calculate_terms`: calculate the ACP terms for a given training
+  set.
+
+* `20_calculate_maxcoef`: calculate the maximum coefficients for the
+  different ACP channels.
+
+* `30_makeacp`: make an ACP from a complete training set.
+
+* `40_validation`: validate an ACP by running self-consistent
+  calculations.
+
