@@ -1,7 +1,7 @@
 %nprocs=32
 %mem=64GB
 %chk=%basename%.chk
-#t mn15 6-31+G** symm=none int=(grid=ultrafine) 6d 10f guess=(read,tcheck) stable=opt
+#t mn15 6-31+G** 6d 10f symm=none int=(grid=ultrafine) guess=(read,tcheck) stable=opt
 
 title
 
@@ -12,7 +12,7 @@ title
 %nprocs=32
 %mem=64GB
 %chk=%basename%.chk
-#t mn15 6-31+G** iop(5/13=1,5/36=2,99/5=2) pseudo=read geom=check guess=(read,tcheck) scf=(maxcycle=1)
+#t mn15 6-31+G** 6d 10f iop(5/13=1,5/36=2,99/5=2) pseudo=read geom=check guess=(read,tcheck) scf=(maxcycle=1)
 
 title
 
