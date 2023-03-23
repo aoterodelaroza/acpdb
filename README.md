@@ -1187,8 +1187,14 @@ subdirectory of the distribution.
 * `gaussian_pseudo.gjf`: a Gaussian input file using an ACP and the
   `pseudo=read` keyword.
 
-* `gaussian_terms.gjf`: a Gaussian input file for term and maxcoef
-  calculations.
+* `gaussian_terms-nonsinglet.gjf`: a Gaussian input file for term and
+  maxcoef calculations, non-singlet molecules.
+
+* `gaussian_terms-singlet.gjf`: a Gaussian input file for term and
+  maxcoef calculations, singlet molecules.
+
+* `gaussian_maxcoef.gjf`: a Gaussian input file for the maximum
+  coefficient calculations.
 
 * `orca.inp`: a simple ORCA input file.
 
