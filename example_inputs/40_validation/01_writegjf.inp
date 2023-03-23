@@ -1,0 +1,9 @@
+connect pes.db
+training load hono
+
+write
+ template templates/gau_b3lyp_def2tzvpp.gjf
+ training
+ directory run-maxcoef-0.05/
+ acp ../20_acp-hono/acps/maxcoef-0.05.acp
+end

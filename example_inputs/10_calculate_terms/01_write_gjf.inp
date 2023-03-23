@@ -1,0 +1,11 @@
+connect pes.db
+
+training load hono
+
+write
+ template templates/gau_b3lyp_def2tzvpp.gjf
+ training
+ directory terms
+ term
+end
+

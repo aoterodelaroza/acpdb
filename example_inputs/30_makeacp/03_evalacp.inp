@@ -1,0 +1,5 @@
+connect pes.db
+
+training load hono
+training eval empty
+training eval acps/maxcoef-0.05.acp

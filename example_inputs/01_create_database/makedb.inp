@@ -1,0 +1,30 @@
+system rm -f pes.db
+connect pes.db
+
+## Insert methods
+insert method reference
+ description This is the reference method (CCSD(T)-F12/aug-cc-pVTZ)
+end
+insert method b3lyp_def2tzvpp
+ description This is the approximate method (B3LYP/def2TZVPP)
+end
+
+## Insert structures and evaluations
+insert set HONO
+  method reference
+  din din/hono.din
+  directory xyz
+end
+
+training
+ atom H h Cl h N h Br h O h
+ exp 0.12 0.14 0.16 0.18 0.20 0.22 0.24 0.26 0.28 0.30 0.40 \
+     0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.50 3.00
+ empty b3lyp_def2tzvpp
+ reference reference
+
+ subset
+   set HONO
+ end
+end
+training save hono

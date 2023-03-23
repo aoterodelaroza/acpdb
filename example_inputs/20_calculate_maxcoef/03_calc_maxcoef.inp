@@ -1,0 +1,56 @@
+connect pes.db
+
+training
+ atom H h Cl h N h Br h O h
+ exp 0.12 0.14 0.16 0.18 0.20 0.22 0.24 0.26 0.28 0.30 0.40 \
+     0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.50 3.00
+ empty b3lyp_def2tzvpp
+ reference reference
+
+ subset
+   set HONO
+   mask_items 1255 0773 1170 1297 1827 1969 1005 1806 1187 1315 0376 0034 1612 0845 0871 0178 0887 0529 0458 0024
+ end
+end
+
+training maxcoef
+ calc 0.01
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.01.dat
+
+training maxcoef
+ calc 0.05
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.05.dat
+
+training maxcoef
+ calc 0.1
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.1.dat
+
+training maxcoef
+ calc 0.2
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.2.dat
+
+training maxcoef
+ calc 0.3
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.3.dat
+
+training maxcoef
+ calc 0.5
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-0.5.dat
+
+training maxcoef
+ calc 1.0
+ source scf.dat
+end
+system mv maxcoef.dat maxcoef-1.0.dat

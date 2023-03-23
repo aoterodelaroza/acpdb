@@ -1,0 +1,11 @@
+connect pes.db
+training load hono
+
+training eval empty
+training eval ../20_acp-hono/acps/${i#run-}.acp
+compare
+ source run.dat
+ property_type energy_difference
+ method reference
+ training
+end

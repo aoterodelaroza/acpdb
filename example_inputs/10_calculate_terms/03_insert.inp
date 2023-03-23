@@ -1,0 +1,18 @@
+connect pes.db
+training load hono
+
+insert calc
+  or_replace
+  property_type energy_difference
+  file empty_hono.dat
+  method b3lyp_def2tzvpp
+end
+insert calc
+  or_replace
+  property_type energy_difference
+  file terms_hono.dat
+  method b3lyp_def2tzvpp
+  term assume_order
+  calcslope 0.001
+end
+training describe

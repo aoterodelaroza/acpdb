@@ -1,0 +1,6 @@
+connect pes.db
+
+insert maxcoef
+ method b3lyp_def2tzvpp
+ file maxcoef-1.0.dat
+end
