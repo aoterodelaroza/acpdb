@@ -1,0 +1,6 @@
+connect new.db
+
+write
+ template templates/gaussian_d1e_forces.gjf
+ directory run/
+end

@@ -1,0 +1,24 @@
+system rm -f new.db
+connect new.db
+
+insert method reference
+ description This is the reference method (CCSD(T)-F12/aug-cc-pVTZ)
+end
+
+insert set S22
+  method reference
+  din din/s22.din
+  directory xyz
+end
+
+insert property force_
+  property_type d1e
+  set S22
+end
+
+insert calc
+  property_type d1e
+  file zero.d1e
+  method reference
+end
+

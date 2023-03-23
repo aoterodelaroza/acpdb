@@ -1,0 +1,17 @@
+connect new.db
+
+#### add zero forces
+# insert calc
+#   property_type d1e
+#   file zero.d1e
+#   method reference
+#   or_replace
+# end
+
+#### add calculated forces
+insert calc
+  property_type d1e
+  file calc.d1e
+  method reference
+  or_replace
+end

@@ -1,0 +1,10 @@
+%nprocs=4
+%mem=2GB
+%chk=%basename%.chk
+#p b3lyp 6-31G* int=(grid=ultrafine) force punch=derivatives
+
+title
+
+%charge% %mult%
+%xyz%
+
