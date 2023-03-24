@@ -1789,20 +1789,22 @@ FROM Properties
 ORDER BY id;
 )SQL";
   } else if (category == "EVALUATION"){
-    headers = {"methodid","propid",   "#values", "1st value"};
+    headers = {"methodid","propid",   "#values", "values"};
     types   = {     t_int,   t_int,   t_intsize,t_ptr_double};
     cols    = {         0,       1,           2,           3};
     stmt = R"SQL(
 SELECT methodid,propid,length(value),value
-FROM Evaluations;
+FROM Evaluations
+ORDER BY methodid, propid;
 )SQL";
   } else if (category == "TERM"){
-    headers = {"methodid","propid", "atom",   "l","exponent",   "#values", "1st value","maxcoef"};
+    headers = {"methodid","propid", "atom",   "l","exponent",   "#values", "values","maxcoef"};
     types   = {     t_int,   t_int,  t_int, t_int,  t_double,   t_intsize,t_ptr_double, t_double};
     cols    = {         0,       1,      2,     3,         4,           5,           6,        7};
     stmt = R"SQL(
 SELECT methodid,propid,atom,l,exponent,length(value),value,maxcoef
-FROM Terms;
+FROM Terms
+ORDER BY methodid,atom,l,exponent,propid;
 )SQL";
   } else if (category == "MAXCOEF"){
     headers = {"methodid","atom",  "l","exponent","maxcoef"};
@@ -1813,6 +1815,7 @@ SELECT methodid,atom,l,exponent,MIN(maxcoef)
 FROM Terms
 WHERE maxcoef IS NOT NULL
 GROUP BY methodid,atom,l,exponent
+ORDER BY methodid,atom,l,exponent;
 )SQL";
   } else {
     throw std::runtime_error("Unknown LIST category: " + category);
@@ -1832,6 +1835,7 @@ GROUP BY methodid,atom,l,exponent
   // print table body
   std::streamsize prec = os.precision(10);
   while (st.step() != SQLITE_DONE){
+    int lastnval = 0;
     for (int i = 0; i < n; i++){
       if (types[i] == t_str){
 	const unsigned char *field = sqlite3_column_text(st.ptr(), cols[i]);
@@ -1846,12 +1850,13 @@ GROUP BY methodid,atom,l,exponent
       } else if (types[i] == t_int && !dobib_){
 	os << "| " << sqlite3_column_int(st.ptr(), cols[i]);
       } else if (types[i] == t_intsize && !dobib_){
-	os << "| " << sqlite3_column_int(st.ptr(), cols[i]) / sizeof(double);
+	lastnval = sqlite3_column_int(st.ptr(), cols[i]) / sizeof(double) - 1;
+	os << "| " << lastnval + 1;
       } else if (types[i] == t_double && !dobib_){
 	os << "| " << sqlite3_column_double(st.ptr(), cols[i]);
       } else if (types[i] == t_ptr_double && !dobib_){
 	double *ptr = (double *) sqlite3_column_blob(st.ptr(), cols[i]);
-	os << "| " << *ptr;
+	os << "| " << *ptr << " ... " << *(ptr+lastnval);
       }
     }
     if (!dobib_)
