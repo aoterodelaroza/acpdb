@@ -1587,10 +1587,11 @@ ORDER BY Training_set.id;
         st.bind((char *) ":EXP",exp[ie]);
         int n = 0;
         while (st.step() != SQLITE_DONE){
-          if (n++ >= nrows)
-            throw std::runtime_error("Too many rows dumping terms data");
           int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
           double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+	  n += len;
+          if (n > nrows)
+            throw std::runtime_error("Too many rows dumping terms data");
           ofile.write((const char *) value,len * sizeof(double));
         }
         if (n != nrows)
@@ -1600,7 +1601,7 @@ ORDER BY Training_set.id;
   }
   os << "# Dumped: terms (x) with " << nrows << " rows and " << ncols << " columns" << std::endl;
 
-  // write the yref, yempt, and yadd columns
+  // write the yref, yempty, and yadd columns
   st.recycle(R"SQL(
 SELECT length(Evaluations.value), Evaluations.value
 FROM Evaluations, Training_set
@@ -1615,10 +1616,11 @@ ORDER BY Training_set.id;
     st.bind((char *) ":METHOD", ids[i]);
     int n = 0;
     while (st.step() != SQLITE_DONE){
-      if (n++ >= nrows)
-        throw std::runtime_error("Too many rows dumping y data");
       int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
       double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+      n += len;
+      if (n > nrows)
+        throw std::runtime_error("Too many rows dumping y data");
       ofile.write((const char *) value,len * sizeof(double));
     }
     if (n != nrows)
