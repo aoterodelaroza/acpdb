@@ -1248,7 +1248,7 @@ void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,st
     kmap_new["TERM"] = "";
 
     statement st(db->ptr(),R"SQL(
-SELECT Properties.nstructures, Properties.structures, Properties.key
+SELECT Properties.nstructures, Properties.structures, Properties.key, Properties.property_type
 FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid;
 )SQL");
@@ -1256,6 +1256,10 @@ WHERE Properties.id = Training_set.propid;
 
     std::unordered_map<int,int> smap;
     while (st.step() != SQLITE_DONE){
+      int ptid = sqlite3_column_int(st.ptr(),3);
+      if (ptid != globals::ppty_energy_difference)
+	throw std::runtime_error("properties other than ENERGY_DIFFERENCE cannot be used in TRAINING MAXCOEF");
+
       int nstr = sqlite3_column_int(st.ptr(),0);
       int *str = (int *) sqlite3_column_blob(st.ptr(),1);
       if (nstr == 0)
@@ -1297,7 +1301,7 @@ WHERE Properties.id = Training_set.propid;
 
     // statements
     statement steval(db->ptr(),R"SQL(
-SELECT Evaluations.propid, Evaluations.value, Terms.value
+SELECT Evaluations.propid, Evaluations.value, Terms.value, Properties.property_type
 FROM Properties, Evaluations, Training_Set, Terms
 WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
       Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
@@ -1328,6 +1332,11 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	  steval.bind((char *) ":L",il);
 	  steval.bind((char *) ":EXP",exp[ie]);
 	  while (steval.step() != SQLITE_DONE){
+	    // check property ID
+	    int ptid = sqlite3_column_int(steval.ptr(),3);
+	    if (ptid != globals::ppty_energy_difference)
+	      throw std::runtime_error("properties other than ENERGY_DIFFERENCE cannot be used in TRAINING MAXCOEF");
+
 	    // structure ID and linear and zero energies
 	    int id = sqlite3_column_int(steval.ptr(),0);
 	    double *res = (double *) sqlite3_column_blob(steval.ptr(),1);
