@@ -2387,9 +2387,11 @@ ORDER BY Properties.id
     if (!found){
       names_missing_fromdat.push_back(key);
     } else {
-      names_found.push_back(key);
       numvalues.push_back(nvalue);
-      setid.push_back(thissetid);
+      for (int i = 0; i < nvalue; i++){
+	names_found.push_back(key);
+	setid.push_back(thissetid);
+      }
       setname[thissetid] = thissetname;
       double *rval = (double *) sqlite3_column_blob(st.ptr(),8);
       for (int j = 0; j < nvalue; j++){
@@ -2458,6 +2460,7 @@ ORDER BY Properties.id
   refname = "Ref_method";
 
   output_eval(os,{},names_found,numvalues,{},datvalues,approxname,refvalues,refname);
+
   if (!names_missing_fromdb.empty()){
     os << "## The following properties are missing from the REFERENCE:" << std::endl;
     for (int i = 0; i < names_missing_fromdb.size(); i++)

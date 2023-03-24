@@ -430,7 +430,7 @@ void trainset::setempty(const std::list<std::string> &tokens){
   if (!db || !(*db))
     throw std::runtime_error("A database file must be connected before using TRAINING EMPTY");
   if (tokens.empty())
-    throw std::runtime_error("Need method key in TRAINING EMPTYx");
+    throw std::runtime_error("Need method key in TRAINING EMPTY");
 
   std::string name = tokens.front();
   int idx = db->find_id_from_key(name,"Methods");
@@ -1042,8 +1042,9 @@ void trainset::eval_acp(std::ostream &os, const acp &a) {
     throw std::runtime_error("The training set needs to be complete before using TRAINING EVAL");
 
   // get the number of items
-  int nall = 0;
+  int nall = 0, n = -1;
   std::vector<int> num, nsetid;
+  std::vector<double> wall;
   statement st(db->ptr(),R"SQL(
 SELECT length(Evaluations.value), Properties.setid
 FROM Evaluations, Training_set, Properties
@@ -1053,15 +1054,19 @@ ORDER BY Training_set.id;
 )SQL");
   st.bind((char *) ":METHOD",refid);
   while (st.step() != SQLITE_DONE){
+    n++;
     int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
     int sid = sqlite3_column_int(st.ptr(),1);
     num.push_back(nitem);
-    nsetid.push_back(sid);
+    for (int i = 0; i < nitem; i++){
+      nsetid.push_back(sid);
+      wall.push_back(w[n]);
+    }
     nall += nitem;
   }
   // initialize container vectors
   std::vector<double> yempty(nall,0.0), yacp(nall,0.0), yadd(nall,0.0), ytotal(nall,0.0), yref(nall,0.0);
-  std::vector<std::string> names(ntot,"");
+  std::vector<std::string> names(nall,"");
 
   // get the names
   st.recycle(R"SQL(
@@ -1070,9 +1075,14 @@ FROM Properties, Training_set
 WHERE Properties.id = Training_set.propid
 ORDER BY Training_set.id;
 )SQL");
-  int n = 0;
-  while (st.step() != SQLITE_DONE)
-    names[n++] = std::string((char *) sqlite3_column_text(st.ptr(),0));
+  int count = -1;
+  n = 0;
+  while (st.step() != SQLITE_DONE){
+    count++;
+    std::string str = std::string((char *) sqlite3_column_text(st.ptr(),0));
+    for (int i = 0; i < num[count]; i++)
+      names[n++] = str;
+  }
   if (n != nall)
     throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in names");
 
@@ -1160,14 +1170,14 @@ ORDER BY Training_set.id;
   std::vector<unsigned long int> ndat(nset,0);
   unsigned long int nsettot = 0;
   for (int i = 0; i < setid.size(); i++){
-    ndat[i] = calc_stats(ytotal,yref,w,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
+    ndat[i] = calc_stats(ytotal,yref,wall,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
     nsettot += ndat[i];
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
     maxsetl = std::max(maxsetl,(int) alias[i].size());
   }
   wrms_total_nofit = std::sqrt(wrms_total_nofit);
-  calc_stats(ytotal,yref,w,wrmst,rmst,maet,mset);
+  calc_stats(ytotal,yref,wall,wrmst,rmst,maet,mset,num);
 
   // write the stats
   std::streamsize prec = os.precision(7);

@@ -59,11 +59,11 @@ void output_eval(std::ostream &os,
   std::streamsize prec = os.precision(7);
   os << std::fixed;
   int k = 0;
-  for (int i = 0; i < name.size(); i++){
-    for (int j = 0; j < num[j]; j++){
+  for (int i = 0; i < num.size(); i++){
+    for (int j = 0; j < num[i]; j++){
       os << std::setw(idwidth) << std::left << (id.empty()?i+1:id[i]) << " "
-         << std::setw(40) << std::left << name[i];
-      if (num[j] > 1){
+         << std::setw(40) << std::left << name[k];
+      if (num[i] > 1){
         std::string attach = " (" + std::to_string(j+1) + ")";
         os << std::setw(4) << attach << " ";
       }
@@ -71,13 +71,13 @@ void output_eval(std::ostream &os,
       if (!w.empty())
         os << std::setprecision(6) << std::setw(10) << std::right << w[i] << " ";
 
-      for (int j = 0; j < add.size(); j++)
-        os << std::setprecision(10) << std::setw(18) << std::right << add[j][k] << " ";
+      for (int l = 0; l < add.size(); l++)
+        os << std::setprecision(10) << std::setw(18) << std::right << add[l][k] << " ";
 
       os << std::setprecision(10) << std::setw(18) << std::right << approx[k] << " "
          << std::setprecision(10) << std::setw(18) << std::right << ref[k] << " "
-         << std::setprecision(10) << std::setw(18) << std::right << approx[k]-ref[k]
-         << std::endl;
+         << std::setprecision(10) << std::setw(18) << std::right << approx[k]-ref[k];
+      os << std::endl;
       k++;
     }
   }
