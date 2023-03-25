@@ -909,7 +909,7 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
   if (ptid == globals::ppty_energy_difference){
     datmap = read_data_file_vector(file,globals::ha_to_kcal);
     isscalar = true;
-  } else if (ptid == globals::ppty_d1e){
+  } else if (ptid == globals::ppty_d1e || ptid == globals::ppty_d2e){
     datmap = read_data_file_vector(file,1.);
     isscalar = false;
   } else {
@@ -992,6 +992,10 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 	  nstride = 1;
 	else if (ptid == globals::ppty_d1e)
 	  nstride = 3 * sqlite3_column_int(stkey.ptr(),1);
+	else if (ptid == globals::ppty_d2e){
+	  int nat = sqlite3_column_int(stkey.ptr(),1);
+	  nstride = (3 * nat) * (3 * nat + 1) / 2;
+	}
 	fail = fail || (nstride*zat_.size()*exp_.size() != datmap[strname].size());
 	if (fail){
 	  found = false;
@@ -2161,8 +2165,8 @@ WHERE Evaluations.propid = Properties.id
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
 	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
-      else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
-	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
+      else if (ppty == globals::ppty_d2e && nvalue != (3*nat) * (3*nat+1) / 2)
+	os << "EVALUATIONS (method=" << methodid << ";property=" << propid << ") should have (3*nat)*(3*nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }
   }
@@ -2211,7 +2215,7 @@ WHERE Terms.propid = Properties.id
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
 	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
-      else if (ppty == globals::ppty_d2e && nvalue != nat * (nat+1) / 2)
+      else if (ppty == globals::ppty_d2e && nvalue != (3*nat) * (3*nat+1) / 2)
 	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
