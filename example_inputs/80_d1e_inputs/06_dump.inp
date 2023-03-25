@@ -1,0 +1,5 @@
+connect new.db
+
+training load hono
+training describe
+training dump

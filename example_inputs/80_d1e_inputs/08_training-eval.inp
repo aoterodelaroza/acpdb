@@ -1,0 +1,8 @@
+connect new.db
+
+training load hono
+training eval empty
+training eval lasso-02.acp
+
+# training describe
+# training dump

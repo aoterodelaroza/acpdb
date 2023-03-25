@@ -1,0 +1,11 @@
+connect new.db
+
+training load hono
+
+write
+ template templates/gaussian_force-terms-singlet.gjf
+ training
+ directory terms
+ term
+end
+
