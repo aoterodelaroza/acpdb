@@ -1,0 +1,34 @@
+connect new.db
+training load hono
+
+insert calc
+  or_replace
+  property_type d1e
+  file empty_d1e.dat
+  method b3lyp_def2tzvpp
+end
+insert calc
+  or_replace
+  property_type d2e
+  file empty_d2e.dat
+  method b3lyp_def2tzvpp
+end
+
+insert calc
+  or_replace
+  property_type d1e
+  file terms_d1e.dat
+  method b3lyp_def2tzvpp
+  term assume_order
+  calcslope 0.001
+end
+insert calc
+  or_replace
+  property_type d2e
+  file terms_d2e.dat
+  method b3lyp_def2tzvpp
+  term assume_order
+  calcslope 0.001
+end
+
+training describe

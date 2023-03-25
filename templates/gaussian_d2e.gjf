@@ -1,0 +1,19 @@
+%nprocs=4
+%mem=8GB
+%chk=%basename%.chk
+#t b3lyp def2tzvp 6d 10f int=(grid=ultrafine) guess=(read,tcheck) freq=(noraman,noprintnm) punch=derivatives
+
+title
+
+%charge% %mult%
+%xyz%
+
+--Link1--
+#p hf sto-3g
+
+title
+
+0 2
+H
+
+@fort.7

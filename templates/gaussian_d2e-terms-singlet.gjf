@@ -1,0 +1,55 @@
+%nprocs=4
+%mem=8GB
+%chk=%basename%.chk
+#t b3lyp 6-31G* 6d 10f symm=none int=(grid=ultrafine) guess=(read,tcheck) stable=(opt,rrhf)
+
+title
+
+%charge% %mult%
+%xyz%
+
+--Link1--
+%nprocs=4
+%mem=8GB
+%chk=%basename%.chk
+#t b3lyp 6-31G* 6d 10f geom=check guess=(read,tcheck) symm=none int=(grid=ultrafine) freq=(noraman,noprintnm) punch=derivatives
+
+title
+
+%charge% %mult%
+
+--Link1--
+#p hf sto-3g
+
+title
+
+0 2
+H
+
+@fort.7
+%term_loop%
+--Link1--
+%nprocs=4
+%mem=8GB
+%oldchk=%basename%.chk
+#t b3lyp 6-31G* 6d 10f iop(5/13=1,5/36=2,99/5=2,7/127=-10,8/117=-10) pseudo=read geom=check guess=(read,tcheck) scf=(maxcycle=1) freq=(noraman,noprintnm) punch=derivatives
+
+title
+
+%charge% %mult%
+
+-%term_atsymbol% 0
+%term_atsymbol_lstr_gaussian%
+1
+2 %term_exp% %term_coef%
+
+--Link1--
+#p hf sto-3g
+
+title
+
+0 2
+H
+
+@fort.7
+%term_endloop%

@@ -1,0 +1,15 @@
+connect new.db
+
+training load hono
+compare
+  source empty_d1e.dat
+  property_type d1e
+  method reference
+  set S22
+end
+compare
+  source empty_d2e.dat
+  property_type d2e
+  method reference
+  set S22
+end

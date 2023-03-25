@@ -1,0 +1,56 @@
+system rm -f new.db
+connect new.db
+
+insert method reference
+ description This is the reference method (CCSD(T)-F12/aug-cc-pVTZ)
+end
+insert method b3lyp_def2tzvpp
+ description The approximate method
+end
+
+insert set S22
+  method reference
+  xyz xyz
+end
+
+insert property d1e_
+  property_type d1e
+  set S22
+end
+
+insert property d2e_
+  property_type d2e
+  set S22
+end
+
+training
+ atom H l N l O l
+ exp 0.12 0.50 1.00 3.00
+ empty b3lyp_def2tzvpp
+ reference reference
+
+ subset
+   set S22
+ end
+end
+training save hono
+
+# write
+#  template templates/gaussian_d2e.gjf
+#  training
+#  directory run
+# end
+
+insert calc
+  property_type d1e
+  file ref_d1e.dat
+  method reference
+  or_replace
+end
+insert calc
+  property_type d2e
+  file ref_d2e.dat
+  method reference
+  or_replace
+end
+
