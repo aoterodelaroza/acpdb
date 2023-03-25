@@ -910,10 +910,10 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
     datmap = read_data_file_vector(file,globals::ha_to_kcal);
     isscalar = true;
   } else if (ptid == globals::ppty_energy){
-    datmap = read_data_file_vector(file,1000.);
+    datmap = read_data_file_vector(file,1.);
     isscalar = true;
   } else if (ptid == globals::ppty_d1e || ptid == globals::ppty_d2e){
-    datmap = read_data_file_vector(file,1.);
+    datmap = read_data_file_vector(file,1000.);
     isscalar = false;
   } else {
     throw std::runtime_error("FIXME: property not yet implemented in INSERT TERM ASSUME_ORDER");
@@ -2389,7 +2389,7 @@ ORDER BY Properties.id
       if (ptid == globals::ppty_energy_difference){
 	for (int j = 0; j < nvalue; j++)
 	  value[j] *= globals::ha_to_kcal;
-      } else if (ptid == globals::ppty_energy){
+      } else if (ptid == globals::ppty_d1e || ptid == globals::ppty_d2e){
 	for (int j = 0; j < nvalue; j++)
 	  value[j] *= 1000.;
       }
