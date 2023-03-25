@@ -83,16 +83,16 @@ corresponding functionalities.
 The following are the supported property types, their units, and the
 number of values they comprise:
 
-| PROPERTY_TYPE       |            Values | Units          | Description                                                                          |
-|---------------------|-------------------|----------------|--------------------------------------------------------------------------------------|
-| `ENERGY_DIFFERENCE` |                 1 | kcal/mol       | Energy differences between structures                                                |
-| `ENERGY`            |                 1 | Hartree        | Total energy                                                                         |
-| `DIPOLE`            |                 3 | Debye          | Electric dipole (molecules only)                                                     |
-| `STRESS`            |                 6 | GPa            | Stress tensor (crystals only; xx,yy,zz,yz,xz,xy)                                     |
-| `D1E`               |             3*nat | Hartree/bohr   | First derivatives of energy wrt atomic positions (1x,1y,1z,2x,...)                   |
-| `D2E`               | 3*nat*(3*nat-1)/2 | Hartree/bohr^2 | Second derivatives of energy wrt atomic positions (1x1x,1x1y,1x1z,1x2x,...,1y1y,...) |
-| `HOMO`              |                 1 | Hartree        | Energy of highest occupied molecular orbitals (molecule only)                        |
-| `LUMO`              |                 1 | Hartree        | Energy of lowest unoccupied molecular orbitals (molecule only)                       |
+| PROPERTY_TYPE       |            Values | Units           | Description                                                                          |
+|---------------------+-------------------+-----------------+--------------------------------------------------------------------------------------|
+| `ENERGY_DIFFERENCE` |                 1 | kcal/mol        | Energy differences between structures                                                |
+| `ENERGY`            |                 1 | Hartree         | Total energy                                                                         |
+| `DIPOLE`            |                 3 | Debye           | Electric dipole (molecules only)                                                     |
+| `STRESS`            |                 6 | GPa             | Stress tensor (crystals only; xx,yy,zz,yz,xz,xy)                                     |
+| `D1E`               |             3*nat | mHartree/bohr   | First derivatives of energy wrt atomic positions (1x,1y,1z,2x,...)                   |
+| `D2E`               | 3*nat*(3*nat+1)/2 | mHartree/bohr^2 | Second derivatives of energy wrt atomic positions (1x1x,1x1y,1x1z,1x2x,...,1y1y,...) |
+| `HOMO`              |                 1 | Hartree         | Energy of highest occupied molecular orbitals (molecule only)                        |
+| `LUMO`              |                 1 | Hartree         | Energy of lowest unoccupied molecular orbitals (molecule only)                       |
 
 ## Syntax
 

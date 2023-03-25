@@ -909,6 +909,9 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
   if (ptid == globals::ppty_energy_difference){
     datmap = read_data_file_vector(file,globals::ha_to_kcal);
     isscalar = true;
+  } else if (ptid == globals::ppty_energy){
+    datmap = read_data_file_vector(file,1000.);
+    isscalar = true;
   } else if (ptid == globals::ppty_d1e || ptid == globals::ppty_d2e){
     datmap = read_data_file_vector(file,1.);
     isscalar = false;
@@ -989,6 +992,8 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 	// check the fail conditions
 	bool fail = (datmap.find(strname) == datmap.end());
 	if (ptid == globals::ppty_energy_difference)
+	  nstride = 1;
+	else if (ptid == globals::ppty_energy)
 	  nstride = 1;
 	else if (ptid == globals::ppty_d1e)
 	  nstride = 3 * sqlite3_column_int(stkey.ptr(),1);
@@ -2384,6 +2389,9 @@ ORDER BY Properties.id
       if (ptid == globals::ppty_energy_difference){
 	for (int j = 0; j < nvalue; j++)
 	  value[j] *= globals::ha_to_kcal;
+      } else if (ptid == globals::ppty_energy){
+	for (int j = 0; j < nvalue; j++)
+	  value[j] *= 1000.;
       }
     }
 
