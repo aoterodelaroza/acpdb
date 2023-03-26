@@ -33,6 +33,7 @@ const int globals::ppty_d1e = 5;
 const int globals::ppty_d2e = 6;
 const int globals::ppty_homo = 7;
 const int globals::ppty_lumo = 8;
+const int globals::ppty_MAX = 10; // higher than highest ppty
 
 const double globals::atmass[] = {
     0.0,   1.00794, 4.002602,     6.941, 9.012182,    10.811, 12.0107,   14.0067, 15.9994, 18.9984032,

@@ -79,7 +79,7 @@ class trainset {
 
   // Is the training set defined?
   inline bool isdefined() const{
-    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() &&
+    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && !setpptyid.empty() &&
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
@@ -160,6 +160,7 @@ class trainset {
   std::vector<std::string> alias; // alias of the sets
   std::vector<std::string> setname; // name of the sets
   std::vector<int> setid; // IDs of the sets
+  std::vector<int> setpptyid; // property_type of the sets
 
   std::vector<int> set_initial_idx; // initial index of each set
   std::vector<int> set_final_idx; // final index of each set
@@ -181,7 +182,7 @@ class trainset {
 #ifdef CEREAL_FOUND
   friend class cereal::access;
   template<class Archive> void serialize(Archive & archive){
-    archive(ntot,propid,zat,lmax,exp,alias,setname,setid,set_initial_idx,set_final_idx,
+    archive(ntot,propid,zat,lmax,exp,alias,setname,setid,setpptyid,set_initial_idx,set_final_idx,
             set_size,set_dofit,w,refname,refid,emptyname,emptyid,addname,addisfit,addid);
   }
 #endif

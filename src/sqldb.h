@@ -108,9 +108,8 @@ class sqldb {
   void verify(std::ostream &os);
 
   // Read data from a file, and compare to the whole database data or
-  // one of its subsets. If usetrain = 0, assume the training set is
-  // defined and compare to the whole training set. If usetrain > 0,
-  // compare to the training set and restrict to set usetrain.
+  // one of its subsets. If usetrain >= 0, assume the training set is
+  // defined and compare to the whole training set.
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
                         int usetrain=-1);
 

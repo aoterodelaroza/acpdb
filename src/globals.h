@@ -42,6 +42,7 @@ namespace globals {
   extern const int ppty_d2e;
   extern const int ppty_homo;
   extern const int ppty_lumo;
+  extern const int ppty_MAX;
 
   // atomic properties
   extern const double atmass[];

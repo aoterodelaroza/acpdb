@@ -96,6 +96,16 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   if (kmap.find("SET") == kmap.end() || kmap["SET"].empty())
     throw std::runtime_error("The keyword SET is required in TRAINING SUBSET");
 
+  std::unordered_map<std::string,std::string>::const_iterator im;
+
+  // identify the property type
+  int ppid = -1;
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    std::string ppidname;
+    if (!db->get_key_and_id(im->second,"Property_types",ppidname,ppid,true,true))
+      throw std::runtime_error("Invalid PROPERTY_TYPE in TRAINING SUBSET");
+  }
+
   // identify the set; add the name and the set index
   std::string name = kmap["SET"];
   int idx = db->find_id_from_key(name,"Sets");
@@ -104,6 +114,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     throw std::runtime_error("SET identifier not found in database: " + name);
   setname.push_back(name);
   setid.push_back(idx);
+  setpptyid.push_back(ppid);
 
   // add the alias
   std::string alias_ = key;
@@ -111,8 +122,13 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   alias.push_back(alias_);
 
   // find the set size
-  statement st(db->ptr(),"SELECT COUNT(id) FROM Properties WHERE setid = ?1;");
+  std::string str = "SELECT COUNT(id) FROM Properties WHERE setid = ?1";
+  if (ppid >= 0)
+    str += "AND property_type = ?2";
+  statement st(db->ptr(),str);
   st.bind(1,idx);
+  if (ppid >= 0)
+    st.bind(2,ppid);
   st.step();
   int size = sqlite3_column_int(st.ptr(),0);
   if (size == 0)
@@ -136,176 +152,183 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     std::fill(set_mask.begin(), set_mask.end(), false);
   }
 
-  //// mask ////
-  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
-    if (zat.empty())
-      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
-
-    // build the array of structures that contain only the atoms in the zat array
-    std::unordered_map<int,bool> usest;
-    statement st(db->ptr(),"SELECT id,nat,zatoms,charge FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
-    while (st.step() != SQLITE_DONE){
-      int id = sqlite3_column_int(st.ptr(),0);
-      int nat = sqlite3_column_int(st.ptr(),1);
-      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
-      int charge = sqlite3_column_int(st.ptr(),3);
-      bool res = true;
-      if (kmap.find("MASK_ATOMS") != kmap.end()){
-	for (int j = 0; j < nat; j++){
-	  bool found = false;
-	  for (int k = 0; k < zat.size(); k++){
-	    if (zat[k] == zat_[j]){
-	      found = true;
-	      break;
-	    }
-	  }
-	  if (!found){
-	    res = false;
-	    break;
-	  }
-	}
-      }
-      if (kmap.find("MASK_NOANIONS") != kmap.end()){
-	if (charge < 0) res = false;
-      }
-      if (kmap.find("MASK_NOCHARGED") != kmap.end()){
-	if (charge != 0) res = false;
-      }
-      usest[id] = res;
-    }
-
-    // run over the properties in this set and write the mask
-    st.recycle("SELECT nstructures,structures FROM Properties WHERE setid = " +
-	       std::to_string(setid[sid]) + " ORDER BY orderid;");
-    int n = 0;
-    while (st.step() != SQLITE_DONE){
-      int nstr = sqlite3_column_int(st.ptr(),0);
-      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
-      bool found = false;
-      for (int i = 0; i < nstr; i++){
-	if (!usest[str[i]]){
-	  found = true;
-	  break;
-	}
-      }
-      if (imask_and)
-	set_mask[n] = set_mask[n] & !found;
-      else
-	set_mask[n] = set_mask[n] | !found;
-      n++;
-    }
-  }
-  if (kmap.find("MASK_PATTERN") != kmap.end()){
-    std::list<std::string> tokens(list_all_words(kmap["MASK_PATTERN"]));
-    if (tokens.empty())
-      throw std::runtime_error("Empty pattern in TRAINING/SUBSET/MASK_PATTERN");
-    std::vector<bool> pattern(tokens.size(),false);
-    int n = 0;
-    while (!tokens.empty())
-      pattern[n++] = (popstring(tokens) != "0");
-    for (int i = 0; i < set_mask.size(); i++){
-      if (imask_and)
-	set_mask[i] = set_mask[i] & pattern[i % pattern.size()];
-      else
-	set_mask[i] = set_mask[i] | pattern[i % pattern.size()];
-    }
-  }
-  if (kmap.find("MASK_ITEMS") != kmap.end() || kmap.find("MASK_NOTITEMS") != kmap.end() ){
-    bool pos = kmap.find("MASK_ITEMS") != kmap.end();
-    std::list<std::string> tokens;
-    if (pos)
-      tokens = list_all_words(kmap["MASK_ITEMS"]);
-    else
-      tokens = list_all_words(kmap["MASK_NOTITEMS"]);
-    if (tokens.empty())
-      throw std::runtime_error("Empty item list in TRAINING/SUBSET/MASK_ITEMS");
-    std::vector<bool> set_mask_local(size,pos?false:true);
-    while (!tokens.empty()){
-      int item = std::stoi(popstring(tokens)) - 1;
-      if (item < 0 || item >= size)
-	throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING/SUBSET/MASK_ITEMS");
-      set_mask_local[item] = pos?true:false;
-    }
-    for (int i = 0; i < set_mask.size(); i++){
-      if (imask_and)
-	set_mask[i] = set_mask[i] & set_mask_local[i];
-      else
-	set_mask[i] = set_mask[i] | set_mask_local[i];
-    }
-  }
-  if (kmap.find("MASK_RANGE") != kmap.end()){
-    int istart = 0, iend = size, istep = 1;
-    std::list<std::string> tokens(list_all_words(kmap["MASK_RANGE"]));
-
-    // read the start, end, and step
-    if (tokens.empty())
-      throw std::runtime_error("Empty range in TRAINING/SUBSET/MASK_RANGE");
-    else if (tokens.size() == 1)
-      istep = std::stoi(tokens.front());
-    else if (tokens.size() == 2){
-      istart = std::stoi(popstring(tokens)) - 1;
-      istep = std::stoi(tokens.front());
-    } else if (tokens.size() == 3){
-      istart = std::stoi(popstring(tokens)) - 1;
-      istep = std::stoi(popstring(tokens));
-      iend = std::stoi(tokens.front());
-    }
-    if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0)
-      throw std::runtime_error("Invalid range in TRAINING/SUBSET/MASK_RANGE");
-
-    // reassign the mask and the size for this set
-    std::vector<bool> set_mask_local(size,false);
-    for (int i = istart; i < iend; i+=istep)
-      set_mask_local[i] = true;
-    for (int i = 0; i < set_mask.size(); i++){
-      if (imask_and)
-	set_mask[i] = set_mask[i] & set_mask_local[i];
-      else
-	set_mask[i] = set_mask[i] | set_mask_local[i];
-    }
-  }
-  if (kmap.find("MASK_RANDOM") != kmap.end()) {
-    std::list<std::string> tokens(list_all_words(kmap["MASK_RANDOM"]));
-
-    // read the entries
-    int num;
-    unsigned int seed = 0;
-    bool seedgiven = false;
-    if (tokens.empty())
-      throw std::runtime_error("Empty number of items in MASK_RANDOM");
-    else if (tokens.size() == 1)
-      num = std::stoi(tokens.front());
-    else if (tokens.size() == 2){
-      num = std::stoi(popstring(tokens)) - 1;
-      seed = std::stoi(tokens.front());
-      seedgiven = true;
-    }
-
-    // set the seed
-    if (!seedgiven)
-      seed = std::time(NULL);
-    std::srand(seed);
-    std::cout << std::endl << "  Setting RANDOM SEED = " << seed << std::endl << std::endl;
-
-    // find the used IDs and make sure we have enough
-    std::vector<int> ids;
-    for (int i = 0; i < set_mask.size(); i++)
-      if (set_mask[i]) ids.push_back(i);
-    if (ids.size() < num)
-      throw std::runtime_error("Not enough items remaining to satisfy the requested MASK_RANDOM");
-
-    // shuffle and re-build the mask
-    std::random_shuffle(ids.begin(), ids.end());
-    std::fill(set_mask.begin(), set_mask.end(), false);
-    for (int i = 0; i < num; i++)
-      set_mask[ids[i]] = true;
-  }
+  // xxxx //
+//  //// mask ////
+//  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
+//    if (zat.empty())
+//      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
+//
+//    // build the array of structures that contain only the atoms in the zat array
+//    std::unordered_map<int,bool> usest;
+//    statement st(db->ptr(),"SELECT id,nat,zatoms,charge FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+//    while (st.step() != SQLITE_DONE){
+//      int id = sqlite3_column_int(st.ptr(),0);
+//      int nat = sqlite3_column_int(st.ptr(),1);
+//      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+//      int charge = sqlite3_column_int(st.ptr(),3);
+//      bool res = true;
+//      if (kmap.find("MASK_ATOMS") != kmap.end()){
+//	for (int j = 0; j < nat; j++){
+//	  bool found = false;
+//	  for (int k = 0; k < zat.size(); k++){
+//	    if (zat[k] == zat_[j]){
+//	      found = true;
+//	      break;
+//	    }
+//	  }
+//	  if (!found){
+//	    res = false;
+//	    break;
+//	  }
+//	}
+//      }
+//      if (kmap.find("MASK_NOANIONS") != kmap.end()){
+//	if (charge < 0) res = false;
+//      }
+//      if (kmap.find("MASK_NOCHARGED") != kmap.end()){
+//	if (charge != 0) res = false;
+//      }
+//      usest[id] = res;
+//    }
+//
+//    // run over the properties in this set and write the mask
+//    st.recycle("SELECT nstructures,structures FROM Properties WHERE setid = " +
+//	       std::to_string(setid[sid]) + " ORDER BY orderid;");
+//    int n = 0;
+//    while (st.step() != SQLITE_DONE){
+//      int nstr = sqlite3_column_int(st.ptr(),0);
+//      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+//      bool found = false;
+//      for (int i = 0; i < nstr; i++){
+//	if (!usest[str[i]]){
+//	  found = true;
+//	  break;
+//	}
+//      }
+//      if (imask_and)
+//	set_mask[n] = set_mask[n] & !found;
+//      else
+//	set_mask[n] = set_mask[n] | !found;
+//      n++;
+//    }
+//  }
+//  if (kmap.find("MASK_PATTERN") != kmap.end()){
+//    std::list<std::string> tokens(list_all_words(kmap["MASK_PATTERN"]));
+//    if (tokens.empty())
+//      throw std::runtime_error("Empty pattern in TRAINING/SUBSET/MASK_PATTERN");
+//    std::vector<bool> pattern(tokens.size(),false);
+//    int n = 0;
+//    while (!tokens.empty())
+//      pattern[n++] = (popstring(tokens) != "0");
+//    for (int i = 0; i < set_mask.size(); i++){
+//      if (imask_and)
+//	set_mask[i] = set_mask[i] & pattern[i % pattern.size()];
+//      else
+//	set_mask[i] = set_mask[i] | pattern[i % pattern.size()];
+//    }
+//  }
+//  if (kmap.find("MASK_ITEMS") != kmap.end() || kmap.find("MASK_NOTITEMS") != kmap.end() ){
+//    bool pos = kmap.find("MASK_ITEMS") != kmap.end();
+//    std::list<std::string> tokens;
+//    if (pos)
+//      tokens = list_all_words(kmap["MASK_ITEMS"]);
+//    else
+//      tokens = list_all_words(kmap["MASK_NOTITEMS"]);
+//    if (tokens.empty())
+//      throw std::runtime_error("Empty item list in TRAINING/SUBSET/MASK_ITEMS");
+//    std::vector<bool> set_mask_local(size,pos?false:true);
+//    while (!tokens.empty()){
+//      int item = std::stoi(popstring(tokens)) - 1;
+//      if (item < 0 || item >= size)
+//	throw std::runtime_error("Item " + std::to_string(item+1) + " out of range in TRAINING/SUBSET/MASK_ITEMS");
+//      set_mask_local[item] = pos?true:false;
+//    }
+//    for (int i = 0; i < set_mask.size(); i++){
+//      if (imask_and)
+//	set_mask[i] = set_mask[i] & set_mask_local[i];
+//      else
+//	set_mask[i] = set_mask[i] | set_mask_local[i];
+//    }
+//  }
+//  if (kmap.find("MASK_RANGE") != kmap.end()){
+//    int istart = 0, iend = size, istep = 1;
+//    std::list<std::string> tokens(list_all_words(kmap["MASK_RANGE"]));
+//
+//    // read the start, end, and step
+//    if (tokens.empty())
+//      throw std::runtime_error("Empty range in TRAINING/SUBSET/MASK_RANGE");
+//    else if (tokens.size() == 1)
+//      istep = std::stoi(tokens.front());
+//    else if (tokens.size() == 2){
+//      istart = std::stoi(popstring(tokens)) - 1;
+//      istep = std::stoi(tokens.front());
+//    } else if (tokens.size() == 3){
+//      istart = std::stoi(popstring(tokens)) - 1;
+//      istep = std::stoi(popstring(tokens));
+//      iend = std::stoi(tokens.front());
+//    }
+//    if (istart < 0 || istart >= size || iend < 1 || iend > size || istep < 0)
+//      throw std::runtime_error("Invalid range in TRAINING/SUBSET/MASK_RANGE");
+//
+//    // reassign the mask and the size for this set
+//    std::vector<bool> set_mask_local(size,false);
+//    for (int i = istart; i < iend; i+=istep)
+//      set_mask_local[i] = true;
+//    for (int i = 0; i < set_mask.size(); i++){
+//      if (imask_and)
+//	set_mask[i] = set_mask[i] & set_mask_local[i];
+//      else
+//	set_mask[i] = set_mask[i] | set_mask_local[i];
+//    }
+//  }
+//  if (kmap.find("MASK_RANDOM") != kmap.end()) {
+//    std::list<std::string> tokens(list_all_words(kmap["MASK_RANDOM"]));
+//
+//    // read the entries
+//    int num;
+//    unsigned int seed = 0;
+//    bool seedgiven = false;
+//    if (tokens.empty())
+//      throw std::runtime_error("Empty number of items in MASK_RANDOM");
+//    else if (tokens.size() == 1)
+//      num = std::stoi(tokens.front());
+//    else if (tokens.size() == 2){
+//      num = std::stoi(popstring(tokens)) - 1;
+//      seed = std::stoi(tokens.front());
+//      seedgiven = true;
+//    }
+//
+//    // set the seed
+//    if (!seedgiven)
+//      seed = std::time(NULL);
+//    std::srand(seed);
+//    std::cout << std::endl << "  Setting RANDOM SEED = " << seed << std::endl << std::endl;
+//
+//    // find the used IDs and make sure we have enough
+//    std::vector<int> ids;
+//    for (int i = 0; i < set_mask.size(); i++)
+//      if (set_mask[i]) ids.push_back(i);
+//    if (ids.size() < num)
+//      throw std::runtime_error("Not enough items remaining to satisfy the requested MASK_RANDOM");
+//
+//    // shuffle and re-build the mask
+//    std::random_shuffle(ids.begin(), ids.end());
+//    std::fill(set_mask.begin(), set_mask.end(), false);
+//    for (int i = 0; i < num; i++)
+//      set_mask[ids[i]] = true;
+//  }
 
   // build the propid, size, and final index of the set
   set_size.push_back(0);
   set_final_idx.push_back(ilast);
-  st.recycle("SELECT id FROM Properties WHERE setid = ?1 ORDER BY orderid;");
+  str = "SELECT id FROM Properties WHERE setid = ?1";
+  if (ppid >= 0)
+    str += "AND property_type = ?2";
+  str += "ORDER BY orderid";
+  st.recycle(str);
   st.bind(1,setid[sid]);
+  if (ppid >= 0)
+    st.bind(2,ppid);
   for (int i = 0; i < set_mask.size(); i++){
     st.step();
     int propid_ = sqlite3_column_int(st.ptr(),0);
@@ -347,7 +370,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     while (it != wlist.end()){
       int idx = std::stoi(*(it++));
       if (it == wlist.end())
-        throw std::runtime_error("Incorrect use of ITEM in SUBSET/WEIGHT keyword");
+	throw std::runtime_error("Incorrect use of ITEM in SUBSET/WEIGHT keyword");
       double w = std::stod(*(it++));
       witem.push_back(std::pair(idx,w));
     }
@@ -365,35 +388,36 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     norm *= set_size[sid];
   if (norm_nitemsqrt && set_size[sid] > 0)
     norm *= std::sqrt(set_size[sid]);
-  if ((norm_ref || norm_refsqrt) && set_size[sid] > 0){
-    statement st(db->ptr(),R"SQL(
-SELECT length(value), value FROM Training_set, Properties
-LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
-WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;
-)SQL");
-    st.bind((char *) ":SETID",setid[sid]);
-    st.bind((char *) ":METHOD",refid);
-
-    int ndat = 0;
-    double dsum = 0.;
-    while (st.step() != SQLITE_DONE){
-      int nblob = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-      double *res = (double *) sqlite3_column_blob(st.ptr(),1);
-      if (nblob == 0 || !res)
-        throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
-      ndat += nblob;
-      for (int i = 0; i < nblob; i++)
-        dsum += std::abs(res[i]);
-    }
-    dsum = dsum / ndat;
-
-    if (norm_ref && std::abs(dsum) > 1e-40)
-      norm *= dsum;
-    else if (norm_ref && std::abs(dsum) > 1e-40)
-      norm *= std::sqrt(dsum);
-    else
-      throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
-  }
+  // xxxx //
+//   if ((norm_ref || norm_refsqrt) && set_size[sid] > 0){
+//     statement st(db->ptr(),R"SQL(
+// SELECT length(value), value FROM Training_set, Properties
+// LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
+// WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;
+// )SQL");
+//     st.bind((char *) ":SETID",setid[sid]);
+//     st.bind((char *) ":METHOD",refid);
+//
+//     int ndat = 0;
+//     double dsum = 0.;
+//     while (st.step() != SQLITE_DONE){
+//       int nblob = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+//       double *res = (double *) sqlite3_column_blob(st.ptr(),1);
+//       if (nblob == 0 || !res)
+//         throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
+//       ndat += nblob;
+//       for (int i = 0; i < nblob; i++)
+//         dsum += std::abs(res[i]);
+//     }
+//     dsum = dsum / ndat;
+//
+//     if (norm_ref && std::abs(dsum) > 1e-40)
+//       norm *= dsum;
+//     else if (norm_ref && std::abs(dsum) > 1e-40)
+//       norm *= std::sqrt(dsum);
+//     else
+//       throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
+//   }
 
   // apply the normalization factor
   for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
@@ -511,7 +535,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
   statement st(db->ptr(),"SELECT litrefs, description FROM Sets WHERE id = ?1;");
   if (!quiet){
     os << "# List of subsets (" << setname.size() << ")" << std::endl;
-    os << "| id | alias | db-name | db-id | initial | final | size | dofit? | litref | description |" << std::endl;
+    os << "| id | alias | db-name | db-id | ppty-type | initial | final | size | dofit? | litref | description |" << std::endl;
     for (int i = 0; i < setname.size(); i++){
       st.reset();
       st.bind(1,setid[i]);
@@ -520,6 +544,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
       const char *description = (const char *) sqlite3_column_text(st.ptr(), 1);
 
       os << "| " << i << " | " << alias[i] << " | " << setname[i] << " | " << setid[i]
+	 << " | " << setpptyid[i]
 	 << " | " << set_initial_idx[i]+1
 	 << " | " << set_final_idx[i] << " | " << set_size[i] << " | " << set_dofit[i]
 	 << " | " << (litref?litref:"") << " | "
@@ -548,7 +573,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
       os << "| fit? | id | property | propid | alias | db-set | proptype | nstruct | weight | refvalue |" << std::endl;
     }
     st.recycle(R"SQL(
-SELECT Properties.id, Properties.key, Properties.nstructures, length(Evaluations.value), Evaluations.value, Property_types.key, Properties.setid, Training_set.isfit
+SELECT Properties.id, Properties.key, Properties.nstructures, length(Evaluations.value), Evaluations.value, Property_types.key, Training_set.isfit, Training_set.id
 FROM Properties
 LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
 INNER JOIN Property_types ON (Properties.property_type = Property_types.id)
@@ -563,17 +588,24 @@ ORDER BY Training_set.id;
 
       std::string valstr;
       if (nval == 0)
-        valstr = "n/a";
+	valstr = "n/a";
       else if (nval == 1)
-        valstr = std::to_string(val[0]);
+	valstr = std::to_string(val[0]);
       else
-        valstr = "<" + std::to_string(nval) + ">";
+	valstr = "<" + std::to_string(nval) + ">";
 
-      bool isfit = (sqlite3_column_type(st.ptr(),7) != SQLITE_NULL);
-      auto it = std::find(setid.begin(),setid.end(),sqlite3_column_int(st.ptr(),6));
-      if (it == setid.end())
-        throw std::runtime_error("Could not find set id in DESCRIBE");
-      int sid = it - setid.begin();
+      bool isfit = (sqlite3_column_type(st.ptr(),6) != SQLITE_NULL);
+
+      int tid = sqlite3_column_int(st.ptr(),7);
+      int sid = -1;
+      for (int i = 0; i < setid.size(); i++){
+	if (tid >= set_initial_idx[i] && tid < set_final_idx[i]){
+	  sid = i;
+	  break;
+	}
+      }
+      if (sid < 0)
+	throw std::runtime_error("Could not find set id in DESCRIBE");
 
       if (!quiet){
 	os << "| " << (isfit?"yes":"no") << " | " << n+1 << " | " << sqlite3_column_text(st.ptr(), 1)
@@ -641,21 +673,21 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
       os << "# Terms: " << std::endl;
     for (int iz = 0; iz < zat.size(); iz++){
       for (int il = 0; il <= lmax[iz]; il++){
-        for (int ie = 0; ie < exp.size(); ie++){
-          st.reset();
-          st.bind((char *) ":METHOD",emptyid);
-          st.bind((char *) ":ATOM",(int) zat[iz]);
-          st.bind((char *) ":L",il);
-          st.bind((char *) ":EXP",exp[ie]);
-          st.step();
-          int ncalc = sqlite3_column_int(st.ptr(), 0);
+	for (int ie = 0; ie < exp.size(); ie++){
+	  st.reset();
+	  st.bind((char *) ":METHOD",emptyid);
+	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":L",il);
+	  st.bind((char *) ":EXP",exp[ie]);
+	  st.step();
+	  int ncalc = sqlite3_column_int(st.ptr(), 0);
 	  if (!quiet){
 	    os << "| " << nameguess(zat[iz]) << " | " << globals::inttol[il] << " | "
 	       << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
 	  }
-          ncall += ncalc;
-          ntall += ncalc_all;
-        }
+	  ncall += ncalc;
+	  ntall += ncalc_all;
+	}
       }
     }
     if (!quiet)
@@ -727,12 +759,12 @@ ORDER BY Properties.orderid;
       double value = ((double *) sqlite3_column_blob(st.ptr(),3))[0];
 
       for (int j = 0; j < nstr; j++){
-        stname.bind(1,str[j]);
-        stname.step();
-        std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
-        ofile << coef[j] << std::endl;
-        ofile << name << std::endl;
-        stname.reset();
+	stname.bind(1,str[j]);
+	stname.step();
+	std::string name = (char *) sqlite3_column_text(stname.ptr(), 0);
+	ofile << coef[j] << std::endl;
+	ofile << name << std::endl;
+	stname.reset();
       }
       ofile << "0" << std::endl;
       ofile << value << std::endl;
@@ -830,29 +862,29 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
   for (int iat = 0; iat < zat.size(); iat++){
     for (int il = 0; il <= lmax[iat]; il++){
       for (int iexp = 0; iexp < exp.size(); iexp++){
-        std::string atom = nameguess(zat[iat]);
-        lowercase(atom);
-        name = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
-        ifile = std::ifstream(name,std::ios::in);
-        if (ifile.fail())
-          throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
+	std::string atom = nameguess(zat[iat]);
+	lowercase(atom);
+	name = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
+	ifile = std::ifstream(name,std::ios::in);
+	if (ifile.fail())
+	  throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
 
-        for (int i = 0; i < pid.size(); i++){
-          double value;
-          ifile >> value;
-          if (ifile.fail())
-            throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
-          value = (value-yempty[i])/0.001;
+	for (int i = 0; i < pid.size(); i++){
+	  double value;
+	  ifile >> value;
+	  if (ifile.fail())
+	    throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
+	  value = (value-yempty[i])/0.001;
 
-          st1.bind((char *) ":METHODID",emptyid);
-          st1.bind((char *) ":PROPID",pid[i]);
-          st1.bind((char *) ":ATOM",(int) zat[iat]);
-          st1.bind((char *) ":L",il);
-          st1.bind((char *) ":EXPONENT",exp[iexp]);
-          st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
-          st1.step();
-        }
-        ifile.close();
+	  st1.bind((char *) ":METHODID",emptyid);
+	  st1.bind((char *) ":PROPID",pid[i]);
+	  st1.bind((char *) ":ATOM",(int) zat[iat]);
+	  st1.bind((char *) ":L",il);
+	  st1.bind((char *) ":EXPONENT",exp[iexp]);
+	  st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
+	  st1.step();
+	}
+	ifile.close();
       }
     }
   }
@@ -867,7 +899,7 @@ WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
       std::istringstream iss(line);
       iss >> atom >> l >> idum >> exp >> value;
       if (iss.fail())
-        continue;
+	continue;
 
       st1.bind((char *) ":METHODID",emptyid);
       st1.bind((char *) ":ATOM",(int) zatguess(atom));
@@ -961,6 +993,8 @@ ORDER BY Training_set.id;
   ofile.precision(15);
   unsigned long int n = 0;
   for (int i = 0; i < setid.size(); i++){
+    if (setpptyid[i] != globals::ppty_energy_difference)
+      throw std::runtime_error("Cannot use write_olddat with properties other than ENERGY_DIFFERENCE");
     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
       if (set_dofit[i])
 	ofile << w[n] << std::endl;
@@ -1041,12 +1075,12 @@ void trainset::eval_acp(std::ostream &os, const acp &a) {
   if (complete == c_no)
     throw std::runtime_error("The training set needs to be complete before using TRAINING EVAL");
 
-  // get the number of items
-  int nall = 0, n = -1;
+  int nall = 0;
+  int n = -1;
   std::vector<int> num, nsetid;
   std::vector<double> wall;
   statement st(db->ptr(),R"SQL(
-SELECT length(Evaluations.value), Properties.setid
+SELECT length(Evaluations.value), Properties.setid, Properties.property_type
 FROM Evaluations, Training_set, Properties
 WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propid AND
       Evaluations.propid = Properties.id
@@ -1057,9 +1091,12 @@ ORDER BY Training_set.id;
     n++;
     int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
     int sid = sqlite3_column_int(st.ptr(),1);
+    int ppid = sqlite3_column_int(st.ptr(),2);
+    int idx = sid * globals::ppty_MAX + ppid;
+
     num.push_back(nitem);
     for (int i = 0; i < nitem; i++){
-      nsetid.push_back(sid);
+      nsetid.push_back(idx);
       wall.push_back(w[n]);
     }
     nall += nitem;
@@ -1125,7 +1162,7 @@ ORDER BY Training_set.id;
       int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
       double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
       for (int i = 0; i < nitem; i++)
-        yadd[n++] = rval[i];
+	yadd[n++] = rval[i];
     }
     if (n != nall)
       throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in empty");
@@ -1151,11 +1188,11 @@ ORDER BY Training_set.id;
       int nitem = sqlite3_column_int(st.ptr(),0) / sizeof(double);
       double *rval = (double *) sqlite3_column_blob(st.ptr(),1);
       for (int j = 0; j < nitem; j++)
-        yacp[n++] += rval[j] * t.coef;
+	yacp[n++] += rval[j] * t.coef;
     }
     if (n != nall){
       std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
-                << " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
+		<< " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
       throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
     }
   }
@@ -1170,7 +1207,8 @@ ORDER BY Training_set.id;
   std::vector<unsigned long int> ndat(nset,0);
   unsigned long int nsettot = 0;
   for (int i = 0; i < setid.size(); i++){
-    ndat[i] = calc_stats(ytotal,yref,wall,wrms[i],rms[i],mae[i],mse[i],nsetid,setid[i]);
+    int idx = setid[i] * globals::ppty_MAX + setpptyid[i];
+    ndat[i] = calc_stats(ytotal,yref,wall,wrms[i],rms[i],mae[i],mse[i],nsetid,idx);
     nsettot += ndat[i];
     if (set_dofit[i])
       wrms_total_nofit += wrms[i] * wrms[i];
@@ -1527,16 +1565,16 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   for (int i = 0; i < setid.size(); i++){
     for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
       if (set_dofit[i]){
-        st.reset();
-        st.bind((char *) ":METHOD",refid);
-        st.bind((char *) ":PROPID",propid[j]);
-        if (st.step() != SQLITE_ROW)
-          throw std::runtime_error("Invalid evaluation in octave dump");
+	st.reset();
+	st.bind((char *) ":METHOD",refid);
+	st.bind((char *) ":PROPID",propid[j]);
+	if (st.step() != SQLITE_ROW)
+	  throw std::runtime_error("Invalid evaluation in octave dump");
 
-        int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-        for (int k = 0; k < len; k++)
-          wtrain.push_back(w[n]);
-        nrows += len;
+	int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+	for (int k = 0; k < len; k++)
+	  wtrain.push_back(w[n]);
+	nrows += len;
       }
       n++;
     }
@@ -1599,22 +1637,22 @@ ORDER BY Training_set.id;
   for (int iz = 0; iz < zat.size(); iz++){
     for (int il = 0; il <= lmax[iz]; il++){
       for (int ie = 0; ie < exp.size(); ie++){
-        st.reset();
-        st.bind((char *) ":METHOD",emptyid);
-        st.bind((char *) ":ATOM",(int) zat[iz]);
-        st.bind((char *) ":L",il);
-        st.bind((char *) ":EXP",exp[ie]);
-        int n = 0;
-        while (st.step() != SQLITE_DONE){
-          int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-          double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+	st.reset();
+	st.bind((char *) ":METHOD",emptyid);
+	st.bind((char *) ":ATOM",(int) zat[iz]);
+	st.bind((char *) ":L",il);
+	st.bind((char *) ":EXP",exp[ie]);
+	int n = 0;
+	while (st.step() != SQLITE_DONE){
+	  int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+	  double *value = (double *) sqlite3_column_blob(st.ptr(),1);
 	  n += len;
-          if (n > nrows)
-            throw std::runtime_error("Too many rows dumping terms data");
-          ofile.write((const char *) value,len * sizeof(double));
-        }
-        if (n != nrows)
-          throw std::runtime_error("Too few rows dumping terms data. Is the training data complete?");
+	  if (n > nrows)
+	    throw std::runtime_error("Too many rows dumping terms data");
+	  ofile.write((const char *) value,len * sizeof(double));
+	}
+	if (n != nrows)
+	  throw std::runtime_error("Too few rows dumping terms data. Is the training data complete?");
       }
     }
   }
@@ -1639,7 +1677,7 @@ ORDER BY Training_set.id;
       double *value = (double *) sqlite3_column_blob(st.ptr(),1);
       n += len;
       if (n > nrows)
-        throw std::runtime_error("Too many rows dumping y data");
+	throw std::runtime_error("Too many rows dumping y data");
       ofile.write((const char *) value,len * sizeof(double));
     }
     if (n != nrows)
@@ -1752,19 +1790,12 @@ void trainset::read_and_compare(std::ostream &os, std::unordered_map<std::string
     throw std::runtime_error("The training set needs to be defined before using COMPARE with TRAINING");
 
   // set
-  int sid = 0;
   auto im = kmap.find("TRAINING");
   if (im == kmap.end())
     throw std::runtime_error("write_structures in trainset called but no TRAINING keyword");
-  if (!im->second.empty()){
-    auto it = std::find(alias.begin(),alias.end(),im->second);
-    if (it == alias.end())
-      throw std::runtime_error("Unknown set alias passed to TRAINING in WRITE");
-    sid = setid[it - alias.begin()];
-  }
 
   // run the comparison with training set restriction
-  db->read_and_compare(os,kmap,sid);
+  db->read_and_compare(os,kmap,0);
 }
 
 

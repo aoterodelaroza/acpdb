@@ -2231,9 +2231,8 @@ WHERE Terms.propid = Properties.id
 }
 
 // Read data from a file, and compare to the whole database data or
-// one of its subsets. If usetrain = 0, assume the training set is
-// defined and compare to the whole training set. If usetrain > 0,
-// compare to the training set and restrict to set usetrain.
+// one of its subsets. If usetrain >= 0, assume the training set is
+// defined and compare to the whole training set.
 void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
 			     int usetrain/*=-1*/){
   if (!db)
@@ -2267,9 +2266,7 @@ void sqldb::read_and_compare(std::ostream &os, const std::unordered_map<std::str
 
   // set
   int sid = 0;
-  if (usetrain >= 0){
-    sid = usetrain;
-  } else if ((im = kmap.find("SET")) != kmap.end()){
+  if (usetrain < 0 && (im = kmap.find("SET")) != kmap.end()){
     std::string setnamein;
     if (!get_key_and_id(im->second,"Sets",setnamein,sid))
       throw std::runtime_error("Invalid SET in COMPARE");
