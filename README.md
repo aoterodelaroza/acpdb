@@ -562,7 +562,7 @@ COMPARE
   PROPERTY_TYPE {prop.s|prop.i}
   METHOD {method.s|method.i}
   [SET {set.s|set.i}]
-  [TRAINING [alias.s]]
+  [TRAINING]
 END
 ~~~
 Read calculated properties from the source indicated by the SOURCE
@@ -598,9 +598,7 @@ evaluations available for the chosen method regardless of set.  If SET
 is present, restrict the comparison to the properties that belong in
 set `set.s` (key) or `set.i` (ID). If TRAINING is present, the
 training set must be defined, and the comparison is restricted to the
-properties that belong in the training set. If a set alias `alias.s`
-from the training set is given, compare only to the properties that
-belong in that alias.
+properties that belong in the training set.
 
 ### Calculating Energy Differences from Total Energies
 ~~~
