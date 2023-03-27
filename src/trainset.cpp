@@ -390,36 +390,34 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     norm *= set_size[sid];
   if (norm_nitemsqrt && set_size[sid] > 0)
     norm *= std::sqrt(set_size[sid]);
-  // xxxx //
-  //   if ((norm_ref || norm_refsqrt) && set_size[sid] > 0){
-  //     statement st(db->ptr(),R"SQL(
-  // SELECT length(value), value FROM Training_set, Properties
-  // LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
-  // WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;
-  // )SQL");
-  //     st.bind((char *) ":SETID",setid[sid]);
-  //     st.bind((char *) ":METHOD",refid);
-  //
-  //     int ndat = 0;
-  //     double dsum = 0.;
-  //     while (st.step() != SQLITE_DONE){
-  //       int nblob = sqlite3_column_int(st.ptr(),0) / sizeof(double);
-  //       double *res = (double *) sqlite3_column_blob(st.ptr(),1);
-  //       if (nblob == 0 || !res)
-  //         throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
-  //       ndat += nblob;
-  //       for (int i = 0; i < nblob; i++)
-  //         dsum += std::abs(res[i]);
-  //     }
-  //     dsum = dsum / ndat;
-  //
-  //     if (norm_ref && std::abs(dsum) > 1e-40)
-  //       norm *= dsum;
-  //     else if (norm_ref && std::abs(dsum) > 1e-40)
-  //       norm *= std::sqrt(dsum);
-  //     else
-  //       throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
-  //   }
+  if ((norm_ref || norm_refsqrt) && set_size[sid] > 0){
+    statement st(db->ptr(),R"SQL(
+SELECT length(value), value FROM Training_set, Properties
+LEFT OUTER JOIN Evaluations ON (Properties.id = Evaluations.propid AND Evaluations.methodid = :METHOD)
+WHERE Properties.setid = :SETID AND Training_set.propid = Properties.id AND Training_set.isfit IS NOT NULL;)SQL");
+    st.bind((char *) ":SETID",setid[sid]);
+    st.bind((char *) ":METHOD",refid);
+
+    int ndat = 0;
+    double dsum = 0.;
+    while (st.step() != SQLITE_DONE){
+      int nblob = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+      double *res = (double *) sqlite3_column_blob(st.ptr(),1);
+      if (nblob == 0 || !res)
+	throw std::runtime_error("Cannot use NORM_REF without having all reference method evaluations in TRAINING SUBSET");
+      ndat += nblob;
+      for (int i = 0; i < nblob; i++)
+	dsum += std::abs(res[i]);
+    }
+    dsum = dsum / ndat;
+
+    if (norm_ref && std::abs(dsum) > 1e-40)
+      norm *= dsum;
+    else if (norm_ref && std::abs(dsum) > 1e-40)
+      norm *= std::sqrt(dsum);
+    else
+      throw std::runtime_error("Cannot use NORM_REF if the reference data averages to zero in TRAINING SUBSET");
+  }
 
   // apply the normalization factor
   for (int i = set_initial_idx[sid]; i < set_final_idx[sid]; i++)
