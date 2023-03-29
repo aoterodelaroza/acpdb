@@ -1,0 +1,10 @@
+connect g3.db
+
+training load g3
+
+write
+ template templates/reference.gjf
+ training
+ directory ref
+end
+

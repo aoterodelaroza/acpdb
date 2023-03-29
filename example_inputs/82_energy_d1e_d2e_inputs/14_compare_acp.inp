@@ -1,0 +1,40 @@
+connect g3.db
+
+training load g3
+
+compare
+  source empty_e.dat
+  property_type energy
+  method reference
+  training
+end
+compare
+  source acp_e.dat
+  property_type energy
+  method reference
+  training
+end
+compare
+  source empty_d1e.dat
+  property_type d1e
+  method reference
+  training
+end
+compare
+  source acp_d1e.dat
+  property_type d1e
+  method reference
+  training
+end
+compare
+  source empty_d2e.dat
+  property_type d2e
+  method reference
+  training
+end
+compare
+  source acp_d2e.dat
+  property_type d2e
+  method reference
+  training
+end

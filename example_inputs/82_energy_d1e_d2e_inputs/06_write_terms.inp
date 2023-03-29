@@ -1,0 +1,11 @@
+connect g3.db
+
+training load g3
+
+write
+ template templates/gaussian_d2e-terms-singlet.gjf
+ training
+ directory terms
+ term
+end
+

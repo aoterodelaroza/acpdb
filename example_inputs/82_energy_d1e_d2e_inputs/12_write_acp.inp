@@ -1,0 +1,9 @@
+connect g3.db
+training load g3
+
+write
+ template templates/gaussian_d2e.gjf
+ training
+ directory acp/
+ acp lasso-02.acp
+end

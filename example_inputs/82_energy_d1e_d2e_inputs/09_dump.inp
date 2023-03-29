@@ -1,0 +1,5 @@
+connect g3.db
+
+training load g3
+training describe
+training dump

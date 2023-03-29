@@ -1,0 +1,24 @@
+connect g3.db
+
+training load g3
+
+insert calc
+  property_type energy
+  file ref_e.dat
+  method reference
+  or_replace
+end
+insert calc
+  property_type d1e
+  file ref_d1e.dat
+  method reference
+  or_replace
+end
+insert calc
+  property_type d2e
+  file ref_d2e.dat
+  method reference
+  or_replace
+end
+
+training describe

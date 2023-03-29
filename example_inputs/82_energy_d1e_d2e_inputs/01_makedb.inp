@@ -1,0 +1,55 @@
+system rm -f g3.db
+connect g3.db
+
+insert method reference
+ description This is the reference method (B3LYP/def2qzvp)
+end
+insert method b3lyp
+ description The approximate method (B3LYP/def2svp)
+end
+
+insert set G3
+  method reference
+  xyz xyz
+end
+
+insert property energy_
+  property_type energy
+  set G3
+end
+
+insert property d1e_
+  property_type d1e
+  set G3
+end
+
+insert property d2e_
+  property_type d2e
+  set G3
+end
+
+training
+ atom H l C l N l O l
+ exp 0.12 0.14 0.16 0.18 0.20 0.22 0.24 0.26 0.28 0.30 0.40 \
+     0.50 0.60 0.70 0.80 0.90 1.00 1.10 1.20 1.30 1.40 1.50 1.60 1.70 1.80 1.90 2.00 2.50 3.00
+ empty b3lyp
+ reference reference
+
+ subset G3_energy
+   set G3
+   property_type energy
+   norm_ref
+ end
+ subset G3_d1e
+   set G3
+   property_type d1e
+   norm_ref
+ end
+ subset G3_d2e
+   set G3
+   property_type d2e
+   mask_atoms
+   norm_ref
+ end
+end
+training save g3

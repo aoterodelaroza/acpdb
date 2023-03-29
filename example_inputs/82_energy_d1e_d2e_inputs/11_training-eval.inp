@@ -1,0 +1,6 @@
+connect g3.db
+
+training load g3
+training eval empty
+training eval lasso-02.acp
+
