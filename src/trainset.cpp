@@ -295,7 +295,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     else if (tokens.size() == 1)
       num = std::stoi(tokens.front());
     else if (tokens.size() == 2){
-      num = std::stoi(popstring(tokens)) - 1;
+      num = std::stoi(popstring(tokens));
       seed = std::stoi(tokens.front());
       seedgiven = true;
     }
