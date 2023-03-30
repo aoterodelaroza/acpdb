@@ -3,7 +3,7 @@ import psi4
 import psi4.core
 
 memory 2 GB
-set_num_threads(4)
+# set_num_threads(4)
 
 psi4_io.set_specific_path(180, './')
 psi4_io.set_specific_retention(180, True)
@@ -13,6 +13,7 @@ molecule mol {
 %charge% %mult%
 %xyz%
 units angstrom
+noreorient
 }
 
 filename = core.get_writer_file_prefix("mol") + '.180.npy'
@@ -31,3 +32,4 @@ set {
 E, wfn = energy("pbe", return_wfn=True)
 molden(wfn, "%basename%.molden", dovirtual=False)
 
+# gradient("ccsd(t)/cc-pvtz-f12")
