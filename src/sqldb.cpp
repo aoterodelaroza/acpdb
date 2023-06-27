@@ -1451,7 +1451,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
       break;
   }
   if (!havefield)
-    throw std::runtime_error("Error reading din file (fieldasrxn not present) " + din);
+    fieldasrxn = 999;
 
   // process the rest of the din file
   int n = 0;
