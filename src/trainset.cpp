@@ -152,68 +152,70 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     std::fill(set_mask.begin(), set_mask.end(), false);
   }
 
-  //// mask ////
-  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
-    if (zat.empty())
-      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
+  // xxxx //
+//  //// mask ////
+//  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
+//    if (zat.empty())
+//      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
+//
+//    // build the array of structures that contain only the atoms in the zat array
+//    std::unordered_map<int,bool> usest;
+//    statement st(db->ptr(),"SELECT id,nat,zatoms,charge FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
+//    while (st.step() != SQLITE_DONE){
+//      int id = sqlite3_column_int(st.ptr(),0);
+//      int nat = sqlite3_column_int(st.ptr(),1);
+//      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
+//      int charge = sqlite3_column_int(st.ptr(),3);
+//      bool res = true;
+//      if (kmap.find("MASK_ATOMS") != kmap.end()){
+//	for (int j = 0; j < nat; j++){
+//	  bool found = false;
+//	  for (int k = 0; k < zat.size(); k++){
+//	    if (zat[k] == zat_[j]){
+//	      found = true;
+//	      break;
+//	    }
+//	  }
+//	  if (!found){
+//	    res = false;
+//	    break;
+//	  }
+//	}
+//      }
+//      if (kmap.find("MASK_NOANIONS") != kmap.end()){
+//	if (charge < 0) res = false;
+//      }
+//      if (kmap.find("MASK_NOCHARGED") != kmap.end()){
+//	if (charge != 0) res = false;
+//      }
+//      usest[id] = res;
+//    }
 
-    // build the array of structures that contain only the atoms in the zat array
-    std::unordered_map<int,bool> usest;
-    statement st(db->ptr(),"SELECT id,nat,zatoms,charge FROM Structures WHERE setid = " + std::to_string(setid[sid]) + ";");
-    while (st.step() != SQLITE_DONE){
-      int id = sqlite3_column_int(st.ptr(),0);
-      int nat = sqlite3_column_int(st.ptr(),1);
-      unsigned char *zat_ = (unsigned char *) sqlite3_column_blob(st.ptr(),2);
-      int charge = sqlite3_column_int(st.ptr(),3);
-      bool res = true;
-      if (kmap.find("MASK_ATOMS") != kmap.end()){
-	for (int j = 0; j < nat; j++){
-	  bool found = false;
-	  for (int k = 0; k < zat.size(); k++){
-	    if (zat[k] == zat_[j]){
-	      found = true;
-	      break;
-	    }
-	  }
-	  if (!found){
-	    res = false;
-	    break;
-	  }
-	}
-      }
-      if (kmap.find("MASK_NOANIONS") != kmap.end()){
-	if (charge < 0) res = false;
-      }
-      if (kmap.find("MASK_NOCHARGED") != kmap.end()){
-	if (charge != 0) res = false;
-      }
-      usest[id] = res;
-    }
-
-    // run over the properties in this set and write the mask
-    str = "SELECT nstructures,structures FROM Properties WHERE setid = " + std::to_string(setid[sid]);
-    if (ppid >= 0)
-      str += " AND property_type = " + std::to_string(ppid);
-    str += " ORDER BY orderid;";
-    st.recycle(str);
-    int n = 0;
-    while (st.step() != SQLITE_DONE){
-      int nstr = sqlite3_column_int(st.ptr(),0);
-      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
-      bool found = false;
-      for (int i = 0; i < nstr; i++){
-	if (!usest[str[i]]){
-	  found = true;
-	  break;
-	}
-      }
-      if (imask_and)
-	set_mask[n] = set_mask[n] & !found;
-      else
-	set_mask[n] = set_mask[n] | !found;
-      n++;
-    }
-  }
+  // xxxx //
+//    // run over the properties in this set and write the mask
+//    str = "SELECT nstructures,structures FROM Properties WHERE setid = " + std::to_string(setid[sid]);
+//    if (ppid >= 0)
+//      str += " AND property_type = " + std::to_string(ppid);
+//    str += " ORDER BY orderid;";
+//    st.recycle(str);
+//    int n = 0;
+//    while (st.step() != SQLITE_DONE){
+//      int nstr = sqlite3_column_int(st.ptr(),0);
+//      int *str = (int *) sqlite3_column_blob(st.ptr(),1);
+//      bool found = false;
+//      for (int i = 0; i < nstr; i++){
+//	if (!usest[str[i]]){
+//	  found = true;
+//	  break;
+//	}
+//      }
+//      if (imask_and)
+//	set_mask[n] = set_mask[n] & !found;
+//      else
+//	set_mask[n] = set_mask[n] | !found;
+//      n++;
+//    }
+//  }
   if (kmap.find("MASK_PATTERN") != kmap.end()){
     std::list<std::string> tokens(list_all_words(kmap["MASK_PATTERN"]));
     if (tokens.empty())

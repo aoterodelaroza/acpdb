@@ -72,15 +72,13 @@ CREATE TABLE Methods (
 CREATE TABLE Structures (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   key           TEXT UNIQUE NOT NULL,
-  setid         INTEGER NOT NULL,
   ismolecule    INTEGER NOT NULL,
   charge        INTEGER,
   multiplicity  INTEGER,
   nat           INTEGER NOT NULL,
   cell          BLOB,
   zatoms        BLOB NOT NULL,
-  coordinates   BLOB NOT NULL,
-  FOREIGN KEY(setid) REFERENCES Sets(id) ON DELETE CASCADE
+  coordinates   BLOB NOT NULL
 );
 CREATE TABLE Properties (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -409,8 +407,8 @@ void sqldb::insert_structure(std::ostream &os, const std::string &key, const std
 
   // bind
   statement st(db,R"SQL(
-INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
-       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+INSERT OR REPLACE INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
 
   int nat = s.get_nat();
@@ -419,15 +417,6 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
   st.bind((char *) ":NAT",nat,false);
   st.bind((char *) ":CHARGE",s.get_charge(),false);
   st.bind((char *) ":MULTIPLICITY",s.get_mult(),false);
-  if ((im = kmap.find("SET")) != kmap.end()){
-    int setid;
-    std::string setkey;
-    if (get_key_and_id(im->second,"Sets",setkey,setid))
-      st.bind((char *) ":SETID",setid);
-    else
-      throw std::runtime_error("Invalid set ID or key in INSERT STRUCTURE");
-  } else
-    throw std::runtime_error("A set is required in INSERT STRUCTURE");
   if (!s.ismolecule())
     st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
   st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
@@ -1279,8 +1268,8 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
 
   // bind
   statement st(db,R"SQL(
-INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
-       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
 
   // begin the transaction
@@ -1324,13 +1313,6 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 	  std::string skey = key + "." + std::string(file.stem());
 	  st.bind((char *) ":KEY",skey);
 
-	  std::string strdum;
-	  int setid;
-	  if (get_key_and_id(key,"Sets",strdum,setid))
-	    st.bind((char *) ":SETID",setid);
-	  else
-	    throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
-
 	  structure s;
 	  if (ixyz == 0) {
 	    if (s.readxyz(file.string()))
@@ -1360,13 +1342,6 @@ INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms
 	if (fs::is_regular_file(*it)){
 	  std::string skey = key + "." + std::string(fs::path(*it).stem());
 	  st.bind((char *) ":KEY",skey);
-
-	  std::string strdum;
-	  int setid;
-	  if (get_key_and_id(key,"Sets",strdum,setid))
-	    st.bind((char *) ":SETID",setid);
-	  else
-	    throw std::runtime_error("Invalid set ID or key in INSERT_SET_XYZ");
 
 	  structure s;
 	  if (ixyz == 0) {
@@ -1503,15 +1478,16 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
 
     // insert structures
     statement st(db,R"SQL(
-INSERT INTO Structures (key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
-       VALUES(:KEY,:SETID,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
+INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
+       VALUES(:KEY,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
     int n = info[k].names.size();
     for (int i = 0; i < n; i++){
       if (used.find(info[k].names[i]) == used.end()){
-	skey = prefix + info[k].names[i];
+	skey = info[k].names[i];
+	int idx = find_id_from_key(skey,"Structures");
+	if (idx > 0) continue;
 	st.bind((char *) ":KEY",skey);
-	st.bind((char *) ":SETID",setid);
 
 	structure s;
 	std::string filename = dir + "/" + info[k].names[i] + ".xyz";
@@ -1562,7 +1538,7 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
     int strid[n];
     double coef[n];
     for (int i = 0; i < n; i++){
-      std::string strkey = prefix + info[k].names[i];
+      std::string strkey = info[k].names[i];
       strid[i] = find_id_from_key(strkey,"Structures");
       coef[i] = info[k].coefs[i];
     }
@@ -1802,11 +1778,11 @@ FROM Methods
 ORDER BY id;
 )SQL";
   } else if (category == "STRUCTURE"){
-    headers = { "id","key","set","ismolecule","charge","multiplicity","nat"};
-    types   = {t_int,t_str,t_int,       t_int,   t_int,         t_int,t_int};
-    cols    = {    0,    1,     2,          3,       4,             5,    6};
+    headers = { "id","key","ismolecule","charge","multiplicity","nat"};
+    types   = {t_int,t_str,t_int,   t_int,         t_int,t_int};
+    cols    = {    0,    1,    3,       4,             5,    6};
     stmt = R"SQL(
-SELECT id,key,setid,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
+SELECT id,key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates
 FROM Structures
 ORDER BY id;
 )SQL";
@@ -2789,7 +2765,7 @@ std::string sqldb::write_one_structure(std::ostream &os, int id, const strtempla
 
   // get the structure from the database
   statement st(db,R"SQL(
-SELECT id, key, setid, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
+SELECT id, key, ismolecule, charge, multiplicity, nat, cell, zatoms, coordinates
 FROM Structures WHERE id = ?1;
 )SQL");
   st.bind(1,id);

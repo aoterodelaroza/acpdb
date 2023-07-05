@@ -391,21 +391,21 @@ int structure::readdbrow(sqlite3_stmt *stmt){
   if (!stmt) return 1;
 
   name = std::string((char *) sqlite3_column_text(stmt, 1));
-  ismol = sqlite3_column_int(stmt, 3);
-  charge = sqlite3_column_int(stmt, 4);
-  mult = sqlite3_column_int(stmt, 5);
-  nat = sqlite3_column_int(stmt, 6);
+  ismol = sqlite3_column_int(stmt, 2);
+  charge = sqlite3_column_int(stmt, 3);
+  mult = sqlite3_column_int(stmt, 4);
+  nat = sqlite3_column_int(stmt, 5);
 
   deallocate();
   allocate();
 
-  const double *rptr = (double *) sqlite3_column_blob(stmt, 7);
+  const double *rptr = (double *) sqlite3_column_blob(stmt, 6);
   if (rptr)
     memcpy(r, rptr, 9 * sizeof(double));
   else
     std::fill(r, r+9, 0);
-  memcpy(z, sqlite3_column_blob(stmt, 8), nat * sizeof(unsigned char));
-  memcpy(x, sqlite3_column_blob(stmt, 9), 3*nat * sizeof(double));
+  memcpy(z, sqlite3_column_blob(stmt, 7), nat * sizeof(unsigned char));
+  memcpy(x, sqlite3_column_blob(stmt, 8), 3*nat * sizeof(double));
 
   return 0;
 }
