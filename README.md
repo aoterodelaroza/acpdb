@@ -317,11 +317,9 @@ INSERT STRUCTURE name.s
   FILE file.s
   XYZ file.s
   POSCAR file.s
-  SET {set.s|set.i}
 END
 ~~~
-Insert a molecular structure with key `name.s`. The new structure
-belongs in set given by key `set.s` or integer ID `set.i`. There are
+Insert a molecular structure with key `name.s`. There are
 three possible ways of passing the structure file with name
 `file.s`. If the XYZ keyword is used, read the file as a molecular xyz
 file. If POSCAR is used, read the file as a crystal POSCAR file. If
