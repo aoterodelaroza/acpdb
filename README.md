@@ -279,9 +279,13 @@ ENERGY_DIFFERENCE). If no METHOD is given, the evaluations are not
 inserted.
 
 The name of the inserted structures is the structure file name (minus
-the extension) preceded by a prefix (`prefix.s`). The name of the
-inserted properties is determined by the "@fieldasrxn" keyword in the
-din file header. It can be:
+the extension). If the structure already exists in the database, the
+new structure is quietly ignored and the corresponding file is not read.
+In fact, if all structures appearing in the din file are already
+in the database, the DIRECTORY is not used at all, and can be omitted.
+
+The name of the inserted properties is determined by the "@fieldasrxn"
+keyword in the din file header. It can be:
 
 - 999: the name is given as a separate field right after the reference
   energy.
