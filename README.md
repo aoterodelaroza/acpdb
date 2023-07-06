@@ -234,7 +234,8 @@ END
 ~~~
 Insert a set with name `name.s` in the database with the given
 description. One or more literature references associated with the set
-can be given by either their key or numerical id.
+can be given by either their key or numerical id. No properties are
+inserted for this set.
 
 ~~~
 INSERT SET name.s
@@ -246,6 +247,8 @@ INSERT SET name.s
   POSCAR poscar1.s [poscar2.s] [poscar3.s] ...
   ... or ...
   POSCAR directory.s [regexp.s]
+  [PREFIX prefix.s]
+  [PROPERTY_TYPE {prop.s|prop.i}]
 END
 ~~~
 Add the set with name `name.s` in the same way as above. In addition,
@@ -257,7 +260,16 @@ extension. If the keyword POSCAR is present, also add structures
 corresponding to POSCAR files `poscar1.s`, etc. Alternatively, add all
 POSCAR files in directory `directory.s` that match the regular
 expression `regexp.s` (awk style). If `regexp.s` is not given, add all
-files in the directory with POSCAR extension.
+files in the directory with POSCAR extension. If the structures already
+exist in the database, the insertion is not carried out and the corresponding
+structure files are not read. The inserted structures can be prefixe
+
+If PROPERTY_TYPE is present, insert properties corresponding to each
+of the structures inserted. The property type is given by `prop.s`
+(key) or `prop.i` (ID) and it must not be `ENERGY_DIFFERENCE`.
+The property name constructed in this way is preceded by a prefix built
+as the set name (`name.s`) and a dot. This prefix can be changed using
+the optional PREFIX keyword.
 
 ~~~
 INSERT SET name.s
@@ -296,11 +308,8 @@ keyword in the din file header. It can be:
 - Anything else: a concatenation of all the structure names separated
   by an underscore.
 
-The property name constructed in this way is preceded by the same
-prefix as in the structure name (`prefix.s`). By default, this prefix
-is the set name (`name.s`) followed by a dot, but can be changed with
-the PREFIX keyword. If no prefix follows the PREFIX keyword, the
-prefix is removed.
+The property name constructed in this way may be preceded by a prefix
+(`prefix.s`) given by the PREFIX keyword.
 
 #### Methods
 

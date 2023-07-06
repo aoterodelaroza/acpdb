@@ -1367,7 +1367,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
     throw std::runtime_error("Invalid set ID or key in INSERT_SET_DIN");
 
   // prefix
-  std::string prefix = key + ".";
+  std::string prefix = "";
   if (kmap.find("PREFIX") != kmap.end())
     prefix = kmap.at("PREFIX");
 
