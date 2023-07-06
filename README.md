@@ -814,6 +814,7 @@ TRAINING
   MASK_ATOMS
   MASK_NOANIONS
   MASK_NOCHARGED
+  MASK_SIZE {<|<=|>|>=|==|!=} size.i
   MASK_RANGE [step.i|start.i step.i|start.i step.i end.i]
   MASK_RANDOM n.i [seed.i]
   WEIGHT_GLOBAL w.r
@@ -899,6 +900,11 @@ is as follows:
 
   * `MASK_NOCHARGED` select only the subset entries that involve only
     neutral species.
+
+  * `MASK_SIZE` select only the subset entries where all molecules
+    involved in the property calculation fulfill the given size
+    condition in terms of the chosen operator (one of <, <=, >, >=,
+    ==, !=) and the number of atoms `size.i`.
 
   * `MASK_RANGE` indicates a range starting at `start.i` up to `end.i`
     with `step.i`. The interpretation of `MASK_RANGE` varies depending

@@ -153,11 +153,25 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   }
 
   //// mask ////
-  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end()){
+  if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end() ||
+      kmap.find("MASK_SIZE") != kmap.end()){
     if (zat.empty())
-      throw std::runtime_error("ATOMS in TRAINING/SUBSET/MASK_ATOMS is not possible if no atoms have been defined");
+      throw std::runtime_error("The selected MASK in TRAINING/SUBSET is not possible if no atoms have been defined");
 
-    int n = 0;
+    int msize = -1;
+    std::string mcomp = "";
+    if (kmap.find("MASK_SIZE") != kmap.end()){
+      std::list<std::string> tokens(list_all_words(kmap["MASK_SIZE"]));
+      if (tokens.size() != 2)
+	throw std::runtime_error("Invalid MASK_SIZE in TRAINING/SUBSET");
+      mcomp = popstring(tokens);
+      msize = std::stoi(tokens.front());
+      if (mcomp != "<" && mcomp != "<=" && mcomp != ">" && mcomp != ">=" &&
+	  mcomp != "==" && mcomp != "!=")
+	throw std::runtime_error("Invalid conditional operator in MASK_SIZE, TRAINING/SUBSET");
+    }
+
+    int n = -1;
     statement st(db->ptr(),"SELECT nstructures, structures FROM Properties WHERE setid = " + std::to_string(idx) + " ORDER BY orderid;");
     statement ststr(db->ptr(),"SELECT nat,zatoms,charge FROM Structures WHERE id = ?1");
     while (st.step() != SQLITE_DONE){
@@ -187,18 +201,19 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
 	      break;
 	    }
 	  }
-	  if (!accept) break;
 	}
-	if (kmap.find("MASK_NOANIONS") != kmap.end() && charge < 0){
-	  accept = false;
-	  break;
+	if (kmap.find("MASK_NOANIONS") != kmap.end() && charge < 0) accept = false;
+	if (kmap.find("MASK_NOCHARGED") != kmap.end() && charge != 0) accept = false;
+	if (kmap.find("MASK_SIZE") != kmap.end()){
+	  if (mcomp == "<"  && !(nat < msize))  accept = false;
+	  if (mcomp == "<=" && !(nat <= msize)) accept = false;
+	  if (mcomp == ">"  && !(nat > msize))  accept = false;
+	  if (mcomp == ">=" && !(nat >= msize)) accept = false;
+	  if (mcomp == "==" && !(nat == msize)) accept = false;
+	  if (mcomp == "!=" && !(nat != msize)) accept = false;
 	}
-	if (kmap.find("MASK_NOCHARGED") != kmap.end() && charge != 0){
-	  accept = false;
-	  break;
-	}
+	if (!accept) break;
       }
-
       n++;
       if (imask_and)
 	set_mask[n] = set_mask[n] & accept;
