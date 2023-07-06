@@ -228,8 +228,8 @@ compiling with the btparse library.
 
 ~~~
 INSERT SET name.s
-  DESCRIPTION ...
-  LITREFS ref1.s [ref2.s] ...
+  [DESCRIPTION ...]
+  [LITREFS ref1.s [ref2.s] ...]
 END
 ~~~
 Insert a set with name `name.s` in the database with the given
@@ -239,8 +239,8 @@ inserted for this set.
 
 ~~~
 INSERT SET name.s
-  DESCRIPTION ...
-  LITREFS ref1.s [ref2.s] ...
+  [DESCRIPTION ...]
+  [LITREFS ref1.s [ref2.s] ...]
   XYZ xyz1.s [xyz2.s] [xyz3.s] ...
   ... or ...
   XYZ directory.s [regexp.s]
@@ -273,8 +273,8 @@ the optional PREFIX keyword.
 
 ~~~
 INSERT SET name.s
-  DESCRIPTION ...
-  LITREFS ref1.s [ref2.s] ...
+  [DESCRIPTION ...]
+  [LITREFS ref1.s [ref2.s] ...]
   DIN file.s
   [DIRECTORY directory.s]
   [METHOD method.s]
@@ -315,8 +315,8 @@ The property name constructed in this way may be preceded by a prefix
 
 ~~~
 INSERT METHOD name.s
-  LITREFS ref1.s [ref2.s] ...
-  DESCRIPTION ...
+  [LITREFS ref1.s [ref2.s] ...]
+  [DESCRIPTION ...]
 END
 ~~~
 Insert a computational method with name `name.s` in the
