@@ -342,7 +342,7 @@ INSERT INTO Sets (key,litrefs,description)
 
   // interpret the xyz keyword
   if (kmap.find("XYZ") != kmap.end() || kmap.find("POSCAR") != kmap.end())
-    insert_set_xyz(os, kmap);
+    insert_set_xyz(os, key, kmap);
 
   // interpret the din/directory/method keyword combination
   if (kmap.find("DIN") != kmap.end())
@@ -1226,19 +1226,39 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 }
 
 // Insert additional info from an INSERT SET command (xyz and POSCAR keywords)
-void sqldb::insert_set_xyz(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
 
-  // bind
+  // prepared statements
   statement st(db,R"SQL(
 INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
        VALUES(:KEY,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
+  statement stp(db,R"SQL(
+INSERT INTO Properties (key,property_type,setid,orderid,nstructures,structures,coefficients)
+       VALUES(:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
+)SQL");
+  statement stplast(db,"SELECT last_insert_rowid();");
 
   // prefix
-  std::string prefix = "";
+  std::string prefix = key + ".";
   if (kmap.find("PREFIX") != kmap.end())
     prefix = kmap.at("PREFIX");
+
+  // property type
+  int ppid = -1;
+  std::string ppidname;
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  if ((im = kmap.find("PROPERTY_TYPE")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Property_types",ppidname,ppid,true,true))
+      throw std::runtime_error("Invalid PROPERTY_TYPE in COMPARE");
+    if (ppid == globals::ppty_energy_difference)
+      throw std::runtime_error("An ENERGY_DIFFERENCE PROPERTY_TYPE is invalid in INSERT SET");
+  }
+  int ninsertp = 0;
+
+  // set id
+  int setid = find_id_from_key(key,"Sets");
 
   // begin the transaction
   begin_transaction();
@@ -1278,7 +1298,7 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
       for (const auto& file : sortedfiles){
 	std::string filename = file.filename();
 	if (std::regex_match(filename.begin(),filename.end(),rgx)){
-	  std::string skey = prefix + std::string(file.stem());
+	  std::string skey = std::string(file.stem());
 	  int idx = find_id_from_key(skey,"Structures");
 	  if (idx > 0) continue;
 	  st.bind((char *) ":KEY",skey);
@@ -1302,6 +1322,27 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
 	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
 	  if (st.step() != SQLITE_DONE)
 	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+
+	  // insert property if requested
+	  if (ppid >= 0){
+	    // get the row id after the last insert
+	    stplast.reset();
+	    stplast.step();
+	    int lastid = sqlite3_column_int(stplast.ptr(),0);
+
+	    double coef1 = 1.0;
+	    ninsertp++;
+	    skey = prefix + std::string(file.stem());
+	    stp.bind((char *) ":KEY",skey);
+	    stp.bind((char *) ":PROPERTY_TYPE",ppid);
+	    stp.bind((char *) ":SETID",setid);
+	    stp.bind((char *) ":ORDERID",ninsertp);
+	    stp.bind((char *) ":NSTRUCTURES",1);
+	    stp.bind((char *) ":STRUCTURES",(void *) &lastid,true,sizeof(int));
+	    stp.bind((char *) ":COEFFICIENTS",(void *) &coef1,true,sizeof(double));
+	    if (stp.step() != SQLITE_DONE)
+	      throw std::runtime_error("Failed inserting property in INSERT_SET_XYZ");
+	  }
 	}
       }
 
@@ -1310,7 +1351,7 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
 
       for (auto it = tokens.begin(); it != tokens.end(); it++){
 	if (fs::is_regular_file(*it)){
-	  std::string skey = prefix + std::string(fs::path(*it).stem());
+	  std::string skey = std::string(fs::path(*it).stem());
 	  int idx = find_id_from_key(skey,"Structures");
 	  if (idx > 0) continue;
 	  st.bind((char *) ":KEY",skey);
@@ -1334,6 +1375,27 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
 	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
 	  if (st.step() != SQLITE_DONE)
 	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+
+	  // insert property if requested
+	  if (ppid >= 0){
+	    // get the row id after the last insert
+	    stplast.reset();
+	    stplast.step();
+	    int lastid = sqlite3_column_int(stplast.ptr(),0);
+
+	    double coef1 = 1.0;
+	    ninsertp++;
+	    skey = prefix + std::string(fs::path(*it).stem());
+	    stp.bind((char *) ":KEY",skey);
+	    stp.bind((char *) ":PROPERTY_TYPE",ppid);
+	    stp.bind((char *) ":SETID",setid);
+	    stp.bind((char *) ":ORDERID",ninsertp);
+	    stp.bind((char *) ":NSTRUCTURES",1);
+	    stp.bind((char *) ":STRUCTURES",(void *) &lastid,true,sizeof(int));
+	    stp.bind((char *) ":COEFFICIENTS",(void *) &coef1,true,sizeof(double));
+	    if (stp.step() != SQLITE_DONE)
+	      throw std::runtime_error("Failed inserting property in INSERT_SET_XYZ");
+	  }
 	} else {
 	  throw std::runtime_error("File or directory not found: " + *it);
 	}
