@@ -342,7 +342,7 @@ INSERT INTO Sets (key,litrefs,description)
 
   // interpret the xyz keyword
   if (kmap.find("XYZ") != kmap.end() || kmap.find("POSCAR") != kmap.end())
-    insert_set_xyz(os, key, kmap);
+    insert_set_xyz(os, kmap);
 
   // interpret the din/directory/method keyword combination
   if (kmap.find("DIN") != kmap.end())
@@ -1226,7 +1226,7 @@ INSERT INTO Literature_refs (key,authors,title,journal,volume,page,year,doi,desc
 }
 
 // Insert additional info from an INSERT SET command (xyz and POSCAR keywords)
-void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
+void sqldb::insert_set_xyz(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT SET");
 
   // bind
@@ -1234,6 +1234,11 @@ void sqldb::insert_set_xyz(std::ostream &os, const std::string &key, const std::
 INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coordinates)
        VALUES(:KEY,:ISMOLECULE,:CHARGE,:MULTIPLICITY,:NAT,:CELL,:ZATOMS,:COORDINATES);
 )SQL");
+
+  // prefix
+  std::string prefix = "";
+  if (kmap.find("PREFIX") != kmap.end())
+    prefix = kmap.at("PREFIX");
 
   // begin the transaction
   begin_transaction();
@@ -1273,7 +1278,9 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
       for (const auto& file : sortedfiles){
 	std::string filename = file.filename();
 	if (std::regex_match(filename.begin(),filename.end(),rgx)){
-	  std::string skey = key + "." + std::string(file.stem());
+	  std::string skey = prefix + std::string(file.stem());
+	  int idx = find_id_from_key(skey,"Structures");
+	  if (idx > 0) continue;
 	  st.bind((char *) ":KEY",skey);
 
 	  structure s;
@@ -1303,7 +1310,9 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
 
       for (auto it = tokens.begin(); it != tokens.end(); it++){
 	if (fs::is_regular_file(*it)){
-	  std::string skey = key + "." + std::string(fs::path(*it).stem());
+	  std::string skey = prefix + std::string(fs::path(*it).stem());
+	  int idx = find_id_from_key(skey,"Structures");
+	  if (idx > 0) continue;
 	  st.bind((char *) ":KEY",skey);
 
 	  structure s;

@@ -84,7 +84,7 @@ class sqldb {
   void insert_litref_bibtex(std::ostream &os, const std::list<std::string> &tokens);
 
   // Insert additional info from an INSERT SET command (xyz and POSCAR keywords)
-  void insert_set_xyz(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
+  void insert_set_xyz(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
 
   // Insert additional info from an INSERT SET command (din keyword)
   void insert_set_din(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap);
