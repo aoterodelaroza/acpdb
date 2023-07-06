@@ -326,18 +326,19 @@ method are given in LITREFS and a description can be provided.
 #### Structures
 
 ~~~
-INSERT STRUCTURE name.s
+INSERT STRUCTURE [name.s]
   FILE file.s
   XYZ file.s
   POSCAR file.s
 END
 ~~~
-Insert a molecular structure with key `name.s`. There are
-three possible ways of passing the structure file with name
-`file.s`. If the XYZ keyword is used, read the file as a molecular xyz
-file. If POSCAR is used, read the file as a crystal POSCAR file. If
-FILE is used, let acpdb detect the format (xyz or POSCAR) and read it
-as a molecule or crystal depending on the result.
+Insert a molecular structure with key `name.s`. If no key is provided,
+the stem of the file name is used as key. There are three possible
+ways of passing the structure file with name `file.s`. If the XYZ
+keyword is used, read the file as a molecular xyz file. If POSCAR is
+used, read the file as a crystal POSCAR file. If FILE is used, let
+acpdb detect the format (xyz or POSCAR) and read it as a molecule or
+crystal depending on the result.
 
 #### Properties
 ~~~

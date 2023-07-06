@@ -380,29 +380,33 @@ INSERT INTO Methods (key,litrefs,description)
 // Insert a property by manually giving the data
 void sqldb::insert_structure(std::ostream &os, const std::string &key, const std::unordered_map<std::string,std::string> &kmap){
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT STRUCTURE");
-  if (key.empty())
-    throw std::runtime_error("Empty key in INSERT STRUCTURE");
 
   // read the molecular structure
   structure s;
   std::unordered_map<std::string,std::string>::const_iterator im;
+  std::string file;
   if ((im = kmap.find("FILE")) != kmap.end()){
     if (s.readfile(im->second))
       throw std::runtime_error("Error reading file: " + im->second);
   } else if (kmap.find("XYZ") != kmap.end() && kmap.find("POSCAR") != kmap.end()) {
     throw std::runtime_error("XYZ and POSCAR are both present in INSERT STRUCTURE");
   } else if ((im = kmap.find("XYZ")) != kmap.end()){
+    file = im->second;
     if (s.readxyz(im->second))
       throw std::runtime_error("Error reading xyz file: " + im->second);
   } else if ((im = kmap.find("POSCAR")) != kmap.end()){
+    file = im->second;
     if (s.readposcar(im->second))
       throw std::runtime_error("Error reading POSCAR file: " + im->second);
   } else {
     throw std::runtime_error("A structure must be given in INSERT STRUCTURE");
   }
+  std::string skey = key;
+  if (skey.empty())
+    skey = std::string(fs::path(file).stem());
 
   // check the key
-  if (key.find('@') != std::string::npos)
+  if (skey.find('@') != std::string::npos)
     throw std::runtime_error("Character @ is not allowed in structure keys, in INSERT STRUCTURE");
 
   // bind
@@ -412,7 +416,7 @@ INSERT OR REPLACE INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,z
 )SQL");
 
   int nat = s.get_nat();
-  st.bind((char *) ":KEY",key,false);
+  st.bind((char *) ":KEY",skey,false);
   st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0,false);
   st.bind((char *) ":NAT",nat,false);
   st.bind((char *) ":CHARGE",s.get_charge(),false);
@@ -423,7 +427,7 @@ INSERT OR REPLACE INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,z
   st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
 
   if (globals::verbose)
-    os << "# INSERT STRUCTURE " << key << std::endl;
+    os << "# INSERT STRUCTURE " << skey << std::endl;
 
   // submit
   st.step();
