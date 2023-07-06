@@ -449,7 +449,6 @@ void sqldb::insert_property(std::ostream &os, const std::string &key, const std:
 INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structures,coefficients)
        VALUES(:ID,:KEY,:PROPERTY_TYPE,:SETID,:ORDERID,:NSTRUCTURES,:STRUCTURES,:COEFFICIENTS)
 )SQL");
-  statement ststr(db,"SELECT id, key FROM Structures WHERE setid = ?1 ORDER BY id;");
 
   // property type
   int ppid = -1;
@@ -470,92 +469,56 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   } else
     throw std::runtime_error("A SET is required in INSERT PROPERTY");
   st.bind((char *) ":SETID",setid);
-  ststr.bind(1,setid);
 
   // whether we are inserting only one or prefixing; set the key and orderid
-  bool justone = (kmap.find("ORDER") != kmap.end() && kmap.find("STRUCTURES") != kmap.end());
-  if (justone){
-    st.bind((char *) ":KEY",key,false);
-    st.bind((char *) ":ORDERID",std::stoi(kmap.find("ORDER")->second));
+  if (kmap.find("ORDER") == kmap.end() || kmap.find("STRUCTURES") == kmap.end())
+    throw std::runtime_error("Must provide ORDER and STRUCTURE in INSERT PROPERTY");
 
-    // parse structures and coefficients
-    im1 = kmap.find("STRUCTURES");
-    tok1 = list_all_words(im1->second);
-    im2 = kmap.find("COEFFICIENTS");
-    if (im2 != kmap.end())
-      tok2 = list_all_doubles(im2->second);
+  st.bind((char *) ":KEY",key,false);
+  st.bind((char *) ":ORDERID",std::stoi(kmap.find("ORDER")->second));
 
-    // number of structures
-    int nstructures = tok1.size();
-    st.bind((char *) ":NSTRUCTURES",nstructures);
+  // parse structures and coefficients
+  im1 = kmap.find("STRUCTURES");
+  tok1 = list_all_words(im1->second);
+  im2 = kmap.find("COEFFICIENTS");
+  if (im2 != kmap.end())
+    tok2 = list_all_doubles(im2->second);
 
-    // bind the structures
-    {
-      int n = 0;
-      int *str = new int[nstructures];
-      for (auto it = tok1.begin(); it != tok1.end(); it++){
-	int idx = 0;
-	if (isinteger(*it))
-	  idx = std::stoi(*it);
-	else
-	  idx = find_id_from_key(*it,"Structures");
+  // number of structures
+  int nstructures = tok1.size();
+  st.bind((char *) ":NSTRUCTURES",nstructures);
 
-	if (!idx)
-	  throw std::runtime_error("Structure not found (" + *it + ") in INSERT PROPERTY");
-	str[n++] = idx;
-      }
-      st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
-      delete str;
-    }
-
-    // bind the coefficients
-    if (!tok2.empty()) {
-      if (nstructures != tok2.size())
-	throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
-      st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
-    }
-
-    if (globals::verbose)
-      os << "# INSERT PROPERTY " << key << std::endl;
-
-    // submit
-    st.step();
-  } else {
-    if (kmap.find("ORDER") != kmap.end())
-      throw std::runtime_error("ORDER is not allowed in bulk insertion, INSERT PROPERTY");
-    if (kmap.find("STRUCTURES") != kmap.end())
-      throw std::runtime_error("STRUCTURES is not allowed in bulk insertion, INSERT PROPERTY");
-
-    // coefficients
-    const double coef[1] = {1.0};
-
-    // begin the transaction
-    begin_transaction();
-
+  // bind the structures
+  {
     int n = 0;
-    while (ststr.step() != SQLITE_DONE){
-      n++;
+    int *str = new int[nstructures];
+    for (auto it = tok1.begin(); it != tok1.end(); it++){
+      int idx = 0;
+      if (isinteger(*it))
+	idx = std::stoi(*it);
+      else
+	idx = find_id_from_key(*it,"Structures");
 
-      // bind
-      int id[1] = {sqlite3_column_int(ststr.ptr(),0)};
-      std::string str = (char *) sqlite3_column_text(ststr.ptr(), 1);
-      std::string newkey = key + str;
-      st.bind((char *) ":KEY",newkey,false);
-      st.bind((char *) ":PROPERTY_TYPE",ppid);
-      st.bind((char *) ":SETID",setid);
-      st.bind((char *) ":ORDERID",n);
-      st.bind((char *) ":NSTRUCTURES",1);
-      st.bind((char *) ":STRUCTURES",(void *) &id,false,1 * sizeof(int));
-      st.bind((char *) ":COEFFICIENTS",(void *) &coef,false,sizeof(double));
-
-      if (globals::verbose)
-	os << "# INSERT PROPERTY " << newkey << std::endl;
-      st.step();
+      if (!idx)
+	throw std::runtime_error("Structure not found (" + *it + ") in INSERT PROPERTY");
+      str[n++] = idx;
     }
-
-    // commit the transaction
-    commit_transaction();
+    st.bind((char *) ":STRUCTURES",(void *) str,true,nstructures * sizeof(int));
+    delete str;
   }
+
+  // bind the coefficients
+  if (!tok2.empty()) {
+    if (nstructures != tok2.size())
+      throw std::runtime_error("Number of coefficients does not match number of structures in INSERT PROPERTY");
+    st.bind((char *) ":COEFFICIENTS",(void *) &tok2.front(),true,nstructures * sizeof(double));
+  }
+
+  if (globals::verbose)
+    os << "# INSERT PROPERTY " << key << std::endl;
+
+  // submit
+  st.step();
 }
 
 // Insert an evaluation by manually giving the data
