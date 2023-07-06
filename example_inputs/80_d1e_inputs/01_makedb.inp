@@ -8,14 +8,10 @@ insert method b3lyp_def2tzvpp
  description The approximate method
 end
 
-insert set S22
+insert set S22-force
   method reference
   xyz xyz
-end
-
-insert property force_
   property_type d1e
-  set S22
 end
 
 insert calc
@@ -32,7 +28,7 @@ training
  reference reference
 
  subset
-   set S22
+   set S22-force
  end
 end
 training save hono

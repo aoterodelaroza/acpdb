@@ -12,15 +12,17 @@ insert set S22
   method reference
   xyz xyz
 end
-
-insert property d1e_
+insert set S22-d1e
+  method reference
+  xyz xyz
   property_type d1e
-  set S22
+  prefix d1e
 end
-
-insert property d2e_
+insert set S22-d2e
+  method reference
+  xyz xyz
   property_type d2e
-  set S22
+  prefix d2e
 end
 
 training
@@ -30,7 +32,10 @@ training
  reference reference
 
  subset
-   set S22
+   set S22-d1e
+ end
+ subset
+   set S22-d2e
  end
 end
 training save hono

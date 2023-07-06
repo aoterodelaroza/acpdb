@@ -11,9 +11,10 @@ insert set S22
   directory xyz
 end
 
-insert property force_
+insert set S22-force
+  method reference
+  directory xyz
   property_type d1e
-  set S22
 end
 
 insert calc

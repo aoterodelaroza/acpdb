@@ -12,20 +12,23 @@ insert set G3
   method reference
   xyz xyz
 end
-
-insert property energy_
+insert set G3-energy
+  method reference
+  xyz xyz
   property_type energy
-  set G3
+  prefix energy
 end
-
-insert property d1e_
+insert set G3-d1e
+  method reference
+  xyz xyz
   property_type d1e
-  set G3
+  prefix d1e
 end
-
-insert property d2e_
+insert set G3-d2e
+  method reference
+  xyz xyz
   property_type d2e
-  set G3
+  prefix d2e
 end
 
 training
@@ -35,21 +38,18 @@ training
  empty b3lyp
  reference reference
 
- subset G3_energy
-   set G3
+ subset G3-energy
+   set G3-energy
    property_type energy
-   norm_ref
  end
- subset G3_d1e
-   set G3
+ subset G3-d1e
+   set G3-d1e
    property_type d1e
-   norm_ref
  end
- subset G3_d2e
-   set G3
+ subset G3-d2e
+   set G3-d2e
    property_type d2e
    mask_atoms
-   norm_ref
  end
 end
 training save g3
