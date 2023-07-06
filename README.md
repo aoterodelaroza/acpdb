@@ -407,19 +407,6 @@ having the corresponding evaluation in the database.
 
 ### Inserting Data (bulk)
 
-#### Insert Several Properties for a Set
-~~~
-INSERT PROPERTY prefix.s
-  PROPERTY_TYPE {prop.s|prop.i}
-  SET {set.s|set.i}
-END
-~~~
-Insert a property for every structure in set `set.s` (key) or `set.i`
-(ID). The key of the new property is the key of the structure
-prefixed by `prefix.s`. The property type is given by `prop.s` (key)
-or `prop.i` (ID) and it must not be `ENERGY_DIFFERENCE`. The
-properties have the same order as the structures in the set.
-
 #### Insert Evaluations and Terms from a File with Calculated Values
 
 ~~~
