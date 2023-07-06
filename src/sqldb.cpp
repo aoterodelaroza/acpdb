@@ -1300,36 +1300,38 @@ INSERT INTO Properties (key,property_type,setid,orderid,nstructures,structures,c
 	if (std::regex_match(filename.begin(),filename.end(),rgx)){
 	  std::string skey = std::string(file.stem());
 	  int idx = find_id_from_key(skey,"Structures");
-	  if (idx > 0) continue;
-	  st.bind((char *) ":KEY",skey);
+	  if (idx <= 0) {
+	    st.bind((char *) ":KEY",skey);
 
-	  structure s;
-	  if (ixyz == 0) {
-	    if (s.readxyz(file.string()))
-	      throw std::runtime_error("Error reading file: " + *it);
-	  } else if (ixyz == 1) {
-	    if (s.readposcar(file.string()))
-	      throw std::runtime_error("Error reading file: " + *it);
+	    structure s;
+	    if (ixyz == 0) {
+	      if (s.readxyz(file.string()))
+		throw std::runtime_error("Error reading file: " + *it);
+	    } else if (ixyz == 1) {
+	      if (s.readposcar(file.string()))
+		throw std::runtime_error("Error reading file: " + *it);
+	    }
+	    int nat = s.get_nat();
+	    st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+	    st.bind((char *) ":CHARGE",s.get_charge());
+	    st.bind((char *) ":MULTIPLICITY",s.get_mult());
+	    st.bind((char *) ":NAT",nat);
+	    if (!s.ismolecule())
+	      st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+	    st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+	    st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+	    if (st.step() != SQLITE_DONE)
+	      throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+	    if (ppid >= 0){
+	      // get the row id after the last insert
+	      stplast.reset();
+	      stplast.step();
+	      idx = sqlite3_column_int(stplast.ptr(),0);
+	    }
 	  }
-	  int nat = s.get_nat();
-	  st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
-	  st.bind((char *) ":CHARGE",s.get_charge());
-	  st.bind((char *) ":MULTIPLICITY",s.get_mult());
-	  st.bind((char *) ":NAT",nat);
-	  if (!s.ismolecule())
-	    st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-	  st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-	  if (st.step() != SQLITE_DONE)
-	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
 
 	  // insert property if requested
 	  if (ppid >= 0){
-	    // get the row id after the last insert
-	    stplast.reset();
-	    stplast.step();
-	    int lastid = sqlite3_column_int(stplast.ptr(),0);
-
 	    double coef1 = 1.0;
 	    ninsertp++;
 	    skey = prefix + std::string(file.stem());
@@ -1338,7 +1340,7 @@ INSERT INTO Properties (key,property_type,setid,orderid,nstructures,structures,c
 	    stp.bind((char *) ":SETID",setid);
 	    stp.bind((char *) ":ORDERID",ninsertp);
 	    stp.bind((char *) ":NSTRUCTURES",1);
-	    stp.bind((char *) ":STRUCTURES",(void *) &lastid,true,sizeof(int));
+	    stp.bind((char *) ":STRUCTURES",(void *) &idx,true,sizeof(int));
 	    stp.bind((char *) ":COEFFICIENTS",(void *) &coef1,true,sizeof(double));
 	    if (stp.step() != SQLITE_DONE)
 	      throw std::runtime_error("Failed inserting property in INSERT_SET_XYZ");
@@ -1353,36 +1355,40 @@ INSERT INTO Properties (key,property_type,setid,orderid,nstructures,structures,c
 	if (fs::is_regular_file(*it)){
 	  std::string skey = std::string(fs::path(*it).stem());
 	  int idx = find_id_from_key(skey,"Structures");
-	  if (idx > 0) continue;
-	  st.bind((char *) ":KEY",skey);
 
-	  structure s;
-	  if (ixyz == 0) {
-	    if (s.readxyz(*it))
-	      throw std::runtime_error("Error reading file: " + *it);
-	  } else if (ixyz == 1) {
-	    if (s.readposcar(*it))
-	      throw std::runtime_error("Error reading file: " + *it);
+	  if (idx <= 0){
+	    st.bind((char *) ":KEY",skey);
+
+	    structure s;
+	    if (ixyz == 0) {
+	      if (s.readxyz(*it))
+		throw std::runtime_error("Error reading file: " + *it);
+	    } else if (ixyz == 1) {
+	      if (s.readposcar(*it))
+		throw std::runtime_error("Error reading file: " + *it);
+	    }
+	    int nat = s.get_nat();
+	    st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
+	    st.bind((char *) ":CHARGE",s.get_charge());
+	    st.bind((char *) ":MULTIPLICITY",s.get_mult());
+	    st.bind((char *) ":NAT",nat);
+	    if (!s.ismolecule())
+	      st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
+	    st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
+	    st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
+	    if (st.step() != SQLITE_DONE)
+	      throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
+
+	    if (ppid >= 0){
+	      // get the row id after the last insert
+	      stplast.reset();
+	      stplast.step();
+	      idx = sqlite3_column_int(stplast.ptr(),0);
+	    }
 	  }
-	  int nat = s.get_nat();
-	  st.bind((char *) ":ISMOLECULE",s.ismolecule()?1:0);
-	  st.bind((char *) ":CHARGE",s.get_charge());
-	  st.bind((char *) ":MULTIPLICITY",s.get_mult());
-	  st.bind((char *) ":NAT",nat);
-	  if (!s.ismolecule())
-	    st.bind((char *) ":CELL",(void *) s.get_r(),false,9 * sizeof(double));
-	  st.bind((char *) ":ZATOMS",(void *) s.get_z(),false,nat * sizeof(unsigned char));
-	  st.bind((char *) ":COORDINATES",(void *) s.get_x(),false,3 * nat * sizeof(double));
-	  if (st.step() != SQLITE_DONE)
-	    throw std::runtime_error("Failed inserting structure in INSERT_SET_XYZ");
 
 	  // insert property if requested
 	  if (ppid >= 0){
-	    // get the row id after the last insert
-	    stplast.reset();
-	    stplast.step();
-	    int lastid = sqlite3_column_int(stplast.ptr(),0);
-
 	    double coef1 = 1.0;
 	    ninsertp++;
 	    skey = prefix + std::string(fs::path(*it).stem());
@@ -1391,7 +1397,7 @@ INSERT INTO Properties (key,property_type,setid,orderid,nstructures,structures,c
 	    stp.bind((char *) ":SETID",setid);
 	    stp.bind((char *) ":ORDERID",ninsertp);
 	    stp.bind((char *) ":NSTRUCTURES",1);
-	    stp.bind((char *) ":STRUCTURES",(void *) &lastid,true,sizeof(int));
+	    stp.bind((char *) ":STRUCTURES",(void *) &idx,true,sizeof(int));
 	    stp.bind((char *) ":COEFFICIENTS",(void *) &coef1,true,sizeof(double));
 	    if (stp.step() != SQLITE_DONE)
 	      throw std::runtime_error("Failed inserting property in INSERT_SET_XYZ");
