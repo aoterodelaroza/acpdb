@@ -84,7 +84,7 @@ The following are the supported property types, their units, and the
 number of values they comprise:
 
 | PROPERTY_TYPE       |            Values | Units           | Description                                                                          |
-|---------------------+-------------------+-----------------+--------------------------------------------------------------------------------------|
+|---------------------|-------------------|-----------------|--------------------------------------------------------------------------------------|
 | `ENERGY_DIFFERENCE` |                 1 | kcal/mol        | Energy differences between structures                                                |
 | `ENERGY`            |                 1 | Hartree         | Total energy                                                                         |
 | `DIPOLE`            |                 3 | Debye           | Electric dipole (molecules only)                                                     |
