@@ -1516,7 +1516,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   begin_transaction();
 
   // process the entries
-  std::unordered_map<std::string,boolean> used;
+  std::unordered_map<std::string,bool> used;
   std::string skey;
   for (int k = 0; k < info.size(); k++){
 
