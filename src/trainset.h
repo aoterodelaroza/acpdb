@@ -110,7 +110,7 @@ class trainset {
   void dump(std::ostream &os, const std::string &keyw="");
 
   // Generate an ACP
-  void generate(std::ostream &os, const bool maxcoef, const std::vector<double> lambdav);
+  void generate(std::ostream &os, const bool maxcoef0, const std::vector<double> lambdav);
 
   // Write input files or structure files for the training set
   // structures. Pass the options other than TRAINING and the ACP to the

@@ -1716,8 +1716,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();
-	  if (sqlite3_column_type(st.ptr(),0) != SQLITE_NULL){
-	  } else {
+	  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL){
 	    maxc.clear();
 	    goto exit_loop;
 	  }
@@ -1744,7 +1743,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 }
 
 // Generate an ACP
-void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<double> lambdav){
+void trainset::generate(std::ostream &os, const bool maxcoef0, const std::vector<double> lambdav){
 
 #ifndef LASSO_LIB
   throw std::runtime_error("Cannot use TRAINING GENERATE without linking the external LASSO library.");
@@ -1752,9 +1751,6 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
 #endif
 
   os << "* TRAINING: generating ACPs " << std::endl << std::endl;
-
-  // xxxx treat maxcoef
-  // xxxx warm start
 
   // build the lambda list
   std::vector<double> lam;
@@ -1901,6 +1897,36 @@ ORDER BY Training_set.id;
   if (n != nrows)
     throw std::runtime_error("Too few rows dumping y data");
 
+  // the maxcoef vector
+  std::vector<double> maxc;
+  bool maxcoef = false;
+  if (maxcoef0){
+    st.recycle(R"SQL(
+SELECT MIN(Terms.maxcoef)
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
+)SQL");
+    for (int iz = 0; iz < zat.size(); iz++){
+      for (int il = 0; il <= lmax[iz]; il++){
+	for (int ie = 0; ie < exp.size(); ie++){
+	  st.reset();
+	  st.bind((char *) ":METHOD",emptyid);
+	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":L",il);
+	  st.bind((char *) ":EXP",exp[ie]);
+	  st.step();
+	  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL){
+	    maxc.clear();
+	    goto exit_loop;
+	  }
+	  maxc.push_back(sqlite3_column_double(st.ptr(),0));
+	}
+      }
+    }
+  }
+ exit_loop:
+
   printf(" Id      lambda      norm-1      norm-2      norm-inf    wrms     nterm  filename\n");
   std::vector<double> beta;
   beta.reserve(ncols);
@@ -1908,7 +1934,7 @@ ORDER BY Training_set.id;
   double wrms;
   for (int i = 0; i < lam.size(); i++){
     // run the lasso fit and generate the output line
-    lasso_c(nrows,ncols,x.data(),y.data(),lam[i],beta.data(),&wrms);
+    lasso_c(nrows,ncols,x.data(),y.data(),lam[i],beta.data(),&wrms,maxc.empty()?NULL:maxc.data());
 
     // make the ACP
     std::string name = "lasso-" + std::to_string(i+1);
@@ -1942,9 +1968,8 @@ ORDER BY Training_set.id;
     fp << std::endl;
     fp << "! ACP terms in training set: " << a.size() << std::endl;
     fp << "! Data points in training set: " << nrows << std::endl;
-    // if (havemaxcoef)
-    //   fprintf(fid,"! Maximum coefficients applied\n");
-    // endif
+    if (!maxc.empty())
+      fp << "! Maximum coefficients applied" << std::endl;
     fp << std::fixed << std::setprecision(4);
     fp << "! norm-1 = " << a.norm1() << std::endl;
     fp << "! norm-2 = " << a.norm2() << std::endl;
