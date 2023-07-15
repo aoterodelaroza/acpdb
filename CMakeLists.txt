@@ -30,22 +30,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 include(GNUInstallDirs)
 include(utils)
 
-## the lasso fitting library
-include(ExternalProject)
-ExternalProject_Add(lassolib_download
-  GIT_REPOSITORY    "https://github.com/aoterodelaroza/lassolib"
-  GIT_TAG           "HEAD"
-  SOURCE_DIR        "${CMAKE_BINARY_DIR}/lassolib-src"
-  BINARY_DIR        "${CMAKE_BINARY_DIR}/lassolib-build"
-  BUILD_COMMAND     "$(MAKE)"
-  INSTALL_COMMAND   ""
-  TEST_COMMAND      ""
-  UPDATE_COMMAND    ""
-)
-
 ## interface options
 option(USE_BTPARSE "Use the btparse bibtex file parser for bibtex support." ON)
 option(USE_CEREAL "Use the cereal library for training set serialization." ON)
+set(LASSO_LIB "" CACHE STRING "Directory where liblasso.a and liblasso.h are.")
 
 ## testing
 option(BUILD_TESTING "Enable the regression tests for the acpdb build." OFF)

@@ -33,6 +33,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <cstring>
 #include <list>
 #include <tuple>
+#ifdef LASSO_LIB
+#include "liblasso.h"
+#endif
 
 namespace fs = std::filesystem;
 
@@ -1741,6 +1744,11 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 // Generate an ACP
 void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<double> lambdav){
 
+#ifndef LASSO_LIB
+  throw std::runtime_error("Cannot use TRAINING GENERATE without linking the external LASSO library.");
+  return;
+#endif
+
   // build the lambda list
   std::vector<double> l;
   double ini, end, step;
@@ -1758,13 +1766,40 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   for (double d = ini; d <= end; d += step)
     l.push_back(d);
 
-  std::cout << "maxcoef = " << maxcoef << std::endl;
-  for (int i = 0; i < l.size(); i++){
-    std::cout << i << " -> " << l[i] << std::endl;
-  }
+  int rows = 4;
+  int cols = 2;
+  double* x = new double[8];
+  x[0] = 1.0;
+  x[1] = 3.0;
+  x[2] = 5.0;
+  x[3] = 7.0;
+  x[4] = 2.0;
+  x[5] = 4.0;
+  x[6] = 6.0;
+  x[7] = 8.0;
+  double *y = new double[4];
+  y[0] = 1.0;
+  y[1] = 1.0;
+  y[2] = 1.0;
+  y[3] = 1.0;
+  double t = 0.001;
+  double *w = new double[2];
 
-  exit(1);
+  lasso_c(rows,cols,x,y,t,w);
 
+
+  delete[] x, y;
+
+  // std::vector<int> L(mid);
+  // L.data() gives you access to the int[] array buffer and you can L.resize() the vector later.
+  // auto L = std::make_unique<int[]>(mid);
+
+  // std::cout << "maxcoef = " << maxcoef << std::endl;
+  // for (int i = 0; i < l.size(); i++){
+  //   std::cout << i << " -> " << l[i] << std::endl;
+  // }
+
+  // exit(1);
 }
 
 // Write input files or structure files for the training set

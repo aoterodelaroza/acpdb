@@ -10,12 +10,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(acpdb ${SOURCES})
 
 ## lasso library
-set(LASSO_LIB_DIR ${CMAKE_BINARY_DIR}/lassolib-build/src)
-add_library(lassolib STATIC IMPORTED)
-set_target_properties(lassolib PROPERTIES IMPORTED_LOCATION ${LASSO_LIB_DIR}/liblasso.a)
-# include_directories(${LASSO_INCLUDE_DIR})
-target_link_libraries(acpdb PRIVATE lassolib)
-add_dependencies(acpdb lassolib_download)
+if (NOT "${LASSO_LIB}" STREQUAL "")
+  add_library(lassolib STATIC IMPORTED)
+  set_target_properties(lassolib PROPERTIES IMPORTED_LOCATION ${LASSO_LIB}/liblasso.a)
+  target_include_directories(acpdb PRIVATE ${LASSO_LIB})
+  target_compile_definitions(acpdb PRIVATE LASSO_LIB)
+  target_link_libraries(acpdb PRIVATE lassolib)
+  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    target_link_libraries(acpdb PRIVATE "gfortran")
+  endif()
+endif()
 
 ## sqlite3
 target_include_directories(acpdb PRIVATE ${SQLite3_INCLUDE_DIRS})
