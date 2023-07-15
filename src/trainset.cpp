@@ -1749,8 +1749,16 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   return;
 #endif
 
+  os << "* TRAINING: generating ACPs " << std::endl;
+
+  // xxxx write or save the corresponding ACPs
+  // xxxx improve output
+  // xxxx treat maxcoef
+  // xxxx treat ynofit
+  // xxxx treat yadd
+
   // build the lambda list
-  std::vector<double> l;
+  std::vector<double> lam;
   double ini, end, step;
   if (lambdav.size() == 0 || lambdav.size() > 3)
     throw std::runtime_error("Incorrect number of elements in TRAINING GENERATE");
@@ -1764,42 +1772,163 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   else
     step = 1;
   for (double d = ini; d <= end; d += step)
-    l.push_back(d);
+    lam.push_back(d);
+  if (lam.empty()) return;
 
-  int rows = 4;
-  int cols = 2;
-  double* x = new double[8];
-  x[0] = 1.0;
-  x[1] = 3.0;
-  x[2] = 5.0;
-  x[3] = 7.0;
-  x[4] = 2.0;
-  x[5] = 4.0;
-  x[6] = 6.0;
-  x[7] = 8.0;
-  double *y = new double[4];
-  y[0] = 1.0;
-  y[1] = 1.0;
-  y[2] = 1.0;
-  y[3] = 1.0;
-  double t = 0.001;
-  double *w = new double[2];
+  // check the completeness of the training set
+  if (complete == c_unknown)
+    describe(os,false,true,true);
+  if (complete == c_no)
+    throw std::runtime_error("The training set needs to be complete before using GENERATE");
 
-  lasso_c(rows,cols,x,y,t,w);
+  //// collect the information for the fit ////
+  // permutation for the additional methods (first fit, then nofit)
+  uint64_t nyfit = 0;
+  std::vector<int> iaddperm;
+  for (int i = 0; i < addid.size(); i++){
+    if (addisfit[i]){
+      iaddperm.push_back(i);
+      nyfit++;
+    }
+  }
+  for (int i = 0; i < addid.size(); i++)
+    if (!addisfit[i]) iaddperm.push_back(i);
 
+  // calculate the number of rows and the weights with only the dofit sets
+  // write the yref, yempty, and yadd columns
+  statement st(db->ptr(),R"SQL(
+SELECT length(Evaluations.value)
+FROM Evaluations
+WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
+)SQL");
+  std::vector<double> wtrain;
+  unsigned long int nrows = 0, n = 0;
+  for (int i = 0; i < setid.size(); i++){
+    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
+      if (set_dofit[i]){
+	st.reset();
+	st.bind((char *) ":METHOD",refid);
+	st.bind((char *) ":PROPID",propid[j]);
+	if (st.step() != SQLITE_ROW)
+	  throw std::runtime_error("Invalid evaluation in octave dump");
 
-  delete[] x, y;
+	int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+	for (int k = 0; k < len; k++)
+	  wtrain.push_back(w[n]);
+	nrows += len;
+      }
+      n++;
+    }
+  }
 
-  // std::vector<int> L(mid);
-  // L.data() gives you access to the int[] array buffer and you can L.resize() the vector later.
-  // auto L = std::make_unique<int[]>(mid);
+  // the dimension integers
+  uint64_t ncols = 0, addmaxl = 0;
+  for (int i = 0; i < zat.size(); i++)
+    ncols += exp.size() * (lmax[i]+1);
+  for (int i = 0; i < addname.size(); i++)
+    addmaxl = std::max(addmaxl,(uint64_t) addname[i].size());
+
+  // the w vector
+  std::vector<double> wsqrt = wtrain;
+  wsqrt.reserve(wtrain.size());
+  for (int i = 0; i < wtrain.size(); i++){
+    wtrain[i] = i+1;
+    wsqrt[i] = std::sqrt(wtrain[i]);
+  }
+
+  // the x matrix
+  std::vector<double> x;
+  st.recycle(R"SQL(
+SELECT length(Terms.value), Terms.value
+FROM Terms, Training_set
+WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+ORDER BY Training_set.id;
+)SQL");
+  for (int iz = 0; iz < zat.size(); iz++){
+    for (int il = 0; il <= lmax[iz]; il++){
+      for (int ie = 0; ie < exp.size(); ie++){
+	st.reset();
+	st.bind((char *) ":METHOD",emptyid);
+	st.bind((char *) ":ATOM",(int) zat[iz]);
+	st.bind((char *) ":L",il);
+	st.bind((char *) ":EXP",exp[ie]);
+	int m = 0;
+	while (st.step() != SQLITE_DONE){
+	  int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+	  double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+	  for (int i = 0; i < len; i++)
+	    x.push_back(value[i] * wsqrt[m++]);
+	}
+	if (m != nrows)
+	  throw std::runtime_error("Too few rows in terms data. Is the training data complete?");
+      }
+    }
+  }
+  if (x.size() != nrows*ncols)
+    throw std::runtime_error("Error count number of terms (nrows*ncols). Is the training data complete?");
+
+  // calculate the y = yref - yempty and yadd columns
+  std::vector<double> y;
+  st.recycle(R"SQL(
+SELECT length(Evaluations.value), Evaluations.value
+FROM Evaluations, Training_set
+WHERE Evaluations.methodid = :METHOD
+      AND Evaluations.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+ORDER BY Training_set.id;
+)SQL");
+  st.bind((char *) ":METHOD",refid);
+  n = 0;
+  while (st.step() != SQLITE_DONE){
+    int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+    for (int i = 0; i < len; i++)
+      y.push_back(value[i]);
+    n += len;
+  }
+  if (n != nrows)
+    throw std::runtime_error("Too few rows dumping y data");
+  st.bind((char *) ":METHOD",emptyid);
+  n = 0;
+  while (st.step() != SQLITE_DONE){
+    int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
+    double *value = (double *) sqlite3_column_blob(st.ptr(),1);
+    for (int i = 0; i < len; i++){
+      y[n] = (y[n] - value[i]) * wsqrt[n];
+      n++;
+    }
+  }
+  if (n != nrows)
+    throw std::runtime_error("Too few rows dumping y data");
+
+  // ## apply the weights and transform the matrices for the fit
+  // if (!isempty(yadd))
+  //   yadd = yadd .* wsqrt;
+  // endif
+  // if (!isempty(ynofit))
+  //   y = y - sum(ynofit,2);
+  // endif
+
+  // std::vector<int> ids = {refid,emptyid};
+  // for (int i = 0; i < addid.size(); i++)
+  //   ids.push_back(addid[iaddperm[i]]);
+
+  // uint64_t sizes[7] = {zat.size(), exp.size(), addid.size(), nyfit, addmaxl};
+  // const char *atoms_c = atoms.c_str();
+
+  std::vector<double> beta;
+  beta.reserve(ncols);
+  // double *beta = new double[ncols];
+  double wrms;
+  for (int i = 0; i < lam.size(); i++){
+    lasso_c(nrows,ncols,x.data(),y.data(),lam[i],beta.data(),&wrms);
+    printf("%d ... lambda = %.5f wrms = %.10f\n",i+1,lam[i],wrms);
+  }
 
   // std::cout << "maxcoef = " << maxcoef << std::endl;
   // for (int i = 0; i < l.size(); i++){
   //   std::cout << i << " -> " << l[i] << std::endl;
   // }
-
-  // exit(1);
 }
 
 // Write input files or structure files for the training set
