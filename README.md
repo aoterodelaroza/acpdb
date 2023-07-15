@@ -55,7 +55,7 @@ stdout are used. If the output file is not present, stdout is used.
 - Set: a group of properties, usually from an article in the
   literature and calculated with a reasonably good method.
 
-- Traning set: the set of all properties and structures that are used
+- Training set: the set of all properties and structures that are used
   for ACP development. Comprises one or more sets.
 
 - Dataset: the training set plus additional information such as atoms,
@@ -262,7 +262,7 @@ POSCAR files in directory `directory.s` that match the regular
 expression `regexp.s` (awk style). If `regexp.s` is not given, add all
 files in the directory with POSCAR extension. If the structures already
 exist in the database, the insertion is not carried out and the corresponding
-structure files are not read. The inserted structures can be prefixe
+structure files are not read.
 
 If PROPERTY_TYPE is present, insert properties corresponding to each
 of the structures inserted. The property type is given by `prop.s`
@@ -1078,7 +1078,25 @@ TRAINING DUMP [NOMAXCOEF]
 ~~~
 Write the octavedump.dat file for the LASSO fit corresponding to the
 current dataset. If NOMAXCOEF is present, do not dump the maximum term
-coefficients (maxcoef) even if they are available in the database.
+coefficients (maxcoef) even if they are available in the
+database. This keyword is the old alternative to TRAINING GENERATE.
+
+### Generating ACPs using the training set data
+~~~
+TRAINING GENERATE [ini.r [end.r [step.r]]] [NOMAXCOEF]
+~~~
+Generate ACPs using the current training set data, which must be
+complete. The use of TRAINING GENERATE requires linking against the
+LASSO library (liblasso). ACPs are generated with maximum 1-norm of
+the coefficients given by the list specified by `ini.r`, `end.r`, and
+`step.r`. If only `ini.r` is given, generate a single ACP with that
+value as constraint. If `ini.r` and `end.r` are given build a list
+between the two values in steps of 1. If the three values are given,
+build constraints between `ini.r` and `end.r` with a step of
+`step.r`. The generated ACPs are named `lasso-xx.acp` where `xx` is an
+integer ID indicated in the output. If the `NOMAXCOEF` keyword is
+given, ignore the maximum coefficient data, if available in the
+database.
 
 ### Calculation of Training Set Maximum Coefficients
 ~~~
