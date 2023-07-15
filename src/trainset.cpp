@@ -1563,6 +1563,8 @@ void trainset::dump(std::ostream &os, const std::string &keyw/*=""*/) {
   }
   for (int i = 0; i < addid.size(); i++)
     if (!addisfit[i]) iaddperm.push_back(i);
+  if (addid.size() > 0)
+    throw std::runtime_error("FIXME: additional terms not implemented yet");
 
   // calculate the number of rows and the weights with only the dofit sets
   // write the yref, yempty, and yadd columns
@@ -1754,8 +1756,7 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   // xxxx write or save the corresponding ACPs
   // xxxx improve output
   // xxxx treat maxcoef
-  // xxxx treat ynofit
-  // xxxx treat yadd
+  // xxxx warm start
 
   // build the lambda list
   std::vector<double> lam;
@@ -1793,6 +1794,8 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   }
   for (int i = 0; i < addid.size(); i++)
     if (!addisfit[i]) iaddperm.push_back(i);
+  if (addid.size() > 0)
+    throw std::runtime_error("FIXME: additional terms not implemented yet");
 
   // calculate the number of rows and the weights with only the dofit sets
   // write the yref, yempty, and yadd columns
@@ -1831,10 +1834,8 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   // the w vector
   std::vector<double> wsqrt = wtrain;
   wsqrt.reserve(wtrain.size());
-  for (int i = 0; i < wtrain.size(); i++){
-    wtrain[i] = i+1;
+  for (int i = 0; i < wtrain.size(); i++)
     wsqrt[i] = std::sqrt(wtrain[i]);
-  }
 
   // the x matrix
   std::vector<double> x;
@@ -1868,7 +1869,8 @@ ORDER BY Training_set.id;
   if (x.size() != nrows*ncols)
     throw std::runtime_error("Error count number of terms (nrows*ncols). Is the training data complete?");
 
-  // calculate the y = yref - yempty and yadd columns
+  // calculate the y = yref - yempty - ynofit
+  // crash if there are any yadd columns
   std::vector<double> y;
   st.recycle(R"SQL(
 SELECT length(Evaluations.value), Evaluations.value
@@ -1901,34 +1903,59 @@ ORDER BY Training_set.id;
   if (n != nrows)
     throw std::runtime_error("Too few rows dumping y data");
 
-  // ## apply the weights and transform the matrices for the fit
-  // if (!isempty(yadd))
-  //   yadd = yadd .* wsqrt;
-  // endif
-  // if (!isempty(ynofit))
-  //   y = y - sum(ynofit,2);
-  // endif
-
-  // std::vector<int> ids = {refid,emptyid};
-  // for (int i = 0; i < addid.size(); i++)
-  //   ids.push_back(addid[iaddperm[i]]);
-
-  // uint64_t sizes[7] = {zat.size(), exp.size(), addid.size(), nyfit, addmaxl};
-  // const char *atoms_c = atoms.c_str();
-
   std::vector<double> beta;
   beta.reserve(ncols);
   // double *beta = new double[ncols];
   double wrms;
   for (int i = 0; i < lam.size(); i++){
+    // run the lasso fit and generate the output line
     lasso_c(nrows,ncols,x.data(),y.data(),lam[i],beta.data(),&wrms);
     printf("%d ... lambda = %.5f wrms = %.10f\n",i+1,lam[i],wrms);
-  }
 
-  // std::cout << "maxcoef = " << maxcoef << std::endl;
-  // for (int i = 0; i < l.size(); i++){
-  //   std::cout << i << " -> " << l[i] << std::endl;
-  // }
+    // make the ACP
+    std::string name = "lasso-" + std::to_string(i+1);
+    std::vector<acp::term> t;
+    int n = 0;
+    for (int iz = 0; iz < zat.size(); iz++){
+      for (unsigned char il = 0; il <= lmax[iz]; il++){
+	for (int ie = 0; ie < exp.size(); ie++){
+	  if (beta[n++] > 1e-20)
+	    t.push_back(acp::term({zat[iz],il,exp[ie],beta[n++]}));
+	}
+      }
+    }
+    acp a(name,t);
+
+    // generate the ACP
+    std::ofstream fp(name + ".acp");
+    if (!fp.is_open())
+      throw std::runtime_error("Could not open output file: " + name + ".acp");
+
+    // write the ACP header
+    fp << "! This ACP was generated with acpdb" << std::endl
+       << "! Atoms(lmax) ";
+    for (int iz = 0; iz < zat.size(); iz++)
+      fp << nameguess(zat[iz]) << "(" << globals::inttol[lmax[iz]] << ") ";
+    fp << std::endl;
+    fp << "! Exponents: " << std::fixed << std::setprecision(2);
+    for (int ie = 0; ie < exp.size(); ie++)
+      fp << exp[ie] << " ";
+    fp << std::endl;
+    fp << "! ACP terms in training set: " << a.size() << std::endl;
+    fp << "! Data points in training set: " << nrows << std::endl;
+    // if (havemaxcoef)
+    //   fprintf(fid,"! Maximum coefficients applied\n");
+    // endif
+    fp << std::fixed << std::setprecision(4);
+    fp << "! norm-1 = " << a.norm1() << std::endl;
+    fp << "! norm-2 = " << a.norm2() << std::endl;
+    fp << "! norm-inf = " << a.norminf() << std::endl;
+    fp << "! wrms = " << wrms << std::endl;
+
+    // write the ACP body and close
+    a.writeacp_gaussian(fp);
+    fp.close();
+  }
 }
 
 // Write input files or structure files for the training set

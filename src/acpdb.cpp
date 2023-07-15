@@ -432,7 +432,6 @@ int main(int argc, char *argv[]) {
 	bool maxcoef = true;
 	std::vector<double> lambdav;
 	while (!name.empty()){
-	  std::cout << name << std::endl;
 	  uppercase(name);
 	  if (name == "NOMAXCOEF")
 	    maxcoef = false;
