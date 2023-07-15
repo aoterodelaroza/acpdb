@@ -1738,6 +1738,35 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
   os << "# DONE" << std::endl << std::endl;
 }
 
+// Generate an ACP
+void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<double> lambdav){
+
+  // build the lambda list
+  std::vector<double> l;
+  double ini, end, step;
+  if (lambdav.size() == 0 || lambdav.size() > 3)
+    throw std::runtime_error("Incorrect number of elements in TRAINING GENERATE");
+  ini = lambdav[0];
+  if (lambdav.size() > 1)
+    end = lambdav[1];
+  else
+    end = ini;
+  if (lambdav.size() > 2)
+    step = lambdav[2];
+  else
+    step = 1;
+  for (double d = ini; d <= end; d += step)
+    l.push_back(d);
+
+  std::cout << "maxcoef = " << maxcoef << std::endl;
+  for (int i = 0; i < l.size(); i++){
+    std::cout << i << " -> " << l[i] << std::endl;
+  }
+
+  exit(1);
+
+}
+
 // Write input files or structure files for the training set
 // structures. Pass the options other than TRAINING and the ACP to the
 // structure writers.

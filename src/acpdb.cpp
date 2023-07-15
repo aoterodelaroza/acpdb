@@ -428,6 +428,20 @@ int main(int argc, char *argv[]) {
         ts.write_olddat(*os,name);
       } else if (category == "DUMP") {
         ts.dump(*os,uname);
+      } else if (category == "GENERATE") {
+	bool maxcoef = true;
+	std::vector<double> lambdav;
+	while (!name.empty()){
+	  std::cout << name << std::endl;
+	  uppercase(name);
+	  if (name == "NOMAXCOEF")
+	    maxcoef = false;
+	  else
+	    lambdav.push_back(std::stod(name));
+	  name = popstring(tokens);
+	}
+	ts.generate(*os,maxcoef,lambdav);
+
       } else {
         throw std::runtime_error("Unknown keyword after TRAINING");
       }
