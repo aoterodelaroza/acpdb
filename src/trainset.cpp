@@ -1751,10 +1751,8 @@ void trainset::generate(std::ostream &os, const bool maxcoef, const std::vector<
   return;
 #endif
 
-  os << "* TRAINING: generating ACPs " << std::endl;
+  os << "* TRAINING: generating ACPs " << std::endl << std::endl;
 
-  // xxxx write or save the corresponding ACPs
-  // xxxx improve output
   // xxxx treat maxcoef
   // xxxx warm start
 
@@ -1903,6 +1901,7 @@ ORDER BY Training_set.id;
   if (n != nrows)
     throw std::runtime_error("Too few rows dumping y data");
 
+  printf(" Id      lambda      norm-1      norm-2      norm-inf    wrms     nterm  filename\n");
   std::vector<double> beta;
   beta.reserve(ncols);
   // double *beta = new double[ncols];
@@ -1910,7 +1909,6 @@ ORDER BY Training_set.id;
   for (int i = 0; i < lam.size(); i++){
     // run the lasso fit and generate the output line
     lasso_c(nrows,ncols,x.data(),y.data(),lam[i],beta.data(),&wrms);
-    printf("%d ... lambda = %.5f wrms = %.10f\n",i+1,lam[i],wrms);
 
     // make the ACP
     std::string name = "lasso-" + std::to_string(i+1);
@@ -1919,8 +1917,9 @@ ORDER BY Training_set.id;
     for (int iz = 0; iz < zat.size(); iz++){
       for (unsigned char il = 0; il <= lmax[iz]; il++){
 	for (int ie = 0; ie < exp.size(); ie++){
-	  if (beta[n++] > 1e-20)
-	    t.push_back(acp::term({zat[iz],il,exp[ie],beta[n++]}));
+	  if (std::abs(beta[n]) > 1e-20)
+	    t.push_back(acp::term({zat[iz],il,exp[ie],beta[n]}));
+	  n++;
 	}
       }
     }
@@ -1955,7 +1954,11 @@ ORDER BY Training_set.id;
     // write the ACP body and close
     a.writeacp_gaussian(fp);
     fp.close();
+
+    printf("%4d  %10.5f  %10.5f  %10.5f  %10.5f  %10.5f  %4d  %s.acp\n",i+1,lam[i],a.norm1(),
+	   a.norm2(),a.norminf(),wrms,a.size(),name.c_str());
   }
+  printf("\n");
 }
 
 // Write input files or structure files for the training set
