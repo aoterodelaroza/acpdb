@@ -33,7 +33,7 @@ include(utils)
 ## interface options
 option(USE_BTPARSE "Use the btparse bibtex file parser for bibtex support." ON)
 option(USE_CEREAL "Use the cereal library for training set serialization." ON)
-set(LASSO_LIB "" CACHE STRING "Directory where liblasso.a and liblasso.h are.")
+set(LASSO_LIB "" CACHE STRING "Directory where liblasso.so and liblasso.h are.")
 
 ## testing
 option(BUILD_TESTING "Enable the regression tests for the acpdb build." OFF)

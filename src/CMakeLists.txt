@@ -11,14 +11,11 @@ add_executable(acpdb ${SOURCES})
 
 ## lasso library
 if (NOT "${LASSO_LIB}" STREQUAL "")
-  add_library(lassolib STATIC IMPORTED)
-  set_target_properties(lassolib PROPERTIES IMPORTED_LOCATION ${LASSO_LIB}/liblasso.a)
+  add_library(lassolib SHARED IMPORTED)
+  set_target_properties(lassolib PROPERTIES IMPORTED_LOCATION ${LASSO_LIB}/liblasso.so)
   target_include_directories(acpdb PRIVATE ${LASSO_LIB})
   target_compile_definitions(acpdb PRIVATE LASSO_LIB)
   target_link_libraries(acpdb PRIVATE lassolib)
-  if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_link_libraries(acpdb PRIVATE "gfortran")
-  endif()
 endif()
 
 ## sqlite3
