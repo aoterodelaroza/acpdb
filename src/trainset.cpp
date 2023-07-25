@@ -1284,10 +1284,26 @@ void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,st
   else
     throw std::runtime_error("Either WRITE or CALC is required in TRAINING MAXCOEF");
 
+  double ini = -6.0, end = 2.0;
+  int npts = 9;
+  if ((im = kmap.find("RANGE")) != kmap.end()){
+    std::list<std::string> tokens(list_all_words(kmap.at("RANGE")));
+    if (tokens.size() != 3)
+      throw std::runtime_error("Erroneous syntax in RANGE, TRAINING/MAXCOEF");
+    ini = std::stod(popstring(tokens));
+    end = std::stod(popstring(tokens));
+    npts = std::stoi(tokens.front());
+  }
+
   // coefficients
+  double step = (end-ini) / (npts-1);
   std::vector<double> coef;
-  for (int j = -6; j < 2; j++)
-    coef.push_back(std::pow(10.0,j));
+  for (int i = 0; i < npts; i++){
+    double x = ini + i * step;
+    coef.push_back(std::pow(10.0,x));
+  }
+  for (int i = 0; i < coef.size(); i++)
+    printf("%.10e\n",coef[i]);
 
   if (iswrite){
     // WRITE

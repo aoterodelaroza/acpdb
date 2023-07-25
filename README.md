@@ -1108,6 +1108,7 @@ TRAINING MAXCOEF
   [TEMPLATE_MOL filemol.s]
   [TEMPLATE_CRYS filecrys.s]
   [DIRECTORY dir.s]
+  [RANGE ini.r end.r npts.i]
 END
 ~~~
 The MAXCOEF keyword is used to calculate maximum coefficients for each
@@ -1142,6 +1143,13 @@ values indicated in the file for the same structure are the energies
 listed in the input file, in the same order (these can be obtained
 easily with grep). The DIRECTORY and TEMPLATE keywords have no effect
 on CALC.
+
+By default, the range for the MAXCOEF calculation goes between 1e-6
+and 1e2 in geometric progression with a step or 10 (9 points). The
+keyword RANGE can be used to change this behavior. It gives the
+initial and final values for the geometric progression and the number
+of points in this range. Note that if RANGE is used in WRITE, the same
+RANGE has to be repeated in CALC.
 
 ## DIN File Format
 
