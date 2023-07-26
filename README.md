@@ -1147,9 +1147,9 @@ on CALC.
 By default, the range for the MAXCOEF calculation goes between 1e-6
 and 1e2 in geometric progression with a step or 10 (9 points). The
 keyword RANGE can be used to change this behavior. It gives the
-initial and final values for the geometric progression and the number
-of points in this range. Note that if RANGE is used in WRITE, the same
-RANGE has to be repeated in CALC.
+initial and final exponents of 10 for the geometric progression
+(default: -6 and 2) and the number of points in this range. Note that
+if RANGE is used in WRITE, the same RANGE has to be repeated in CALC.
 
 ## DIN File Format
 
