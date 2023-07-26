@@ -1764,7 +1764,7 @@ void trainset::generate(std::ostream &os, const bool maxcoef0, const std::vector
 #ifndef LASSO_LIB
   throw std::runtime_error("Cannot use TRAINING GENERATE without linking the external LASSO library.");
   return;
-#endif
+#else
 
   os << "* TRAINING: generating ACPs " << std::endl << std::endl;
 
@@ -2000,6 +2000,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 	   a.norm2(),a.norminf(),wrms,a.size(),name.c_str());
   }
   printf("\n");
+#endif
 }
 
 // Write input files or structure files for the training set
