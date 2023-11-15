@@ -1368,6 +1368,32 @@ WHERE Properties.id = Training_set.propid;
       throw std::runtime_error("Invalid SOURCE file in TRAINING MAXCOEF (not a file)");
     std::unordered_map<std::string,std::vector<double>> datmap = read_data_file_vector(file,1.);
 
+    // verify the number of entries and decide whether the user gives the empty or not
+    int ntotal = 0;
+    for (int i = 0; i < zat.size(); i++)
+      for (int il = 0; il <= lmax[i]; il++)
+	ntotal += exp.size() * coef.size();
+    int ncoef = 0;
+    for (auto it = datmap.begin(); it != datmap.end(); it++){
+      if (it->second.size() != ntotal && it->second.size() != ntotal+1){
+	std::cout << "Structure = " << it->first << std::endl;
+	std::cout << "Entries for structure = " << it->second.size() << std::endl;
+	std::cout << "Entries expected = " << ntotal << " or " << ntotal+1 << std::endl;
+	throw std::runtime_error("Invalid number of entries in TRAINING MAXCOEF");
+      }
+      if (it->second.size() != ncoef){
+	if (ncoef == 0)
+	  ncoef = it->second.size();
+	else{
+	  std::cout << "Structure = " << it->first << std::endl;
+	  std::cout << "Entries for structure = " << it->second.size() << std::endl;
+	  std::cout << "Entries for previous structures = " << ncoef << std::endl;
+	  throw std::runtime_error("Inconsistent number of entries in TRAINING MAXCOEF");
+	}
+      }
+    }
+    bool skipempty = (ncoef == ntotal+1);
+
     // statements
     statement steval(db->ptr(),R"SQL(
 SELECT Evaluations.propid, Evaluations.value, Terms.value, Properties.property_type
@@ -1432,7 +1458,11 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 		stkey.step();
 		std::string name = (char *) sqlite3_column_text(stkey.ptr(), 0);
 		std::string strname = "maxcoef-" + name;
-		int nthis = nbefore + ic + 1; // +1 to account for the empty calculation
+		int nthis;
+		if (skipempty)
+		  nthis = nbefore + ic + 1; // +1 to account for the empty calculation
+		else
+		  nthis = nbefore + ic;
 		escf += pcoef[k] * datmap[strname][nthis];
 	      }
 	      escf *= globals::ha_to_kcal;
