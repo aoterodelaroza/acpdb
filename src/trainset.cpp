@@ -1302,8 +1302,12 @@ void trainset::maxcoef(std::ostream &os, const std::unordered_map<std::string,st
     double x = ini + i * step;
     coef.push_back(std::pow(10.0,x));
   }
-  for (int i = 0; i < coef.size(); i++)
-    printf("%.10e\n",coef[i]);
+  printf("+ List of coefficients for the maxcoef interpolation:\n");
+  for (int i = 0; i < coef.size(); i++){
+    printf("%.10e ",coef[i]);
+    if (i % 5 == 4) printf("\n");
+  }
+  printf("\n");
 
   if (iswrite){
     // WRITE
