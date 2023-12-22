@@ -77,8 +77,8 @@ class sqldb {
   // Bulk insert: read data from a file, then insert as evaluation or terms.
   void insert_maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
   void insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-                   const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
-                   const std::vector<double> &exp={});
+		   const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
+		   const std::vector<double> &exp={});
 
   // Insert literature references into the database from a bibtex file
   void insert_litref_bibtex(std::ostream &os, const std::list<std::string> &tokens);
@@ -111,7 +111,7 @@ class sqldb {
   // one of its subsets. If usetrain >= 0, assume the training set is
   // defined and compare to the whole training set.
   void read_and_compare(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-                        int usetrain=-1);
+			int usetrain=-1);
 
   // Write input files for a database set or the whole database. The
   // options go in map kmap. If the ACP is present, it is passed down to
@@ -122,10 +122,10 @@ class sqldb {
   // file names with this string. os = output stream for verbose
   // notifications.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
-                        const std::unordered_map<int,int> &smapin={},
-                        const std::vector<unsigned char> &zat={}, const std::vector<std::string> &symbol={},
+			const std::unordered_map<int,int> &smapin={},
+			const std::vector<unsigned char> &zat={}, const std::vector<std::string> &symbol={},
 			const std::vector<unsigned char> &lmax={},
-                        const std::vector<double> &exp={}, const std::vector<double> &coef={},
+			const std::vector<double> &exp={}, const std::vector<double> &coef={},
 			const std::string &prefix="");
 
   // Write the structures with IDs given by the keys in smap. The
@@ -137,20 +137,22 @@ class sqldb {
   // (0 = no packing). prefix = prefix the file names with this
   // string. os is the output stream for verbose notifications. For
   // the template expansion, use the information in ACP a. For the
-  // loop expansion, use the list of atomic numbers (zat), symbols (symbol), angular
+  // loop expansion, use the list of atomic IDs, atomic numbers (zat),
+  // symbols (symbol), angular
   // momenta (l), exponents (exp), and coefficients (coef). Rename = 0
   // (do not rename), = 1 (write an extended name with atom, l, and
   // exponent info in it), = 2 (with atom, l, exponent, coef).
   void write_many_structures(std::ostream &os,
-                             const std::string &template_m, const std::string &template_c,
-                             const std::string &ext_m, const std::string &ext_c,
-                             const acp &a,
-                             const std::unordered_map<int,int> &smap,
-                             const std::vector<unsigned char> &zat, const std::vector<std::string> &symbol,
+			     const std::string &template_m, const std::string &template_c,
+			     const std::string &ext_m, const std::string &ext_c,
+			     const acp &a,
+			     const std::unordered_map<int,int> &smap,
+			     const std::vector<int> &atid,
+			     const std::vector<unsigned char> &zat, const std::vector<std::string> &symbol,
 			     const std::vector<unsigned char> &l,
 			     const std::vector<double> &exp, const std::vector<double> &coef,
-                             const int rename,
-                             const std::string &dir="./", int npack=0,
+			     const int rename,
+			     const std::string &dir="./", int npack=0,
 			     const std::string &prefix="");
 
   // Write one structure to output directory dir with name prefix
@@ -159,15 +161,15 @@ class sqldb {
   // (with atom, l, exponent, coef). If the run is verbose, write a
   // note to stream os. The structure written has database ID equal to
   // id. Use template in tmpl. For the keyword expansion, use the
-  // information in the ACP (a), atomic numbers (zat), angular
+  // information in the ACP (a), atomic ID (atid), atomic number (zat), angular
   // momentum (l), exponent (exp), exponent ID (iexp), and coefficient
   // (coef).
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-                                  const std::string &ext, const acp& a,
+				  const std::string &ext, const acp& a, int atid,
 				  const unsigned char zat, const std::string &symbol,
-                                  const unsigned char l, const double exp, const int iexp,
-                                  const double coef, const int icoef, const int rename,
-                                  const std::string &dir="./",
+				  const unsigned char l, const double exp, const int iexp,
+				  const double coef, const int icoef, const int rename,
+				  const std::string &dir="./",
 				  const std::string &prefix="");
 
   // Find the property type ID corresponding to the key in the database table.
@@ -187,7 +189,7 @@ class sqldb {
   // before parsing it. If touppero, uppercase the output key. Returns the
   // ID if succeeded, 0 if failed.
   int get_key_and_id(const std::string &input, const std::string &table,
-                     std::string &key, int &id, bool toupperi=false, bool touppero=false);
+		     std::string &key, int &id, bool toupperi=false, bool touppero=false);
 
   // Begin a transaction
   void begin_transaction(){

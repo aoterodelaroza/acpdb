@@ -36,7 +36,7 @@ class strtemplate {
     t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
     t_charge, t_mult, t_nat, t_ntyp, t_xyz,
     t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
-    t_acpgau, t_acpcrys,
+    t_acpgau, t_acpcrys, t_term_id,
     t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
     t_term_coef, t_term_loop, t_term_endloop};
   // t_string: a string, passed literally to the file.
@@ -56,6 +56,7 @@ class strtemplate {
   // t_qexyz (%qexyz%): the ATOMIC_SPECIES and ATOMIC_COORDINATES block in QE format.
   // t_acpgau (%acpgau[%xx]%): the ACP in Gaussian format; optionally for only one atom.
   // t_acpcrys (%acpcrys[%xx]%): the ACP in crystal format; optionally for only one atom.
+  // t_term_id (%term_id%): ACP term numerical ID
   // t_term_atsymbol (%term_atsymbol%): ACP term, atomic symbol
   // t_term_atsymbol_lstr_gaussian (%term_atsymbol_lstr_gaussian%): ACP term, atomic symbol & l for Gaussian inputs
   // t_term_atnum (%term_atnum%): ACP term, atomic number
@@ -73,7 +74,8 @@ class strtemplate {
   // substitutions are performed with the information from the structure (s),
   // the ACP (a), the list of atomic numbers (zat), angular momenta (l),
   // exponents (exp), and coefficients (coef).
-  std::string apply(const structure &s, const acp& a, const unsigned char zat,
+  std::string apply(const structure &s, const acp& a, const int id,
+		    const unsigned char zat,
 		    const std::string &symbol, const unsigned char l,
 		    const double exp, const double coef) const;
 
@@ -81,7 +83,8 @@ class strtemplate {
   // loop expansion. The information from the loop expansion comes from
   // the list of atomic numbers (zat), angular momenta (l), exponents
   // (exp), and coefficients (coef).
-  void expand_loop(const std::vector<unsigned char> &zat,
+  void expand_loop(const std::vector<int> &atid,
+		   const std::vector<unsigned char> &zat,
 		   const std::vector<std::string> &symbol,
                    const std::vector<unsigned char> &l,
                    const std::vector<double> &exp,

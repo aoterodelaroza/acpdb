@@ -2601,6 +2601,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
   // Terms and maxcoef
   std::vector<std::string> symbol_ = {""};
+  std::vector<int> atid_ = {0};
   std::vector<unsigned char> zat_ = {0}, l_ = {0};
   std::vector<double> exp_ = {0.0}, coef_ = {0.0};
   int rename = 0;
@@ -2612,6 +2613,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
       rename = 1;
       exp_ = exp;
+      atid_.clear();
       zat_.clear();
       l_.clear();
       symbol_.clear();
@@ -2628,6 +2630,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
       for (int izat = 0; izat < zat.size(); izat++){
 	for (unsigned char il = 0; il <= lmax[izat]; il++){
+	  atid_.push_back(izat+1);
 	  zat_.push_back(zat[izat]);
 	  l_.push_back(il);
 	  symbol_.push_back(symbol[izat]);
@@ -2667,7 +2670,8 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   }
 
   // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,zat_,symbol_,l_,exp_,coef_,rename,dir,npack,prefix);
+  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,
+			atid_,zat_,symbol_,l_,exp_,coef_,rename,dir,npack,prefix);
   if (globals::verbose)
     os << std::endl;
 }
@@ -2681,7 +2685,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 // prefix the file names with this string. os is the output stream
 // for verbose notifications. For the template expansion, use the
 // information in ACP a. For the loop expansion, use the list of
-// atomic numbers (zat), angular momenta (l), exponents (exp), and
+// atomic IDs (atid), atomic numbers (zat), angular momenta (l), exponents (exp), and
 // coefficients (coef). If rename, incorporate the atom, l, exponent
 // info into the file name.
 void sqldb::write_many_structures(std::ostream &os,
@@ -2689,6 +2693,7 @@ void sqldb::write_many_structures(std::ostream &os,
 				  const std::string &ext_m, const std::string &ext_c,
 				  const acp &a,
 				  const std::unordered_map<int,int> &smap,
+				  const std::vector<int> &atid,
 				  const std::vector<unsigned char> &zat, const std::vector<std::string> &symbol,
 				  const std::vector<unsigned char> &l,
 				  const std::vector<double> &exp, const std::vector<double> &coef,
@@ -2701,6 +2706,8 @@ void sqldb::write_many_structures(std::ostream &os,
     throw std::runtime_error("Inconsistent atom and l arrays in write_many_structures");
   if (zat.size() != symbol.size())
     throw std::runtime_error("Inconsistent atom and symbol arrays in write_many_structures");
+  if (zat.size() != atid.size())
+    throw std::runtime_error("Inconsistent atom and atid arrays in write_many_structures");
 
   // build the templates
   strtemplate *tptr;
@@ -2709,11 +2716,11 @@ void sqldb::write_many_structures(std::ostream &os,
   strtemplate tmexp, tcexp;
   if (tm.hasloop()){
     tmexp = tm;
-    tmexp.expand_loop(zat,symbol,l,exp,coef);
+    tmexp.expand_loop(atid,zat,symbol,l,exp,coef);
   }
   if (tc.hasloop()){
     tcexp = tc;
-    tcexp.expand_loop(zat,symbol,l,exp,coef);
+    tcexp.expand_loop(atid,zat,symbol,l,exp,coef);
   }
 
   if (npack <= 0 || npack >= smap.size()){
@@ -2722,15 +2729,16 @@ void sqldb::write_many_structures(std::ostream &os,
 	tptr = &tm;
       else
 	tptr = &tc;
+
       if (tptr->hasloop()){
 	write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
-			    a, zat[0], symbol[0], l[0], exp[0], 0, coef[0], 0, 0, dir, prefix);
+			    a, atid[0], zat[0], symbol[0], l[0], exp[0], 0, coef[0], 0, 0, dir, prefix);
       } else {
 	for (int ii = 0; ii < zat.size(); ii++){
 	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
-				  zat[ii], symbol[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef, rename,
+				  atid[ii], zat[ii], symbol[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef, rename,
 				  dir, prefix);
 	    }
 	  }
@@ -2761,14 +2769,14 @@ void sqldb::write_many_structures(std::ostream &os,
       if (tptr->hasloop()){
 	written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
 						       (smap.at(srand[i])?ext_m:ext_c),
-						       a, zat[0], symbol[0], l[0], exp[0], 0, coef[0], 0, 0, dir,
+						       a, atid[0], zat[0], symbol[0], l[0], exp[0], 0, coef[0], 0, 0, dir,
 						       prefix)));
       } else {
 	for (int ii = 0; ii < zat.size(); ii++){
 	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
-							     a, zat[ii], symbol[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef,
+							     a, atid[ii], zat[ii], symbol[ii], l[ii], exp[iexp], iexp, coef[icoef], icoef,
 							     rename, dir, prefix)));
 	    }
 	  }
@@ -2806,10 +2814,10 @@ void sqldb::write_many_structures(std::ostream &os,
 // and exponent info in it. If the run is verbose, write a note to
 // stream os. The structure written has database ID equal to id. Use
 // template in tmpl. For the keyword expansion, use the information in
-// the ACP (a), atomic numbers (zat), angular momentum (l),
+// the ACP (a), atomic ID (atid), atomic number (zat), angular momentum (l),
 // exponent (exp), exponent ID (iexp), and coefficient (coef).
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
-				       const std::string &ext, const acp& a,
+				       const std::string &ext, const acp& a, int atid,
 				       const unsigned char zat, const std::string &symbol,
 				       const unsigned char l, const double exp, const int iexp,
 				       const double coef, const int icoef, const int rename,
@@ -2844,7 +2852,7 @@ FROM Structures WHERE id = ?1;
   }
 
   // write the substitution of the template to a string
-  std::string content = tmpl.apply(s,a,zat,symbol,l,exp,coef);
+  std::string content = tmpl.apply(s,a,atid,zat,symbol,l,exp,coef);
 
   // write the actual file and exit
   if (globals::verbose)
