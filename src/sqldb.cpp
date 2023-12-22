@@ -2607,10 +2607,10 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   int rename = 0;
   if ((im = kmap.find("TERM")) != kmap.end()){
     std::list<std::string> words = list_all_words(im->second);
-    if (words.size() == 0 || words.size() == 1){
-      if (zat.empty() || lmax.empty() || exp.empty())
-	throw std::runtime_error("The training set must be defined if using WRITE TERM with no additonal options");
+    if (zat.empty() || lmax.empty() || exp.empty())
+      throw std::runtime_error("The training set must be defined if using WRITE TERM");
 
+    if (words.size() == 0 || words.size() == 1){
       rename = 1;
       exp_ = exp;
       atid_.clear();
@@ -2642,9 +2642,10 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       std::string str = words.front();
       words.pop_front();
       if (isinteger(str))
-	zat_[0] = std::stoi(str);
+	atid_[0] = std::stoi(str);
       else
-	zat_[0] = zatguess(str);
+	throw std::runtime_error("Invalid atom ID " + str + " in WRITE/TERM");
+      zat_[0] = zat[atid_[0]-1];
 
       str = words.front();
       words.pop_front();
