@@ -25,6 +25,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define M_PI 3.14159265358979323846
 
+#define ATSYMBOL_LENGTH 5 // length of the atomic symbol
+
 namespace globals {
   // global flags
   extern bool verbose; // verbose output

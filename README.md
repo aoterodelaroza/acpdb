@@ -18,8 +18,6 @@ atom-centered potentials (ACPs).
 | [Defining the training set](#defining-the-training-set)                                                 | TRAINING                                                                                                                                                                                                             |
 | [Simple training set operations](#simple-training-set-operations)                                       | TRAINING {DESCRIBE, SAVE, LOAD, DELETE, PRINT, CLEAR, WRITEDIN}                                                                                                                                                      |
 | [Training set evaluations](#training-set-evaluations)                                                   | TRAINING EVAL                                                                                                                                                                                                        |
-| [Insert training set data in old acpfit format](#insert-training-set-data-in-old-acpfit-format)         | TRAINING INSERT_OLD                                                                                                                                                                                                  |
-| [Write training set data in old acpfit format](#write-training-set-data-in-old-acpfit-format)           | TRAINING WRITE_OLD                                                                                                                                                                                                   |
 | [Dumping the training set](#dumping-the-training-set)                                                   | TRAINING DUMP                                                                                                                                                                                                        |
 | [Generating ACPs using training set data](#generating-acps-using-the-training-set-data)                 | TRAINING GENERATE                                                                                                                                                                                                    |
 | [Calculating training set maximum coefficients](#calculation-of-training-set-maximum-coefficients)      | TRAINING MAXCOEF                                                                                                                                                                                                     |
@@ -1009,69 +1007,6 @@ does not exist, try to find an ACP file with that name and use it
 instead. For this operation to work, the training set must be defined.
 If `output.s` is given, write the output to that file instead
 of the standard output.
-
-### Insert Training Set Data in Old Acpfit Format
-~~~
-TRAINING INSERT_OLD [directory.s]
-~~~
-Insert data in bulk from old-style ACP data files. Using this keyword
-requires the training set being defined.
-
-The data files to be inserted all reside in the directory
-`directory.s` (`./` if not given). This command first searches for the
-file called `names.dat`, and verifies that the names in it match with
-the property names currently in the training set. This is done to
-ensure the integrity of the database. After this operation is
-complete, the following data is read from the corresponding files and
-inserted:
-
-- `ref.dat`: evaluation of the reference method. This data is only
-  inserted if the evaluation is not already available in the
-  database. If it is, the data is ignored.
-
-- `empty.dat`: evaluation of the empty method. This data is only
-  inserted if the evaluation is not already available in the
-  database. If it is, the data is ignored.
-
-- `x_y_z.dat`, where `x` is the atom (lowercase symbol), `y` is the
-  angular momentum (lowercase symbol), and `z` is the exponent integer
-  index. Insert the corresponding ACP term. This file contains the
-  empty energy plus 0.001 times the term slope contribution.
-
-- `maxcoef.dat`: if this file is present, insert the maximum
-  coefficients for each term. The file must have the rows with this
-  structure:
-~~~
-atom l 2 exp.r maxcoef.r
-~~~
-  where `atom` is the atomic symbol or number, `l` is the angular
-  momentum symbol or number, `2` is a constant, `exp.r` is the
-  exponent, and `maxcoef.r` is the maximum coefficient. The maxcoeffs
-  are applied to all terms that match the combination of atom, l, and
-  exponent.
-
-### Write Training Set Data in Old Acpfit Format
-~~~
-TRAINING WRITE_OLD [directory.s]
-~~~
-Write the training data to data files in the old (acpfit) style
-format. Using this keyword requires the training set being defined and
-complete. The data files are written to the directory
-`directory.s` (`./` if not given). The files written are:
-
-- `names.dat`, containing the names of the properties in the training
-  set.
-
-- `ref.dat`: evaluation of the reference method.
-
-- `empty.dat`: evaluation of the empty method.
-
-- `x_y_z.dat`, where `x` is the atom (lowercase symbol), `y` is the
-  angular momentum (lowercase symbol), and `z` is the exponent integer
-  index. Insert the corresponding ACP term. This file contains the
-  empty energy plus 0.001 times the term slope contribution.
-
-Writing the `maxcoef.dat` file is not implemented yet.
 
 ### Dumping the Training Set
 ~~~

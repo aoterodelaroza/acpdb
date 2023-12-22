@@ -102,13 +102,14 @@ CREATE TABLE Evaluations (
 );
 CREATE TABLE Terms (
   methodid      INTEGER NOT NULL,
-  atom          INTEGER NOT NULL,
+  zatom         INTEGER NOT NULL,
+  symbol        TEXT NOT NULL,
   l             INTEGER NOT NULL,
   exponent      REAL NOT NULL,
   propid        INTEGER NOT NULL,
   value         BLOB NOT NULL,
   maxcoef       REAL,
-  PRIMARY KEY(methodid,atom,l,exponent,propid),
+  PRIMARY KEY(methodid,zatom,symbol,l,exponent,propid),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
@@ -572,13 +573,13 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   bool reqpropty = true, isterm;
   if (kmap.find("VALUE") != kmap.end()) {
     isterm = true;
-    cmd = "INSERT INTO Terms (methodid,propid,atom,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)";
+    cmd = "INSERT INTO Terms (methodid,propid,zatom,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ZATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)";
   } else if (kmap.find("MAXCOEF") != kmap.end()){
     isterm = false;
     if (kmap.find("PROPERTY") != kmap.end())
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT";
     else{
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT";
       reqpropty = false;
     }
   } else
@@ -703,8 +704,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     throw std::runtime_error("A METHOD is required in INSERT MAXCOEF");
 
   // statements
-  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
-  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
+  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT");
+  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT");
   statement *st;
 
   // begin the transaction
@@ -900,7 +901,7 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   else
     sqlcmd = "INSERT";
   if (doterm)
-    sqlcmd += " INTO Terms (methodid,atom,l,exponent,propid,value) VALUES(:METHOD,:ATOM,:L,:EXP,:PROPID,:VALUE);";
+    sqlcmd += " INTO Terms (methodid,zatom,l,exponent,propid,value) VALUES(:METHOD,:ZATOM,:L,:EXP,:PROPID,:VALUE);";
   else
     sqlcmd += " INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);";
   stinsert.recycle(sqlcmd);
@@ -1744,7 +1745,7 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
 DELETE FROM Terms WHERE
   methodid = (SELECT id FROM Methods WHERE key = ?1) AND
   propid = (SELECT id FROM Properties WHERE key = ?2) AND
-  atom = ?3 AND l = ?4 AND exponent = ?5;
+  zatom = ?3 AND l = ?4 AND exponent = ?5;
 )SQL");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
@@ -1855,14 +1856,14 @@ ORDER BY methodid, propid;
     stmt = R"SQL(
 SELECT methodid,propid,atom,l,exponent,length(value),value,maxcoef
 FROM Terms
-ORDER BY methodid,atom,l,exponent,propid;
+ORDER BY methodid,zatom,l,exponent,propid;
 )SQL";
   } else if (category == "MAXCOEF"){
     headers = {"methodid","atom",  "l","exponent","maxcoef"};
     types   = {     t_int, t_int,t_int,  t_double, t_double};
     cols    = {         0,     1,    2,         3,        4};
     stmt = R"SQL(
-SELECT methodid,atom,l,exponent,MIN(maxcoef)
+SELECT methodid,zatom,l,exponent,MIN(maxcoef)
 FROM Terms
 WHERE maxcoef IS NOT NULL
 GROUP BY methodid,atom,l,exponent
@@ -2199,14 +2200,14 @@ WHERE Evaluations.propid = Properties.id
   // check the number of values and structures in terms
   os << "Checking the number of values and structures in the terms table" << std::endl;
   st.recycle(R"SQL(
-SELECT Terms.methodid, Terms.atom, Terms.l, Terms.exponent, Terms.propid, Properties.property_type, length(Terms.value), Properties.nstructures, Properties.structures
+SELECT Terms.methodid, Terms.zatom, Terms.l, Terms.exponent, Terms.propid, Properties.property_type, length(Terms.value), Properties.nstructures, Properties.structures
 FROM Terms, Properties
 WHERE Terms.propid = Properties.id
 )SQL");
   stcheck.recycle("SELECT nat FROM Structures WHERE id = ?1;");
   while (st.step() != SQLITE_DONE){
     int methodid = sqlite3_column_int(st.ptr(), 0);
-    int atom = sqlite3_column_int(st.ptr(), 1);
+    int zatom = sqlite3_column_int(st.ptr(), 1);
     int l = sqlite3_column_int(st.ptr(), 2);
     int exp = sqlite3_column_int(st.ptr(), 3);
     int propid = sqlite3_column_int(st.ptr(), 4);
@@ -2216,7 +2217,7 @@ WHERE Terms.propid = Properties.id
 
     // check the number of structures
     if (ppty != globals::ppty_energy_difference && nstr != 1){
-      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have one structure, but has " << nstr << std::endl;
       continue;
     }
@@ -2224,13 +2225,13 @@ WHERE Terms.propid = Properties.id
     // check the number of values
     if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
       if (nvalue != 1)
-	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have one value, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_dipole && nvalue != 3){
-      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have 3 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_stress && nvalue != 6){
-      os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have 6 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
       int idstr = sqlite3_column_int(st.ptr(),8);
@@ -2238,10 +2239,10 @@ WHERE Terms.propid = Properties.id
       stcheck.step();
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
-	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
       else if (ppty == globals::ppty_d2e && nvalue != (3*nat) * (3*nat+1) / 2)
-	os << "TERMS (method=" << methodid << ";atom=" << atom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }

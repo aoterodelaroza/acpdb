@@ -65,6 +65,7 @@ void trainset::addatoms(const std::list<std::string> &tokens){
   auto it = tokens.begin();
   while (it != tokens.end()){
     std::string at = *(it++);
+    at.resize(ATSYMBOL_LENGTH,'-');
     std::string l = *(it++);
 
     unsigned char zat_ = zatguess(at);
@@ -76,6 +77,8 @@ void trainset::addatoms(const std::list<std::string> &tokens){
     unsigned char lmax_ = globals::ltoint.at(l);
     zat.push_back(zat_);
     lmax.push_back(lmax_);
+    symbol.push_back(at);
+    nat++;
   }
   complete = c_unknown;
 }
@@ -158,7 +161,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   //// mask ////
   if (kmap.find("MASK_ATOMS") != kmap.end() || kmap.find("MASK_NOANIONS") != kmap.end() || kmap.find("MASK_NOCHARGED") != kmap.end() ||
       kmap.find("MASK_SIZE") != kmap.end()){
-    if (zat.empty())
+    if (nat == 0)
       throw std::runtime_error("The selected MASK in TRAINING/SUBSET is not possible if no atoms have been defined");
 
     int msize = -1;
@@ -506,7 +509,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
   if (!isdefined()){
     complete = c_no;
     os << "# The TRAINING SET is NOT DEFINED" << std::endl;
-    if (zat.empty()) os << "--- No atoms found (ATOM) ---" << std::endl;
+    if (nat == 0) os << "--- No atoms found (ATOM) ---" << std::endl;
     if (lmax.empty()) os << "--- No angular momenta found (LMAX) ---" << std::endl;
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
     if (setid.empty()) os << "--- No subsets found (SUBSET) ---" << std::endl;
@@ -524,10 +527,10 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
 
   // Atoms and lmax //
   if (!quiet){
-    os << "# List of atoms and maximum angular momentum channels (" << zat.size() << ")" << std::endl;
+    os << "# List of atoms and maximum angular momentum channels (" << nat << ")" << std::endl;
     os << "| Atom | lmax |" << std::endl;
-    for (int i = 0; i < zat.size(); i++){
-      os << "| " << nameguess(zat[i]) << " | " << globals::inttol[lmax[i]] << " |" << std::endl;
+    for (int i = 0; i < nat; i++){
+      os << "| " << symbol[i] << " | " << globals::inttol[lmax[i]] << " |" << std::endl;
     }
     os << std::endl;
   }
@@ -678,7 +681,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
 SELECT COUNT(DISTINCT Training_set.propid)
 FROM Terms
 INNER JOIN Training_set ON Training_set.propid = Terms.propid
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
     int ncall = 0, ntall = 0;
     if (!quiet)
       os << "# Terms: " << std::endl;
@@ -687,13 +690,14 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 	for (int ie = 0; ie < exp.size(); ie++){
 	  st.reset();
 	  st.bind((char *) ":METHOD",emptyid);
-	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":ZATOM",(int) zat[iz]);
+	  st.bind((char *) ":SYMBOL",(char *) symbol[iz].c_str());
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();
 	  int ncalc = sqlite3_column_int(st.ptr(), 0);
 	  if (!quiet){
-	    os << "| " << nameguess(zat[iz]) << " | " << globals::inttol[il] << " | "
+	    os << "| " << symbol[iz] << " | " << globals::inttol[il] << " | "
 	       << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
 	  }
 	  ncall += ncalc;
@@ -779,297 +783,6 @@ ORDER BY Properties.orderid;
       }
       ofile << "0" << std::endl;
       ofile << value << std::endl;
-    }
-  }
-}
-
-// Insert data in bulk into the database using data files from
-// previous ACP development programs using this training set as
-// template
-void trainset::insert_olddat(std::ostream &os, const std::string &directory/*="./"*/){
-  if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING INSERT_OLD");
-  if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using TRAINING INSERT_OLD");
-
-  os << "* TRAINING: insert data in the old format " << std::endl << std::endl;
-
-  // Check directory
-  std::string dir = ".";
-  if (!directory.empty()) dir = directory;
-  if (!fs::is_directory(dir))
-    throw std::runtime_error("In TRAINING INSERT_OLD, directory not found: " + dir);
-
-  // Check that the names.dat matches and write down the property ids
-  std::string name = dir + "/names.dat";
-  if (!fs::is_regular_file(name))
-    throw std::runtime_error("In TRAINING INSERT_OLD, names.dat file found: " + name);
-  std::ifstream ifile(name,std::ios::in);
-  if (ifile.fail())
-    throw std::runtime_error("In TRAINING INSERT_OLD, error reading names.dat file: " + name);
-
-  // build the mapping
-  statement st(db->ptr(),R"SQL(
-SELECT Properties.id
-FROM Properties, Training_set
-WHERE Properties.id = Training_set.propid AND Properties.key = ?1;
-)SQL");
-  std::string namedat;
-  std::vector<int> pid;
-  while (std::getline(ifile,namedat)){
-    deblank(namedat);
-    st.reset();
-    st.bind(1,namedat);
-    if (st.step() != SQLITE_ROW)
-      throw std::runtime_error("In TRAINING INSERT_OLD, property name not found in training set: " + namedat);
-    pid.push_back(sqlite3_column_int(st.ptr(),0));
-  }
-  ifile.close();
-
-  // Start inserting data
-  db->begin_transaction();
-
-  // Insert data for reference method in ref.dat
-  statement st1(db->ptr(),"INSERT OR IGNORE INTO Evaluations (methodid,propid,value) VALUES(:METHODID,:PROPID,:VALUE)");
-  std::string knext = "";
-  name = dir + "/ref.dat";
-  ifile = std::ifstream(name,std::ios::in);
-  if (ifile.fail())
-    throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
-  for (int i = 0; i < pid.size(); i++){
-    double value;
-    ifile >> value;
-    if (ifile.fail())
-      throw std::runtime_error("In TRAINING INSERT_OLD, error reading ref.dat file: " + name);
-    st1.bind((char *) ":METHODID",refid);
-    st1.bind((char *) ":PROPID",pid[i]);
-    st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
-    st1.step();
-  }
-
-  // Insert data for empty method in empty.dat; save the empty for insertion of ACP terms
-  int n = 0;
-  std::vector<double> yempty(ntot,0.0);
-  name = dir + "/empty.dat";
-  ifile = std::ifstream(name,std::ios::in);
-  if (ifile.fail())
-    throw std::runtime_error("In TRAINING INSERT_OLD, error reading empty.dat file: " + name);
-  for (int i = 0; i < pid.size(); i++){
-    double value;
-    ifile >> value;
-    if (ifile.fail())
-      throw std::runtime_error("In TRAINING INSERT_OLD, error reading empty.dat file: " + name);
-    yempty[i] = value;
-    st1.bind((char *) ":METHODID",emptyid);
-    st1.bind((char *) ":PROPID",pid[i]);
-    st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
-    st1.step();
-  }
-  ifile.close();
-
-  // Insert data for ACP terms
-  st1.recycle("INSERT INTO Terms (methodid,propid,atom,l,exponent,value) VALUES(:METHODID,:PROPID,:ATOM,:L,:EXPONENT,:VALUE)");
-
-  for (int iat = 0; iat < zat.size(); iat++){
-    for (int il = 0; il <= lmax[iat]; il++){
-      for (int iexp = 0; iexp < exp.size(); iexp++){
-	std::string atom = nameguess(zat[iat]);
-	lowercase(atom);
-	name = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(iexp+1) + ".dat";
-	ifile = std::ifstream(name,std::ios::in);
-	if (ifile.fail())
-	  throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
-
-	for (int i = 0; i < pid.size(); i++){
-	  double value;
-	  ifile >> value;
-	  if (ifile.fail())
-	    throw std::runtime_error("In TRAINING INSERT_OLD, error reading term file: " + name);
-	  value = (value-yempty[i])/0.001;
-
-	  st1.bind((char *) ":METHODID",emptyid);
-	  st1.bind((char *) ":PROPID",pid[i]);
-	  st1.bind((char *) ":ATOM",(int) zat[iat]);
-	  st1.bind((char *) ":L",il);
-	  st1.bind((char *) ":EXPONENT",exp[iexp]);
-	  st1.bind((char *) ":VALUE",(void *) &value,false,sizeof(double));
-	  st1.step();
-	}
-	ifile.close();
-      }
-    }
-  }
-
-  // Insert maxcoef, if present
-  st1.recycle("UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND atom = :ATOM AND l = :L AND exponent = :EXPONENT");
-  name = dir + "/maxcoef.dat";
-  if (ifile = std::ifstream(name,std::ios::in)){
-    std::string line;
-    while (std::getline(ifile,line)){
-      std::string atom, l, idum, exp, value;
-      std::istringstream iss(line);
-      iss >> atom >> l >> idum >> exp >> value;
-      if (iss.fail())
-	continue;
-
-      st1.bind((char *) ":METHODID",emptyid);
-      st1.bind((char *) ":ATOM",(int) zatguess(atom));
-      st1.bind((char *) ":L",globals::ltoint.at(l));
-      st1.bind((char *) ":EXPONENT",exp);
-      st1.bind((char *) ":MAXCOEF",value);
-      st1.step();
-    }
-    ifile.close();
-  }
-
-  // Commit the transaction
-  db->commit_transaction();
-  os << std::endl;
-  complete = c_unknown;
-}
-
-// Write training set data to data files in old-style format
-void trainset::write_olddat(std::ostream &os, const std::string &directory/*="./"*/){
-  if (!db || !(*db))
-    throw std::runtime_error("A database file must be connected before using TRAINING WRITE_OLD");
-  if (!isdefined())
-    throw std::runtime_error("The training set needs to be defined before using TRAINING WRITE_OLD");
-
-  os << "* TRAINING: write data in the old (acpfit) format " << std::endl << std::endl;
-
-  if (complete == c_unknown)
-    describe(os,false,true,true);
-  if (complete == c_no)
-    throw std::runtime_error("The training set needs to be complete before using TRAINING WRITE_OLD");
-
-  // Check directory
-  std::string dir = ".";
-  if (!directory.empty()) dir = directory;
-  if (!fs::is_directory(dir))
-    throw std::runtime_error("In TRAINING WRITE_OLD, directory not found: " + dir);
-
-  // write the names.dat and ref.dat
-  unsigned long int nrows = 0;
-  std::string fname = dir + "/names.dat";
-  std::ofstream ofile(fname,std::ios::trunc);
-  if (ofile.fail())
-    throw std::runtime_error("Error writing file: " + fname);
-  fname = dir + "/ref.dat";
-  std::ofstream ofile2(fname,std::ios::trunc);
-  if (ofile2.fail())
-    throw std::runtime_error("Error writing file: " + fname);
-  ofile2 << std::scientific;
-  ofile2.precision(15);
-  statement st(db->ptr(),R"SQL(
-SELECT Properties.key, Evaluations.value
-FROM Properties, Training_set, Evaluations
-WHERE Properties.id = Training_set.propid AND Properties.id = Evaluations.propid AND Evaluations.methodid = ?1 AND Properties.property_type = 1
-ORDER BY Training_set.id;
-)SQL");
-  st.bind(1,refid);
-  while (st.step() != SQLITE_DONE){
-    const unsigned char *key = sqlite3_column_text(st.ptr(), 0);
-    ofile << key << std::endl;
-
-    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-    ofile2 << val[0] << std::endl;
-    nrows++;
-  }
-  ofile.close();
-  ofile2.close();
-
-  // the empty.dat
-  ofile.clear();
-  fname = dir + "/empty.dat";
-  ofile.open(fname);
-  if (ofile.fail())
-    throw std::runtime_error("Error writing file: " + fname);
-  ofile << std::scientific;
-  ofile.precision(15);
-  st.reset();
-  st.bind(1,emptyid);
-  while (st.step() != SQLITE_DONE){
-    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-    ofile << val[0] << std::endl;
-  }
-  ofile.close();
-
-  // the w.dat file
-  ofile.clear();
-  fname = dir + "/w.dat";
-  ofile.open(fname);
-  if (ofile.fail())
-    throw std::runtime_error("Error writing file: " + fname);
-  ofile << std::scientific;
-  ofile.precision(15);
-  unsigned long int n = 0;
-  for (int i = 0; i < setid.size(); i++){
-    if (setpptyid[i] != globals::ppty_energy_difference)
-      throw std::runtime_error("Cannot use write_olddat with properties other than ENERGY_DIFFERENCE");
-    for (int j = set_initial_idx[i]; j < set_final_idx[i]; j++){
-      if (set_dofit[i])
-	ofile << w[n] << std::endl;
-      n++;
-    }
-  }
-  ofile.close();
-
-  // the empty.dat file
-  ofile.clear();
-  fname = dir + "/empty.dat";
-  ofile.open(fname);
-  if (ofile.fail())
-    throw std::runtime_error("Error writing file: " + fname);
-  ofile << std::scientific;
-  ofile.precision(15);
-  st.reset();
-  st.bind(1,emptyid);
-  while (st.step() != SQLITE_DONE){
-    double *val = (double *) sqlite3_column_blob(st.ptr(),1);
-    ofile << val[0] << std::endl;
-  }
-  ofile.close();
-
-
-  // the x_y_z.dat files
-  st.recycle(R"SQL(
-SELECT Terms.value, Evaluations.value
-FROM Terms, Training_set, Properties, Evaluations
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
-      AND Training_set.propid = Properties.id AND Properties.property_type = 1
-      AND Properties.id = Evaluations.propid AND Evaluations.methodid = Terms.methodid
-ORDER BY Training_set.id;
-)SQL");
-  for (int iz = 0; iz < zat.size(); iz++){
-    for (int il = 0; il <= lmax[iz]; il++){
-      for (int ie = 0; ie < exp.size(); ie++){
-	std::string atom = nameguess(zat[iz]);
-	lowercase(atom);
-	fname = dir + "/" + atom + "_" + globals::inttol[il] + "_" + std::to_string(ie+1) + ".dat";
-	ofile.clear();
-	ofile.open(fname);
-	if (ofile.fail())
-	  throw std::runtime_error("Error writing file: " + fname);
-	ofile << std::scientific;
-	ofile.precision(15);
-	st.reset();
-	st.bind((char *) ":METHOD",emptyid);
-	st.bind((char *) ":ATOM",(int) zat[iz]);
-	st.bind((char *) ":L",il);
-	st.bind((char *) ":EXP",exp[ie]);
-	int n = 0;
-	while (st.step() != SQLITE_DONE){
-	  if (n++ >= nrows)
-	    throw std::runtime_error("Too many rows writing terms data");
-	  double *val = (double *) sqlite3_column_blob(st.ptr(),0);
-	  double *empty = (double *) sqlite3_column_blob(st.ptr(),1);
-	  double e0 = empty[0] + 0.001 * val[0];
-	  ofile << e0 << std::endl;
-	}
-	if (n != nrows)
-	  throw std::runtime_error("Too few rows writing terms data. Is the training data complete?");
-	ofile.close();
-      }
     }
   }
 }
@@ -1183,14 +896,14 @@ ORDER BY Training_set.id;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
 ORDER BY Training_set.id;
 )SQL");
   for (int i = 0; i < a.size(); i++){
     acp::term t = a.get_term(i);
     st.reset();
     st.bind((char *) ":METHOD",emptyid);
-    st.bind((char *) ":ATOM",(int) t.atom);
+    st.bind((char *) ":ZATOM",(int) t.atom);
     st.bind((char *) ":L",(int) t.l);
     st.bind((char *) ":EXP",t.exp);
 
@@ -1400,7 +1113,7 @@ SELECT Evaluations.propid, Evaluations.value, Terms.value, Properties.property_t
 FROM Properties, Evaluations, Training_Set, Terms
 WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
       Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
-      Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+      Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
 )SQL");
     statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
@@ -1423,7 +1136,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 
 	  steval.reset();
 	  steval.bind((char *) ":METHOD",emptyid);
-	  steval.bind((char *) ":ATOM",(int) zat[i]);
+	  steval.bind((char *) ":ZATOM",(int) zat[i]);
 	  steval.bind((char *) ":L",il);
 	  steval.bind((char *) ":EXP",exp[ie]);
 	  while (steval.step() != SQLITE_DONE){
@@ -1693,7 +1406,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
@@ -1702,7 +1415,7 @@ ORDER BY Training_set.id;
       for (int ie = 0; ie < exp.size(); ie++){
 	st.reset();
 	st.bind((char *) ":METHOD",emptyid);
-	st.bind((char *) ":ATOM",(int) zat[iz]);
+	st.bind((char *) ":ZATOM",(int) zat[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
 	int n = 0;
@@ -1754,7 +1467,7 @@ ORDER BY Training_set.id;
     st.recycle(R"SQL(
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
@@ -1762,7 +1475,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 	for (int ie = 0; ie < exp.size(); ie++){
 	  st.reset();
 	  st.bind((char *) ":METHOD",emptyid);
-	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":ZATOM",(int) zat[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();
@@ -1886,7 +1599,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
@@ -1895,7 +1608,7 @@ ORDER BY Training_set.id;
       for (int ie = 0; ie < exp.size(); ie++){
 	st.reset();
 	st.bind((char *) ":METHOD",emptyid);
-	st.bind((char *) ":ATOM",(int) zat[iz]);
+	st.bind((char *) ":ZATOM",(int) zat[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
 	int m = 0;
@@ -1954,7 +1667,7 @@ ORDER BY Training_set.id;
     st.recycle(R"SQL(
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
@@ -1962,7 +1675,7 @@ WHERE Terms.methodid = :METHOD AND Terms.atom = :ATOM AND Terms.l = :L AND Terms
 	for (int ie = 0; ie < exp.size(); ie++){
 	  st.reset();
 	  st.bind((char *) ":METHOD",emptyid);
-	  st.bind((char *) ":ATOM",(int) zat[iz]);
+	  st.bind((char *) ":ZATOM",(int) zat[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();

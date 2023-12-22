@@ -80,7 +80,7 @@ class trainset {
 
   // Is the training set defined?
   inline bool isdefined() const{
-    return !zat.empty() && !lmax.empty() && !exp.empty() && !setid.empty() && !setpptyid.empty() &&
+    return (nat > 0) && !setid.empty() && !setpptyid.empty() &&
       !w.empty() && !refname.empty() && !emptyname.empty();
   }
 
@@ -137,9 +137,11 @@ class trainset {
   }
 
   // accesors
+  const int &get_nat() const { return nat; };
   const std::vector<unsigned char> &get_zat() const { return zat; };
   const std::vector<unsigned char> &get_lmax() const { return lmax; };
   const std::vector<double> &get_exp() const { return exp; };
+  const std::vector<std::string> &get_symbol() const { return symbol; };
 
  private:
 
@@ -157,9 +159,11 @@ class trainset {
 
   std::vector<int> propid; // propids for the elements in the training set
 
-  std::vector<unsigned char> zat;  // atomic numbers for the atoms
-  std::vector<unsigned char> lmax; // maximum angular momentum channel for the atoms
+  int nat = 0; // number of non-equivalent atoms defined
+  std::vector<unsigned char> zat;  // atomic numbers
+  std::vector<unsigned char> lmax; // maximum angular momentum channels
   std::vector<double> exp; // exponents
+  std::vector<std::string> symbol; // atomic symbols
 
   std::vector<std::string> alias; // alias of the sets
   std::vector<std::string> setname; // name of the sets

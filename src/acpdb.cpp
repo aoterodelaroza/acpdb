@@ -422,10 +422,6 @@ int main(int argc, char *argv[]) {
       } else if (category == "MAXCOEF") {
 	std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
 	ts.maxcoef(*os,kmap);
-      } else if (category == "INSERT_OLD"){
-        ts.insert_olddat(*os,name);
-      } else if (category == "WRITE_OLD"){
-        ts.write_olddat(*os,name);
       } else if (category == "DUMP") {
         ts.dump(*os,uname);
       } else if (category == "GENERATE") {
