@@ -73,7 +73,8 @@ class strtemplate {
   // substitutions are performed with the information from the structure (s),
   // the ACP (a), the list of atomic numbers (zat), angular momenta (l),
   // exponents (exp), and coefficients (coef).
-  std::string apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l,
+  std::string apply(const structure &s, const acp& a, const unsigned char zat,
+		    const std::string &symbol, const unsigned char l,
 		    const double exp, const double coef) const;
 
   // Apply a string to the template and write to an output stream, with
@@ -81,6 +82,7 @@ class strtemplate {
   // the list of atomic numbers (zat), angular momenta (l), exponents
   // (exp), and coefficients (coef).
   void expand_loop(const std::vector<unsigned char> &zat,
+		   const std::vector<std::string> &symbol,
                    const std::vector<unsigned char> &l,
                    const std::vector<double> &exp,
                    const std::vector<double> &coef);

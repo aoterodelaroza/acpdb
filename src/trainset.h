@@ -161,9 +161,9 @@ class trainset {
 
   int nat = 0; // number of non-equivalent atoms defined
   std::vector<unsigned char> zat;  // atomic numbers
+  std::vector<std::string> symbol; // atomic symbols
   std::vector<unsigned char> lmax; // maximum angular momentum channels
   std::vector<double> exp; // exponents
-  std::vector<std::string> symbol; // atomic symbols
 
   std::vector<std::string> alias; // alias of the sets
   std::vector<std::string> setname; // name of the sets
@@ -190,7 +190,7 @@ class trainset {
 #ifdef CEREAL_FOUND
   friend class cereal::access;
   template<class Archive> void serialize(Archive & archive){
-    archive(ntot,propid,zat,lmax,exp,alias,setname,setid,setpptyid,set_initial_idx,set_final_idx,
+    archive(ntot,propid,nat,zat,symbol,lmax,exp,alias,setname,setid,setpptyid,set_initial_idx,set_final_idx,
             set_size,set_dofit,w,refname,refid,emptyname,emptyid,addname,addisfit,addid);
   }
 #endif

@@ -123,7 +123,8 @@ class sqldb {
   // notifications.
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
                         const std::unordered_map<int,int> &smapin={},
-                        const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
+                        const std::vector<unsigned char> &zat={}, const std::vector<std::string> &symbol={},
+			const std::vector<unsigned char> &lmax={},
                         const std::vector<double> &exp={}, const std::vector<double> &coef={},
 			const std::string &prefix="");
 
@@ -136,7 +137,7 @@ class sqldb {
   // (0 = no packing). prefix = prefix the file names with this
   // string. os is the output stream for verbose notifications. For
   // the template expansion, use the information in ACP a. For the
-  // loop expansion, use the list of atomic numbers (zat), angular
+  // loop expansion, use the list of atomic numbers (zat), symbols (symbol), angular
   // momenta (l), exponents (exp), and coefficients (coef). Rename = 0
   // (do not rename), = 1 (write an extended name with atom, l, and
   // exponent info in it), = 2 (with atom, l, exponent, coef).
@@ -145,7 +146,8 @@ class sqldb {
                              const std::string &ext_m, const std::string &ext_c,
                              const acp &a,
                              const std::unordered_map<int,int> &smap,
-                             const std::vector<unsigned char> &zat, const std::vector<unsigned char> &l,
+                             const std::vector<unsigned char> &zat, const std::vector<std::string> &symbol,
+			     const std::vector<unsigned char> &l,
 			     const std::vector<double> &exp, const std::vector<double> &coef,
                              const int rename,
                              const std::string &dir="./", int npack=0,
@@ -162,7 +164,8 @@ class sqldb {
   // (coef).
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
                                   const std::string &ext, const acp& a,
-                                  const unsigned char zat, const unsigned char l, const double exp, const int iexp,
+				  const unsigned char zat, const std::string &symbol,
+                                  const unsigned char l, const double exp, const int iexp,
                                   const double coef, const int icoef, const int rename,
                                   const std::string &dir="./",
 				  const std::string &prefix="");

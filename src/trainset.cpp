@@ -1055,7 +1055,7 @@ WHERE Properties.id = Training_set.propid;
     }
 
     // write the structures
-    db->write_structures(os, kmap_new, {}, smap, zat, lmax, exp, coef, "maxcoef-");
+    db->write_structures(os, kmap_new, {}, smap, zat, symbol, lmax, exp, coef, "maxcoef-");
 
   } else {
     // CALC
@@ -1798,7 +1798,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap,zat,lmax,exp);
+  db->write_structures(os,kmap,a,smap,zat,symbol,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,

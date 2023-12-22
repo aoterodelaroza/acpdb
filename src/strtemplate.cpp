@@ -67,12 +67,12 @@ strtemplate::strtemplate(const std::string &source){
 
       size_t pos0, pos1;
       while ((pos0 = it->str.find(keyw)) != std::string::npos){
-        pos1 = pos0 + keyw.size();
-        if (pos0 > 0)
-          tl.emplace(it,template_token({t_string,it->str.substr(0,pos0)}));
+	pos1 = pos0 + keyw.size();
+	if (pos0 > 0)
+	  tl.emplace(it,template_token({t_string,it->str.substr(0,pos0)}));
 
-        std::string arg = "";
-        if (tokenstr[i][tokenstr[i].size()-1] != '%'){
+	std::string arg = "";
+	if (tokenstr[i][tokenstr[i].size()-1] != '%'){
 	  size_t pos2 = it->str.find('%',pos1);
 	  if (it->str[pos1] == ':'){
 	    arg = it->str.substr(pos1+1,pos2-pos1-1);
@@ -80,25 +80,27 @@ strtemplate::strtemplate(const std::string &source){
 	  } else {
 	    pos1 = pos2+1;
 	  }
-        }
+	}
 
-        tl.emplace(it,template_token({(tokentypes) i,arg}));
-        if (i == t_term_loop) hasloop_ = true;
-        if (it->str.size() == pos1){
-          it = tl.erase(it);
-          break;
-        } else
-          it->str.erase(0,pos1);
+	tl.emplace(it,template_token({(tokentypes) i,arg}));
+	if (i == t_term_loop) hasloop_ = true;
+	if (it->str.size() == pos1){
+	  it = tl.erase(it);
+	  break;
+	} else
+	  it->str.erase(0,pos1);
       }
     }
   }
 }
 
 // Apply a string to the template and write to an output stream. The
-// substitutions are performed with the information from the structure (s),
-// the ACP (a), the list of atomic numbers (zat), angular momenta (l),
-// exponents (exp), and coefficients (coef).
-std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat, const unsigned char l, 
+// substitutions are performed with the information from the structure
+// (s), the ACP (a), the list of atomic numbers (zat), symbols
+// (symbol), angular momenta (l), exponents (exp), and coefficients
+// (coef).
+std::string strtemplate::apply(const structure &s, const acp& a, const unsigned char zat,
+			       const std::string &symbol, const unsigned char l,
 			       const double exp, const double coef) const {
 
   std::string result;
@@ -120,8 +122,8 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < 3; i++){
-        ss << r[3*i+0]*scale << " " << r[3*i+1]*scale << " " << r[3*i+2]*scale;
-        if (i < 2) ss << std::endl;
+	ss << r[3*i+0]*scale << " " << r[3*i+1]*scale << " " << r[3*i+2]*scale;
+	if (i < 2) ss << std::endl;
       }
       result.append(ss.str());
 
@@ -131,11 +133,11 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < 3; i++){
-        double len2 = 0;
-        for (int j = 0; j < 3; j++)
-          len2 += r[3*i+j] * r[3*i+j];
-        ss << std::sqrt(len2);
-        if (i < 2) ss << " ";
+	double len2 = 0;
+	for (int j = 0; j < 3; j++)
+	  len2 += r[3*i+j] * r[3*i+j];
+	ss << std::sqrt(len2);
+	if (i < 2) ss << " ";
       }
       result.append(ss.str());
 
@@ -144,9 +146,9 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
 
       double len[3] = {0.0, 0.0, 0.0};
       for (int i = 0; i < 3; i++){
-        for (int j = 0; j < 3; j++)
-          len[i] += r[3*i+j] * r[3*i+j];
-        len[i] = std::sqrt(len[i]);
+	for (int j = 0; j < 3; j++)
+	  len[i] += r[3*i+j] * r[3*i+j];
+	len[i] = std::sqrt(len[i]);
       }
       double ang[3];
       ang[0] = acos((r[3*1+0] * r[3*2+0] + r[3*1+1] * r[3*2+1] + r[3*1+2] * r[3*2+2]) / len[1] / len[2]) * 180. / M_PI;
@@ -156,8 +158,8 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < 3; i++){
-        ss << ang[i];
-        if (i < 2) ss << " ";
+	ss << ang[i];
+	if (i < 2) ss << " ";
       }
 
       result.append(ss.str());
@@ -176,7 +178,7 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       int nat = s.get_nat();
       const unsigned char *z = s.get_z();
       for (int i = 0; i < nat; i++)
-        ntyp[z[i]] = 1;
+	ntyp[z[i]] = 1;
 
       result.append(std::to_string(ntyp.size()));
 
@@ -188,14 +190,14 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++){
-        if (it->token == t_xyz)
-          ss << nameguess(z[i]);
-        else if (it->token == t_xyzatnum)
-          ss << (int) z[i];
-        else if (it->token == t_xyzatnum200)
-          ss << ((int) z[i]+200);
-        ss << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
-        if (i < nat-1) ss << std::endl;
+	if (it->token == t_xyz)
+	  ss << nameguess(z[i]);
+	else if (it->token == t_xyzatnum)
+	  ss << (int) z[i];
+	else if (it->token == t_xyzatnum200)
+	  ss << ((int) z[i]+200);
+	ss << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
+	if (i < nat-1) ss << std::endl;
       }
       result.append(ss.str());
 
@@ -208,28 +210,28 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       std::map<unsigned char,int> ntyp;
       std::map<unsigned char,std::list<int>> ityp;
       for (int i = 0; i < nat; i++){
-        ntyp[z[i]]++;
-        ityp[z[i]].push_back(i);
+	ntyp[z[i]]++;
+	ityp[z[i]].push_back(i);
       }
 
       std::stringstream ss;
 
       // write the atom types and numbers
       for (auto it = ntyp.begin(); it != ntyp.end(); it++)
-        ss << nameguess(it->first) << (it != ntyp.end()?" ":"");
+	ss << nameguess(it->first) << (it != ntyp.end()?" ":"");
       ss << std::endl;
       for (auto it = ntyp.begin(); it != ntyp.end(); it++)
-        ss << it->second << (it != ntyp.end()?" ":"");
+	ss << it->second << (it != ntyp.end()?" ":"");
       ss << std::endl;
       ss << "Direct" << std::endl;
 
       // write the atomic coordinates
       ss << std::fixed << std::setprecision(8);
       for (auto it = ityp.begin(); it != ityp.end(); it++){
-        for (auto ia = it->second.begin(); ia != it->second.end(); ia++){
-          ss << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2];
-          if (std::next(ia) != it->second.end() || std::next(it) != ityp.end()) ss << std::endl;
-        }
+	for (auto ia = it->second.begin(); ia != it->second.end(); ia++){
+	  ss << x[3*(*ia)+0] << " " << x[3*(*ia)+1] << " " << x[3*(*ia)+2];
+	  if (std::next(ia) != it->second.end() || std::next(it) != ityp.end()) ss << std::endl;
+	}
       }
 
       result.append(ss.str());
@@ -241,15 +243,15 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
 
       std::map<unsigned char,int> ntyp;
       for (int i = 0; i < nat; i++)
-        ntyp[z[i]] = 1;
+	ntyp[z[i]] = 1;
 
       std::stringstream ss;
 
       // write the atomic species block
       ss << "ATOMIC_SPECIES" << std::endl;
       for (auto it = ntyp.begin(); it != ntyp.end(); it++){
-        std::string atsym = nameguess(it->first);
-        ss << atsym << " " << std::fixed << std::setprecision(6) << globals::atmass[it->first] << " " << atsym << ".UPF" << std::endl;
+	std::string atsym = nameguess(it->first);
+	ss << atsym << " " << std::fixed << std::setprecision(6) << globals::atmass[it->first] << " " << atsym << ".UPF" << std::endl;
       }
       ss << std::endl;
 
@@ -257,25 +259,25 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
       ss << "ATOMIC_POSITIONS crystal" << std::endl;
       ss << std::fixed << std::setprecision(8);
       for (int i = 0; i < nat; i++){
-        ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
-        if (i < nat-1) ss << std::endl;
+	ss << nameguess(z[i]) << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2];
+	if (i < nat-1) ss << std::endl;
       }
 
       result.append(ss.str());
     } else if (it->token == t_acpgau || it->token == t_acpcrys){
       unsigned char zat;
       if (it->str.empty())
-        zat = 0;
+	zat = 0;
       else{
-        zat = zatguess(it->str);
-        if (zat <= 0)
-          throw std::runtime_error("Unknown atom expanding %acpgau% template");
+	zat = zatguess(it->str);
+	if (zat <= 0)
+	  throw std::runtime_error("Unknown atom expanding %acpgau% template");
       }
       std::stringstream ss;
       if (it->token == t_acpgau)
-        a.writeacp_gaussian(ss,zat);
+	a.writeacp_gaussian(ss,zat);
       else
-        a.writeacp_crystal(ss,zat);
+	a.writeacp_crystal(ss,zat);
       result.append(ss.str());
     } else if (it->token == t_term_atnum) {
       result.append(std::to_string(zat));
@@ -314,12 +316,13 @@ std::string strtemplate::apply(const structure &s, const acp& a, const unsigned 
 
 // Apply a string to the template and write to an output stream, with
 // loop expansion. The information from the loop expansion comes from
-// the list of atomic numbers (zat), angular momenta (l), exponents
-// (exp), and coefficients (coef).
+// the list of atomic numbers (zat), symbols (symbol), angular momenta
+// (l), exponents (exp), and coefficients (coef).
 void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
-                              const std::vector<unsigned char> &l,
-                              const std::vector<double> &exp,
-                              const std::vector<double> &coef) {
+			      const std::vector<std::string> &symbol,
+			      const std::vector<unsigned char> &l,
+			      const std::vector<double> &exp,
+			      const std::vector<double> &coef) {
   std::list<template_token> tl_loc, tl_repeat;
   bool inloop = false;
 
@@ -328,16 +331,16 @@ void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
     // start the loop
     if (it->token == t_term_loop){
       if (inloop)
-        throw std::runtime_error("Nested term loops are not allowed (found term_loop inside term_loop)");
+	throw std::runtime_error("Nested term loops are not allowed (found term_loop inside term_loop)");
       inloop = true;
       tl_repeat.clear();
     } else if (it->token == t_term_endloop){
       // end the loop
       if (!inloop)
-        throw std::runtime_error("Tried to end term loop when not inside loop");
+	throw std::runtime_error("Tried to end term loop when not inside loop");
       // expand
       for (int iz = 0; iz < zat.size(); iz++){
-        for (int iexp = 0; iexp < exp.size(); iexp++){
+	for (int iexp = 0; iexp < exp.size(); iexp++){
 	  for (int icoef = 0; icoef < coef.size(); icoef++){
 	    for (auto itr = tl_repeat.begin(); itr != tl_repeat.end(); itr++){
 	      if (itr->token == t_term_atnum) {
@@ -369,8 +372,8 @@ void strtemplate::expand_loop(const std::vector<unsigned char> &zat,
 		tl_loc.push_back(*itr);
 	      }
 	    }
-          }
-        }
+	  }
+	}
       }
       tl_repeat.clear();
       inloop = false;
