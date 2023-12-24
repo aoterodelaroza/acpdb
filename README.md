@@ -736,44 +736,6 @@ p
 
 Some template examples can be found in the `templates/` directory.
 
-### Working with ACPs
-
-#### Load an ACP
-~~~
-ACP LOAD name.s file.acp
-ACP LOAD name.s
- atom.s l.s exp.r coef.r
- ...
-END
-~~~
-Define an ACP with name `name.s` from file `file.acp` (in
-Gaussian-style format). Alternatively, give all ACP terms one by one
-by indicating the atomic symbol, angular momentum channel, exponent,
-and coefficient.
-
-#### ACP information
-~~~
-ACP INFO {name.s|file.s}
-~~~
-Print information about the ACP with name `name.s` or from file
-`file.s`. This information includes the 1-norm, 2-norm, etc.
-
-#### Write an ACP
-~~~
-ACP WRITE name.s [file.s]
-~~~
-Write the ACP `name.s` to file `file.s` (Gaussian-style format). If no
-file is given, write it in human-readable form to the output.
-
-#### Split an ACP
-~~~
-ACP SPLIT name.s prefix.s [COEF value.r]
-~~~
-Split the ACP `name.s` into several ACPs, with names given by
-`prefix.s` followed by an integer and the extension `.acp`. Each new
-ACP contains only one term from the original ACP. If COEF is given,
-set the coefficients for the new ACPs to `value.r`.
-
 ### Defining the Training Set
 ~~~
 TRAINING

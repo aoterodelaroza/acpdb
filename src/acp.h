@@ -48,15 +48,11 @@ class acp {
   // constructors
   acp() : t{}, name{} {};
   acp(const std::string &name_, const std::string &filename);
-  acp(const std::string &name_, std::istream &is);
   acp(const std::string &name_, std::vector<term> &t_) : name(name_), t(t_) {};
   acp(const std::string &name_, term t_) : name(name_), t{} { t.push_back(t_); };
 
   // bool operator
   operator bool() const { return (t.size() > 0); }
-
-  // Write the ACP to output stream os (human-readable version).
-  void writeacp_text(std::ostream &os) const;
 
   // Write the ACP to an output stream (Gaussian-style version). If
   // usenblock, use the block number instead of the atomic name. If
@@ -68,14 +64,6 @@ class acp {
 
   // Write the ACP to an output stream (crystal-style version).
   void writeacp_crystal(std::ostream &os) const;
-
-  // Write info about the ACP to os
-  void info(std::ostream &os) const;
-
-  // Split the ACP into several ACPs, each with one term. Write them
-  // to files with template templ. If tokens contains the COEF
-  // keyword, use that coefficient for the new ACPs.
-  void split(const std::string &templ, std::list<std::string> &tokens);
 
   // Calculate the 1-norm of the coefficients
   inline double norm1() const {

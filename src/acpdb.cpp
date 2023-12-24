@@ -325,50 +325,6 @@ int main(int argc, char *argv[]) {
       else
         db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_symbol(),ts.get_lmax(),ts.get_exp());
 
-      //// ACP
-    } else if (keyw == "ACP") {
-      std::string category = popstring(tokens,true);
-      std::string name = popstring(tokens);
-
-      if (category == "LOAD"){
-        *os << "* ACP LOAD " << name << std::endl << std::endl;
-        if (tokens.empty())
-          nacp[name] = acp(name,*is);
-        else
-          nacp[name] = acp(name,tokens.front());
-
-      } else if (category == "INFO") {
-        if (nacp.find(name) != nacp.end())
-          nacp[name].info(*os);
-        else {
-          acp a = acp(name,name);
-          a.info(*os);
-        }
-
-      } else if (category == "WRITE") {
-        if (name.empty() || nacp.find(name) == nacp.end())
-          throw std::runtime_error("Unknown ACP name: " + name);
-
-        std::string file = popstring(tokens);
-        if (file.empty())
-          nacp[name].writeacp_text(*os);
-        else{
-          *os << "* ACP WRITE: writing ACP " << name << " to file " << file << std::endl << std::endl;
-          nacp[name].writeacp_gaussian(file);
-        }
-      } else if (category == "SPLIT") {
-        std::string prefix = popstring(tokens);
-        if (prefix.empty())
-          throw std::runtime_error("Empty prefix string for ACP SPLIT");
-
-        *os << "* ACP SPLIT " << name << " creates files " << prefix << "-*.acp" << std::endl << std::endl;
-        if (nacp.find(name) != nacp.end())
-          nacp[name].split(prefix,tokens);
-        else {
-          acp a = acp(name,name);
-          a.split(prefix,tokens);
-        }
-      }
       //// TRAINING (start environment)
     } else if (keyw == "TRAINING") {
       if (!db)
