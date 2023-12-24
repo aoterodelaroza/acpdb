@@ -120,7 +120,6 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
     throw std::runtime_error("SET identifier not found in database: " + name);
   setname.push_back(name);
   setid.push_back(idx);
-  setpptyid.push_back(ppid);
 
   // add the alias
   std::string alias_ = key;
@@ -128,7 +127,7 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   alias.push_back(alias_);
 
   // find the set size
-  std::string str = "SELECT COUNT(id) FROM Properties WHERE setid = ?1";
+  std::string str = "SELECT COUNT(id), COUNT(DISTINCT property_type) FROM Properties WHERE setid = ?1";
   if (ppid >= 0)
     str += "AND property_type = ?2";
   statement st(db->ptr(),str);
@@ -138,7 +137,18 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   st.step();
   int size = sqlite3_column_int(st.ptr(),0);
   if (size == 0)
-    throw std::runtime_error("SET does not have any associated properties: " + name);
+    throw std::runtime_error("SET " + name + " does not have any associated properties in TRAINING/SUBSET.");
+  int nprop = sqlite3_column_int(st.ptr(),1);
+  if (nprop > 1)
+    throw std::runtime_error("The set " + name + " has more than one property type. Please use PROPERTY_TYPE in TRAINING/SUBSET.");
+  if (ppid < 0){
+    // get the property type if not provided
+    st.recycle("SELECT property_type FROM Properties WHERE setid = ?1");
+    st.bind(1,idx);
+    st.step();
+    ppid = sqlite3_column_int(st.ptr(),0);
+  }
+  setpptyid.push_back(ppid);
 
   // write down the initial index
   int ilast = 0;
@@ -337,14 +347,12 @@ void trainset::addsubset(const std::string &key, std::unordered_map<std::string,
   // build the propid, size, and final index of the set
   set_size.push_back(0);
   set_final_idx.push_back(ilast);
-  str = "SELECT id FROM Properties WHERE setid = ?1";
-  if (ppid >= 0)
-    str += "AND property_type = ?2";
+  str = "SELECT id FROM Properties WHERE setid = ?1 AND property_type = ?2";
   str += "ORDER BY orderid";
   st.recycle(str);
   st.bind(1,setid[sid]);
-  if (ppid >= 0)
-    st.bind(2,ppid);
+  st.bind(2,ppid);
+
   for (int i = 0; i < set_mask.size(); i++){
     st.step();
     int propid_ = sqlite3_column_int(st.ptr(),0);
@@ -896,7 +904,7 @@ ORDER BY Training_set.id;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
 ORDER BY Training_set.id;
 )SQL");
   for (int i = 0; i < a.size(); i++){
@@ -904,6 +912,7 @@ ORDER BY Training_set.id;
     st.reset();
     st.bind((char *) ":METHOD",emptyid);
     st.bind((char *) ":ZATOM",(int) t.atom);
+    st.bind((char *) ":SYMBOL",std::string(t.sym));
     st.bind((char *) ":L",(int) t.l);
     st.bind((char *) ":EXP",t.exp);
 
@@ -932,6 +941,7 @@ ORDER BY Training_set.id;
   unsigned long int nsettot = 0;
   for (int i = 0; i < setid.size(); i++){
     int idx = setid[i] * globals::ppty_MAX + setpptyid[i];
+
     ndat[i] = calc_stats(ytotal,yref,wall,wrms[i],rms[i],mae[i],mse[i],nsetid,idx);
     nsettot += ndat[i];
     if (set_dofit[i])
