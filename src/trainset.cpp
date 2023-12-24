@@ -1377,6 +1377,14 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   ofile.write(atoms_c,zat.size()*2*sizeof(char));
   os << "# Dumped: " << zat.size() << " atom names" << std::endl;
 
+  // write the atomic names
+  std::string symbols = "";
+  for (int iat = 0; iat < symbol.size(); iat++)
+    symbols += symbol[iat];
+  const char *symbols_c = symbols.c_str();
+  ofile.write(symbols_c,symbol.size()*5*sizeof(char));
+  os << "# Dumped: " << symbol.size() << " atom symbols" << std::endl;
+
   // write the additional method names
   for (int i = 0; i < addname.size(); i++){
     std::string name = addname[iaddperm[i]] + std::string(addmaxl-addname[iaddperm[i]].size(),' ');
@@ -1406,7 +1414,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
@@ -1416,6 +1424,7 @@ ORDER BY Training_set.id;
 	st.reset();
 	st.bind((char *) ":METHOD",emptyid);
 	st.bind((char *) ":ZATOM",(int) zat[iz]);
+	st.bind((char *) ":SYMBOL",symbol[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
 	int n = 0;
@@ -1467,7 +1476,7 @@ ORDER BY Training_set.id;
     st.recycle(R"SQL(
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
@@ -1476,6 +1485,7 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Ter
 	  st.reset();
 	  st.bind((char *) ":METHOD",emptyid);
 	  st.bind((char *) ":ZATOM",(int) zat[iz]);
+	  st.bind((char *) ":SYMBOL",symbol[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();

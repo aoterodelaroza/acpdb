@@ -1,12 +1,12 @@
 #! /usr/bin/octave-cli -q
 
-prefix="lasso";
+prefix="hono-all";
 
 ## List of 1-norm constraints to use
-tlist = [0 25];
+tlist = [0 12];
 
 ## Use the maximum coefficients, if available?
-usemaxcoef=1;
+usemaxcoef=0;
 
 ## Use the additional energy contributions, if available?
 useaddcols=1;
@@ -20,7 +20,7 @@ wrmsconv = 1e-4;
 lasso_version = "1.6bin";
 
 ## Read the binary file written by acpdb
-function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
+function [atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
 
   if (!exist(filebin))
     error(sprintf("File not found: %s",filebin))
@@ -49,6 +49,13 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   atoms = cell(natoms,1);
   for i = 1:natoms
     atoms{i} = [atomstr(2*i-1) atomstr(2*i)];
+  endfor
+
+  ## atom symbols
+  symbolstr = char(fread(fid,5*natoms,"char"));
+  symbols = cell(natoms,1);
+  for i = 1:natoms
+    symbols{i} = [symbolstr(5*i-4) symbolstr(5*i-3) symbolstr(5*i-2) symbolstr(5*i-1) symbolstr(5*i)];
   endfor
 
   ## additional method names
@@ -108,7 +115,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
 endfunction
 
 ## Read the binary
-[atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
+[atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
 
 ## start the loop
 nacp = 0;
@@ -220,6 +227,11 @@ for it = 1:length(tlist)
       fprintf(fid,"%2.2s ",atoms{i});
     endfor
     fprintf(fid,"\n");
+    fprintf(fid,"! Atomic symbols: ");
+    for i = 1:length(atoms)
+      fprintf(fid,"%5.5s ",symbols{i});
+    endfor
+    fprintf(fid,"\n");
     fprintf(fid,"! Lmax:  ");
     for i = 1:length(lmax)
       fprintf(fid,"%2.2s ",lname{lmax(i)});
@@ -248,7 +260,7 @@ for it = 1:length(tlist)
     ## Write the ACP itself
     for i = 1:length(atoms)
       fprintf(fid,"%s 0\n",atoms{i});
-      fprintf(fid,"%s %d 0\n",atoms{i},lmax(i)-1);
+      fprintf(fid,"%s %d 0\n",symbols{i},lmax(i)-1);
       for j = 1:lmax(i)
         fprintf(fid,"%s\n",lname{j});
         fprintf(fid,"%d\n",nterms(i,j));
