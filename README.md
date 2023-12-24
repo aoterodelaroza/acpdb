@@ -746,6 +746,7 @@ TRAINING
  [ADD method.s [FIT]]
  SUBSET [alias.s]
   SET name.s
+  [PROPERTY_TYPE {prop.s|prop.i}}
   NOFIT
   MASK_AND
   MASK_OR
@@ -809,6 +810,12 @@ is as follows:
   database set with key `name.s`. If no alias is provided, the name
   from the corresponding database set (`name.s`) is used
   instead. Multiple `SUBSET` blocks can be given.
+
+  If the set `name.s` is associated with properties of only one type,
+  then that property type is used for the training set
+  subset. Otherwise, the `PROPERTY_TYPE` must be given, and the subset
+  will comprise only the properties from `name.s` corresponding to
+  that type.
 
   If `NOFIT` is given, this subset is not passed on to the
   least-squares fitting routine, and is used only for evaluation
