@@ -924,7 +924,7 @@ ORDER BY Training_set.id;
 	yacp[n++] += rval[j] * t.coef;
     }
     if (n != nall){
-      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " l: " << (int) t.l
+      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " sym: " << t.sym << " l: " << (int) t.l
 		<< " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
       throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
     }
@@ -1619,7 +1619,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
@@ -1629,6 +1629,7 @@ ORDER BY Training_set.id;
 	st.reset();
 	st.bind((char *) ":METHOD",emptyid);
 	st.bind((char *) ":ZATOM",(int) zat[iz]);
+	st.bind((char *) ":SYMBOL",symbol[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
 	int m = 0;
@@ -1687,7 +1688,7 @@ ORDER BY Training_set.id;
     st.recycle(R"SQL(
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
       AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
@@ -1696,6 +1697,7 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Ter
 	  st.reset();
 	  st.bind((char *) ":METHOD",emptyid);
 	  st.bind((char *) ":ZATOM",(int) zat[iz]);
+	  st.bind((char *) ":SYMBOL",symbol[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
 	  st.step();
@@ -1726,8 +1728,16 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.l = :L AND Ter
     for (int iz = 0; iz < zat.size(); iz++){
       for (unsigned char il = 0; il <= lmax[iz]; il++){
 	for (int ie = 0; ie < exp.size(); ie++){
-	  if (std::abs(beta[n]) > 1e-20)
-	    t.push_back(acp::term({zat[iz],il,exp[ie],beta[n]}));
+	  if (std::abs(beta[n]) > 1e-20){
+	    acp::term t_;
+	    t_.block = iz;
+	    t_.atom = zat[iz];
+	    strcpy(&(t_.sym[0]),symbol[iz].c_str());
+	    t_.l = il;
+	    t_.exp = exp[ie];
+	    t_.coef = beta[n];
+	    t.push_back(t_);
+	  }
 	  n++;
 	}
       }
