@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
-// t_acpgau, t_acpcrys, t_term_id,
+// t_acpgau, t_acpgaunum, t_acpgausym, t_acpcrys, t_term_id,
 // t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr,
 // t_term_lnum, t_term_exp, t_term_coef
 // t_term_loop, t_term_endloop
@@ -35,7 +35,7 @@ static const std::vector<std::string> tokenname = { // keyword names for printin
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
-  "acpgau", "acpcrys", "term_id",
+  "acpgau", "acpgaunum", "acpgausym", "acpcrys", "term_id",
   "term_atsymbol", "term_atsymbol_lstr_gaussian", "term_atnum",
   "term_lstr", "term_lnum", "term_exp", "term_coef",
   "term_loop", "term_endloop"
@@ -44,7 +44,7 @@ static const std::vector<std::string> tokenstr = { // strings for the keywords (
   "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
   "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
-  "%acpgau","%acpcrys","%term_id%",
+  "%acpgau%","%acpgaunum%","%acpgausym%","%acpcrys%","%term_id%",
   "%term_atsymbol%","%term_atsymbol_lstr_gaussian%","%term_atnum%",
   "%term_lstr%","%term_lnum%","%term_exp%","%term_coef%",
   "%term_loop%","%term_endloop%"
@@ -266,19 +266,19 @@ std::string strtemplate::apply(const structure &s, const acp& a, const int id,
 
       result.append(ss.str());
     } else if (it->token == t_acpgau || it->token == t_acpcrys){
-      unsigned char zat;
-      if (it->str.empty())
-	zat = 0;
-      else{
-	zat = zatguess(it->str);
-	if (zat <= 0)
-	  throw std::runtime_error("Unknown atom expanding %acpgau% template");
-      }
       std::stringstream ss;
       if (it->token == t_acpgau)
-	a.writeacp_gaussian(ss,zat);
+	a.writeacp_gaussian(ss,false,false);
       else
-	a.writeacp_crystal(ss,zat);
+	a.writeacp_crystal(ss);
+      result.append(ss.str());
+    } else if (it->token == t_acpgaunum){
+      std::stringstream ss;
+      a.writeacp_gaussian(ss,true,false);
+      result.append(ss.str());
+    } else if (it->token == t_acpgausym){
+      std::stringstream ss;
+      a.writeacp_gaussian(ss,false,true);
       result.append(ss.str());
     } else if (it->token == t_term_atnum) {
       result.append(std::to_string(zat));

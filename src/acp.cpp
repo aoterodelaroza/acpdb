@@ -24,6 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <limits>
 #include <map>
 #include <cmath>
+#include <cstring>
 
 const static std::unordered_map<std::string, int> ltoint {
    {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6},
@@ -36,6 +37,7 @@ acp::acp(const std::string &name_, const std::string &filename){
   if (ifile.fail())
       throw std::runtime_error("Error opening ACP file " + filename);
 
+  int count = 0;
   std::string line, str;
   while (get_next_line(ifile,line,'!','\0')){
     if (ifile.fail())
@@ -55,20 +57,22 @@ acp::acp(const std::string &name_, const std::string &filename){
     int nblock;
     ifile >> str >> nblock;
     ifile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    std::strcpy(&(t_.sym[0]),str.substr(0,5).c_str());
+    t_.block = count++;
 
     for (int i = 0; i <= nblock; i++){
       // read the block corresponding to angular momentum i
       ifile >> str;
       lowercase(str);
       if (ltoint.find(str) == ltoint.end())
-        throw std::runtime_error("Unknown angular momentum symbol: " + str);
+	throw std::runtime_error("Unknown angular momentum symbol: " + str);
       t_.l = ltoint.at(str);
 
       int nterm;
       ifile >> nterm;
       for (int j = 0; j < nterm; j++){
-        ifile >> str >> t_.exp >> t_.coef;
-        t.push_back(t_);
+	ifile >> str >> t_.exp >> t_.coef;
+	t.push_back(t_);
       }
     }
   }
@@ -116,66 +120,68 @@ void acp::writeacp_text(std::ostream &os) const{
 }
 
 // Write the ACP to a file (Gaussian-style version). Final newline is omitted.
-void acp::writeacp_gaussian(const std::string &filename) const{
+void acp::writeacp_gaussian(const std::string &filename,bool usenblock/*=false*/,bool usesym/*=false*/) const{
   if (t.empty()) return;
 
   std::ofstream ofile(filename,std::ios::trunc);
   if (ofile.fail())
     throw std::runtime_error("Error opening ACP file for write: " + filename);
 
-  writeacp_gaussian(ofile);
+  writeacp_gaussian(ofile,usenblock,usesym);
   if (ofile.fail())
     throw std::runtime_error("Error writing ACP file: " + filename);
 }
 
-// Write the ACP to an output stream (Gaussian-style version). If zat is
-// given, write only the ACP for that atom. Final newline is omitted.
-void acp::writeacp_gaussian(std::ostream &os, unsigned char zat/*=0*/) const{
+// Write the ACP to an output stream (Gaussian-style version).
+void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool usesym/*=false*/) const{
   if (t.empty()) return;
 
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
-  std::map<unsigned char,unsigned char> lmax;
-  std::unordered_map<unsigned char,std::vector< std::vector<int> > > iterm;
+  std::map<int,unsigned char> lmax;
+  std::unordered_map<int,std::vector< std::vector<int> > > iterm;
 
   // classify the terms
+  int nblock = 0;
   for (int i=0; i<t.size(); i++){
-    if (lmax.find(t[i].atom) == lmax.end())
-      lmax[t[i].atom] = t[i].l;
+    if (lmax.find(t[i].block) == lmax.end())
+      lmax[t[i].block] = t[i].l;
     else
-      lmax[t[i].atom] = std::max(lmax[t[i].atom],t[i].l);
-    if (iterm.find(t[i].atom) == iterm.end())
-      iterm[t[i].atom] = {};
-    if (iterm[t[i].atom].size() <= t[i].l)
-      iterm[t[i].atom].resize(t[i].l+1,{});
-    iterm[t[i].atom][t[i].l].push_back(i);
+      lmax[t[i].block] = std::max(lmax[t[i].block],t[i].l);
+    if (iterm.find(t[i].block) == iterm.end())
+      iterm[t[i].block] = {};
+    if (iterm[t[i].block].size() <= t[i].l)
+      iterm[t[i].block].resize(t[i].l+1,{});
+    iterm[t[i].block][t[i].l].push_back(i);
+    nblock = std::max(nblock,t[i].block+1);
   }
 
   // write the acp
   os << std::scientific;
   std::streamsize prec = os.precision(15);
 
-  for (auto it = lmax.begin(); it != lmax.end(); it++){
-    if (zat > 0 && it->first != zat)
-      continue;
-    os << "-" << nameguess(it->first) << " 0";
-    os << std::endl << nameguess(it->first) << " " << (int) it->second << " 0";
-    for (int i = 0; i <= it->second; i++){
-      os << std::endl << inttol[i];
-      os << std::endl << iterm[it->first][i].size();
-
-      std::vector<int> &xv = iterm[it->first][i];
-      for (int j = 0; j < xv.size(); j++)
-        os << std::endl << "2 " << t[xv[j]].exp << " " << t[xv[j]].coef;
+  for (int i1 = 0; i1 < nblock; i1++){
+    if (usenblock)
+      os << i1+1 << " 0";
+    else if (usesym)
+      os << t[iterm[i1][0][0]].sym << " 0";
+    else
+      os << "-" << nameguess(t[iterm[i1][0][0]].atom) << " 0";
+    os << std::endl << t[iterm[i1][0][0]].sym << " " << iterm[i1].size()-1 << " 0";
+    for (int i2 = 0; i2 < iterm[i1].size(); i2++){
+      os << std::endl << inttol[i2];
+      os << std::endl << iterm[i1][i2].size();
+      for (int i = 0; i < iterm[i1][i2].size(); i++)
+	os << std::endl << "2 " << t[iterm[i1][i2][i]].exp << " " << t[iterm[i1][i2][i]].coef;
     }
     os << std::endl;
   }
+
   os.precision(prec);
   os << std::defaultfloat;
 }
 
-// Write the ACP to an output stream (crystal-style version). If zat is
-// given, write only the ACP for that atom. Final newline is omitted.
-void acp::writeacp_crystal(std::ostream &os, unsigned char zat/*=0*/) const{
+// Write the ACP to an output stream (crystal-style version).
+void acp::writeacp_crystal(std::ostream &os) const{
   if (t.empty()) return;
 
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
@@ -200,30 +206,28 @@ void acp::writeacp_crystal(std::ostream &os, unsigned char zat/*=0*/) const{
   std::streamsize prec = os.precision(14);
 
   for (auto it = lmax.begin(); it != lmax.end(); it++){
-    if (zat > 0 && it->first != zat)
-      continue;
     // header
     os << (int) it->first << ".";
     for (int i = 0; i < 6; i++){
       if (i <= it->second){
-        if (iterm[it->first][i].size() > 0)
-          os << " " << iterm[it->first][i].size();
-        else {
-          iterm[it->first][i].push_back(-1);
-          os << " " << 1;
-        }
+	if (iterm[it->first][i].size() > 0)
+	  os << " " << iterm[it->first][i].size();
+	else {
+	  iterm[it->first][i].push_back(-1);
+	  os << " " << 1;
+	}
       } else
-        os << " 0";
+	os << " 0";
     }
 
     // body
     for (int l = 0; l <= it->second; l++){
       for (int i = 0; i < iterm[it->first][l].size(); i++){
-        int idx = iterm[it->first][l][i];
-        if (idx < 0)
-          os << std::endl << 1.0 << " " << 0.0 << " " << 0;
-        else
-          os << std::endl << t[idx].exp << " " << t[idx].coef << " " << 0;
+	int idx = iterm[it->first][l][i];
+	if (idx < 0)
+	  os << std::endl << 1.0 << " " << 0.0 << " " << 0;
+	else
+	  os << std::endl << t[idx].exp << " " << t[idx].coef << " " << 0;
       }
     }
   }

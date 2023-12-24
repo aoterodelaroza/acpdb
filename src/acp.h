@@ -31,9 +31,13 @@ class acp {
 
  public:
 
+  typedef char symbol[6];
+
   // Structures
   struct term {
+    int block;
     unsigned char atom;
+    symbol sym;
     unsigned char l;
     double exp;
     double coef;
@@ -54,16 +58,16 @@ class acp {
   // Write the ACP to output stream os (human-readable version).
   void writeacp_text(std::ostream &os) const;
 
-  // Write the ACP to an output stream (Gaussian-style version). If zat is
-  // given, write only the ACP for that atom. Final newline is omitted.
-  void writeacp_gaussian(std::ostream &os, unsigned char zat=0) const;
+  // Write the ACP to an output stream (Gaussian-style version). If
+  // usenblock, use the block number instead of the atomic name. If
+  // usesym, use the atomic symbol. Final newline is omitted.
+  void writeacp_gaussian(std::ostream &os, bool usenblock = false, bool usesym = false) const;
 
   // Write the ACP to a file (Gaussian-style version).
-  void writeacp_gaussian(const std::string &filename) const;
+  void writeacp_gaussian(const std::string &filename, bool usenblock = false, bool usesym = false) const;
 
-  // Write the ACP to an output stream (crystal-style version). If zat is
-  // given, write only the ACP for that atom. Final newline is omitted.
-  void writeacp_crystal(std::ostream &os, unsigned char zat=0) const;
+  // Write the ACP to an output stream (crystal-style version).
+  void writeacp_crystal(std::ostream &os) const;
 
   // Write info about the ACP to os
   void info(std::ostream &os) const;

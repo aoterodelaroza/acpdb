@@ -699,15 +699,16 @@ by the database program. The available keywords are:
 - `%qexyz%`: a combination of the `ATOMIC_SPECIES` and
   `ATOMIC_COORDINATES` blocks in QE format.
 
-- `%acpgau%`, `%acpgau:xx%`: the ACP block in Gaussian format. If
-  `%acpgau%` is used, print the whole ACP. Otherwise, print the ACP
-  corresponding to atom with symbol `xx` only. Requires using the
-  `ACP` keyword in `WRITE` for a correct expansion.
+- `%acpgau%`: the ACP block in Gaussian format.
 
-- `%acpcrys%`, `%acpcrys:xx%`: the ACP block in crystal format. If
-  `%acpcrys%` is used, print the whole ACP. Otherwise, print the ACP
-  corresponding to atom with symbol `xx` only. Requires using the
-  `ACP` keyword in `WRITE` for a correct expansion.
+- `%acpgaunum%`: the ACP block in Gaussian format, with atom IDs from
+  the ACP instead of atomic symbols.
+
+- `%acpgausym%`: the ACP block in Gaussian format, with atom symbols
+  from the ACP instead of atomic names. Useful for replacing these
+  with a `sed` command before running.
+
+- `%acpcrys%`: the ACP block in crystal format.
 
 - `%term_atsymbol%`: atomic symbol in ACP term.
 
