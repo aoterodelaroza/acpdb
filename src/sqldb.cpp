@@ -1787,11 +1787,11 @@ FROM Evaluations
 ORDER BY methodid, propid;
 )SQL";
   } else if (category == "TERM"){
-    headers = {"methodid","propid", "atom",   "l","exponent",   "#values", "values","maxcoef"};
-    types   = {     t_int,   t_int,  t_int, t_int,  t_double,   t_intsize,t_ptr_double, t_double};
-    cols    = {         0,       1,      2,     3,         4,           5,           6,        7};
+    headers = {"methodid","propid", "zatom", "symbol",   "l", "exponent", "#values",     "values", "maxcoef"};
+    types   = {     t_int,   t_int,   t_int,    t_str, t_int,   t_double, t_intsize, t_ptr_double,  t_double};
+    cols    = {         0,       1,       2,        3,     4,          5,         6,            7,         8};
     stmt = R"SQL(
-SELECT methodid,propid,atom,l,exponent,length(value),value,maxcoef
+SELECT methodid,propid,zatom,symbol,l,exponent,length(value),value,maxcoef
 FROM Terms
 ORDER BY methodid,zatom,l,exponent,propid;
 )SQL";
@@ -1888,21 +1888,19 @@ void sqldb::printsummary(std::ostream &os, bool full){
   print(os,"SET",false);
 
   // properties and structures in each set
-  os << "# Number of properties and structures in each set" << std::endl;
+  os << "# Number of properties in each set" << std::endl;
   st.recycle(R"SQL(
-SELECT Sets.id, Sets.key, prdx.cnt, srdx.cnt
+SELECT Sets.id, Sets.key, prdx.cnt
 FROM Sets
 LEFT OUTER JOIN (SELECT setid, count(id) AS cnt FROM Properties GROUP BY setid) AS prdx ON prdx.setid = Sets.id
-LEFT OUTER JOIN (SELECT setid, count(id) AS cnt FROM Structures GROUP BY setid) AS srdx ON srdx.setid = Sets.id
 ORDER BY Sets.id;
 )SQL");
-  os << "| id | key | properties | structures |" << std::endl;
+  os << "| id | key | properties |" << std::endl;
   while (st.step() != SQLITE_DONE){
     int id = sqlite3_column_int(st.ptr(),0);
     std::string key = (char *) sqlite3_column_text(st.ptr(),1);
     long int pcnt = sqlite3_column_int(st.ptr(),2);
-    long int scnt = sqlite3_column_int(st.ptr(),3);
-    os << "| " << id << " | " << key << " | " << pcnt << " | " << scnt << " |" << std::endl;
+    os << "| " << id << " | " << key << " | " << pcnt << " |" << std::endl;
   }
   os << std::endl;
 
@@ -2137,7 +2135,8 @@ WHERE Evaluations.propid = Properties.id
   // check the number of values and structures in terms
   os << "Checking the number of values and structures in the terms table" << std::endl;
   st.recycle(R"SQL(
-SELECT Terms.methodid, Terms.zatom, Terms.l, Terms.exponent, Terms.propid, Properties.property_type, length(Terms.value), Properties.nstructures, Properties.structures
+SELECT Terms.methodid, Terms.zatom, Terms.symbol, Terms.l, Terms.exponent, Terms.propid, Properties.property_type,
+       length(Terms.value), Properties.nstructures, Properties.structures
 FROM Terms, Properties
 WHERE Terms.propid = Properties.id
 )SQL");
@@ -2145,16 +2144,17 @@ WHERE Terms.propid = Properties.id
   while (st.step() != SQLITE_DONE){
     int methodid = sqlite3_column_int(st.ptr(), 0);
     int zatom = sqlite3_column_int(st.ptr(), 1);
-    int l = sqlite3_column_int(st.ptr(), 2);
-    int exp = sqlite3_column_int(st.ptr(), 3);
-    int propid = sqlite3_column_int(st.ptr(), 4);
-    int ppty = sqlite3_column_int(st.ptr(), 5);
-    int nvalue = sqlite3_column_int(st.ptr(), 6) / sizeof(double);
-    int nstr = sqlite3_column_int(st.ptr(), 7);
+    std::string symbol = (char *) sqlite3_column_text(st.ptr(),2);
+    int l = sqlite3_column_int(st.ptr(), 3);
+    int exp = sqlite3_column_int(st.ptr(), 4);
+    int propid = sqlite3_column_int(st.ptr(), 5);
+    int ppty = sqlite3_column_int(st.ptr(), 6);
+    int nvalue = sqlite3_column_int(st.ptr(), 7) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(), 8);
 
     // check the number of structures
     if (ppty != globals::ppty_energy_difference && nstr != 1){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have one structure, but has " << nstr << std::endl;
       continue;
     }
