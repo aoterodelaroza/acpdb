@@ -599,7 +599,7 @@ WRITE
   [PACK ipack.i]
   [ACP {name.s|file.s}]
   [TRAINING [alias.s]]
-  [TERM [id.i {l.i|l.s} exp.r] [coef.r]]
+  [TERM [{sym.s|id.i} {l.i|l.s} exp.r] [coef.r]]
 END
 ~~~
 Write the structures in the database to input or structure files. If
@@ -634,11 +634,12 @@ the ACP-related template expansions (`%acpgau%`, etc.).
 
 If the keyword TERM is present, write input files for the term
 calculations. The training set must be defined. There are two possible
-ways of doing this. If the atom number `id.i`, angular momentum
-(symbol `l.s` or value `l.i`), and exponent (`exp.r`) are given, then
-simply pass this information to the template. In addition, a fourth
-value can be passed (`coef.r`) corresponding to the term
-coefficient. If this last value is not present, 0.001 is used.
+ways of doing this. If the atom (with number `id.i` from the training
+set or symbol `sym.s`), angular momentum (symbol `l.s` or value
+`l.i`), and exponent (`exp.r`) are given, then simply pass this
+information to the template. In addition, a fourth value can be passed
+(`coef.r`) corresponding to the term coefficient. If this last value
+is not present, 0.001 is used.
 
 If the `zat`, `l`, and `exp` are not present in the TERM keyword, and
 if the template contains a loop (using the `%term_loop%` and

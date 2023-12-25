@@ -2567,10 +2567,16 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       rename = 0;
       std::string str = words.front();
       words.pop_front();
-      if (isinteger(str))
+      if (isinteger(str)){
 	atid_[0] = std::stoi(str);
-      else
-	throw std::runtime_error("Invalid atom ID " + str + " in WRITE/TERM");
+	symbol_[0] = symbol[atid_[0]-1];
+      } else {
+	str.resize(ATSYMBOL_LENGTH,'-');
+	int idx = std::find(symbol.begin(), symbol.end(),str) - symbol.begin();
+	if (idx > symbol.size())
+	  throw std::runtime_error("Atomic symbol " + str + " not found in training set, in WRITE/TERM");
+	atid_[0] = idx + 1;
+      }
       zat_[0] = zat[atid_[0]-1];
 
       str = words.front();
