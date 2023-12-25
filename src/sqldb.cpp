@@ -2162,13 +2162,13 @@ WHERE Terms.propid = Properties.id
     // check the number of values
     if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
       if (nvalue != 1)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have one value, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_dipole && nvalue != 3){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have 3 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_stress && nvalue != 6){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	 << ") should have 6 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
       int idstr = sqlite3_column_int(st.ptr(),8);
@@ -2176,10 +2176,10 @@ WHERE Terms.propid = Properties.id
       stcheck.step();
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
       else if (ppty == globals::ppty_d2e && nvalue != (3*nat) * (3*nat+1) / 2)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
 	   << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }
