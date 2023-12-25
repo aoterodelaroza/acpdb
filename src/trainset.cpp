@@ -65,7 +65,7 @@ void trainset::addatoms(const std::list<std::string> &tokens){
   auto it = tokens.begin();
   while (it != tokens.end()){
     std::string at = *(it++);
-    at.resize(ATSYMBOL_LENGTH,'-');
+    at.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
     std::string l = *(it++);
 
     unsigned char zat_ = zatguess(at);

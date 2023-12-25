@@ -610,7 +610,7 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   std::string symbol;
   if ((im = kmap.find("ATOM")) != kmap.end()){
     symbol = im->second;
-    symbol.resize(ATSYMBOL_LENGTH,'-');
+    symbol.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
     int iz = zatguess(symbol);
     if (!iz)
       throw std::runtime_error("Unknown atom in INSERT TERM");
@@ -2572,7 +2572,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 	atid_[0] = std::stoi(str);
 	symbol_[0] = symbol[atid_[0]-1];
       } else {
-	str.resize(ATSYMBOL_LENGTH,'-');
+	str.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
 	int idx = std::find(symbol.begin(), symbol.end(),str) - symbol.begin();
 	if (idx > symbol.size())
 	  throw std::runtime_error("Atomic symbol " + str + " not found in training set, in WRITE/TERM");
