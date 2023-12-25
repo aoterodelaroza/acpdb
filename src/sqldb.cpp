@@ -1674,7 +1674,7 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
 DELETE FROM Terms WHERE
   methodid = (SELECT id FROM Methods WHERE key = ?1) AND
   propid = (SELECT id FROM Properties WHERE key = ?2) AND
-  zatom = ?3 AND l = ?4 AND exponent = ?5;
+  zatom = ?3 AND symbol = ?4 AND l = ?5 AND exponent = ?6;
 )SQL");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
@@ -1683,15 +1683,23 @@ DELETE FROM Terms WHERE
       if (globals::verbose)
 	os << ";property=" << *it;
       st.bind(2,*it++);
+
+      std::string atom = *it++;
+      int iz = zatguess(atom);
       if (globals::verbose)
-	os << ";atom=" << *it;
-      st.bind(3,std::stoi(*it++));
+	os << ";zatom=" << iz;
+      st.bind(3,iz);
+      atom.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
+      if (globals::verbose)
+	os << ";symbol=" << atom;
+      st.bind(4,atom);
+
       if (globals::verbose)
 	os << ";l=" << *it;
-      st.bind(4,std::stoi(*it++));
+      st.bind(5,std::stoi(*it++));
       if (globals::verbose)
 	os << ";exp=" << *it << ")" << std::endl;
-      st.bind(5,std::stod(*it));
+      st.bind(6,std::stod(*it));
       st.step();
     }
   } else {
