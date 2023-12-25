@@ -1123,7 +1123,7 @@ SELECT Evaluations.propid, Evaluations.value, Terms.value, Properties.property_t
 FROM Properties, Evaluations, Training_Set, Terms
 WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
       Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
-      Terms.zatom = :ZATOM AND Terms.l = :L AND Terms.exponent = :EXP
+      Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
 )SQL");
     statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
@@ -1147,6 +1147,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	  steval.reset();
 	  steval.bind((char *) ":METHOD",emptyid);
 	  steval.bind((char *) ":ZATOM",(int) zat[i]);
+	  steval.bind((char *) ":SYMBOL",symbol[i]);
 	  steval.bind((char *) ":L",il);
 	  steval.bind((char *) ":EXP",exp[ie]);
 	  while (steval.step() != SQLITE_DONE){
