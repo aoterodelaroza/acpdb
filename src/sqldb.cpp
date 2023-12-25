@@ -573,13 +573,13 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   bool reqpropty = true, isterm;
   if (kmap.find("VALUE") != kmap.end()) {
     isterm = true;
-    cmd = "INSERT INTO Terms (methodid,propid,zatom,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ZATOM,:L,:EXPONENT,:VALUE,:MAXCOEF)";
+    cmd = "INSERT INTO Terms (methodid,propid,zatom,symbol,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ZATOM,:SYMBOL,:L,:EXPONENT,:VALUE,:MAXCOEF)";
   } else if (kmap.find("MAXCOEF") != kmap.end()){
     isterm = false;
     if (kmap.find("PROPERTY") != kmap.end())
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT";
     else{
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT";
       reqpropty = false;
     }
   } else
@@ -607,15 +607,16 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   } else if (reqpropty)
     throw std::runtime_error("A PROPERTY is required in INSERT EVALUATION");
 
-  if ((im = kmap.find("ATOM")) != kmap.end())
-    if (isinteger(im->second))
-      st.bind((char *) ":ATOM",std::stoi(im->second));
-    else{
-      int iz = zatguess(im->second);
-      if (!iz)
-	throw std::runtime_error("Unknown atom in INSERT TERM");
-      st.bind((char *) ":ATOM",iz);
-    }
+  std::string symbol;
+  if ((im = kmap.find("ATOM")) != kmap.end()){
+    symbol = im->second;
+    symbol.resize(ATSYMBOL_LENGTH,'-');
+    int iz = zatguess(symbol);
+    if (!iz)
+      throw std::runtime_error("Unknown atom in INSERT TERM");
+    st.bind((char *) ":ZATOM",iz);
+    st.bind((char *) ":SYMBOL",symbol);
+  }
   else
     throw std::runtime_error("An atom must be given in INSERT TERM");
   if ((im = kmap.find("L")) != kmap.end())
@@ -2773,12 +2774,10 @@ FROM Structures WHERE id = ?1;
   std::string name;
   if (rename == 2){
     std::string atom = symbol;
-    lowercase(atom);
     name = prefix + s.get_name() + "@" + atom + "_" + globals::inttol[l] +
       "_" + std::to_string(iexp+1) + "_" + std::to_string(icoef+1) + "." + ext;
   } else if (rename == 1){
     std::string atom = symbol;
-    lowercase(atom);
     name = prefix + s.get_name() + "@" + atom + "_" + globals::inttol[l] + "_" + std::to_string(iexp+1) + "." + ext;
   } else if (rename == 0) {
     name = prefix + s.get_name() + "." + ext;
