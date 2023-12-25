@@ -77,8 +77,8 @@ class sqldb {
   // Bulk insert: read data from a file, then insert as evaluation or terms.
   void insert_maxcoef(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap);
   void insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-		   const std::vector<std::string> &symbol={},
-		   const std::vector<unsigned char> &zat={}, const std::vector<unsigned char> &lmax={},
+		   const std::vector<unsigned char> &zat={}, const std::vector<std::string> &symbol={},
+		   const std::vector<unsigned char> &lmax={},
 		   const std::vector<double> &exp={});
 
   // Insert literature references into the database from a bibtex file

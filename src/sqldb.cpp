@@ -757,8 +757,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
 
 // Bulk insert: read data from a file, then insert as evaluation or terms.
 void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
-			const std::vector<std::string> &symbol/*={}*/,
-			const std::vector<unsigned char> &zat/*={}*/, const std::vector<unsigned char> &lmax/*={}*/,
+			const std::vector<unsigned char> &zat/*={}*/, const std::vector<std::string> &symbol/*={}*/,
+			const std::vector<unsigned char> &lmax/*={}*/,
 			const std::vector<double> &exp/*={}*/){
   if (!db)
     throw std::runtime_error("A database file must be connected before using INSERT CALC");
