@@ -500,9 +500,9 @@ Insert maximum coefficients from file `file.s` for method `method.s`
 (key) or `method.i` (integer ID). The file must have lines with the
 structure:
 ~~~
-atom.s  l.s  exp.r  maxcoef.r  property.s
+symbol.s  l.s  exp.r  maxcoef.r  property.s
 ~~~
-where `atom.s` is the atomic symbol, `l.s` is the angular momentum
+where `symbol.s` is the atomic symbol, `l.s` is the angular momentum
 label, `exp.r` is the exponent, and `maxcoef.r` is the maximum
 coefficient value. The last field (`property.s`) is optional. If it is
 present, apply the maxcoef only to that property. Otherwise, apply it

@@ -705,8 +705,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     throw std::runtime_error("A METHOD is required in INSERT MAXCOEF");
 
   // statements
-  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT");
-  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND l = :L AND exponent = :EXPONENT");
+  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT");
+  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT");
   statement *st;
 
   // begin the transaction
@@ -721,6 +721,7 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     std::string atom, l, exp, value, propkey;
     std::istringstream iss(line);
     iss >> atom >> l >> exp >> value;
+    atom.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
     if (iss.fail())
       continue;
     iss >> propkey;
@@ -741,7 +742,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     int izat = zatguess(atom);
     if (izat <= 0)
       throw std::runtime_error("Invalid atomic symbol in INSERT MAXCOEF");
-    st->bind((char *) ":ATOM",izat);
+    st->bind((char *) ":ZATOM",izat);
+    st->bind((char *) ":SYMBOL",atom);
 
     if (globals::ltoint.find(l) == globals::ltoint.end())
       throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
