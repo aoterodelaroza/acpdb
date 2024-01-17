@@ -1468,7 +1468,7 @@ INSERT INTO Structures (key,ismolecule,charge,multiplicity,nat,cell,zatoms,coord
 	if (!fs::is_regular_file(filename)){
 	  filename = dir + "/" + info[k].names[i] + ".POSCAR";
 	  if (!fs::is_regular_file(filename))
-	    throw std::runtime_error("structure file not found (" + dir + "/" + info[k].names[i] + ") processing din file " + din);
+	    throw std::runtime_error("structure file not found (" + dir + "/" + info[k].names[i] + ".{xyz,POSCAR}) processing din file " + din);
 	  if (s.readposcar(filename))
 	    throw std::runtime_error("Error reading file: " + filename);
 	} else {
