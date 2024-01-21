@@ -713,6 +713,9 @@ by the database program. The available keywords are:
 
 - `%term_atsymbol%`: atomic symbol in ACP term.
 
+- `%term_id%`: the integer correspondign to the order in which the
+  atom appears in the `atom` line of the `training` environment.
+
 - `%term_atsymbol_lstr_gaussian%`: atomic symbol and angular momentum
   label block in Gaussian ACP format. For instance, for the p channel
   in Cl, this keyword would expand to:
