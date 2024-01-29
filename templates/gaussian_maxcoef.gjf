@@ -23,7 +23,7 @@ title
 
 @pcseg1.gbs/N
 
--%term_atsymbol% 0
+%term_string% 0
 %term_atsymbol_lstr_gaussian%
 1
 2 %term_exp% %term_coef%
