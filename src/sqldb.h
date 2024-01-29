@@ -125,7 +125,7 @@ class sqldb {
   void write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
 			const std::unordered_map<int,int> &smapin={},
 			const std::vector<unsigned char> &zat={}, const std::vector<std::string> &symbol={},
-			const std::vector<unsigned char> &lmax={},
+			const std::vector<std::string> &termstring={}, const std::vector<unsigned char> &lmax={},
 			const std::vector<double> &exp={}, const std::vector<double> &coef={},
 			const std::string &prefix="");
 
@@ -149,7 +149,8 @@ class sqldb {
 			     const acp &a,
 			     const std::unordered_map<int,int> &smap,
 			     const std::vector<int> &atid,
-			     const std::vector<unsigned char> &zat, const std::vector<std::string> &symbol,
+			     const std::vector<unsigned char> &zat,
+			     const std::vector<std::string> &symbol, const std::vector<std::string> &termstring,
 			     const std::vector<unsigned char> &l,
 			     const std::vector<double> &exp, const std::vector<double> &coef,
 			     const int rename,
@@ -167,7 +168,7 @@ class sqldb {
   // (coef).
   std::string write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
 				  const std::string &ext, const acp& a, int atid,
-				  const unsigned char zat, const std::string &symbol,
+				  const unsigned char zat, const std::string &symbol, const std::string &termstring, 
 				  const unsigned char l, const double exp, const int iexp,
 				  const double coef, const int icoef, const int rename,
 				  const std::string &dir="./",
