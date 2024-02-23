@@ -1049,9 +1049,6 @@ WHERE Properties.id = Training_set.propid;
     std::unordered_map<int,int> smap;
     while (st.step() != SQLITE_DONE){
       int ptid = sqlite3_column_int(st.ptr(),3);
-      if (ptid != globals::ppty_energy_difference)
-	throw std::runtime_error("properties other than ENERGY_DIFFERENCE cannot be used in TRAINING MAXCOEF");
-
       int nstr = sqlite3_column_int(st.ptr(),0);
       int *str = (int *) sqlite3_column_blob(st.ptr(),1);
       if (nstr == 0)
