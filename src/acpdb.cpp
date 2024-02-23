@@ -323,7 +323,8 @@ int main(int argc, char *argv[]) {
       if (kmap.find("TRAINING") != kmap.end())
         ts.write_structures(*os,kmap,a);
       else
-        db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_symbol(),ts.get_lmax(),ts.get_exp());
+        db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_symbol(),ts.get_termstring(),
+			    ts.get_lmax(),ts.get_exp());
 
       //// TRAINING (start environment)
     } else if (keyw == "TRAINING") {
@@ -402,6 +403,12 @@ int main(int argc, char *argv[]) {
       if (!intraining)
         throw std::runtime_error("ATOM is not allowed outside the TRAINING environment");
       ts.addatoms(tokens);
+
+      //// TRAINING -> TERM_STRING
+    } else if (keyw == "TERM_STRING") {
+      if (!intraining)
+        throw std::runtime_error("TERM_STRING is not allowed outside the TRAINING environment");
+      ts.settermstring(tokens);
 
       //// TRAINING -> EXP
     } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {

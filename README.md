@@ -713,6 +713,13 @@ by the database program. The available keywords are:
 
 - `%term_atsymbol%`: atomic symbol in ACP term.
 
+- `%term_id%`: the integer correspondign to the order in which the
+  atom appears in the `atom` line of the `training` environment.
+
+- `%term_string%`: the string defined by the `TERM_STRING` keyword
+  when the training set is defined. By default, this is the atomic
+  symbol preceded by `-`.
+
 - `%term_atsymbol_lstr_gaussian%`: atomic symbol and angular momentum
   label block in Gaussian ACP format. For instance, for the p channel
   in Cl, this keyword would expand to:
@@ -741,6 +748,8 @@ Some template examples can be found in the `templates/` directory.
 ~~~
 TRAINING
  ATOM|ATOMS [at1.s l1.s at2.s l2.s ... ]
+ [TERM_STRING at1.s termstring.s]
+ ...
  EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
  EMPTY method.s
  REFERENCE method.s
@@ -790,6 +799,13 @@ is as follows:
 
 - `ATOM`: the atoms for which ACPs will be fitted, followed by the
   maximum angular momentum number for each (l, s, p, d, etc.).
+
+- `TERM_STRING`: sets the term string for the given atom. The term
+  string associated with an atom is replaces the `%term_string%`
+  keyword in a template (see [Template format](#description-of-the-template-format)).
+  This is useful when writing ACP term inputs. It defaults to the
+  atomic name preceded by a `-` symbol. `TERM_STRING` must come after
+  `ATOM`.
 
 - `EXP`: the list of exponents.
 

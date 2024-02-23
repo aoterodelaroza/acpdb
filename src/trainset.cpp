@@ -78,8 +78,37 @@ void trainset::addatoms(const std::list<std::string> &tokens){
     zat.push_back(zat_);
     lmax.push_back(lmax_);
     symbol.push_back(at);
+    termstring.push_back("-" + nameguess(zat_));
     nat++;
   }
+  complete = c_unknown;
+}
+
+// Set term strings.
+void trainset::settermstring(const std::list<std::string> &tokens){
+  if (!db || !(*db))
+    throw std::runtime_error("A database file must be connected before using TRAINING REFERENCE");
+  if (tokens.empty())
+    throw std::runtime_error("Need method key in TRAINING REFEENCE");
+  if (zat.empty())
+    throw std::runtime_error("ATOM must be defined before using TERM_STRING");
+
+  std::string atom_ = *(tokens.begin());
+  atom_.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
+  std::string str_ = "";
+  for (auto it = std::next(tokens.begin()); it != tokens.end(); it++)
+    str_ += *it + " ";
+
+  int iatom = -1;
+  for (int k = 0; k < symbol.size(); k++){
+    if (atom_.compare(symbol[k]) == 0){
+      iatom = k;
+      break;
+    }
+  }
+  if (iatom < 0)
+    throw std::runtime_error("ATOM not found: " + atom_);
+  termstring[iatom] = str_;
   complete = c_unknown;
 }
 
@@ -1062,7 +1091,7 @@ WHERE Properties.id = Training_set.propid;
     }
 
     // write the structures
-    db->write_structures(os, kmap_new, {}, smap, zat, symbol, lmax, exp, coef, "maxcoef-");
+    db->write_structures(os, kmap_new, {}, smap, zat, symbol, termstring, lmax, exp, coef, "maxcoef-");
 
   } else {
     // CALC
@@ -1826,7 +1855,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap,zat,symbol,lmax,exp);
+  db->write_structures(os,kmap,a,smap,zat,symbol,termstring,lmax,exp);
 }
 
 // Read data for the training set or one of its subsets from a file,
