@@ -1231,7 +1231,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	      elast = edif;
 	    } // ic, over coefficients
 	  } // steval.step(), runs over properties
-	  fprintf(fp,"%s %c %.6f %.10e\n",nameguess(zat[i]).c_str(),globals::inttol[il],exp[ie],cmax);
+	  fprintf(fp,"%s %c %.6f %.10e\n",symbol[i].c_str(),globals::inttol[il],exp[ie],cmax);
 	  nbefore = nbefore + coef.size();
 	} // ie, over exponents
       } // il, over angular momenta
