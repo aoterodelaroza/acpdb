@@ -1179,8 +1179,8 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	  while (steval.step() != SQLITE_DONE){
 	    // check property ID
 	    int ptid = sqlite3_column_int(steval.ptr(),3);
-	    if (ptid != globals::ppty_energy_difference)
-	      throw std::runtime_error("properties other than ENERGY_DIFFERENCE cannot be used in TRAINING MAXCOEF");
+	    if (ptid != globals::ppty_energy_difference && ptid != globals::ppty_energy)
+	      throw std::runtime_error("properties other than ENERGY_DIFFERENCE and ENERGY cannot be used in TRAINING MAXCOEF");
 
 	    // structure ID and linear and zero energies
 	    int id = sqlite3_column_int(steval.ptr(),0);
@@ -1215,9 +1215,12 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 		  nthis = nbefore + ic;
 		escf += pcoef[k] * datmap[strname][nthis];
 	      }
-	      escf *= globals::ha_to_kcal;
+	      if (ptid == globals::ppty_energy_difference)
+		escf *= globals::ha_to_kcal;
 	      double elin = e0 + coef[ic] * eslope;
 	      double edif = std::abs(escf - elin);
+	      if (ptid == globals::ppty_energy)
+		edif *= globals::ha_to_kcal;
 
 	      if (edif > ethrs) {
 		double cc;
