@@ -1128,7 +1128,7 @@ WHERE Properties.id = Training_set.propid;
 	std::cout << "Structure = " << it->first << std::endl;
 	std::cout << "Entries for structure = " << it->second.size() << std::endl;
 	std::cout << "Entries expected = " << ntotal << " or " << ntotal+1 << std::endl;
-	throw std::runtime_error("Invalid number of entries in TRAINING MAXCOEF");
+	throw std::runtime_error("Invalid number of entries in TRAINING MAXCOEF for structure " + it->first);
       }
       if (it->second.size() != ncoef){
 	if (ncoef == 0)
@@ -1213,6 +1213,8 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 		  nthis = nbefore + ic + 1; // +1 to account for the empty calculation
 		else
 		  nthis = nbefore + ic;
+		if (datmap.find(strname) == datmap.end())
+		  throw std::runtime_error("Structure not found in source file: " + strname);
 		escf += pcoef[k] * datmap[strname][nthis];
 	      }
 	      if (ptid == globals::ppty_energy_difference)
