@@ -379,6 +379,7 @@ INSERT TERM
   ATOM {z.s|z.i}
   L {l.s|l.i}
   EXPONENT exp.r
+  [EXPRN n.i]
   VALUE value1.r [value2.r ...]
   [CALCSLOPE c0.r]
   MAXCOEF maxcoef.r
@@ -388,7 +389,8 @@ Insert a term into the database. Corresponds to the ACP term
 calculated with method `method.s` (given by key) or `method.i` (by ID)
 on property `prop.s` (by key) or `prop.i` (by ID) for atom with atomic
 number `z.i` or symbol `z.s`, angular momentum channel with l = `l.i`
-(number) or `l.s` (symbol), and exponent `exp.r`.
+(number) or `l.s` (symbol), exponent `exp.r` and rn-exponent
+`n.i`. The latter is equal to 2 if not given.
 
 This insert command has two purposes:
 
@@ -751,6 +753,7 @@ TRAINING
  [TERM_STRING at1.s termstring.s]
  ...
  EXP|EXPONENT|EXPONENTS exp1.r exp2.r ...
+ EXPRN n1.i n2.i ...
  EMPTY method.s
  REFERENCE method.s
  [ADD method.s [FIT]]
@@ -808,6 +811,11 @@ is as follows:
   `ATOM`.
 
 - `EXP`: the list of exponents.
+
+- `EXPRN`: the list of n integers for the r^n factor in the ACP. The
+  `EXPRN` keyword must come after `EXP` and it must contain the same
+  number of entries as exponents in `EXP`. If `EXPRN` is not given,
+  the values are all equal to 2.
 
 - `EMPTY`: the key for the empty method, the approximate method we
   want to fix with the ACPs.
