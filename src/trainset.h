@@ -54,6 +54,9 @@ class trainset {
   // Add exponents
   void addexp(const std::list<std::string> &tokens);
 
+  // Add exponent r^n values
+  void addexprn(const std::list<std::string> &tokens);
+
   // Add a subset (combination of set, mask, weights)
   void addsubset(const std::string &key, std::unordered_map<std::string,std::string> &kmap);
 
@@ -144,6 +147,7 @@ class trainset {
   const std::vector<unsigned char> &get_zat() const { return zat; };
   const std::vector<unsigned char> &get_lmax() const { return lmax; };
   const std::vector<double> &get_exp() const { return exp; };
+  const std::vector<int> &get_exprn() const { return exprn; };
   const std::vector<std::string> &get_symbol() const { return symbol; };
   const std::vector<std::string> &get_termstring() const { return termstring; };
 
@@ -169,6 +173,7 @@ class trainset {
   std::vector<unsigned char> lmax; // maximum angular momentum channels
   std::vector<std::string> termstring; // term strings
   std::vector<double> exp; // exponents
+  std::vector<int> exprn; // exponent r^n
 
   std::vector<std::string> alias; // alias of the sets
   std::vector<std::string> setname; // name of the sets
@@ -195,7 +200,7 @@ class trainset {
 #ifdef CEREAL_FOUND
   friend class cereal::access;
   template<class Archive> void serialize(Archive & archive){
-    archive(ntot,propid,nat,zat,symbol,termstring,lmax,exp,alias,setname,setid,
+    archive(ntot,propid,nat,zat,symbol,termstring,lmax,exp,exprn,alias,setname,setid,
 	    setpptyid,set_initial_idx,set_final_idx,
             set_size,set_dofit,w,refname,refid,emptyname,emptyid,addname,addisfit,addid);
   }

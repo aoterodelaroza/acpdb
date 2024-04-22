@@ -37,7 +37,7 @@ class strtemplate {
     t_charge, t_mult, t_nat, t_ntyp, t_xyz,
     t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
     t_acpgau, t_acpgaunum, t_acpgausym, t_acpcrys, t_term_id, t_term_string,
-    t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp,
+    t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp, t_term_exprn,
     t_term_coef, t_term_loop, t_term_endloop};
   // t_string: a string, passed literally to the file.
   // t_basename (%basename%): the name of the structure.
@@ -66,6 +66,7 @@ class strtemplate {
   // t_term_lstr (%term_lstr%): ACP term, angular momentum label
   // t_term_lnum (%term_lnum%): ACP term, angular momentum value
   // t_term_exp (%term_exp%): ACP term, exponent
+  // t_term_exprn (%term_exprn%): ACP term, exponent r^n
   // t_term_coef (%term_coef%): ACP term, coefficient
   // t_term_loop (%term_loop%): start ACP term loop
   // t_term_endloop (%term_endloop%): end ACP term loop
@@ -81,7 +82,7 @@ class strtemplate {
 		    const unsigned char zat,
 		    const std::string &symbol, const std::string &termstring,
 		    const unsigned char l,
-		    const double exp, const double coef) const;
+		    const double exp, const int exprn, const double coef) const;
 
   // Apply a string to the template and write to an output stream, with
   // loop expansion. The information from the loop expansion comes from
@@ -93,6 +94,7 @@ class strtemplate {
 		   const std::vector<std::string> &termstring,
                    const std::vector<unsigned char> &l,
                    const std::vector<double> &exp,
+                   const std::vector<int> &exprn,
                    const std::vector<double> &coef);
 
   // whether the template has loops

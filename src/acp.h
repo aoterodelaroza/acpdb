@@ -40,6 +40,7 @@ class acp {
     symbol sym;
     unsigned char l;
     double exp;
+    int exprn;
     double coef;
   };
 

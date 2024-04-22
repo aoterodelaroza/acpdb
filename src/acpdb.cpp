@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
         else if (category == "MAXCOEF")
           db.insert_maxcoef(*os,kmap);
         else if (category == "CALC")
-          db.insert_calc(*os,kmap,ts.get_zat(),ts.get_symbol(),ts.get_lmax(),ts.get_exp());
+          db.insert_calc(*os,kmap,ts.get_zat(),ts.get_symbol(),ts.get_lmax(),ts.get_exp(),ts.get_exprn());
       }
       *os << std::endl;
 
@@ -324,7 +324,7 @@ int main(int argc, char *argv[]) {
         ts.write_structures(*os,kmap,a);
       else
         db.write_structures(*os,kmap,a,{},ts.get_zat(),ts.get_symbol(),ts.get_termstring(),
-			    ts.get_lmax(),ts.get_exp());
+			    ts.get_lmax(),ts.get_exp(),ts.get_exprn());
 
       //// TRAINING (start environment)
     } else if (keyw == "TRAINING") {
@@ -413,6 +413,9 @@ int main(int argc, char *argv[]) {
       //// TRAINING -> EXP
     } else if (keyw == "EXP" || keyw == "EXPONENT" || keyw == "EXPONENTS") {
       ts.addexp(tokens);
+
+    } else if (keyw == "EXPRN") {
+      ts.addexprn(tokens);
 
       //// TRAINING -> REFERENCE
     } else if (keyw == "REFERENCE") {

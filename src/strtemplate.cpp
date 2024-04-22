@@ -29,7 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
 // t_acpgau, t_acpgaunum, t_acpgausym, t_acpcrys, t_term_id, t_term_string,
 // t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr,
-// t_term_lnum, t_term_exp, t_term_coef
+// t_term_lnum, t_term_exp, t_term_exprn, t_term_coef
 // t_term_loop, t_term_endloop
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
@@ -37,7 +37,7 @@ static const std::vector<std::string> tokenname = { // keyword names for printin
   "xyzatnum","xyzatnum200","vaspxyz","qexyz",
   "acpgau", "acpgaunum", "acpgausym", "acpcrys", "term_id", "term_string",
   "term_atsymbol", "term_atsymbol_lstr_gaussian", "term_atnum",
-  "term_lstr", "term_lnum", "term_exp", "term_coef",
+  "term_lstr", "term_lnum", "term_exp", "term_exprn", "term_coef",
   "term_loop", "term_endloop"
 };
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
@@ -46,7 +46,7 @@ static const std::vector<std::string> tokenstr = { // strings for the keywords (
   "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
   "%acpgau%","%acpgaunum%","%acpgausym%","%acpcrys%","%term_id%","%term_string%",
   "%term_atsymbol%","%term_atsymbol_lstr_gaussian%","%term_atnum%",
-  "%term_lstr%","%term_lnum%","%term_exp%","%term_coef%",
+  "%term_lstr%","%term_lnum%","%term_exp%","%term_exprn%","%term_coef%",
   "%term_loop%","%term_endloop%"
 };
 static const int ntoken = tokenstr.size();
@@ -103,7 +103,7 @@ std::string strtemplate::apply(const structure &s, const acp& a, const int id,
 			       const unsigned char zat,
 			       const std::string &symbol, const std::string &termstring,
 			       const unsigned char l,
-			       const double exp, const double coef) const {
+			       const double exp, const int exprn, const double coef) const {
 
   std::string result;
 
@@ -306,6 +306,10 @@ std::string strtemplate::apply(const structure &s, const acp& a, const int id,
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8) << exp;
       result.append(ss.str());
+    } else if (it->token == t_term_exprn) {
+      std::stringstream ss;
+      ss << exprn;
+      result.append(ss.str());
     } else if (it->token == t_term_coef) {
       std::stringstream ss;
       ss << std::fixed << std::setprecision(8) << coef;
@@ -330,6 +334,7 @@ void strtemplate::expand_loop(const std::vector<int> &atid,
 			      const std::vector<std::string> &termstring,
 			      const std::vector<unsigned char> &l,
 			      const std::vector<double> &exp,
+			      const std::vector<int> &exprn,
 			      const std::vector<double> &coef) {
   std::list<template_token> tl_loc, tl_repeat;
   bool inloop = false;
@@ -376,6 +381,8 @@ void strtemplate::expand_loop(const std::vector<int> &atid,
 		std::stringstream ss;
 		ss << std::fixed << std::setprecision(8) << exp[iexp];
 		tl_loc.push_back(template_token({t_string,ss.str()}));
+	      } else if (itr->token == t_term_exprn) {
+		tl_loc.push_back(template_token({t_string,std::to_string(exprn[iexp])}));
 	      } else if (itr->token == t_term_coef) {
 		std::stringstream ss;
 		ss << std::fixed << std::setprecision(8) << coef[icoef];

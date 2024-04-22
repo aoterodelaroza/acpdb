@@ -41,7 +41,7 @@ title
 %term_string% 0
 %term_atsymbol_lstr_gaussian%
 1
-2 %term_exp% %term_coef%
+%term_exprn% %term_exp% %term_coef%
 
 --Link1--
 #p hf sto-3g

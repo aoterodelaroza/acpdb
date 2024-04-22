@@ -1,6 +1,6 @@
 #! /usr/bin/octave-cli -q
 
-prefix="hono-all";
+prefix="lasso";
 
 ## List of 1-norm constraints to use
 tlist = [0 12];
@@ -17,10 +17,10 @@ wrmsconv = 1e-4;
 #### Do NOT touch past here ####
 
 ## the version of this lasso script
-lasso_version = "1.6bin";
+lasso_version = "1.7bin";
 
 ## Read the binary file written by acpdb
-function [atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
+function [atoms,symbols,lmax,lname,explist,exprnlist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
 
   if (!exist(filebin))
     error(sprintf("File not found: %s",filebin))
@@ -40,6 +40,7 @@ function [atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yad
   printf("## Reading from binary file:\n");
   printf("# %d atoms\n",natoms);
   printf("# %d exponents\n",nexp);
+  printf("# %d exponent r^n\n",nexp);
   printf("# %d rows\n",nrows);
   printf("# %d columns\n",ncols);
   printf("# %d additional method evaluations\n",naddsub);
@@ -68,6 +69,7 @@ function [atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yad
   lname={"l","s","p","d","f","g","h"};
   lmax = fread(fid,[1 natoms],"unsigned char");
   explist = fread(fid,[1 nexp],"double");
+  exprnlist = fread(fid,[1 nexp],"int");
 
   ## large data arrays
   w = fread(fid,[nrows 1],"double");
@@ -115,7 +117,7 @@ function [atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yad
 endfunction
 
 ## Read the binary
-[atoms,symbols,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
+[atoms,symbols,lmax,lname,explist,exprnlist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
 
 ## start the loop
 nacp = 0;
@@ -209,6 +211,7 @@ for it = 1:length(tlist)
         if (abs(coef) > 1e-20)
           nterms(iat,il)++;
           aexp(iat,il,nterms(iat,il)) = explist(iexp);
+          aexprn(iat,il,nterms(iat,il)) = exprnlist(iexp);
           acoef(iat,il,nterms(iat,il)) = coef;
         endif
       endfor
@@ -242,6 +245,11 @@ for it = 1:length(tlist)
       fprintf(fid,"%.2f ",explist(i));
     endfor
     fprintf(fid,"\n");
+    fprintf(fid,"! Exponent r^n: ");
+    for i = 1:length(exprnlist)
+      fprintf(fid,"%d ",exprnlist(i));
+    endfor
+    fprintf(fid,"\n");
     fprintf(fid,"! ACP terms in training set: %d\n",ncols);
     fprintf(fid,"! Data points in training set: %d\n",nrows);
     if (haveaddcols)
@@ -265,7 +273,7 @@ for it = 1:length(tlist)
         fprintf(fid,"%s\n",lname{j});
         fprintf(fid,"%d\n",nterms(i,j));
         for k = 1:nterms(i,j)
-          fprintf(fid,"2 %.6f %.15f\n",aexp(i,j,k),acoef(i,j,k));
+          fprintf(fid,"%d %.6f %.15f\n",aexprn(i,j,k),aexp(i,j,k),acoef(i,j,k));
         endfor
       endfor
     endfor

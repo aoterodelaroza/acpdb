@@ -106,10 +106,11 @@ CREATE TABLE Terms (
   symbol        TEXT NOT NULL,
   l             INTEGER NOT NULL,
   exponent      REAL NOT NULL,
+  exprn         INTEGER NOT NULL,
   propid        INTEGER NOT NULL,
   value         BLOB NOT NULL,
   maxcoef       REAL,
-  PRIMARY KEY(methodid,zatom,symbol,l,exponent,propid),
+  PRIMARY KEY(methodid,zatom,symbol,l,exponent,exprn,propid),
   FOREIGN KEY(methodid) REFERENCES Methods(id) ON DELETE CASCADE,
   FOREIGN KEY(propid) REFERENCES Properties(id) ON DELETE CASCADE
 );
@@ -573,13 +574,13 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
   bool reqpropty = true, isterm;
   if (kmap.find("VALUE") != kmap.end()) {
     isterm = true;
-    cmd = "INSERT INTO Terms (methodid,propid,zatom,symbol,l,exponent,value,maxcoef) VALUES(:METHODID,:PROPID,:ZATOM,:SYMBOL,:L,:EXPONENT,:VALUE,:MAXCOEF)";
+    cmd = "INSERT INTO Terms (methodid,propid,zatom,symbol,l,exponent,exprn,value,maxcoef) VALUES(:METHODID,:PROPID,:ZATOM,:SYMBOL,:L,:EXPONENT,:EXPRN,:VALUE,:MAXCOEF)";
   } else if (kmap.find("MAXCOEF") != kmap.end()){
     isterm = false;
     if (kmap.find("PROPERTY") != kmap.end())
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT AND exprn = :EXPRN";
     else{
-      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT";
+      cmd = "UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol = :SYMBOL AND l = :L AND exponent = :EXPONENT AND exprn = :EXPRN";
       reqpropty = false;
     }
   } else
@@ -635,6 +636,10 @@ void sqldb::insert_term(std::ostream &os, const std::unordered_map<std::string,s
     st.bind((char *) ":EXPONENT",std::stod(im->second));
   else
     throw std::runtime_error("An exponent must be given in INSERT TERM");
+  if ((im = kmap.find("EXPRN")) != kmap.end())
+    st.bind((char *) ":EXPRN",std::stod(im->second));
+  else
+    st.bind((char *) ":EXPRN",2);
   if ((im = kmap.find("VALUE")) != kmap.end()){
     std::vector<double> tok = list_all_doubles(im->second);
 
@@ -705,8 +710,8 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     throw std::runtime_error("A METHOD is required in INSERT MAXCOEF");
 
   // statements
-  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT");
-  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT");
+  statement sty(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND propid = :PROPID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT AND exprn = :EXPRN");
+  statement stn(db,"UPDATE Terms SET maxcoef = :MAXCOEF WHERE methodid = :METHODID AND zatom = :ZATOM AND symbol=:SYMBOL AND l = :L AND exponent = :EXPONENT AND exprn = :EXPRN");
   statement *st;
 
   // begin the transaction
@@ -718,9 +723,9 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     throw std::runtime_error("In INSERT MAXCOEF, error reading file: " + file);
   std::string line;
   while (std::getline(ifile,line)){
-    std::string atom, l, exp, value, propkey;
+    std::string atom, l, exp, exprn, value, propkey;
     std::istringstream iss(line);
-    iss >> atom >> l >> exp >> value;
+    iss >> atom >> l >> exp >> exprn >> value;
     atom.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
     if (iss.fail())
       continue;
@@ -749,6 +754,7 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
       throw std::runtime_error("Unknown angular momentum label in INSERT TERM");
     st->bind((char *) ":L",globals::ltoint.at(l));
     st->bind((char *) ":EXPONENT",exp);
+    st->bind((char *) ":EXPRN",exprn);
     st->bind((char *) ":MAXCOEF",value);
     st->step();
   }
@@ -762,7 +768,9 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
 void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap,
 			const std::vector<unsigned char> &zat/*={}*/, const std::vector<std::string> &symbol/*={}*/,
 			const std::vector<unsigned char> &lmax/*={}*/,
-			const std::vector<double> &exp/*={}*/){
+			const std::vector<double> &exp/*={}*/,
+			const std::vector<int> &exprn/*={}*/
+			){
   if (!db)
     throw std::runtime_error("A database file must be connected before using INSERT CALC");
 
@@ -805,11 +813,13 @@ void sqldb::insert_calc(std::ostream &os, const std::unordered_map<std::string,s
   std::vector<std::string> symbol_ = {""};
   std::vector<unsigned char> zat_ = {0}, l_ = {0};
   std::vector<double> exp_ = {0.0};
+  std::vector<int> exprn_ = {0};
   if ((im = kmap.find("TERM")) != kmap.end()){
     doterm = true;
 
     // TERM
     exp_ = exp;
+    exprn_ = exprn;
     zat_.clear();
     l_.clear();
     symbol_.clear();
@@ -867,7 +877,7 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
   else
     sqlcmd = "INSERT";
   if (doterm)
-    sqlcmd += " INTO Terms (methodid,zatom,symbol,l,exponent,propid,value) VALUES(:METHOD,:ZATOM,:SYMBOL,:L,:EXP,:PROPID,:VALUE);";
+    sqlcmd += " INTO Terms (methodid,zatom,symbol,l,exponent,exprn,propid,value) VALUES(:METHOD,:ZATOM,:SYMBOL,:L,:EXP,:EXPRN,:PROPID,:VALUE);";
   else
     sqlcmd += " INTO Evaluations (methodid,propid,value) VALUES(:METHOD,:PROPID,:VALUE);";
   stinsert.recycle(sqlcmd);
@@ -975,6 +985,7 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 	  stinsert.bind((char *) ":SYMBOL",symbol_[ii]);
 	  stinsert.bind((char *) ":L",(int) l_[ii]);
 	  stinsert.bind((char *) ":EXP",exp_[iexp]);
+	  stinsert.bind((char *) ":EXPRN",exprn_[iexp]);
 	  if (stinsert.step() != SQLITE_DONE){
 	    std::cout << "method = " << methodkey << std::endl;
 	    std::cout << "propid = " << it->first << std::endl;
@@ -1674,7 +1685,7 @@ void sqldb::erase(std::ostream &os, const std::string &category, const std::list
 DELETE FROM Terms WHERE
   methodid = (SELECT id FROM Methods WHERE key = ?1) AND
   propid = (SELECT id FROM Properties WHERE key = ?2) AND
-  zatom = ?3 AND symbol = ?4 AND l = ?5 AND exponent = ?6;
+  zatom = ?3 AND symbol = ?4 AND l = ?5 AND exponent = ?6 AND exprn = ?7;
 )SQL");
     for (auto it = tokens.begin(); it != tokens.end(); it++){
       if (globals::verbose)
@@ -1699,7 +1710,10 @@ DELETE FROM Terms WHERE
       st.bind(5,std::stoi(*it++));
       if (globals::verbose)
 	os << ";exp=" << *it << ")" << std::endl;
-      st.bind(6,std::stod(*it));
+      st.bind(6,std::stod(*it++));
+      if (globals::verbose)
+	os << ";exprn=" << *it << ")" << std::endl;
+      st.bind(7,std::stod(*it));
       st.step();
     }
   } else {
@@ -1787,24 +1801,24 @@ FROM Evaluations
 ORDER BY methodid, propid;
 )SQL";
   } else if (category == "TERM"){
-    headers = {"methodid","propid", "zatom", "symbol",   "l", "exponent", "#values",     "values", "maxcoef"};
-    types   = {     t_int,   t_int,   t_int,    t_str, t_int,   t_double, t_intsize, t_ptr_double,  t_double};
-    cols    = {         0,       1,       2,        3,     4,          5,         6,            7,         8};
+    headers = {"methodid","propid", "zatom", "symbol",   "l", "exponent", "exprn", "#values",     "values", "maxcoef"};
+    types   = {     t_int,   t_int,   t_int,    t_str, t_int,   t_double,   t_int, t_intsize, t_ptr_double,  t_double};
+    cols    = {         0,       1,       2,        3,     4,          5,       6,         7,            8,         9};
     stmt = R"SQL(
-SELECT methodid,propid,zatom,symbol,l,exponent,length(value),value,maxcoef
+SELECT methodid,propid,zatom,symbol,l,exponent,exprn,length(value),value,maxcoef
 FROM Terms
-ORDER BY methodid,zatom,l,exponent,propid;
+ORDER BY methodid,zatom,l,exponent,exprn,propid;
 )SQL";
   } else if (category == "MAXCOEF"){
-    headers = {"methodid","atom",  "l","exponent","maxcoef"};
-    types   = {     t_int, t_int,t_int,  t_double, t_double};
-    cols    = {         0,     1,    2,         3,        4};
+    headers = {"methodid","atom",  "l","exponent","exprn","maxcoef"};
+    types   = {     t_int, t_int,t_int,  t_double,  t_int, t_double};
+    cols    = {         0,     1,    2,         3,      4,        5};
     stmt = R"SQL(
-SELECT methodid,zatom,l,exponent,MIN(maxcoef)
+SELECT methodid,zatom,l,exponent,exprn,MIN(maxcoef)
 FROM Terms
 WHERE maxcoef IS NOT NULL
-GROUP BY methodid,atom,l,exponent
-ORDER BY methodid,atom,l,exponent;
+GROUP BY methodid,atom,l,exponent,exprn
+ORDER BY methodid,atom,l,exponent,exprn;
 )SQL";
   } else {
     throw std::runtime_error("Unknown LIST category: " + category);
@@ -2135,7 +2149,7 @@ WHERE Evaluations.propid = Properties.id
   // check the number of values and structures in terms
   os << "Checking the number of values and structures in the terms table" << std::endl;
   st.recycle(R"SQL(
-SELECT Terms.methodid, Terms.zatom, Terms.symbol, Terms.l, Terms.exponent, Terms.propid, Properties.property_type,
+SELECT Terms.methodid, Terms.zatom, Terms.symbol, Terms.l, Terms.exponent, Terms.exprn, Terms.propid, Properties.property_type,
        length(Terms.value), Properties.nstructures, Properties.structures
 FROM Terms, Properties
 WHERE Terms.propid = Properties.id
@@ -2147,14 +2161,15 @@ WHERE Terms.propid = Properties.id
     std::string symbol = (char *) sqlite3_column_text(st.ptr(),2);
     int l = sqlite3_column_int(st.ptr(), 3);
     int exp = sqlite3_column_int(st.ptr(), 4);
-    int propid = sqlite3_column_int(st.ptr(), 5);
-    int ppty = sqlite3_column_int(st.ptr(), 6);
-    int nvalue = sqlite3_column_int(st.ptr(), 7) / sizeof(double);
-    int nstr = sqlite3_column_int(st.ptr(), 8);
+    int exprn = sqlite3_column_int(st.ptr(), 5);
+    int propid = sqlite3_column_int(st.ptr(), 6);
+    int ppty = sqlite3_column_int(st.ptr(), 7);
+    int nvalue = sqlite3_column_int(st.ptr(), 8) / sizeof(double);
+    int nstr = sqlite3_column_int(st.ptr(), 9);
 
     // check the number of structures
     if (ppty != globals::ppty_energy_difference && nstr != 1){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";exprn=" << exprn << ";property=" << propid
 	 << ") should have one structure, but has " << nstr << std::endl;
       continue;
     }
@@ -2162,13 +2177,13 @@ WHERE Terms.propid = Properties.id
     // check the number of values
     if (ppty == globals::ppty_energy_difference || ppty == globals::ppty_energy || ppty == globals::ppty_homo || ppty == globals::ppty_lumo){
       if (nvalue != 1)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";exprn=" << exprn << ";property=" << propid
 	   << ") should have one value, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_dipole && nvalue != 3){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";exprn=" << exprn << ";property=" << propid
 	 << ") should have 3 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_stress && nvalue != 6){
-      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+      os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";exprn=" << exprn << ";property=" << propid
 	 << ") should have 6 values, but has " << nvalue << std::endl;
     } else if (ppty == globals::ppty_d1e || ppty == globals::ppty_d2e){
       int idstr = sqlite3_column_int(st.ptr(),8);
@@ -2176,10 +2191,10 @@ WHERE Terms.propid = Properties.id
       stcheck.step();
       int nat = sqlite3_column_int(stcheck.ptr(),0);
       if (ppty == globals::ppty_d1e && nvalue != 3 * nat)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp<< ";exprn=" << exprn << ";property=" << propid
 	   << ") should have 3*nat values (nat=" << nat << "), but has " << nvalue << std::endl;
       else if (ppty == globals::ppty_d2e && nvalue != (3*nat) * (3*nat+1) / 2)
-	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";property=" << propid
+	os << "TERMS (method=" << methodid << ";zatom=" << zatom << ";symbol=" << symbol << ";l=" << l << ";exp=" << exp << ";exprn=" << exprn << ";property=" << propid
 	   << ") should have nat*(nat+1)/2 values (nat=" << nat << "), but has " << nvalue << std::endl;
       stcheck.reset();
     }
@@ -2452,7 +2467,7 @@ ORDER BY Properties.id
 void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap, const acp &a,
 			     const std::unordered_map<int,int> &smapin/*={}*/, const std::vector<unsigned char> &zat/*={}*/,
 			     const std::vector<std::string> &symbol/*={}*/, const std::vector<std::string> &termstring/*={}*/,
-			     const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/,
+			     const std::vector<unsigned char> &lmax/*={}*/, const std::vector<double> &exp/*={}*/, const std::vector<int> &exprn/*={}*/,
 			     const std::vector<double> &coef/*={}*/, const std::string &prefix/*=""*/){
   if (!db)
     throw std::runtime_error("Error reading connected database");
@@ -2542,6 +2557,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   std::vector<int> atid_ = {0};
   std::vector<unsigned char> zat_ = {0}, l_ = {0};
   std::vector<double> exp_ = {0.0}, coef_ = {0.0};
+  std::vector<int> exprn_ = {0};
   int rename = 0;
   if ((im = kmap.find("TERM")) != kmap.end()){
     std::list<std::string> words = list_all_words(im->second);
@@ -2551,6 +2567,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     if (words.size() == 0 || words.size() == 1){
       rename = 1;
       exp_ = exp;
+      exprn_ = exprn;
       atid_.clear();
       zat_.clear();
       l_.clear();
@@ -2608,6 +2625,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
       str = words.front();
       words.pop_front();
       exp_[0] = std::stod(str);
+      exprn_[0] = 2;
       if (!words.empty())
 	coef_[0] = std::stod(words.front());
       else
@@ -2619,7 +2637,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
 
   // write the inputs
   write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,
-			atid_,zat_,symbol_,termstring_,l_,exp_,coef_,
+			atid_,zat_,symbol_,termstring_,l_,exp_,exprn_,coef_,
 			rename,dir,npack,prefix);
   if (globals::verbose)
     os << std::endl;
@@ -2646,7 +2664,7 @@ void sqldb::write_many_structures(std::ostream &os,
 				  const std::vector<unsigned char> &zat,
 				  const std::vector<std::string> &symbol, const std::vector<std::string> &termstring,
 				  const std::vector<unsigned char> &l,
-				  const std::vector<double> &exp, const std::vector<double> &coef,
+				  const std::vector<double> &exp, const std::vector<int> &exprn, const std::vector<double> &coef,
 				  const int rename,
 				  const std::string &dir/*="./"*/, int npack/*=0*/,
 				  const std::string &prefix/*=""*/){
@@ -2666,11 +2684,11 @@ void sqldb::write_many_structures(std::ostream &os,
   strtemplate tmexp, tcexp;
   if (tm.hasloop()){
     tmexp = tm;
-    tmexp.expand_loop(atid,zat,symbol,termstring,l,exp,coef);
+    tmexp.expand_loop(atid,zat,symbol,termstring,l,exp,exprn,coef);
   }
   if (tc.hasloop()){
     tcexp = tc;
-    tcexp.expand_loop(atid,zat,symbol,termstring,l,exp,coef);
+    tcexp.expand_loop(atid,zat,symbol,termstring,l,exp,exprn,coef);
   }
 
   if (npack <= 0 || npack >= smap.size()){
@@ -2682,14 +2700,14 @@ void sqldb::write_many_structures(std::ostream &os,
 
       if (tptr->hasloop()){
 	write_one_structure(os,it->first, (it->second?tmexp:tcexp), (it->second?ext_m:ext_c),
-			    a, atid[0], zat[0], symbol[0], termstring[0], l[0], exp[0], 0,
+			    a, atid[0], zat[0], symbol[0], termstring[0], l[0], exp[0], exprn[0], 0,
 			    coef[0], 0, 0, dir, prefix);
       } else {
 	for (int ii = 0; ii < zat.size(); ii++){
 	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      write_one_structure(os,it->first, (it->second?tm:tc), (it->second?ext_m:ext_c), a,
-				  atid[ii], zat[ii], symbol[ii], termstring[ii], l[ii], exp[iexp],
+				  atid[ii], zat[ii], symbol[ii], termstring[ii], l[ii], exp[iexp], exprn[iexp],
 				  iexp, coef[icoef], icoef, rename, dir, prefix);
 	    }
 	  }
@@ -2720,14 +2738,14 @@ void sqldb::write_many_structures(std::ostream &os,
       if (tptr->hasloop()){
 	written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tmexp:tcexp),
 						       (smap.at(srand[i])?ext_m:ext_c),
-						       a, atid[0], zat[0], symbol[0], termstring[0], l[0], exp[0],
+						       a, atid[0], zat[0], symbol[0], termstring[0], l[0], exp[0], exprn[0],
 						       0, coef[0], 0, 0, dir, prefix)));
       } else {
 	for (int ii = 0; ii < zat.size(); ii++){
 	  for (int iexp = 0; iexp < exp.size(); iexp++){
 	    for (int icoef = 0; icoef < coef.size(); icoef++){
 	      written.push_back(fs::path(write_one_structure(os, srand[i], (smap.at(srand[i])?tm:tc), (smap.at(srand[i])?ext_m:ext_c),
-							     a, atid[ii], zat[ii], symbol[ii], termstring[ii], l[ii], exp[iexp], iexp,
+							     a, atid[ii], zat[ii], symbol[ii], termstring[ii], l[ii], exp[iexp], exprn[iexp], iexp,
 							     coef[icoef], icoef, rename, dir, prefix)));
 	    }
 	  }
@@ -2770,7 +2788,7 @@ void sqldb::write_many_structures(std::ostream &os,
 std::string sqldb::write_one_structure(std::ostream &os, int id, const strtemplate &tmpl,
 				       const std::string &ext, const acp& a, int atid,
 				       const unsigned char zat, const std::string &symbol, const std::string &termstring,
-				       const unsigned char l, const double exp, const int iexp,
+				       const unsigned char l, const double exp, const int exprn, const int iexp,
 				       const double coef, const int icoef, const int rename,
 				       const std::string &dir/*="./"*/,
 				       const std::string &prefix/*=""*/){
@@ -2801,7 +2819,7 @@ FROM Structures WHERE id = ?1;
   }
 
   // write the substitution of the template to a string
-  std::string content = tmpl.apply(s,a,atid,zat,symbol,termstring,l,exp,coef);
+  std::string content = tmpl.apply(s,a,atid,zat,symbol,termstring,l,exp,exprn,coef);
 
   // write the actual file and exit
   if (globals::verbose)

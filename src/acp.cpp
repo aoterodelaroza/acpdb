@@ -71,7 +71,7 @@ acp::acp(const std::string &name_, const std::string &filename){
       int nterm;
       ifile >> nterm;
       for (int j = 0; j < nterm; j++){
-	ifile >> str >> t_.exp >> t_.coef;
+	ifile >> t_.exprn >> t_.exp >> t_.coef;
 	t.push_back(t_);
       }
     }
@@ -131,7 +131,7 @@ void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool uses
       os << std::endl << inttol[i2];
       os << std::endl << iterm[i1][i2].size();
       for (int i = 0; i < iterm[i1][i2].size(); i++)
-	os << std::endl << "2 " << t[iterm[i1][i2][i]].exp << " " << t[iterm[i1][i2][i]].coef;
+	os << std::endl << t[iterm[i1][i2][i]].exprn << " " << t[iterm[i1][i2][i]].exp << " " << t[iterm[i1][i2][i]].coef;
     }
     os << std::endl;
   }

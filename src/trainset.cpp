@@ -120,7 +120,23 @@ void trainset::addexp(const std::list<std::string> &tokens){
       throw std::runtime_error("Invalid exponent " + *it + " in TRAINING EXPONENT");
 
     exp.push_back(e_);
+    exprn.push_back(2);
   }
+  complete = c_unknown;
+}
+
+// Add exponents.
+void trainset::addexprn(const std::list<std::string> &tokens){
+  exprn.clear();
+  for (auto it = tokens.begin(); it != tokens.end(); it++){
+    int n_ = std::stoi(*it);
+    if (n_ < 0 || n_ > 2)
+      throw std::runtime_error("Invalid exponent r^n " + *it + " in TRAINING EXPRN");
+    exprn.push_back(n_);
+  }
+  if (exp.size() != exprn.size())
+    throw std::runtime_error("Size of exponent r^n does not match size of exponent in TRAINING");
+
   complete = c_unknown;
 }
 
@@ -549,6 +565,7 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
     if (nat == 0) os << "--- No atoms found (ATOM) ---" << std::endl;
     if (lmax.empty()) os << "--- No angular momenta found (LMAX) ---" << std::endl;
     if (exp.empty()) os << "--- No exponents found (EXP) ---" << std::endl;
+    if (exprn.empty()) os << "--- No exponent r^n found (EXPRN) ---" << std::endl;
     if (setid.empty()) os << "--- No subsets found (SUBSET) ---" << std::endl;
     if (w.empty()) os << "--- No weights found (W) ---" << std::endl;
     if (emptyname.empty()) os << "--- No empty method found (EMPTY) ---" << std::endl;
@@ -575,9 +592,9 @@ void trainset::describe(std::ostream &os, bool except_on_undefined, bool full, b
   // Exponents //
   if (~quiet){
     os << "# List of exponents (" << exp.size() << ")" << std::endl;
-    os << "| id | exp |" << std::endl;
+    os << "| id | exp | n |" << std::endl;
     for (int i = 0; i < exp.size(); i++){
-      os << "| " << i << " | " << exp[i] << " |" << std::endl;
+      os << "| " << i << " | " << exp[i] << " | " << exprn[i] << " |" << std::endl;
     }
     os << std::endl;
   }
@@ -718,7 +735,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = Training_set.propi
 SELECT COUNT(DISTINCT Training_set.propid)
 FROM Terms
 INNER JOIN Training_set ON Training_set.propid = Terms.propid
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP;)SQL");
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.exprn = :EXPRN;)SQL");
     int ncall = 0, ntall = 0;
     if (!quiet)
       os << "# Terms: " << std::endl;
@@ -731,11 +748,12 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMB
 	  st.bind((char *) ":SYMBOL",(char *) symbol[iz].c_str());
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
+	  st.bind((char *) ":EXPRN",exprn[ie]);
 	  st.step();
 	  int ncalc = sqlite3_column_int(st.ptr(), 0);
 	  if (!quiet){
 	    os << "| " << symbol[iz] << " | " << globals::inttol[il] << " | "
-	       << exp[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
+	       << exp[ie] << " | " << exprn[ie] << " | " << ncalc << "/" << ncalc_all << " |" << (ncalc==ncalc_all?" (complete)":" (missing)") << std::endl;
 	  }
 	  ncall += ncalc;
 	  ntall += ncalc_all;
@@ -933,7 +951,8 @@ ORDER BY Training_set.id;
   st.recycle(R"SQL(
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
-WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.propid = Training_set.propid
+WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP 
+      AND Terms.exprn = :EXPRN AND Terms.propid = Training_set.propid
 ORDER BY Training_set.id;
 )SQL");
   for (int i = 0; i < a.size(); i++){
@@ -944,6 +963,7 @@ ORDER BY Training_set.id;
     st.bind((char *) ":SYMBOL",std::string(t.sym));
     st.bind((char *) ":L",(int) t.l);
     st.bind((char *) ":EXP",t.exp);
+    st.bind((char *) ":EXPRN",t.exprn);
 
     n = 0;
     while (st.step() != SQLITE_DONE){
@@ -953,7 +973,7 @@ ORDER BY Training_set.id;
 	yacp[n++] += rval[j] * t.coef;
     }
     if (n != nall){
-      std::cout << "exponent: " << t.exp << " atom: " << (int) t.atom << " sym: " << t.sym << " l: " << (int) t.l
+      std::cout << "exponent: " << t.exp << "exprn: " << t.exprn << " atom: " << (int) t.atom << " sym: " << t.sym << " l: " << (int) t.l
 		<< " method: " << emptyid << " n: " << n << " nall: " << nall << std::endl;
       throw std::runtime_error("In TRAINING EVAL, unexpected end of the database column in ACP term number " + std::to_string(i));
     }
@@ -1091,7 +1111,7 @@ WHERE Properties.id = Training_set.propid;
     }
 
     // write the structures
-    db->write_structures(os, kmap_new, {}, smap, zat, symbol, termstring, lmax, exp, coef, "maxcoef-");
+    db->write_structures(os, kmap_new, {}, smap, zat, symbol, termstring, lmax, exp, exprn, coef, "maxcoef-");
 
   } else {
     // CALC
@@ -1149,7 +1169,7 @@ SELECT Evaluations.propid, Evaluations.value, Terms.value, Properties.property_t
 FROM Properties, Evaluations, Training_Set, Terms
 WHERE Training_set.propid = Properties.id AND Training_set.propid = Terms.propid AND Evaluations.propid = Properties.id AND
       Evaluations.methodid = :METHOD AND Terms.methodid = Evaluations.methodid AND
-      Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
+      Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP AND Terms.exprn = :EXPRN
 )SQL");
     statement st(db->ptr(),R"SQL(
 SELECT Properties.nstructures, Properties.structures, Properties.coefficients
@@ -1176,6 +1196,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	  steval.bind((char *) ":SYMBOL",symbol[i]);
 	  steval.bind((char *) ":L",il);
 	  steval.bind((char *) ":EXP",exp[ie]);
+	  steval.bind((char *) ":EXPRN",exprn[ie]);
 	  while (steval.step() != SQLITE_DONE){
 	    // check property ID
 	    int ptid = sqlite3_column_int(steval.ptr(),3);
@@ -1236,7 +1257,7 @@ WHERE Properties.id = Training_set.propid AND Properties.id = ?1;
 	      elast = edif;
 	    } // ic, over coefficients
 	  } // steval.step(), runs over properties
-	  fprintf(fp,"%s %c %.6f %.10e\n",symbol[i].c_str(),globals::inttol[il],exp[ie],cmax);
+	  fprintf(fp,"%s %c %.6f %d %.10e\n",symbol[i].c_str(),globals::inttol[il],exp[ie],exprn[ie],cmax);
 	  nbefore = nbefore + coef.size();
 	} // ie, over exponents
       } // il, over angular momenta
@@ -1447,6 +1468,11 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
   ofile.write((const char *) exp_c,exp.size()*sizeof(double));
   os << "# Dumped: " << exp.size() << " exponents" << std::endl;
 
+  // write the exponent r^n vector
+  const int *exprn_c = exprn.data();
+  ofile.write((const char *) exprn_c,exprn.size()*sizeof(int));
+  os << "# Dumped: " << exprn.size() << " exponent r^n" << std::endl;
+
   // write the w vector
   const double *w_c = wtrain.data();
   ofile.write((const char *) w_c,wtrain.size()*sizeof(double));
@@ -1457,7 +1483,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
-      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+      AND Terms.exprn = :EXPRN AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
   for (int iz = 0; iz < zat.size(); iz++){
@@ -1469,6 +1495,7 @@ ORDER BY Training_set.id;
 	st.bind((char *) ":SYMBOL",symbol[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
+	st.bind((char *) ":EXPRN",exprn[ie]);
 	int n = 0;
 	while (st.step() != SQLITE_DONE){
 	  int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
@@ -1519,7 +1546,7 @@ ORDER BY Training_set.id;
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
-      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
+      AND Terms.exprn = :EXPRN AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
       for (int il = 0; il <= lmax[iz]; il++){
@@ -1530,6 +1557,7 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMB
 	  st.bind((char *) ":SYMBOL",symbol[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
+	  st.bind((char *) ":EXPRN",exprn[ie]);
 	  st.step();
 	  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL){
 	    maxc.clear();
@@ -1652,7 +1680,7 @@ WHERE Evaluations.methodid = :METHOD AND Evaluations.propid = :PROPID;
 SELECT length(Terms.value), Terms.value
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
-      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
+      AND Terms.exprn = :EXPRN AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL
 ORDER BY Training_set.id;
 )SQL");
   for (int iz = 0; iz < zat.size(); iz++){
@@ -1664,6 +1692,7 @@ ORDER BY Training_set.id;
 	st.bind((char *) ":SYMBOL",symbol[iz]);
 	st.bind((char *) ":L",il);
 	st.bind((char *) ":EXP",exp[ie]);
+	st.bind((char *) ":EXPRN",exprn[ie]);
 	int m = 0;
 	while (st.step() != SQLITE_DONE){
 	  int len = sqlite3_column_int(st.ptr(),0) / sizeof(double);
@@ -1721,7 +1750,7 @@ ORDER BY Training_set.id;
 SELECT MIN(Terms.maxcoef)
 FROM Terms, Training_set
 WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMBOL AND Terms.l = :L AND Terms.exponent = :EXP
-      AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
+      AND Terms.exprn = :EXPRN AND Terms.propid = Training_set.propid AND Training_set.isfit IS NOT NULL;
 )SQL");
     for (int iz = 0; iz < zat.size(); iz++){
       for (int il = 0; il <= lmax[iz]; il++){
@@ -1732,6 +1761,7 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMB
 	  st.bind((char *) ":SYMBOL",symbol[iz]);
 	  st.bind((char *) ":L",il);
 	  st.bind((char *) ":EXP",exp[ie]);
+	  st.bind((char *) ":EXPRN",exprn[ie]);
 	  st.step();
 	  if (sqlite3_column_type(st.ptr(),0) == SQLITE_NULL){
 	    maxc.clear();
@@ -1767,6 +1797,7 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMB
 	    strcpy(&(t_.sym[0]),symbol[iz].c_str());
 	    t_.l = il;
 	    t_.exp = exp[ie];
+	    t_.exprn = exprn[ie];
 	    t_.coef = beta[n];
 	    t.push_back(t_);
 	  }
@@ -1790,6 +1821,9 @@ WHERE Terms.methodid = :METHOD AND Terms.zatom = :ZATOM AND Terms.symbol = :SYMB
     fp << "! Exponents: " << std::fixed << std::setprecision(2);
     for (int ie = 0; ie < exp.size(); ie++)
       fp << exp[ie] << " ";
+    fp << "! Exponent r^n: ";
+    for (int ie = 0; ie < exprn.size(); ie++)
+      fp << exprn[ie] << " ";
     fp << std::endl;
     fp << "! ACP terms in training set: " << a.size() << std::endl;
     fp << "! Data points in training set: " << nrows << std::endl;
@@ -1860,7 +1894,7 @@ WHERE Properties.id = Training_set.propid AND Training_set.id BETWEEN ?1 AND ?2;
   }
 
   // write the inputs
-  db->write_structures(os,kmap,a,smap,zat,symbol,termstring,lmax,exp);
+  db->write_structures(os,kmap,a,smap,zat,symbol,termstring,lmax,exp,exprn);
 }
 
 // Read data for the training set or one of its subsets from a file,
