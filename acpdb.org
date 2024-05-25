@@ -1,8 +1,0 @@
-#+STARTUP: showeverything
-
--- build all the databases --
-Viki
-Emilian
-
--- own implementation of LASSO in c++ --
--- critic2 to run ECPs with the libecp --
