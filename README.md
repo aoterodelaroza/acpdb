@@ -1037,12 +1037,15 @@ files can be quite large.
 
 If the CALC keyword used, calculate the maximum coefficient for each
 term and write a `maxcoef.dat` file, which can then be inserted into
-the database with [INSERT MAXCOEF](#insert-maximum-coefficients-from-a-file).
-The CALC keyword accepts an optional parameter for the nonlinearity
-error threshold (`ethres.r`, defaults to 1 kcal/mol). Using CALC
-requires passing the energies calculated in the WRITE step via a text
-file `file.s` with the SOURCE keyword. This text file has the
-structure:
+the database with [INSERT
+MAXCOEF](#insert-maximum-coefficients-from-a-file).  The CALC keyword
+accepts an optional parameter for the nonlinearity error threshold
+(`ethres.r`). This threshold applies to the calculated properties and
+it is in kcal/mol units for all property types, except the total
+energy, for which the units are Hartree. It defaults to 1 kcal/mol or
+1 Hartree, depending on the property type. Using CALC requires passing
+the energies calculated in the WRITE step via a text file `file.s`
+with the SOURCE keyword. This text file has the structure:
 ```
 structure1.s value1.r
 ```
