@@ -5,7 +5,7 @@ prefix="hfco-all";
 ## List of 1-norm constraints to use
 tlist = linspace(0,1,21);
 
-## xxxx
+## run k-fold validation with this number of folds
 kfold = 5;
 
 #### Do NOT touch past here ####
@@ -135,7 +135,7 @@ for it = 1:length(tlist)
   nsplit = round(nrows/kfold);
   for k = 1:kfold
     idxtrain = [idx(1:(k-1)*nsplit), idx(k*nsplit+1:end)];
-    idxval = idx((k-1)*nsplit+1:k*nsplit);
+    idxval = idx((k-1)*nsplit+1:min(k*nsplit,nrows));
 
     xtrain = x(idxtrain,:);
     ytrain = y(idxtrain,:);
