@@ -3,7 +3,7 @@
 prefix="hfco-all";
 
 ## List of 1-norm constraints to use
-tlist = [0 1 2 3 6 9 12 15 18 21 24];
+tlist = linspace(0,1,21);
 
 ## xxxx
 kfold = 5;
@@ -11,10 +11,10 @@ kfold = 5;
 #### Do NOT touch past here ####
 
 ## the version of this lasso script
-lasso_version = "1.6bin";
+lasso_version = "1.7bin";
 
 ## Read the binary file written by acpdb
-function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
+function [atoms,symbols,lmax,lname,explist,exprnlist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin(filebin)
 
   if (!exist(filebin))
     error(sprintf("File not found: %s",filebin))
@@ -34,6 +34,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   printf("## Reading from binary file:\n");
   printf("# %d atoms\n",natoms);
   printf("# %d exponents\n",nexp);
+  printf("# %d exponent r^n\n",nexp);
   printf("# %d rows\n",nrows);
   printf("# %d columns\n",ncols);
   printf("# %d additional method evaluations\n",naddsub);
@@ -43,6 +44,13 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   atoms = cell(natoms,1);
   for i = 1:natoms
     atoms{i} = [atomstr(2*i-1) atomstr(2*i)];
+  endfor
+
+  ## atom symbols
+  symbolstr = char(fread(fid,5*natoms,"char"));
+  symbols = cell(natoms,1);
+  for i = 1:natoms
+    symbols{i} = [symbolstr(5*i-4) symbolstr(5*i-3) symbolstr(5*i-2) symbolstr(5*i-1) symbolstr(5*i)];
   endfor
 
   ## additional method names
@@ -55,6 +63,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
   lname={"l","s","p","d","f","g","h"};
   lmax = fread(fid,[1 natoms],"unsigned char");
   explist = fread(fid,[1 nexp],"double");
+  exprnlist = fread(fid,[1 nexp],"int");
 
   ## large data arrays
   w = fread(fid,[nrows 1],"double");
@@ -102,7 +111,7 @@ function [atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = rea
 endfunction
 
 ## Read the binary
-[atoms,lmax,lname,explist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
+[atoms,symbols,lmax,lname,explist,exprnlist,nrows,ncols,x,y,maxcoef,yaddnames,yadd] = readbin("octavedump.dat");
 
 ## do we have maxcoef or additional columns?
 havemaxcoef = exist("maxcoef","var") && !isempty(maxcoef);
@@ -155,6 +164,7 @@ for it = 1:length(tlist)
         if (abs(coef) > 1e-20)
           nterms(iat,il)++;
           aexp(iat,il,nterms(iat,il)) = explist(iexp);
+          aexprn(iat,il,nterms(iat,il)) = exprnlist(iexp);
           acoef(iat,il,nterms(iat,il)) = coef;
         endif
       endfor
@@ -173,6 +183,11 @@ for it = 1:length(tlist)
       fprintf(fid,"%2.2s ",atoms{i});
     endfor
     fprintf(fid,"\n");
+    fprintf(fid,"! Atomic symbols: ");
+    for i = 1:length(atoms)
+      fprintf(fid,"%5.5s ",symbols{i});
+    endfor
+    fprintf(fid,"\n");
     fprintf(fid,"! Lmax:  ");
     for i = 1:length(lmax)
       fprintf(fid,"%2.2s ",lname{lmax(i)});
@@ -181,6 +196,11 @@ for it = 1:length(tlist)
     fprintf(fid,"! Exponents: ");
     for i = 1:length(explist)
       fprintf(fid,"%.2f ",explist(i));
+    endfor
+    fprintf(fid,"\n");
+    fprintf(fid,"! Exponent r^n: ");
+    for i = 1:length(exprnlist)
+      fprintf(fid,"%d ",exprnlist(i));
     endfor
     fprintf(fid,"\n");
     fprintf(fid,"! ACP terms in training set: %d\n",ncols);
@@ -202,12 +222,12 @@ for it = 1:length(tlist)
     ## Write the ACP itself
     for i = 1:length(atoms)
       fprintf(fid,"%s 0\n",atoms{i});
-      fprintf(fid,"%s %d 0\n",atoms{i},lmax(i)-1);
+      fprintf(fid,"%s %d 0\n",symbols{i},lmax(i)-1);
       for j = 1:lmax(i)
         fprintf(fid,"%s\n",lname{j});
         fprintf(fid,"%d\n",nterms(i,j));
         for k = 1:nterms(i,j)
-          fprintf(fid,"2 %.6f %.15f\n",aexp(i,j,k),acoef(i,j,k));
+          fprintf(fid,"%d %.6f %.15f\n",aexprn(i,j,k),aexp(i,j,k),acoef(i,j,k));
         endfor
       endfor
     endfor
