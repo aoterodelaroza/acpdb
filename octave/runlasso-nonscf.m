@@ -131,7 +131,6 @@ for it = 1:length(tlist)
 
   ## run the k-fold cross-validation
   wrmsval = 0;
-  idx = 1:nrows;
   nsplit = round(nrows/kfold);
   for k = 1:kfold
     idxtrain = [idx(1:(k-1)*nsplit), idx(k*nsplit+1:end)];
