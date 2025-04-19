@@ -602,6 +602,7 @@ WRITE
   [ACP {name.s|file.s}]
   [TRAINING [alias.s]]
   [TERM [{sym.s|id.i} {l.i|l.s} exp.r] [coef.r]]
+  [TERM_DRYRUN]
 END
 ~~~
 Write the structures in the database to input or structure files. If
@@ -634,7 +635,7 @@ If the `ACP` keyword is present, use the ACP in file `file.s` or the
 ACP with name `name.s` from the internal ACP database to substitute
 the ACP-related template expansions (`%acpgau%`, etc.).
 
-If the keyword TERM is present, write input files for the term
+If the keyword `TERM` is present, write input files for the term
 calculations. The training set must be defined. There are two possible
 ways of doing this. If the atom (with number `id.i` from the training
 set or symbol `sym.s`), angular momentum (symbol `l.s` or value
@@ -655,6 +656,10 @@ possible combinations of atom, l, and exponent from the training
 set. In this mode of operation, an additional value may be passed to
 TERM (`coef.r`) corresponding to the term coefficient. If `coef.r` is
 not present, a default of 0.001 is used.
+
+If the keyword `TERM_DRYRUN` is used, write the list of terms that
+would be written by the `TERM` keyword but do not write any input
+files.
 
 #### Description of the Template Format
 
@@ -701,6 +706,8 @@ by the database program. The available keywords are:
 
 - `%qexyz%`: a combination of the `ATOMIC_SPECIES` and
   `ATOMIC_COORDINATES` blocks in QE format.
+
+- `%fhixyz%`: geometry.in block for FHIaims.
 
 - `%acpgau%`: the ACP block in Gaussian format.
 

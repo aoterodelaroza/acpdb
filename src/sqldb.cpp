@@ -2559,7 +2559,7 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
   std::vector<double> exp_ = {0.0}, coef_ = {0.0};
   std::vector<int> exprn_ = {0};
   int rename = 0;
-  if ((im = kmap.find("TERM")) != kmap.end()){
+  if ((im = kmap.find("TERM")) != kmap.end() || (im = kmap.find("TERM_DRYRUN")) != kmap.end()){
     std::list<std::string> words = list_all_words(im->second);
     if (zat.empty() || lmax.empty() || exp.empty())
       throw std::runtime_error("The training set must be defined if using WRITE TERM");
@@ -2635,10 +2635,26 @@ void sqldb::write_structures(std::ostream &os, const std::unordered_map<std::str
     }
   }
 
-  // write the inputs
-  write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,
-			atid_,zat_,symbol_,termstring_,l_,exp_,exprn_,coef_,
-			rename,dir,npack,prefix);
+  if ((im = kmap.find("TERM_DRYRUN")) != kmap.end()){
+    // dry run
+    os << "## atid Z atsymbol termstring angmom exp exp-rn coef" << std::endl;
+    for (int ii = 0; ii < zat_.size(); ii++){
+      for (int iexp = 0; iexp < exp_.size(); iexp++){
+	for (int icoef = 0; icoef < coef_.size(); icoef++){
+	  os << atid_[ii] << " " << (int) zat_[ii] << " " << symbol_[ii] << " "
+	     << termstring_[ii] << " " << globals::inttol[l_[ii]] << " " << exp_[iexp] << " "
+	     << exprn_[iexp] << " " << coef_[icoef] << std::endl;
+	}
+      }
+    }
+    os << std::endl;
+  } else{
+    // write the inputs
+    write_many_structures(os,template_m,template_c,ext_m,ext_c,a,smap,
+			  atid_,zat_,symbol_,termstring_,l_,exp_,exprn_,coef_,
+			  rename,dir,npack,prefix);
+  }
+
   if (globals::verbose)
     os << std::endl;
 }

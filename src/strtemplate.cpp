@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
 // t_charge, t_mult, t_nat, t_ntyp, t_xyz,
-// t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
+// t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz, t_fhixyz,
 // t_acpgau, t_acpgaunum, t_acpgausym, t_acpcrys, t_term_id, t_term_string,
 // t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr,
 // t_term_lnum, t_term_exp, t_term_exprn, t_term_coef
@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static const std::vector<std::string> tokenname = { // keyword names for printing
   "string","basename","cell","cellbohr","cell_lengths","cell_angles",
   "charge","mult","nat","ntyp","xyz",
-  "xyzatnum","xyzatnum200","vaspxyz","qexyz",
+  "xyzatnum","xyzatnum200","vaspxyz","qexyz","fhixyz",
   "acpgau", "acpgaunum", "acpgausym", "acpcrys", "term_id", "term_string",
   "term_atsymbol", "term_atsymbol_lstr_gaussian", "term_atnum",
   "term_lstr", "term_lnum", "term_exp", "term_exprn", "term_coef",
@@ -43,7 +43,7 @@ static const std::vector<std::string> tokenname = { // keyword names for printin
 static const std::vector<std::string> tokenstr = { // strings for the keywords (if unterminated, optionally expect something else)
   "","%basename%","%cell%","%cellbohr%","%cell_lengths%","%cell_angles%",
   "%charge%","%mult%","%nat%","%ntyp%","%xyz%",
-  "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%",
+  "%xyzatnum%","%xyzatnum200%","%vaspxyz%","%qexyz%","%fhixyz%",
   "%acpgau%","%acpgaunum%","%acpgausym%","%acpcrys%","%term_id%","%term_string%",
   "%term_atsymbol%","%term_atsymbol_lstr_gaussian%","%term_atnum%",
   "%term_lstr%","%term_lnum%","%term_exp%","%term_exprn%","%term_coef%",
@@ -265,6 +265,19 @@ std::string strtemplate::apply(const structure &s, const acp& a, const int id,
 	if (i < nat-1) ss << std::endl;
       }
 
+      result.append(ss.str());
+    } else if (it->token == t_fhixyz){
+      int nat = s.get_nat();
+      const unsigned char *z = s.get_z();
+      const double *x = s.get_x();
+
+      // write the atomic positions
+      std::stringstream ss;
+      ss << std::fixed << std::setprecision(10);
+      for (int i = 0; i < nat; i++){
+	ss << "atom " << " " << x[3*i+0] << " " << x[3*i+1] << " " << x[3*i+2] << " " << nameguess(z[i]);
+	if (i < nat-1) ss << std::endl;
+      }
       result.append(ss.str());
     } else if (it->token == t_acpgau || it->token == t_acpcrys){
       std::stringstream ss;

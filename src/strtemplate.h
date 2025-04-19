@@ -35,7 +35,7 @@ class strtemplate {
   enum tokentypes {
     t_string, t_basename, t_cell, t_cellbohr, t_cell_lengths, t_cell_angles,
     t_charge, t_mult, t_nat, t_ntyp, t_xyz,
-    t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz,
+    t_xyzatnum, t_xyzatnum200, t_vaspxyz, t_qexyz, t_fhixyz,
     t_acpgau, t_acpgaunum, t_acpgausym, t_acpcrys, t_term_id, t_term_string,
     t_term_atsymbol, t_term_atsymbol_lstr_gaussian, t_term_atnum, t_term_lstr, t_term_lnum, t_term_exp, t_term_exprn,
     t_term_coef, t_term_loop, t_term_endloop};
@@ -54,6 +54,7 @@ class strtemplate {
   // t_xyzatnum200 (%xyzatnum200%): the coordinate block, as "Z+200 x y z" lines.
   // t_vaspxyz (%vaspxyz%): the species list (atomic symbols + number of atoms) followed by coordinate block.
   // t_qexyz (%qexyz%): the ATOMIC_SPECIES and ATOMIC_COORDINATES block in QE format.
+  // t_fhixyz (%fhixyz%): the FHIaims geometry.in.
   // t_acpgau (%acpgau%): the ACP in Gaussian format
   // t_acpgaunum (%acpgaunum%): the ACP in Gaussian format, with entry number instead of atomic names
   // t_acpgausym (%acpgausym%): the ACP in Gaussian format, with atomic symbols instead of atomic names
