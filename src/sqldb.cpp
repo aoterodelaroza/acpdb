@@ -1042,8 +1042,12 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 
 	if (i == 0)
 	  value.resize(datmap[strname].size(), 0.);
-	else if (datmap[strname].size() != value.size())
+	else if (datmap[strname].size() != value.size()){
+	  std::cout << "ERROR! Unexpected number of entries for structure: " << strname << std::endl;
+	  std::cout << "ERROR! Number of entries in data file: " << datmap[strname].size() << std::endl;
+	  std::cout << "ERROR! Number of entries expected: " << value.size() << std::endl;
 	  throw std::runtime_error("Incompatible number of values calculating evaluation in INSERT CALC");
+	}
 
 	if (coef) {
 	  for (int j = 0; j < value.size(); j++)
