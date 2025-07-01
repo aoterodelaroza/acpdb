@@ -49,7 +49,7 @@ const double globals::atmass[] = {
     257,       258,      255,       260};
 
 const std::unordered_map<std::string, int> globals::ltoint {
-   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6},
+   {"l",0}, {"s",1}, {"p",2}, {"d",3}, {"f",4}, {"g",5}, {"h",6}, {"i",7},
 };
-const std::vector<char> globals::inttol = {'l','s','p','d','f','g','h'};
+const std::vector<char> globals::inttol = {'l','s','p','d','f','g','h','i'};
 
