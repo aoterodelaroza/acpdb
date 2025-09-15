@@ -727,8 +727,11 @@ void sqldb::insert_maxcoef(std::ostream &os, const std::unordered_map<std::strin
     std::istringstream iss(line);
     iss >> atom >> l >> exp >> exprn >> value;
     atom.resize(ATSYMBOL_LENGTH,ATSYMBOL_PAD);
-    if (iss.fail())
+    if (iss.fail()){
+      std::cout << "Error inserting line: " << line << std::endl;
       continue;
+    }
+
     iss >> propkey;
     if (iss.fail())
       propkey = "";
