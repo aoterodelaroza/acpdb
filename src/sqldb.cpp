@@ -1814,15 +1814,15 @@ FROM Terms
 ORDER BY methodid,zatom,l,exponent,exprn,propid;
 )SQL";
   } else if (category == "MAXCOEF"){
-    headers = {"methodid","atom",  "l","exponent","exprn","maxcoef"};
-    types   = {     t_int, t_int,t_int,  t_double,  t_int, t_double};
-    cols    = {         0,     1,    2,         3,      4,        5};
+    headers = {"methodid","symbol",  "l","exponent","exprn","maxcoef"};
+    types   = {     t_int,   t_str,t_int,  t_double,  t_int, t_double};
+    cols    = {         0,       1,    2,         3,      4,        5};
     stmt = R"SQL(
 SELECT methodid,zatom,l,exponent,exprn,MIN(maxcoef)
 FROM Terms
 WHERE maxcoef IS NOT NULL
-GROUP BY methodid,atom,l,exponent,exprn
-ORDER BY methodid,atom,l,exponent,exprn;
+GROUP BY methodid,symbol,l,exponent,exprn
+ORDER BY methodid,symbol,l,exponent,exprn;
 )SQL";
   } else {
     throw std::runtime_error("Unknown LIST category: " + category);
