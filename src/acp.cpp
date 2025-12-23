@@ -99,6 +99,8 @@ void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool uses
   // run over the terms in the ACP and write the atom types, lmax, and number of terms
   std::map<int,unsigned char> lmax;
   std::unordered_map<int,std::vector< std::vector<int> > > iterm;
+  std::unordered_map<int,std::string> iterm_sym;
+  std::unordered_map<int,unsigned char> iterm_atom;
 
   // classify the terms
   int nblock = 0;
@@ -112,6 +114,8 @@ void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool uses
     if (iterm[t[i].block].size() <= t[i].l)
       iterm[t[i].block].resize(t[i].l+1,{});
     iterm[t[i].block][t[i].l].push_back(i);
+    iterm_sym[t[i].block] = std::string(t[i].sym);
+    iterm_atom[t[i].block] = t[i].atom;
     nblock = std::max(nblock,t[i].block+1);
   }
 
@@ -123,10 +127,10 @@ void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool uses
     if (usenblock)
       os << i1+1 << " 0";
     else if (usesym)
-      os << t[iterm[i1][0][0]].sym << " 0";
+      os << iterm_sym[i1] << " 0";
     else
-      os << "-" << nameguess(t[iterm[i1][0][0]].atom) << " 0";
-    os << std::endl << t[iterm[i1][0][0]].sym << " " << iterm[i1].size()-1 << " 0";
+      os << nameguess(iterm_atom[i1]) << " 0";
+    os << std::endl << iterm_sym[i1] << " " << iterm[i1].size()-1 << " 0";
     for (int i2 = 0; i2 < iterm[i1].size(); i2++){
       os << std::endl << inttol[i2];
       os << std::endl << iterm[i1][i2].size();
