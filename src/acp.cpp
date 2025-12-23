@@ -129,7 +129,7 @@ void acp::writeacp_gaussian(std::ostream &os, bool usenblock/*=false*/,bool uses
     else if (usesym)
       os << iterm_sym[i1] << " 0";
     else
-      os << nameguess(iterm_atom[i1]) << " 0";
+      os << "-" << nameguess(iterm_atom[i1]) << " 0";
     os << std::endl << iterm_sym[i1] << " " << iterm[i1].size()-1 << " 0";
     for (int i2 = 0; i2 < iterm[i1].size(); i2++){
       os << std::endl << inttol[i2];
