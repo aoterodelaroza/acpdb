@@ -898,6 +898,7 @@ SELECT Properties.id, Properties.nstructures, Properties.structures, Properties.
 FROM Properties, Training_Set
 WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL");
 
+
     // build the property map
     long int nprop = 0;
     std::list<std::string> reject, accept;
@@ -1031,13 +1032,13 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
       double *coef = (double *) sqlite3_column_blob(ststruct.ptr(),3);
       std::vector<double> value;
       bool found = true;
+
       for (int i = 0; i < nstr; i++){
 	stkey.reset();
 	stkey.bind(1,istr[i]);
 	stkey.step();
 	std::string strname = (char *) sqlite3_column_text(stkey.ptr(),0);
 
-	// std::cout << strname << std::endl;
 	if (datmap.find(strname) == datmap.end()){
 	  found = false;
 	  break;
