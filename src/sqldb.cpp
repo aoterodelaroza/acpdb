@@ -1395,7 +1395,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   // open the din file
   std::ifstream ifile(din,std::ios::in);
   if (ifile.fail())
-    throw std::runtime_error("Error reading din file " + din);
+    throw std::runtime_error("Error opening din file " + din);
 
   // read the din file header
   int fieldasrxn = 0;
@@ -1403,7 +1403,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
   std::string str, saux, line;
   while (std::getline(ifile,line)){
     if (ifile.fail())
-      throw std::runtime_error("Error reading din file " + din);
+      throw std::runtime_error("Error reading din file " + din + ": unexpected termination reading header");
     std::istringstream iss(line);
     iss >> str;
 
@@ -1430,24 +1430,34 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
     aux.names.clear();
     aux.coefs.clear();
     while (c != 0){
-      if (line_get_double(ifile,line,str,caux))
+      if (line_get_double(ifile,line,str,caux)){
+	std::cout << "Reading double (1), line: " + line << std::endl;
 	throw std::runtime_error("Error reading din file " + din);
+      }
       aux.coefs.push_back(c);
       aux.names.push_back(str);
-      if (line_get_double(ifile,line,saux,c))
+      if (line_get_double(ifile,line,saux,c)){
+	std::cout << "Reading double(2), line: " + line << std::endl;
 	throw std::runtime_error("Error reading din file " + din);
+      }
     }
     if (fieldasrxn == 999){
       get_next_line(ifile,line);
-      if (ifile.fail() || line.empty())
+      if (ifile.fail() || line.empty()){
+	std::cout << "Reading line (fail): " + line << std::endl;
 	throw std::runtime_error("Error reading din file " + din);
+      }
       std::istringstream iss(line);
       iss >> aux.ref >> aux.pkey;
-      if (iss.fail())
+      if (iss.fail()){
+	std::cout << "Reading line: " + line << std::endl;
 	throw std::runtime_error("Error reading din file " + din);
+      }
     } else {
-      if (line_get_double(ifile,line,saux,aux.ref))
+      if (line_get_double(ifile,line,saux,aux.ref)){
+	std::cout << "Reading double (3): " + line << std::endl;
 	throw std::runtime_error("Error reading din file " + din);
+      }
     }
 
     // clean up and prepare next iteration
@@ -1456,7 +1466,7 @@ void sqldb::insert_set_din(std::ostream &os, const std::string &key, const std::
       if (ifile.eof())
 	break;
       else
-	throw std::runtime_error("Error reading din file " + din);
+	throw std::runtime_error("Error reading din file " + din + ": unexpected termination");
     }
   }
   ifile.close();
