@@ -28,7 +28,9 @@ _ang2l = {"l":0,"s":1,"p":2,"d":3,"f":4,"g":5,"h":6}
 _l2ang = {v: k for k, v in _ang2l.items()}
 
 def _are_terms_equal(term1,term2):
-    return term1['n'] == term2['n'] and abs(term1['coef']-term2['coef']) < 1e-12 and abs(term1['exp']-term2['exp']) < 1e-12
+    """Returns true if two terms are equal in their n and exponent to within 1e-12."""
+
+    return term1['n'] == term2['n'] and abs(term1['exp']-term2['exp']) < 1e-12
 
 class ACP:
     """A class representing a set of atom-centered potentials (ACP)."""
