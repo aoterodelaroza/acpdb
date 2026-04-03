@@ -19,3 +19,6 @@ tests/zz_source/
 
 # cmake build
 build/
+
+# python
+__pycache__
