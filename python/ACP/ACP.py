@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 # Dictionary containing the element data: atomic number and atomic mass
 _elements = {"Bq": 0.0,"H": 1.00794,"He": 4.002602,"Li": 6.941,"Be": 9.012182,
              "B": 10.811,"C": 12.0107,"N": 14.0067,"O": 15.9994,"F": 18.9984032,
@@ -43,11 +45,12 @@ class ACP:
 
     def __init__(self,data=None):
         """Initialize an ACP from the given data structure. If the
-        data is not present, initalize and empty ACP."""
+        data is not present, initalize and empty ACP. Creates a deep copy
+        of the input argument."""
         if data is None:
             self._data = {}
         else:
-            self._data = data
+            self._data = deepcopy(data)
 
     @classmethod
     def from_single_term(cls,sym,ang,n,exp,coef):
@@ -157,12 +160,12 @@ class ACP:
         """Returns the sum of two ACPs."""
 
         # start with the left ACP info
-        data = self._data
+        data = deepcopy(self._data)
 
         for sym in other._data:
             # If this atom is not known, add it
             if sym not in data:
-                data[sym] = other._data[sym]
+                data[sym] = deepcopy(other._data[sym])
                 continue
 
             # run over blocks and terms in the other ACP
@@ -182,7 +185,7 @@ class ACP:
 
                     # otherwise, append a new term
                     if not found:
-                        data[sym][iblock].append(term)
+                        data[sym][iblock].append(deepcopy(term))
 
         # build the return ACP from the data and sort by exponent
         acp = ACP(data)
