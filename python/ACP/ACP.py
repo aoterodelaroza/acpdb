@@ -1,5 +1,3 @@
-import numpy as np
-
 # Dictionary containing the element data: atomic number and atomic mass
 _elements = {"Bq": 0.0,"H": 1.00794,"He": 4.002602,"Li": 6.941,"Be": 9.012182,
              "B": 10.811,"C": 12.0107,"N": 14.0067,"O": 15.9994,"F": 18.9984032,
