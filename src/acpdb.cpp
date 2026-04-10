@@ -288,6 +288,13 @@ int main(int argc, char *argv[]) {
       }
       *os << std::endl;
 
+      //// COPY_METHOD
+    } else if (keyw == "COPY_METHOD") {
+      *os << "* COPY_METHOD: insert data for a method using data from other method" << std::endl;
+      std::unordered_map<std::string,std::string> kmap = map_keyword_pairs(*is,true);
+      db.copy_method(*os,kmap);
+      *os << std::endl;
+
       //// CALC_EDIFF
     } else if (keyw == "CALC_EDIFF") {
       *os << "* CALC_EDIFF: calculate and insert energy differences from total energies " << std::endl;

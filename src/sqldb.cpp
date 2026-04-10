@@ -1575,6 +1575,37 @@ INSERT INTO Properties (id,key,property_type,setid,orderid,nstructures,structure
   commit_transaction();
 }
 
+// Copy a method using the data from a different method as the source
+void sqldb::copy_method(std::ostream &os, const std::unordered_map<std::string,std::string> &kmap){
+  if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
+
+  statement st(db,R"SQL(
+INSERT INTO Evaluations (methodid, propid, value)
+SELECT :TARGET, propid, value
+FROM Evaluations
+WHERE methodid = :SOURCE;
+)SQL");
+
+  std::string methodkey;
+  int sourceid, targetid;
+  std::unordered_map<std::string,std::string>::const_iterator im;
+  if ((im = kmap.find("SOURCE")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",methodkey,sourceid))
+      throw std::runtime_error("Invalid SOURCE method ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A SOURCE method is required in COPY_METHOD");
+  if ((im = kmap.find("TARGET")) != kmap.end()){
+    if (!get_key_and_id(im->second,"Methods",methodkey,targetid))
+      throw std::runtime_error("Invalid TARGET method ID or key in INSERT EVALUATION");
+  } else
+    throw std::runtime_error("A TARGET method is required in COPY_METHOD");
+
+  st.bind((char *) ":SOURCE",sourceid);
+  st.bind((char *) ":TARGET",targetid);
+  st.step();
+  st.reset();
+}
+
 // Calculate energy differences from total energies
 void sqldb::calc_ediff(std::ostream &os){
   statement stedif(db,R"SQL(
