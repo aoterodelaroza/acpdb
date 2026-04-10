@@ -10,6 +10,7 @@ atom-centered potentials (ACPs).
 | [Print database information](#print-database-information)                                               | PRINT ([Whole database](#whole-database), [Individual tables](#individual-tables), [DIN files](#din-files))                                                                                                          |
 | [Inserting data (elements)](#inserting-data-elements)                                                   | INSERT ([Lit. refs.](#literature-references), [Sets](#sets), [Methods](#methods), [Structures](#structures), [Properties](#properties), [Evaluations](#evaluations), [Terms](#terms))                                |
 | [Inserting data (bulk)](#inserting-data-bulk)                                                           | INSERT ([Properties](#insert-several-properties-for-a-set), [Evaluations from Calculations](#insert-evaluations-and-terms-from-a-file-with-calculated-values), [Maxcoefs](#insert-maximum-coefficients-from-a-file)) |
+| [Copying method data](#copying-method-data)                                                             | COPY_METHOD                                                                                                                                                                                                          |
 | [Deleting data](#deleting-data)                                                                         | DELETE                                                                                                                                                                                                               |
 | [Comparing to database contents](#comparing-to-the-database-contents)                                   | COMPARE                                                                                                                                                                                                              |
 | [Calculate energy differences from total energies](#calculating-energy-differences-from-total-energies) | CALC_EDIFF                                                                                                                                                                                                           |
@@ -510,6 +511,19 @@ and `maxcoef.r` is the maximum
 coefficient value. The last field (`property.s`) is optional. If it is
 present, apply the maxcoef only to that property. Otherwise, apply it
 to all properties that match the atom, angular momentum, and exponent.
+
+### Copying method data
+
+The evaluations for all properties in the database can be copied
+from a given source method (`source.s` identifier or `source.i`
+integer identifier) to a given target method (`target.s` or
+`target.i`) using the COPY_METHOD environment:
+~~~
+COPY_METHOD
+  SOURCE {source.s|source.i}
+  TARGET {target.s|target.i}
+END
+~~~
 
 ### Deleting Data
 
