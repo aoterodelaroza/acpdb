@@ -13,4 +13,3 @@ for acp in glob("*cycle1*acp"):
     with open("ALL-" + acp,"w") as fout:
         print(acpnew,file=fout)
 
-ACP(data)
