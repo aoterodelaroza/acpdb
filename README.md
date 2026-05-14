@@ -514,8 +514,8 @@ to all properties that match the atom, angular momentum, and exponent.
 
 ### Copying method data
 
-The evaluations for all properties in the database can be copied
-from a given source method (`source.s` identifier or `source.i`
+The evaluations and terms for all properties in the database can be
+copied from a given source method (`source.s` identifier or `source.i`
 integer identifier) to a given target method (`target.s` or
 `target.i`) using the COPY_METHOD environment:
 ~~~
