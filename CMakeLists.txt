@@ -1,5 +1,5 @@
 ## project and version
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 ## some project variables
 set(acpdb_MAJOR_VERSION 1)
