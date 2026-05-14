@@ -1580,7 +1580,7 @@ void sqldb::copy_method(std::ostream &os, const std::unordered_map<std::string,s
   if (!db) throw std::runtime_error("A database file must be connected before using INSERT METHOD");
 
   statement st(db,R"SQL(
-INSERT INTO Evaluations (methodid, propid, value)
+INSERT OR REPLACE INTO Evaluations (methodid, propid, value)
 SELECT :TARGET, propid, value
 FROM Evaluations
 WHERE methodid = :SOURCE;
@@ -1600,6 +1600,17 @@ WHERE methodid = :SOURCE;
   } else
     throw std::runtime_error("A TARGET method is required in COPY_METHOD");
 
+  st.bind((char *) ":SOURCE",sourceid);
+  st.bind((char *) ":TARGET",targetid);
+  st.step();
+  st.reset();
+
+  st.recycle(R"SQL(
+INSERT OR REPLACE INTO Terms (methodid, zatom, symbol, l, exponent, exprn, propid, value, maxcoef)
+SELECT :TARGET, zatom, symbol, l, exponent, exprn, propid, value, maxcoef
+FROM Terms
+WHERE methodid = :SOURCE;
+)SQL");
   st.bind((char *) ":SOURCE",sourceid);
   st.bind((char *) ":TARGET",targetid);
   st.step();
