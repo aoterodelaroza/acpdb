@@ -22,3 +22,6 @@ build/
 
 # python
 __pycache__
+
+# claude
+CLAUDE.md
