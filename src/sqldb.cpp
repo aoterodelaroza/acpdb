@@ -656,7 +656,7 @@ WHERE Evaluations.propid = ?1 AND Evaluations.methodid = ?2;
       int len = sqlite3_column_int(st2.ptr(),0) / sizeof(double);
       double *rval = (double *) sqlite3_column_blob(st2.ptr(),1);
       if (!rval)
-	throw std::runtime_error("To use CALCSLOPE in INSERT TERM, the evaluation for the corresponding method and property must be available");
+	throw std::runtime_error("To use CALCSLOPE in INSERT TERM, the evaluation for the corresponding method and property must be available (method=" + methodkey + ";property=" + propkey + ")");
       if (len != tok.size())
 	throw std::runtime_error("The number of values in the evaluation does not match those in VALUE, in CALCSLOPE, INSERT TERM");
       for (int i = 0; i < tok.size(); i++)
@@ -960,7 +960,7 @@ WHERE Properties.property_type = ?1 AND Training_Set.propid = Properties.id;)SQL
 	  int len = sqlite3_column_int(steval.ptr(),0) / sizeof(double);
 	  double *rval = (double *) sqlite3_column_blob(steval.ptr(),1);
 	  if (!rval)
-	    throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available");
+	    throw std::runtime_error("To use CALCSLOPE in INSERT CALC, the evaluation for the corresponding method and property must be available (method=" + methodkey + ";property=" + find_key_from_id(propid,"Properties") + ";id=" + std::to_string(propid) + ")");
 	  if (len != nstride)
 	    throw std::runtime_error("Evaluation length different than term length");
 	  for (int i = 0; i < value.size(); i++){
